@@ -35,5 +35,15 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         //setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        // Assuming you have some data you want to pass, let's call it "myData"
+        val myData = "Hello, this is my data!"
+
+        // Create a Bundle and put the data into it
+        val bundle = Bundle()
+        bundle.putString("data_key", myData)
+
+        // Navigate to the destination fragment with the data bundle
+        navController.navigate(R.id.navigation_home, bundle)
     }
 }

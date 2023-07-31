@@ -1,7 +1,6 @@
 package com.example.kotlinmtglifetotalapp.ui.home
 
 import android.content.Context
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
@@ -10,7 +9,8 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import java.util.concurrent.ConcurrentHashMap
 
-class PlayerSelectScreen(context: Context?, attrs: AttributeSet?) : SurfaceView(context, attrs), SurfaceHolder.Callback {
+class PlayerSelectScreen(context: Context?, attrs: AttributeSet?) : SurfaceView(context, attrs),
+    SurfaceHolder.Callback {
     private val surfaceHolder: SurfaceHolder = holder
     private val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val points: ConcurrentHashMap<Int, MotionEvent> = ConcurrentHashMap()
@@ -44,7 +44,7 @@ class PlayerSelectScreen(context: Context?, attrs: AttributeSet?) : SurfaceView(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         synchronized(points) {
             when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN,  -> {
                     performClick()
                     // Update the points data with new touch events
                     for (i in 0 until event.pointerCount) {
@@ -52,6 +52,7 @@ class PlayerSelectScreen(context: Context?, attrs: AttributeSet?) : SurfaceView(
                         points[pointerId] = MotionEvent.obtain(event)
                     }
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     // Update the points data for moved touch events
                     for (i in 0 until event.pointerCount) {
@@ -59,13 +60,15 @@ class PlayerSelectScreen(context: Context?, attrs: AttributeSet?) : SurfaceView(
                         points[pointerId] = MotionEvent.obtain(event)
                     }
                 }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> {
                     // Remove lifted pointers from the points data
                     val pointerId = event.getPointerId(event.actionIndex)
                     points.remove(pointerId)
                 }
 
-                else -> {}
+                else -> {
+                }
             }
         }
         return true
@@ -98,26 +101,26 @@ class PlayerSelectScreen(context: Context?, attrs: AttributeSet?) : SurfaceView(
     inner class RenderRunnable : Runnable {
         override fun run() {
             while (isRunning && !Thread.currentThread().isInterrupted) {
-                val canvas = surfaceHolder.lockCanvas()
-                if (canvas != null) {
-                    synchronized(points) {
-                        canvas.drawColor(Color.BLACK)
-                        // Draw the circles based on the points data
-                        for (pointerId in points.keys) {
-                            val event = points[pointerId]
-                            if (event != null) {
-                                canvas.drawCircle(
-                                    event.getX(event.findPointerIndex(pointerId)),
-                                    event.getY(event.findPointerIndex(pointerId)),
-                                    100f,
-                                    paint
-                                )
-                            }
-                        }
-                    }
-                    surfaceHolder.unlockCanvasAndPost(canvas)
+                if (points.size == 0) {
+                    continue
                 }
+                val canvas = surfaceHolder.lockCanvas() ?: continue
+                synchronized(points) {
+                    canvas.drawColor(Color.BLACK)
+                    // Draw the circles based on the points data
+                    for (pointerId in points.keys) {
+                        val event = points[pointerId] ?: continue
+                        canvas.drawCircle(
+                            event.getX(event.findPointerIndex(pointerId)),
+                            event.getY(event.findPointerIndex(pointerId)),
+                            100f,
+                            paint
+                        )
+                    }
+                }
+                surfaceHolder.unlockCanvasAndPost(canvas)
             }
         }
     }
 }
+

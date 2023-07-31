@@ -23,6 +23,7 @@ import android.view.animation.DecelerateInterpolator
 
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
+import androidx.fragment.app.Fragment
 
 
 import androidx.core.graphics.ColorUtils

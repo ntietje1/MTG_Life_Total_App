@@ -34,6 +34,16 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        val arguments = arguments
+
+        if (arguments != null) {
+            // Retrieve the data from the bundle using the key "data_key"
+            val myData = arguments.getString("data_key")
+
+            // Now you have the data, do whatever you need to do with it
+            // For example, if the data is a String, you can display it in a TextView
+            println(myData)
+        }
 
         return root
     }

@@ -15,7 +15,7 @@
             android:id="@+id/navigation_life_counter"
             android:name="com.example.kotlinmtglifetotalapp.ui.lifecounter.LifeCounterFragment"
             android:label="@string/title_life_counter"
-            tools:layout="@layout/life_counter_layout" />
+            tools:layout="@layout/life_counter_layout_4" />
 
     <fragment
             android:id="@+id/navigation_settings"
