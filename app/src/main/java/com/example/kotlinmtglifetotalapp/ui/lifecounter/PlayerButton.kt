@@ -3,34 +3,32 @@ package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
 import android.animation.AnimatorInflater
 import android.animation.ObjectAnimator
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Interpolator
 import android.graphics.Matrix
 import android.graphics.Paint
-import android.graphics.Typeface
-
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import android.os.CombinedVibration
 import android.os.Handler
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.VibrationEffect.createPredefined
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.animation.DecelerateInterpolator
-
+import android.widget.Button
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
-import androidx.fragment.app.Fragment
-
-
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withMatrix
 import com.example.kotlinmtglifetotalapp.R
-
+import com.google.android.material.button.MaterialButton
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import java.util.concurrent.TimeUnit
@@ -41,6 +39,7 @@ import java.util.concurrent.TimeUnit
  * TODO: add commander damage
  * TODO: add settings
  * TODO: add selector at beginning
+ * TODO: add dice roll/coin flip
  */
 
 class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(context, attrs) {
@@ -50,6 +49,8 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
             field = value
             setBackground()
         }
+
+    private var vibration = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
 
     private var disposable: Disposable? = null
 
@@ -150,7 +151,8 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
 
     private fun slideIn() {
         if (firstDraw) {
-            if (rotation == 0f) {
+            jiggle()
+            if (rotation < 180f) {
                 this.translationX = width.toFloat()
                 objectAnimator = ObjectAnimator.ofFloat(this, "translationX", width.toFloat(), 0f)
             } else {
@@ -171,9 +173,22 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
         objectAnimator.start()
     }
 
+    //TODO: maybe problem causer?
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if (rotation == 90f || rotation == 270f) {
+            println("vertical button measured")
+            setMeasuredDimension(measuredHeight, measuredWidth)
+            super.onMeasure(heightMeasureSpec, widthMeasureSpec)
+        } else {
+            println("sideways button measured")
+            setMeasuredDimension(measuredWidth, measuredHeight)
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        }
+
+    }
+
     override fun onDraw(canvas: Canvas) {
         slideIn()
-
         with(canvas) {
             super.onDraw(this)
             save()
@@ -202,6 +217,10 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
         }
     }
 
+    private fun vibrate() {
+        vibration.vibrate(CombinedVibration.createParallel(createPredefined(VibrationEffect.EFFECT_TICK)))
+    }
+
     override fun performClick(): Boolean {
         jiggle()
         return super.performClick()
@@ -213,7 +232,7 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 performClick()
-                increment(if (initialX < this.width / 2) 1 else -1)
+                increment(initialX)
                 startRepeating(initialX)
             }
 
@@ -237,7 +256,7 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
         disposable?.dispose()
         disposable = Observable.interval(initialDelay, repeatDelay, TimeUnit.MILLISECONDS)
             .takeWhile { isRepeating }.subscribe({
-                increment(if (initialX < this.width / 2) 1 else -1)
+                increment(initialX)
             }, {
                 // onError case
                 it.printStackTrace()
@@ -251,7 +270,15 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
         isRepeating = false
     }
 
-    private fun increment(change: Int) {
+    private fun increment(initialX: Float) {
+        vibrate()
+        val change: Int = if (rotation == 90f || rotation == 270f) {
+            if (initialX > this.width / 2) 1 else -1
+        } else {
+            if (initialX < this.width / 2) 1 else -1
+        }
+//        val change = if (initialX < this.width / 2) 1 else -1
+
         player!!.increment(change)
         recentChange += change
         resetRecentChange()
