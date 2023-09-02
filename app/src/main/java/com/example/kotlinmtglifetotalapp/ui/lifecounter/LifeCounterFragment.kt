@@ -2,6 +2,7 @@ package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
 
 import android.os.Bundle
+import android.view.Gravity
 
 import android.view.LayoutInflater
 
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatButton
 
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -46,8 +48,7 @@ class LifeCounterFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private val numPlayers = 2
-
+    private val numPlayers = 6
 
     private var buttons = arrayListOf<PlayerButton>()
 
@@ -106,29 +107,45 @@ class LifeCounterFragment : Fragment() {
 
         super.onResume()
 
+        for (button in buttons) {
+            if (button.parent != null) {
+                val parent = button.parent as RotateLayout
+                parent.removeAllViews()
+            }
+            generateButton(button)
+        }
+
         placeButtons()
 
     }
 
 
-    private fun generateButton(): PlayerButton {
-
-        val button = PlayerButton(requireContext(), null)
+    private fun generateButton(
+        button: PlayerButton = PlayerButton(
+            requireContext(),
+            null
+        )
+    ): PlayerButton {
 
         button.setBackgroundResource(R.drawable.rounded_corners)
 
-        return button
+        val rotateParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT, 1f
+        )
 
-//        val button = MaterialButton(this.requireContext())
-//        button.text = "test"
-//        button.id = View.generateViewId()
-//        button.rotation = 90f
-//        button.updateLayoutParams<ConstraintLayout.LayoutParams> {
-//            width = ConstraintLayout.LayoutParams.WRAP_CONTENT
-//            height = ConstraintLayout.LayoutParams.WRAP_CONTENT
-//            setMargins(8.dpToPx(), 0, 8.dpToPx(), 0)
-//        }
-//        return button
+        val rotateLayout = RotateLayout(context)
+        rotateLayout.addView(button)
+        rotateLayout.layoutParams = rotateParams
+
+        val buttonParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT
+        )
+
+        button.layoutParams = buttonParams
+
+        return button
 
     }
 
@@ -137,10 +154,13 @@ class LifeCounterFragment : Fragment() {
 
         super.onSaveInstanceState(outState)
 
-        val constraintLayout = binding.constraintLayout
+        val linearLayout = binding.linearLayout
+
+        linearLayout.removeAllViews()
 
         for (button in buttons) {
-            constraintLayout.removeView(button)
+            val parent = button.parent as RotateLayout
+            parent.removeAllViews()
         }
 
         for (player in playerStates) {
@@ -184,348 +204,202 @@ class LifeCounterFragment : Fragment() {
 
     }
 
-
-    private fun placeButtons() {
-
-        val constraintLayout = binding.constraintLayout
-
-        val constraintSet = ConstraintSet()
-
-        for ((index, button) in buttons.withIndex()) {
-
-            button.layoutParams = ConstraintLayout.LayoutParams(0, 0)
-
-            constraintLayout.addView(button, index)
-
-        }
-
-        constraintSet.clone(constraintLayout)
-
-        when (numPlayers) {
-
-            4 -> {
-                constraintSet.setRotation(buttons[0].id, 180f)
-                constraintSet.connect(buttons[0].id, ConstraintSet.START, constraintLayout.id, ConstraintSet.START, 8)
-                constraintSet.connect(buttons[0].id, ConstraintSet.TOP, constraintLayout.id, ConstraintSet.TOP, 8)
-                constraintSet.connect(buttons[0].id, ConstraintSet.BOTTOM, buttons[3].id, ConstraintSet.TOP, 8)
-                constraintSet.connect(buttons[0].id, ConstraintSet.END, buttons[1].id, ConstraintSet.START, 8)
-
-                constraintSet.connect(buttons[1].id, ConstraintSet.START, buttons[0].id, ConstraintSet.END, 8)
-                constraintSet.connect(buttons[1].id, ConstraintSet.TOP, constraintLayout.id, ConstraintSet.TOP, 8)
-                constraintSet.connect(buttons[1].id, ConstraintSet.BOTTOM, buttons[2].id, ConstraintSet.TOP, 11)
-                constraintSet.connect(buttons[1].id, ConstraintSet.END, constraintLayout.id, ConstraintSet.END, 8)
-
-                constraintSet.connect(buttons[2].id, ConstraintSet.START, buttons[3].id, ConstraintSet.END, 8)
-                constraintSet.connect(buttons[2].id, ConstraintSet.TOP, buttons[1].id, ConstraintSet.BOTTOM, 8)
-                constraintSet.connect(buttons[2].id, ConstraintSet.END, constraintLayout.id, ConstraintSet.END, 8)
-                constraintSet.connect(buttons[2].id, ConstraintSet.BOTTOM, constraintLayout.id, ConstraintSet.BOTTOM, 8)
-
-                constraintSet.setRotation(buttons[3].id, 180f)
-                constraintSet.connect(buttons[3].id, ConstraintSet.START, constraintLayout.id, ConstraintSet.START, 8)
-                constraintSet.connect(buttons[3].id, ConstraintSet.TOP, buttons[0].id, ConstraintSet.BOTTOM, 11)
-                constraintSet.connect(buttons[3].id, ConstraintSet.END, buttons[2].id, ConstraintSet.START, 8)
-                constraintSet.connect(buttons[3].id, ConstraintSet.BOTTOM, constraintLayout.id, ConstraintSet.BOTTOM, 8)
-            }
-
-            2 -> {
-
-                //constraintSet.setRotation(buttons[0].id, 90f)
-                constraintSet.connect(buttons[0].id, ConstraintSet.START, constraintLayout.id, ConstraintSet.START, 8)
-                constraintSet.connect(buttons[0].id, ConstraintSet.TOP, constraintLayout.id, ConstraintSet.TOP, 8)
-                constraintSet.connect(buttons[0].id, ConstraintSet.BOTTOM, buttons[1].id, ConstraintSet.TOP, 8)
-                constraintSet.connect(buttons[0].id, ConstraintSet.END, constraintLayout.id, ConstraintSet.END, 8)
-
-                constraintSet.setRotation(buttons[1].id, 180f)
-                constraintSet.connect(buttons[1].id, ConstraintSet.START, constraintLayout.id, ConstraintSet.START, 8)
-                constraintSet.connect(buttons[1].id, ConstraintSet.TOP, buttons[0].id, ConstraintSet.BOTTOM, 8)
-                constraintSet.connect(buttons[1].id, ConstraintSet.BOTTOM, constraintLayout.id, ConstraintSet.BOTTOM, 8)
-                constraintSet.connect(buttons[1].id, ConstraintSet.END, constraintLayout.id, ConstraintSet.END, 8)
-            }
-
-            3 -> {
-
-                constraintSet.setRotation(buttons[0].id, 180f)
-                constraintSet.connect(buttons[0].id, ConstraintSet.START, constraintLayout.id, ConstraintSet.START, 5)
-                constraintSet.connect(buttons[0].id, ConstraintSet.TOP, constraintLayout.id, ConstraintSet.TOP, 5)
-                constraintSet.connect(buttons[0].id, ConstraintSet.BOTTOM, buttons[2].id, ConstraintSet.TOP, 5)
-                constraintSet.connect(buttons[0].id, ConstraintSet.END, buttons[1].id, ConstraintSet.START, 5)
-
-                constraintSet.connect(buttons[1].id, ConstraintSet.START, buttons[0].id, ConstraintSet.END, 5)
-                constraintSet.connect(buttons[1].id, ConstraintSet.TOP, constraintLayout.id, ConstraintSet.TOP, 5)
-                constraintSet.connect(buttons[1].id, ConstraintSet.BOTTOM, buttons[2].id, ConstraintSet.TOP, 5)
-                constraintSet.connect(buttons[1].id, ConstraintSet.END, constraintLayout.id, ConstraintSet.END, 5)
-
-                constraintSet.setRotation(buttons[2].id, 270f)
-                constraintSet.connect(buttons[2].id, ConstraintSet.START, constraintLayout.id, ConstraintSet.START, 5)
-                constraintSet.connect(buttons[2].id, ConstraintSet.TOP, buttons[1].id, ConstraintSet.BOTTOM, 5)
-                constraintSet.connect(buttons[2].id, ConstraintSet.BOTTOM, constraintLayout.id, ConstraintSet.BOTTOM, 5)
-                constraintSet.connect(buttons[2].id, ConstraintSet.END, constraintLayout.id, ConstraintSet.END, 5)
-
-
-            }
-
+    //    private fun placeButtons() {
+//
+//        val vLayout = binding.linearLayout
+//        var rotateLayout: RotateLayout
+//
+//        when (numPlayers) {
+//            2 -> {
+//                rotateLayout = buttons[0].parent as RotateLayout
+//                rotateLayout.angle = 90
+//                vLayout.addView(rotateLayout)
+//                rotateLayout = buttons[1].parent as RotateLayout
+//                rotateLayout.angle = 270
+//                vLayout.addView(rotateLayout)
+//            }
+//            3 -> {
+//                val hLayout = LinearLayout(context)
+//                hLayout.orientation = LinearLayout.HORIZONTAL
+//                val hLayoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT, 0.67f
+//                )
+//                hLayout.layoutParams = hLayoutParams
+//
+//                rotateLayout = buttons[0].parent as RotateLayout
+//                rotateLayout.angle = 180
+//                hLayout.addView(rotateLayout)
+//                rotateLayout = buttons[1].parent as RotateLayout
+//                hLayout.addView(rotateLayout)
+//                vLayout.addView(hLayout)
+//                rotateLayout = buttons[2].parent as RotateLayout
+//                rotateLayout.angle = 270
+//                vLayout.addView(rotateLayout)
+//            }
 //            4 -> {
+//                var hLayout = LinearLayout(context)
+//                hLayout.orientation = LinearLayout.HORIZONTAL
+//                var hLayoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
+//                )
+//                hLayout.layoutParams = hLayoutParams
 //
-//                val params1 = buttons[0].layoutParams as ConstraintLayout.LayoutParams
+//                rotateLayout = buttons[0].parent as RotateLayout
+//                rotateLayout.angle = 180
+//                hLayout.addView(rotateLayout)
+//                rotateLayout = buttons[1].parent as RotateLayout
+//                hLayout.addView(rotateLayout)
+//                vLayout.addView(hLayout)
 //
-//                buttons[0].rotation = 180f
+//                hLayout = LinearLayout(context)
+//                hLayout.orientation = LinearLayout.HORIZONTAL
+//                hLayoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
+//                )
+//                hLayout.layoutParams = hLayoutParams
 //
-//                params1.width = (constraintLayout.width / 2.1).toInt()
+//                rotateLayout = buttons[3].parent as RotateLayout
+//                rotateLayout.angle = 180
+//                hLayout.addView(rotateLayout)
+//                rotateLayout = buttons[2].parent as RotateLayout
+//                hLayout.addView(rotateLayout)
+//                vLayout.addView(hLayout)
+//            }
+//            5 -> {
+//                var hLayout = LinearLayout(context)
+//                hLayout.orientation = LinearLayout.HORIZONTAL
+//                var hLayoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
+//                )
+//                hLayout.layoutParams = hLayoutParams
 //
-//                params1.height = (constraintLayout.height / 2.1).toInt()
+//                rotateLayout = buttons[0].parent as RotateLayout
+//                rotateLayout.angle = 180
+//                hLayout.addView(rotateLayout)
+//                rotateLayout = buttons[1].parent as RotateLayout
+//                hLayout.addView(rotateLayout)
+//                vLayout.addView(hLayout)
 //
-//                params1.startToStart = PARENT_ID
+//                hLayout = LinearLayout(context)
+//                hLayout.orientation = LinearLayout.HORIZONTAL
+//                hLayoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
+//                )
+//                hLayout.layoutParams = hLayoutParams
 //
-//                params1.topToTop = PARENT_ID
+//                rotateLayout = buttons[3].parent as RotateLayout
+//                rotateLayout.angle = 180
+//                hLayout.addView(rotateLayout)
+//                rotateLayout = buttons[2].parent as RotateLayout
+//                hLayout.addView(rotateLayout)
+//                vLayout.addView(hLayout)
 //
-//                params1.bottomToTop = buttons[3].id
+//                rotateLayout = buttons[4].parent as RotateLayout
+//                rotateLayout.angle = 270
+//                val rotateLayoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT, 1.15f
+//                )
+//                rotateLayout.layoutParams = rotateLayoutParams
+//                vLayout.addView(rotateLayout)
+//            }
+//            6 -> {
+//                var hLayout = LinearLayout(context)
+//                hLayout.orientation = LinearLayout.HORIZONTAL
+//                var hLayoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
+//                )
+//                hLayout.layoutParams = hLayoutParams
 //
-//                params1.endToStart = buttons[1].id
+//                rotateLayout = buttons[0].parent as RotateLayout
+//                rotateLayout.angle = 180
+//                hLayout.addView(rotateLayout)
+//                rotateLayout = buttons[1].parent as RotateLayout
+//                hLayout.addView(rotateLayout)
+//                vLayout.addView(hLayout)
 //
+//                hLayout = LinearLayout(context)
+//                hLayout.orientation = LinearLayout.HORIZONTAL
+//                hLayoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
+//                )
+//                hLayout.layoutParams = hLayoutParams
 //
-//                val params2 = buttons[1].layoutParams as ConstraintLayout.LayoutParams
+//                rotateLayout = buttons[3].parent as RotateLayout
+//                rotateLayout.angle = 180
+//                hLayout.addView(rotateLayout)
+//                rotateLayout = buttons[2].parent as RotateLayout
+//                hLayout.addView(rotateLayout)
+//                vLayout.addView(hLayout)
 //
-//                params2.width = (constraintLayout.width / 2.1).toInt()
+//                hLayout = LinearLayout(context)
+//                hLayout.orientation = LinearLayout.HORIZONTAL
+//                hLayoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
+//                )
+//                hLayout.layoutParams = hLayoutParams
 //
-//                params2.height = (constraintLayout.height / 2.1).toInt()
-//
-//                params2.startToEnd = buttons[0].id
-//
-//                params2.topToTop = PARENT_ID
-//
-//                params2.bottomToTop = buttons[2].id
-//
-//                params2.endToEnd = PARENT_ID
-//
-//
-//                val params3 = buttons[2].layoutParams as ConstraintLayout.LayoutParams
-//
-//                params3.width = (constraintLayout.width / 2.1).toInt()
-//
-//                params3.height = (constraintLayout.height / 2.1).toInt()
-//
-//                params3.startToEnd = buttons[3].id
-//
-//                params3.topToBottom = buttons[1].id
-//
-//                params3.endToEnd = PARENT_ID
-//
-//                params3.bottomToBottom = PARENT_ID
-//
-//
-//                val params4 = buttons[3].layoutParams as ConstraintLayout.LayoutParams
-//
-//                buttons[3].rotation = 180f
-//
-//                params4.width = (constraintLayout.width / 2.1).toInt()
-//
-//                params4.height = (constraintLayout.height / 2.1).toInt()
-//
-//                params4.startToStart = PARENT_ID
-//
-//                params4.topToBottom = buttons[0].id
-//
-//                params4.endToStart = buttons[2].id
-//
-//                params4.bottomToBottom = PARENT_ID
+//                rotateLayout = buttons[5].parent as RotateLayout
+//                rotateLayout.angle = 180
+//                hLayout.addView(rotateLayout)
+//                rotateLayout = buttons[4].parent as RotateLayout
+//                hLayout.addView(rotateLayout)
+//                vLayout.addView(hLayout)
 //
 //            }
-
-            5 -> {
-
-                val params1 = buttons[0].layoutParams as ConstraintLayout.LayoutParams
-
-                buttons[0].rotation = 180f
-
-                params1.width = (constraintLayout.width / 2.05).toInt()
-
-                params1.height = (constraintLayout.height / 3.03).toInt()
-
-                params1.startToStart = PARENT_ID
-
-                params1.topToBottom = buttons[4].id
-
-                params1.bottomToTop = buttons[3].id
-
-                params1.endToStart = buttons[1].id
-
-
-                val params2 = buttons[1].layoutParams as ConstraintLayout.LayoutParams
-
-                params2.width = (constraintLayout.width / 2.05).toInt()
-
-                params2.height = (constraintLayout.height / 3.03).toInt()
-
-                params2.startToEnd = buttons[0].id
-
-                params2.topToBottom = buttons[4].id
-
-                params2.bottomToTop = buttons[2].id
-
-                params2.endToEnd = PARENT_ID
-
-
-                val params3 = buttons[2].layoutParams as ConstraintLayout.LayoutParams
-
-                params3.width = (constraintLayout.width / 2.05).toInt()
-
-                params3.height = (constraintLayout.height / 3.03).toInt()
-
-                params3.startToEnd = buttons[3].id
-
-                params3.topToBottom = buttons[1].id
-
-                params3.endToEnd = PARENT_ID
-
-                params3.bottomToBottom = PARENT_ID
-
-
-                val params4 = buttons[3].layoutParams as ConstraintLayout.LayoutParams
-
-                buttons[3].rotation = 180f
-
-                params4.width = (constraintLayout.width / 2.05).toInt()
-
-                params4.height = (constraintLayout.height / 3.03).toInt()
-
-                params4.startToStart = PARENT_ID
-
-                params4.topToBottom = buttons[0].id
-
-                params4.endToStart = buttons[2].id
-
-                params4.bottomToBottom = PARENT_ID
-
-
-                val params5 = buttons[4].layoutParams as ConstraintLayout.LayoutParams
-
-                buttons[4].rotation = 90f
-
-                params3.width = (constraintLayout.height / 3.03).toInt()
-
-                params3.height = (constraintLayout.width / 2.05).toInt()
-
-                params3.startToStart = PARENT_ID
-
-                params3.topToTop = PARENT_ID
-
-                params3.endToEnd = PARENT_ID
-
-                params3.bottomToTop = buttons[0].id
-
-            }
-
-            6 -> {
-
-                val params1 = buttons[0].layoutParams as ConstraintLayout.LayoutParams
-
-                buttons[0].rotation = 180f
-
-                params1.width = (constraintLayout.width / 2.05).toInt()
-
-                params1.height = (constraintLayout.height / 4.03).toInt()
-
-                params1.startToStart = PARENT_ID
-
-                params1.topToBottom = buttons[4].id
-
-                params1.bottomToTop = buttons[3].id
-
-                params1.endToStart = buttons[1].id
-
-
-                val params2 = buttons[1].layoutParams as ConstraintLayout.LayoutParams
-
-                params2.width = (constraintLayout.width / 2.05).toInt()
-
-                params2.height = (constraintLayout.height / 4.03).toInt()
-
-                params2.startToEnd = buttons[0].id
-
-                params2.topToBottom = buttons[4].id
-
-                params2.bottomToTop = buttons[2].id
-
-                params2.endToEnd = PARENT_ID
-
-
-                val params3 = buttons[2].layoutParams as ConstraintLayout.LayoutParams
-
-                params3.width = (constraintLayout.width / 2.05).toInt()
-
-                params3.height = (constraintLayout.height / 4.03).toInt()
-
-                params3.startToEnd = buttons[3].id
-
-                params3.topToBottom = buttons[1].id
-
-                params3.endToEnd = PARENT_ID
-
-                params3.bottomToBottom = PARENT_ID
-
-
-                val params4 = buttons[3].layoutParams as ConstraintLayout.LayoutParams
-
-                buttons[3].rotation = 180f
-
-                params4.width = (constraintLayout.width / 2.05).toInt()
-
-                params4.height = (constraintLayout.height / 4.03).toInt()
-
-                params4.startToStart = PARENT_ID
-
-                params4.topToBottom = buttons[0].id
-
-                params4.endToStart = buttons[2].id
-
-                params4.bottomToBottom = PARENT_ID
-
-
-                val params5 = buttons[4].layoutParams as ConstraintLayout.LayoutParams
-
-                buttons[4].rotation = 90f
-
-                params3.width = (constraintLayout.height / 4.03).toInt()
-
-                params3.height = (constraintLayout.width / 2.05).toInt()
-
-                params3.startToStart = PARENT_ID
-
-                params3.topToTop = PARENT_ID
-
-                params3.endToEnd = PARENT_ID
-
-                params3.bottomToTop = buttons[0].id
-
-
-                val params6 = buttons[5].layoutParams as ConstraintLayout.LayoutParams
-
-                buttons[5].rotation = 270f
-
-                params3.width = (constraintLayout.height / 4.03).toInt()
-
-                params3.height = (constraintLayout.width / 2.05).toInt()
-
-                params3.startToStart = PARENT_ID
-
-                params3.topToBottom = buttons[3].id
-
-                params3.endToEnd = PARENT_ID
-
-                params3.bottomToBottom = PARENT_ID
-
-            }
-
+//        }
+//    }
+    private fun placeButtons() {
+        val vLayout = binding.linearLayout
+
+        val angleConfigurations = when (numPlayers) {
+            2 -> arrayOf(90, 270)
+            3 -> arrayOf(180, 0, 270)
+            4 -> arrayOf(180, 0, 180, 0)
+            5 -> arrayOf(180, 0, 180, 0, 270)
+            6 -> arrayOf(180, 0, 180, 0, 180, 0)
+            else -> return // Handle unsupported numPlayers value
         }
 
-        constraintSet.applyTo(constraintLayout)
+        val weights = when (numPlayers) {
+            2 -> arrayOf(1f)
+            3 -> arrayOf(1f,1.67f)
+            4 -> arrayOf(1f,1f)
+            5 -> arrayOf(1f,1f,1.15f)
+            6 -> arrayOf(1f,1f,1f)
+            else -> return // Handle unsupported numPlayers value
+        }
 
+        for (i in 0 until numPlayers step 2) {
+            val hLayout = LinearLayout(context)
+            val weight = weights[(i + 1) / 2]
+            hLayout.orientation = LinearLayout.HORIZONTAL
+            val hLayoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                1f / numPlayers * weight
+            )
+            hLayout.layoutParams = hLayoutParams
+            if (numPlayers == 2) {
+                hLayout.orientation = LinearLayout.VERTICAL
+            }
+
+            for (j in i until minOf(i + 2, numPlayers)) {
+                val angle = angleConfigurations[j]
+                val button = buttons[j]
+                val rotateLayout = button.parent as RotateLayout
+                rotateLayout.angle = angle
+                hLayout.addView(rotateLayout)
+            }
+            vLayout.addView(hLayout)
+        }
     }
-
-    private fun Int.dpToPx(): Int {
-        val scale = resources.displayMetrics.density
-        return (this * scale + 0.5f).toInt()
-    }
-
-
 }

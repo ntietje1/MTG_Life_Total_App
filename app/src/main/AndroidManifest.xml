@@ -17,7 +17,7 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.MaterialComponents.NoActionBar"
             android:screenOrientation="portrait"
-            tools:targetApi="33">
+            >
         <activity
                 android:name=".MainActivity"
                 android:exported="true">

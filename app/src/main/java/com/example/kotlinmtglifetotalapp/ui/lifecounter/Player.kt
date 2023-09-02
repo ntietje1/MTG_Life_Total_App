@@ -6,10 +6,16 @@ import android.os.Parcelable
 
 
 data class Player(
-    var life: Int,
-    var playerNum: Int,
-    var playerColor: Int
+    private var _life: Int,
+    private val playerNum: Int,
+    private val originalPlayerColor: Int
 ): Parcelable {
+
+    val life: Int
+        get() = _life
+
+    val playerColor: Int
+        get() = if (life <= 0) Color.GRAY else originalPlayerColor
 
     companion object CREATOR : Parcelable.Creator<Player>{
         private var currentPlayers: Int = 0
@@ -53,13 +59,13 @@ data class Player(
     }
 
     fun increment(value: Int) {
-        this.life += value
+        this._life += value
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(life)
         parcel.writeInt(playerNum)
-        parcel.writeInt(playerColor)
+        parcel.writeInt(originalPlayerColor)
     }
 
     override fun describeContents(): Int {

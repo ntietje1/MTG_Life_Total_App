@@ -7,5 +7,11 @@
     <attr name="colorOnCustomColor1Container" format="color" />
     <attr name="harmonizeCustomColor1" format="boolean" />
 
+    <declare-styleable name="RotateLayout">
+        <!-- Child view of this layout will be rotated by this angle. -->
+        <attr name="angle" format="integer"/>
+    </declare-styleable>
+
+
 
 </resources>

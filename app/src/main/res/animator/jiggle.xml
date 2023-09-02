@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
-        android:interpolator="@android:anim/overshoot_interpolator"
-        android:duration="250">
-    <propertyValuesHolder android:propertyName="scaleX" android:valueTo="1.006" android:valueFrom="1.0"/>
-    <propertyValuesHolder android:propertyName="scaleY" android:valueTo="1.006" android:valueFrom="1.0"/>
-</objectAnimator>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <objectAnimator
+            android:interpolator="@android:anim/overshoot_interpolator"
+            android:duration="125">
+        <propertyValuesHolder android:propertyName="scaleX" android:valueFrom="0.965" android:valueTo="0.975"/>
+        <propertyValuesHolder android:propertyName="scaleY" android:valueFrom="0.965" android:valueTo="0.975"/>
+    </objectAnimator>
+
+
+    <objectAnimator
+            android:interpolator="@android:anim/accelerate_interpolator"
+            android:duration="175">
+        <propertyValuesHolder android:propertyName="scaleX" android:valueFrom="0.975" android:valueTo="0.970"/>
+        <propertyValuesHolder android:propertyName="scaleY" android:valueFrom="0.975" android:valueTo="0.970"/>
+    </objectAnimator>
+
+</set>
+

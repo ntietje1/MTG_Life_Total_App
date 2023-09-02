@@ -1,8 +1,9 @@
 package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
-
 import android.animation.AnimatorInflater
+import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Canvas
@@ -20,27 +21,20 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.AttributeSet
 import android.view.MotionEvent
-import android.view.animation.DecelerateInterpolator
-import android.widget.Button
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.AnticipateInterpolator
+import android.view.animation.OvershootInterpolator
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withMatrix
 import com.example.kotlinmtglifetotalapp.R
-import com.google.android.material.button.MaterialButton
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import java.util.concurrent.TimeUnit
-
-
-/**
- * Custom Button class that has extended functionality and multiple text views
- * TODO: add commander damage
- * TODO: add settings
- * TODO: add selector at beginning
- * TODO: add dice roll/coin flip
- */
 
 class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(context, attrs) {
 
@@ -52,42 +46,33 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
 
     private var vibration = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
 
-    private var disposable: Disposable? = null
-
     private var isRepeating = false
-
+    private var lastEventUp = false
+    private var firstJiggle = false
+    private var secondJiggle = false
     private val initialDelay: Long = 500
-
     private val repeatDelay: Long = 100
-
     private var recentChange: Int = 0
     private val handler: Handler = Handler(Looper.getMainLooper())
+    private var disposable: Disposable? = null
     private val resetRecentChangeRunnable = Runnable {
         recentChange = 0
-        invalidate()
     }
 
     private val paintSmall: Paint
-        get() {
-            return Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                textSize = (height / 10f)
-                textAlign = Paint.Align.CENTER
-                color = Color.WHITE
-            }
+        get() = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = (height / 15f) + (width / 30f)
+            textAlign = Paint.Align.CENTER
+            color = Color.WHITE
         }
 
     private val paintLarge: Paint
-        get() {
-            return Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                textSize = (height / 3.25f)
-                textAlign = Paint.Align.CENTER
-                color = Color.WHITE
-                typeface = resources.getFont(R.font.robotobold)
-            }
+        get() = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = (height / 5f) + (width / 4f)
+            textAlign = Paint.Align.CENTER
+            color = Color.WHITE
+            typeface = resources.getFont(R.font.robotobold)
         }
-
-    private val heartMap =
-        AppCompatResources.getDrawable(context, R.drawable.heart_solid_icon)?.toBitmap()
 
     private val rotatedMatrix
         get(): Matrix {
@@ -96,105 +81,103 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
             }
         }
 
-    private val centerX
-        get(): Float {
-            return width / 2f
-        }
-    private val centerY
-        get(): Float {
-            return height / 2f
-        }
-    private val topLineY
-        get(): Float {
-            return (paintSmall.descent() - paintSmall.ascent()) * 2.8f
-        }
-    private val midLineY
-        get(): Float {
-            return centerY + (paintLarge.descent() - paintLarge.ascent()) * 0.3f
-        }
-    private val botLineY
-        get(): Float {
-            return height * 0.75f
-        }
+    private val heartMap = AppCompatResources.getDrawable(context, R.drawable.heart_solid_icon)?.toBitmap()
 
-    private val heartX
-        get() : Float {
-            return centerX - heartMap!!.width / 2
-        }
+    private val centerX: Float
+        get() = width / 2f
 
-    private val heartY
-        get() : Float {
-            return botLineY - heartMap!!.height
-        }
+    private val centerY: Float
+        get() = height / 2f
+
+    private val topLineY: Float
+        get() = centerY - height * 0.1f - width / 10
+
+    private val midLineY: Float
+        get() = centerY * 0.675f + (paintLarge.descent() - paintLarge.ascent()) - width / 5.25f
+
+    private val dpHeight: Float
+        get() = context.resources.displayMetrics.density / height
+
+    private val dpWidth: Float
+        get() = context.resources.displayMetrics.density / width
 
     private var firstDraw = true
 
     private lateinit var objectAnimator: ObjectAnimator
+
+    private val jiggleAnimator: ObjectAnimator
+        get() = ObjectAnimator.ofPropertyValuesHolder(
+    this,
+    PropertyValuesHolder.ofFloat("scaleX", 1.0075f - dpWidth * 4, 1f - dpWidth * 4),
+    PropertyValuesHolder.ofFloat("scaleY", 1.0075f - dpHeight * 4, 1f - dpHeight * 4)
+    ).apply {
+        interpolator = AccelerateInterpolator()
+        duration = 50
+    }
+
 
     private fun setBackground() {
         val rippleDrawable = background as RippleDrawable
         val gradientDrawable =
             rippleDrawable.findDrawableByLayerId(android.R.id.background) as GradientDrawable
 
-        // can swap color with array of colors
         val colorStateListRipple =
-            ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 70))
+            ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 60))
         rippleDrawable.setColor(colorStateListRipple)
 
         val colorStateListBackground = ColorStateList.valueOf(player!!.playerColor)
         gradientDrawable.color = colorStateListBackground
+        invalidate()
     }
 
-    private fun init() {
-
+    init {
     }
 
     private fun slideIn() {
         if (firstDraw) {
             jiggle()
-            if (rotation < 180f) {
-                this.translationX = width.toFloat()
-                objectAnimator = ObjectAnimator.ofFloat(this, "translationX", width.toFloat(), 0f)
-            } else {
-                this.translationX = -width.toFloat()
-                objectAnimator = ObjectAnimator.ofFloat(this, "translationX", -width.toFloat(), 0f)
-            }
+            val translationXValue = if (rotation < 180f) width.toFloat() else -width.toFloat()
+            this.translationX = translationXValue
+            objectAnimator = ObjectAnimator.ofFloat(this, "translationX", translationXValue, 0f)
 
             objectAnimator.duration = 1000
-            objectAnimator.interpolator = DecelerateInterpolator(1.5f)
+            objectAnimator.interpolator = AccelerateDecelerateInterpolator()
             objectAnimator.start()
             firstDraw = false
         }
     }
 
     private fun jiggle() {
-        objectAnimator = AnimatorInflater.loadAnimator(context, R.animator.jiggle) as ObjectAnimator
-        objectAnimator.target = this
-        objectAnimator.start()
-    }
-
-    //TODO: maybe problem causer?
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if (rotation == 90f || rotation == 270f) {
-            println("vertical button measured")
-            setMeasuredDimension(measuredHeight, measuredWidth)
-            super.onMeasure(heightMeasureSpec, widthMeasureSpec)
-        } else {
-            println("sideways button measured")
-            setMeasuredDimension(measuredWidth, measuredHeight)
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        if (firstJiggle) {
+            firstJiggle = false
+            secondJiggle = true
+        }
+        else if (secondJiggle) {
+            secondJiggle = false
+            return
+        }
+        else if (lastEventUp) {
+            return
         }
 
+        jiggleAnimator.start()
+        val time = System.nanoTime() / 1_000_000_00
+        println("jiggle $time")
     }
 
-    override fun onDraw(canvas: Canvas) {
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val isVertical = rotation == 90f || rotation == 270f
+        setMeasuredDimension(if (isVertical) measuredHeight else measuredWidth, if (isVertical) measuredWidth else measuredHeight)
+        super.onMeasure(if (isVertical) heightMeasureSpec else widthMeasureSpec, if (isVertical) widthMeasureSpec else heightMeasureSpec)
+    }
+
+    override fun draw(canvas: Canvas) {
         slideIn()
         with(canvas) {
-            super.onDraw(this)
+            super.draw(this)
             save()
             rotate(rotation, centerX, centerY)
             withMatrix(rotatedMatrix) {
-                // Display recent change if it's not zero
                 if (recentChange != 0) {
                     var recentChangeString = if (recentChange > 0) "+" else ""
                     recentChangeString += recentChange.toString()
@@ -207,7 +190,11 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
                 }
                 drawText(player.toString(), centerX, topLineY, paintSmall)
                 drawText(player!!.life.toString(), centerX, midLineY, paintLarge)
-                drawBitmap(heartMap!!, heartX, heartY, paint)
+
+                val heartIconLeft = centerX - heartMap!!.width.toFloat() / 2
+                val heartIconTop = midLineY + paintLarge.descent() - height / 20
+
+                drawBitmap(heartMap, heartIconLeft, heartIconTop, paint)
             }
             restore()
         }
@@ -217,12 +204,15 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
         }
     }
 
+
     private fun vibrate() {
+
         vibration.vibrate(CombinedVibration.createParallel(createPredefined(VibrationEffect.EFFECT_TICK)))
     }
 
     override fun performClick(): Boolean {
-        jiggle()
+        firstJiggle = true
+        secondJiggle = false
         return super.performClick()
     }
 
@@ -234,11 +224,13 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
                 performClick()
                 increment(initialX)
                 startRepeating(initialX)
+                lastEventUp = false
             }
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 stopRepeating()
                 resetRecentChange()
+                lastEventUp = true
             }
 
             MotionEvent.ACTION_MOVE -> {
@@ -247,6 +239,7 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
                 if (isRepeating && !isInButtonBounds) {
                     stopRepeating()
                 }
+
             }
         }
         return super.onTouchEvent(event)
@@ -258,7 +251,6 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
             .takeWhile { isRepeating }.subscribe({
                 increment(initialX)
             }, {
-                // onError case
                 it.printStackTrace()
             })
         isRepeating = true
@@ -271,18 +263,18 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
     }
 
     private fun increment(initialX: Float) {
+        println("increment")
         vibrate()
         val change: Int = if (rotation == 90f || rotation == 270f) {
             if (initialX > this.width / 2) 1 else -1
         } else {
             if (initialX < this.width / 2) 1 else -1
         }
-//        val change = if (initialX < this.width / 2) 1 else -1
 
         player!!.increment(change)
         recentChange += change
         resetRecentChange()
-        invalidate()
+        setBackground()
     }
 
     private fun resetRecentChange() {

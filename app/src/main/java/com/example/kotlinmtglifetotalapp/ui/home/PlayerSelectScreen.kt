@@ -1,126 +1,197 @@
 package com.example.kotlinmtglifetotalapp.ui.home
 
+
+import android.animation.AnimatorInflater
+import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
+import android.util.SparseArray
 import android.view.MotionEvent
-import android.view.SurfaceHolder
-import android.view.SurfaceView
-import java.util.concurrent.ConcurrentHashMap
+import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
+import android.view.animation.OvershootInterpolator
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.animation.core.RepeatMode
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.util.keyIterator
+import com.example.kotlinmtglifetotalapp.R
+import kotlin.random.Random
 
-class PlayerSelectScreen(context: Context?, attrs: AttributeSet?) : SurfaceView(context, attrs),
-    SurfaceHolder.Callback {
-    private val surfaceHolder: SurfaceHolder = holder
-    private val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val points: ConcurrentHashMap<Int, MotionEvent> = ConcurrentHashMap()
-    private var renderingThread: Thread? = null // Custom thread for rendering
-    private var isRunning: Boolean = false // Flag to indicate whether the app is running or paused
 
-    private var availableColors: MutableList<Int> = mutableListOf(
-        Color.parseColor("#F75FA8"),
-        Color.parseColor("#F75F5F"),
-        Color.parseColor("#F7C45F"),
-        Color.parseColor("#92F75F"),
-        Color.parseColor("#5FEAF7"),
-        Color.parseColor("#625FF7"),
-        Color.parseColor("#C25FF7"),
-    )
+class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
+    View(context, attrs) {
+    private val activePointers: SparseArray<PointT> = SparseArray()
+    private val touchPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 15f
+    }
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = 20f
+        color = Color.WHITE
+    }
 
-    init {
-        paint.color = Color.WHITE
-        paint.style = Paint.Style.FILL
-        surfaceHolder.addCallback(this)
+    private val rand = Random(System.currentTimeMillis())
 
+    private var lastNewClick = System.currentTimeMillis()
+
+    private val clickHandler = Handler(Looper.getMainLooper())
+
+    private val selectionRunnable = Runnable {
+
+        val randomIndex = rand.nextInt(activePointers.size())
+        val selectedId = activePointers.keyAt(randomIndex)
+
+        for (id in activePointers.keyIterator()) {
+            if (id == selectedId) {
+                selectionAnimator(id).start()
+            } else {
+                popInAnimator(id).reverse()
+            }
+        }
+        clickHandler.removeCallbacks(pulseRunnable)
 
     }
 
-    override fun performClick(): Boolean {
-        paint.color = availableColors.random()
+    private val pulseAnimator = ValueAnimator.ofFloat(1.0f, 1.25f, 1.0f).apply {
+        addUpdateListener { animation ->
+            run {
+                for (id in activePointers.keyIterator()) {
+                    if (activePointers[id] != null) {
+                        activePointers[id].size = animation.animatedValue as Float
+                    }
+                }
+                invalidate()
+            }
+        }
+        duration = 1000
+        interpolator = DecelerateInterpolator(0.8f)
+    }
 
+    private val pulseRunnable = object : Runnable {
+        override fun run() {
+            pulseAnimator.start()
+            invalidate()
+            clickHandler.postDelayed(this, PULSE_FREQ)
+        }
+    }
+
+    init {
+
+    }
+
+
+    override fun performClick(): Boolean {
+        lastNewClick = System.currentTimeMillis()
         return super.performClick()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        synchronized(points) {
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN,  -> {
-                    performClick()
-                    // Update the points data with new touch events
-                    for (i in 0 until event.pointerCount) {
-                        val pointerId = event.getPointerId(i)
-                        points[pointerId] = MotionEvent.obtain(event)
+        val pointerIndex = event.actionIndex
+        val pointerId = event.getPointerId(pointerIndex)
+
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                performClick()
+                val p = PointT(event.getX(pointerIndex), event.getY(pointerIndex))
+                activePointers.put(pointerId, p)
+                popInAnimator(pointerId).start()
+
+                clickHandler.removeCallbacks(selectionRunnable)
+                clickHandler.postDelayed(selectionRunnable, SELECTION_DELAY)
+
+                clickHandler.removeCallbacks(pulseRunnable)
+                clickHandler.postDelayed(pulseRunnable, PULSE_DELAY)
+
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                // a pointer was moved
+                var i = 0
+                while (i < event.pointerCount) {
+                    with(activePointers[event.getPointerId(i)]) {
+                        if (this != null) {
+                            x = event.getX(i)
+                            y = event.getY(i)
+                        }
                     }
+                    i++
                 }
+            }
 
-                MotionEvent.ACTION_MOVE -> {
-                    // Update the points data for moved touch events
-                    for (i in 0 until event.pointerCount) {
-                        val pointerId = event.getPointerId(i)
-                        points[pointerId] = MotionEvent.obtain(event)
-                    }
-                }
+            MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                activePointers.remove(pointerId)
 
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> {
-                    // Remove lifted pointers from the points data
-                    val pointerId = event.getPointerId(event.actionIndex)
-                    points.remove(pointerId)
-                }
-
-                else -> {
+                if (event.actionMasked != MotionEvent.ACTION_POINTER_UP) {
+                    clickHandler.removeCallbacks(selectionRunnable)
+                    clickHandler.removeCallbacks(pulseRunnable)
                 }
             }
         }
+        invalidate()
         return true
     }
 
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        isRunning = true // App is running, set the flag to true
-        renderingThread = Thread(RenderRunnable())
-        renderingThread?.start()
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+
+
+        // draw all pointers
+        val size = activePointers.size()
+        var i = 0
+        while (i < size) {
+            val point = activePointers.valueAt(i)
+            val id = activePointers.keyAt(i)
+            val x = point.nextX
+            val y = point.nextY
+//            canvas.drawBitmap(circleBitmap, x, y, touchPaint)
+            canvas.drawCircle(
+                x, y, 125f * activePointers[id].size, touchPaint
+            )
+            i++
+        }
+        canvas.drawText("Total pointers: " + activePointers.size(), 10f, 40f, textPaint)
     }
 
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        // Surface properties changed, if necessary, handle changes here.
-    }
-
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
-        isRunning = false // App is paused or destroyed, set the flag to false
-        var retry = true
-        renderingThread?.interrupt()
-        while (retry) {
-            try {
-                renderingThread?.join()
-                retry = false
-            } catch (e: InterruptedException) {
-                // Retry until the thread is properly shut down.
+    private fun popInAnimator(id: Int): ValueAnimator {
+        return ValueAnimator.ofFloat(0.0f, 1.0f).apply {
+            addUpdateListener { animation ->
+                if (activePointers[id] != null) {
+                    activePointers[id].size = animation.animatedValue as Float
+                    invalidate()
+                }
             }
+            duration = 750
+            interpolator = OvershootInterpolator(2.5f)
         }
     }
 
-    inner class RenderRunnable : Runnable {
-        override fun run() {
-            while (isRunning && !Thread.currentThread().isInterrupted) {
-                if (points.size == 0) {
-                    continue
+    private fun selectionAnimator(id: Int): ValueAnimator {
+        return ValueAnimator.ofFloat(1.0f, 2.0f).apply {
+            addUpdateListener { animation ->
+                run {
+                    activePointers[id].size = animation.animatedValue as Float
+                    invalidate()
                 }
-                val canvas = surfaceHolder.lockCanvas() ?: continue
-                synchronized(points) {
-                    canvas.drawColor(Color.BLACK)
-                    // Draw the circles based on the points data
-                    for (pointerId in points.keys) {
-                        val event = points[pointerId] ?: continue
-                        canvas.drawCircle(
-                            event.getX(event.findPointerIndex(pointerId)),
-                            event.getY(event.findPointerIndex(pointerId)),
-                            100f,
-                            paint
-                        )
-                    }
-                }
-                surfaceHolder.unlockCanvasAndPost(canvas)
             }
+            duration = 1000
+            interpolator = OvershootInterpolator(1.25f)
         }
+    }
+
+
+    companion object {
+        private const val SELECTION_DELAY = 5500L
+        private const val PULSE_DELAY = 2000L
+        private const val PULSE_FREQ = 1250L
+
     }
 }
-
