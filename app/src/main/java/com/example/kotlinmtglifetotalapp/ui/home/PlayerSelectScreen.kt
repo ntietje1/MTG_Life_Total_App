@@ -26,8 +26,7 @@ import com.example.kotlinmtglifetotalapp.R
 import kotlin.random.Random
 
 
-class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
-    View(context, attrs) {
+class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     private val activePointers: SparseArray<PointT> = SparseArray()
     private val touchPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
@@ -46,7 +45,6 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
     private val clickHandler = Handler(Looper.getMainLooper())
 
     private val selectionRunnable = Runnable {
-
         val randomIndex = rand.nextInt(activePointers.size())
         val selectedId = activePointers.keyAt(randomIndex)
 
@@ -58,7 +56,14 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
             }
         }
         clickHandler.removeCallbacks(pulseRunnable)
+    }
 
+    private val pulseRunnable = object : Runnable {
+        override fun run() {
+            pulseAnimator.start()
+            invalidate()
+            clickHandler.postDelayed(this, PULSE_FREQ)
+        }
     }
 
     private val pulseAnimator = ValueAnimator.ofFloat(1.0f, 1.25f, 1.0f).apply {
@@ -76,18 +81,9 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
         interpolator = DecelerateInterpolator(0.8f)
     }
 
-    private val pulseRunnable = object : Runnable {
-        override fun run() {
-            pulseAnimator.start()
-            invalidate()
-            clickHandler.postDelayed(this, PULSE_FREQ)
-        }
-    }
-
     init {
 
     }
-
 
     override fun performClick(): Boolean {
         lastNewClick = System.currentTimeMillis()
@@ -114,7 +110,6 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
             }
 
             MotionEvent.ACTION_MOVE -> {
-                // a pointer was moved
                 var i = 0
                 while (i < event.pointerCount) {
                     with(activePointers[event.getPointerId(i)]) {
@@ -129,7 +124,6 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
 
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 activePointers.remove(pointerId)
-
                 if (event.actionMasked != MotionEvent.ACTION_POINTER_UP) {
                     clickHandler.removeCallbacks(selectionRunnable)
                     clickHandler.removeCallbacks(pulseRunnable)
@@ -143,8 +137,6 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-
-        // draw all pointers
         val size = activePointers.size()
         var i = 0
         while (i < size) {
@@ -152,10 +144,8 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
             val id = activePointers.keyAt(i)
             val x = point.nextX
             val y = point.nextY
-//            canvas.drawBitmap(circleBitmap, x, y, touchPaint)
-            canvas.drawCircle(
-                x, y, 125f * activePointers[id].size, touchPaint
-            )
+
+            canvas.drawCircle(x, y, 125f * activePointers[id].size, touchPaint)
             i++
         }
         canvas.drawText("Total pointers: " + activePointers.size(), 10f, 40f, textPaint)
@@ -186,7 +176,6 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) :
             interpolator = OvershootInterpolator(1.25f)
         }
     }
-
 
     companion object {
         private const val SELECTION_DELAY = 5500L
