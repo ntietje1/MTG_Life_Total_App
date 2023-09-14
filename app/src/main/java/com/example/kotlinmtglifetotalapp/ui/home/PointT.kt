@@ -1,14 +1,20 @@
 package com.example.kotlinmtglifetotalapp.ui.home
 
+import kotlin.math.pow
+
 class PointT(x: Float, y: Float) {
     private val historyX: MutableList<Float> = mutableListOf(x)
     private val historyY: MutableList<Float> = mutableListOf(y)
+
+    companion object {
+        private const val HISTORY_SIZE = 7f
+    }
 
     var x: Float
         get() = historyX.last()
         set(value) {
             historyX.add(value)
-            if (historyX.size > 5) {
+            if (historyX.size > HISTORY_SIZE) {
                 historyX.removeAt(0)
             }
         }
@@ -17,7 +23,7 @@ class PointT(x: Float, y: Float) {
         get() = historyY.last()
         set(value) {
             historyY.add(value)
-            if (historyY.size > 5) {
+            if (historyY.size > HISTORY_SIZE) {
                 historyY.removeAt(0)
             }
         }
@@ -26,18 +32,18 @@ class PointT(x: Float, y: Float) {
         get() {
             var adj = 0f
             for (i in 0 until historyY.size) {
-                adj += (5-i) * (x - historyX[i])
+                adj += (i + 1f).pow(HISTORY_SIZE - i) * (x - historyX[i])
             }
-            return x + adj / 30
+            return x + adj / HISTORY_SIZE.pow(HISTORY_SIZE / 1.85f)
         }
 
     val nextY: Float
         get() {
             var adj = 0f
             for (i in 0 until historyY.size) {
-                adj += (5-i) * (y - historyY[i])
+                adj += (i + 1f).pow(HISTORY_SIZE-i) * (y - historyY[i])
             }
-            return y + adj / 30
+            return y + adj / HISTORY_SIZE.pow(HISTORY_SIZE / 1.85f)
         }
 
     var size: Float = 1f

@@ -10,6 +10,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.kotlinmtglifetotalapp.databinding.ActivityMainBinding
+import com.example.kotlinmtglifetotalapp.ui.lifecounter.Player
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,5 +46,13 @@ class MainActivity : AppCompatActivity() {
 
         // Navigate to the destination fragment with the data bundle
         navController.navigate(R.id.navigation_home, bundle)
+
+
+//        val bundle = Bundle()
+//        bundle.putParcelable("P1", Player.generatePlayer())
+//        bundle.putParcelable("P2", Player.generatePlayer())
+
+        // Navigate to the destination fragment with the data bundle
+        //navController.navigate(R.id.navigation_life_counter, bundle)
     }
 }

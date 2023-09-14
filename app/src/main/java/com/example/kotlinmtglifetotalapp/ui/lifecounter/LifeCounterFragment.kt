@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.Button
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatButton
 
@@ -32,6 +33,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 
 import com.example.kotlinmtglifetotalapp.R
 
@@ -48,7 +50,7 @@ class LifeCounterFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private val numPlayers = 6
+    private var numPlayers = 2
 
     private var buttons = arrayListOf<PlayerButton>()
 
@@ -73,6 +75,18 @@ class LifeCounterFragment : Fragment() {
         val root: View = binding.root
 
         viewModel = ViewModelProvider(this)[LifeCounterViewModel::class.java]
+
+        val arguments = arguments
+
+        if (arguments != null) {
+
+            val num = arguments.getInt("numPlayers")
+
+            // Now you have the data, do whatever you need to do with it
+            // For example, if the data is a String, you can display it in a TextView
+            println("GOT PLAYERS: $num")
+            numPlayers = num
+        }
 
 
         for (i in 0 until numPlayers) {
@@ -154,27 +168,15 @@ class LifeCounterFragment : Fragment() {
 
         super.onSaveInstanceState(outState)
 
-        val linearLayout = binding.linearLayout
-
-        linearLayout.removeAllViews()
+        binding.linearLayout.removeAllViews()
 
         for (button in buttons) {
-            val parent = button.parent as RotateLayout
-            parent.removeAllViews()
+            (button.parent as RotateLayout).removeAllViews()
         }
 
-        for (player in playerStates) {
-
-            outState.putParcelable(player.toString(), player)
-
-            println("Saved $player")
-
-        }
+        savePlayers(outState)
 
     }
-
-
-    // load player states into buttons
 
     private fun loadPlayerStates(bundle: Bundle) {
 
@@ -194,8 +196,6 @@ class LifeCounterFragment : Fragment() {
 
             }
 
-
-
             buttons[i - 1].player = player
 
             playerStates.add(player)
@@ -204,159 +204,6 @@ class LifeCounterFragment : Fragment() {
 
     }
 
-    //    private fun placeButtons() {
-//
-//        val vLayout = binding.linearLayout
-//        var rotateLayout: RotateLayout
-//
-//        when (numPlayers) {
-//            2 -> {
-//                rotateLayout = buttons[0].parent as RotateLayout
-//                rotateLayout.angle = 90
-//                vLayout.addView(rotateLayout)
-//                rotateLayout = buttons[1].parent as RotateLayout
-//                rotateLayout.angle = 270
-//                vLayout.addView(rotateLayout)
-//            }
-//            3 -> {
-//                val hLayout = LinearLayout(context)
-//                hLayout.orientation = LinearLayout.HORIZONTAL
-//                val hLayoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT, 0.67f
-//                )
-//                hLayout.layoutParams = hLayoutParams
-//
-//                rotateLayout = buttons[0].parent as RotateLayout
-//                rotateLayout.angle = 180
-//                hLayout.addView(rotateLayout)
-//                rotateLayout = buttons[1].parent as RotateLayout
-//                hLayout.addView(rotateLayout)
-//                vLayout.addView(hLayout)
-//                rotateLayout = buttons[2].parent as RotateLayout
-//                rotateLayout.angle = 270
-//                vLayout.addView(rotateLayout)
-//            }
-//            4 -> {
-//                var hLayout = LinearLayout(context)
-//                hLayout.orientation = LinearLayout.HORIZONTAL
-//                var hLayoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
-//                )
-//                hLayout.layoutParams = hLayoutParams
-//
-//                rotateLayout = buttons[0].parent as RotateLayout
-//                rotateLayout.angle = 180
-//                hLayout.addView(rotateLayout)
-//                rotateLayout = buttons[1].parent as RotateLayout
-//                hLayout.addView(rotateLayout)
-//                vLayout.addView(hLayout)
-//
-//                hLayout = LinearLayout(context)
-//                hLayout.orientation = LinearLayout.HORIZONTAL
-//                hLayoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
-//                )
-//                hLayout.layoutParams = hLayoutParams
-//
-//                rotateLayout = buttons[3].parent as RotateLayout
-//                rotateLayout.angle = 180
-//                hLayout.addView(rotateLayout)
-//                rotateLayout = buttons[2].parent as RotateLayout
-//                hLayout.addView(rotateLayout)
-//                vLayout.addView(hLayout)
-//            }
-//            5 -> {
-//                var hLayout = LinearLayout(context)
-//                hLayout.orientation = LinearLayout.HORIZONTAL
-//                var hLayoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
-//                )
-//                hLayout.layoutParams = hLayoutParams
-//
-//                rotateLayout = buttons[0].parent as RotateLayout
-//                rotateLayout.angle = 180
-//                hLayout.addView(rotateLayout)
-//                rotateLayout = buttons[1].parent as RotateLayout
-//                hLayout.addView(rotateLayout)
-//                vLayout.addView(hLayout)
-//
-//                hLayout = LinearLayout(context)
-//                hLayout.orientation = LinearLayout.HORIZONTAL
-//                hLayoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
-//                )
-//                hLayout.layoutParams = hLayoutParams
-//
-//                rotateLayout = buttons[3].parent as RotateLayout
-//                rotateLayout.angle = 180
-//                hLayout.addView(rotateLayout)
-//                rotateLayout = buttons[2].parent as RotateLayout
-//                hLayout.addView(rotateLayout)
-//                vLayout.addView(hLayout)
-//
-//                rotateLayout = buttons[4].parent as RotateLayout
-//                rotateLayout.angle = 270
-//                val rotateLayoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT, 1.15f
-//                )
-//                rotateLayout.layoutParams = rotateLayoutParams
-//                vLayout.addView(rotateLayout)
-//            }
-//            6 -> {
-//                var hLayout = LinearLayout(context)
-//                hLayout.orientation = LinearLayout.HORIZONTAL
-//                var hLayoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
-//                )
-//                hLayout.layoutParams = hLayoutParams
-//
-//                rotateLayout = buttons[0].parent as RotateLayout
-//                rotateLayout.angle = 180
-//                hLayout.addView(rotateLayout)
-//                rotateLayout = buttons[1].parent as RotateLayout
-//                hLayout.addView(rotateLayout)
-//                vLayout.addView(hLayout)
-//
-//                hLayout = LinearLayout(context)
-//                hLayout.orientation = LinearLayout.HORIZONTAL
-//                hLayoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
-//                )
-//                hLayout.layoutParams = hLayoutParams
-//
-//                rotateLayout = buttons[3].parent as RotateLayout
-//                rotateLayout.angle = 180
-//                hLayout.addView(rotateLayout)
-//                rotateLayout = buttons[2].parent as RotateLayout
-//                hLayout.addView(rotateLayout)
-//                vLayout.addView(hLayout)
-//
-//                hLayout = LinearLayout(context)
-//                hLayout.orientation = LinearLayout.HORIZONTAL
-//                hLayoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT, 1f
-//                )
-//                hLayout.layoutParams = hLayoutParams
-//
-//                rotateLayout = buttons[5].parent as RotateLayout
-//                rotateLayout.angle = 180
-//                hLayout.addView(rotateLayout)
-//                rotateLayout = buttons[4].parent as RotateLayout
-//                hLayout.addView(rotateLayout)
-//                vLayout.addView(hLayout)
-//
-//            }
-//        }
-//    }
     private fun placeButtons() {
         val vLayout = binding.linearLayout
 
@@ -400,6 +247,22 @@ class LifeCounterFragment : Fragment() {
                 hLayout.addView(rotateLayout)
             }
             vLayout.addView(hLayout)
+        }
+
+        val button = Button(context)
+        button.text = "Go to player select"
+        button.setOnClickListener {
+            val bundle = Bundle()
+            savePlayers(bundle)
+            Navigation.findNavController(button).navigate(R.id.navigation_home, bundle)
+        }
+        vLayout.addView(button)
+    }
+
+    private fun savePlayers(outstate: Bundle) {
+        for (player in playerStates) {
+            println("Saved $player")
+            outstate.putParcelable(player.toString(), player)
         }
     }
 }

@@ -4,7 +4,7 @@ import android.graphics.Color
 import android.os.Parcel
 import android.os.Parcelable
 
-
+// add player name functionality
 data class Player(
     private var _life: Int,
     private val playerNum: Int,
@@ -51,8 +51,7 @@ data class Player(
         parcel.readInt(),
         parcel.readInt(),
         parcel.readInt()
-    ) {
-    }
+    )
 
     override fun toString() : String {
         return "P${playerNum}"

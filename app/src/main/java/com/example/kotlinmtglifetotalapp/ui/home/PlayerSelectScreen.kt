@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
@@ -22,11 +23,15 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.animation.core.RepeatMode
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.util.keyIterator
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import com.example.kotlinmtglifetotalapp.R
 import kotlin.random.Random
 
 
 class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context, attrs) {
+
     private val activePointers: SparseArray<PointT> = SparseArray()
     private val touchPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
@@ -42,11 +47,16 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
 
     private var lastNewClick = System.currentTimeMillis()
 
-    private val clickHandler = Handler(Looper.getMainLooper())
+    private var clickHandler = Handler(Looper.getMainLooper())
+
+    private var selectedId = -1
+
+    private var numPlayers = -1
 
     private val selectionRunnable = Runnable {
         val randomIndex = rand.nextInt(activePointers.size())
-        val selectedId = activePointers.keyAt(randomIndex)
+        selectedId = activePointers.keyAt(randomIndex)
+        numPlayers = activePointers.size()
 
         for (id in activePointers.keyIterator()) {
             if (id == selectedId) {
@@ -96,16 +106,18 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
-                performClick()
-                val p = PointT(event.getX(pointerIndex), event.getY(pointerIndex))
-                activePointers.put(pointerId, p)
-                popInAnimator(pointerId).start()
+                if (selectedId != -1) {
+                    performClick()
+                    val p = PointT(event.getX(pointerIndex), event.getY(pointerIndex))
+                    activePointers.put(pointerId, p)
+                    popInAnimator(pointerId).start()
 
-                clickHandler.removeCallbacks(selectionRunnable)
-                clickHandler.postDelayed(selectionRunnable, SELECTION_DELAY)
+                    if (activePointers.size() > 1) {
+                        removeCallbacks()
+                        postCallbacks()
+                    }
 
-                clickHandler.removeCallbacks(pulseRunnable)
-                clickHandler.postDelayed(pulseRunnable, PULSE_DELAY)
+                }
 
             }
 
@@ -124,9 +136,12 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
 
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 activePointers.remove(pointerId)
-                if (event.actionMasked != MotionEvent.ACTION_POINTER_UP) {
-                    clickHandler.removeCallbacks(selectionRunnable)
-                    clickHandler.removeCallbacks(pulseRunnable)
+                removeCallbacks()
+
+                if (activePointers.size() > 1 && selectedId == -1) {
+                    postCallbacks()
+                } else if (activePointers.size() == 0 && selectedId != -1) {
+                    sendToLifeCounter()
                 }
             }
         }
@@ -149,6 +164,7 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
             i++
         }
         canvas.drawText("Total pointers: " + activePointers.size(), 10f, 40f, textPaint)
+        canvas.drawText("SelectedID: " + selectedId, 10f, 80f, textPaint)
     }
 
     private fun popInAnimator(id: Int): ValueAnimator {
@@ -168,8 +184,10 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
         return ValueAnimator.ofFloat(1.0f, 2.0f).apply {
             addUpdateListener { animation ->
                 run {
-                    activePointers[id].size = animation.animatedValue as Float
-                    invalidate()
+                    if (activePointers[id] != null) {
+                        activePointers[id].size = animation.animatedValue as Float
+                        invalidate()
+                    }
                 }
             }
             duration = 1000
@@ -177,10 +195,27 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
         }
     }
 
+    private fun sendToLifeCounter() {
+        val bundle = Bundle()
+        bundle.putInt("numPlayers", numPlayers)
+        Navigation.findNavController(this).navigate(R.id.navigation_life_counter, bundle)
+        clickHandler = Handler(Looper.getMainLooper())
+    }
+
+    private fun postCallbacks() {
+        clickHandler.postDelayed(selectionRunnable, SELECTION_DELAY)
+        clickHandler.postDelayed(pulseRunnable, PULSE_DELAY)
+    }
+
+    private fun removeCallbacks() {
+        clickHandler.removeCallbacks(selectionRunnable)
+        clickHandler.removeCallbacks(pulseRunnable)
+    }
+
     companion object {
-        private const val SELECTION_DELAY = 5500L
-        private const val PULSE_DELAY = 2000L
-        private const val PULSE_FREQ = 1250L
+        private const val PULSE_DELAY = 1000L
+        private const val PULSE_FREQ = 900L
+        private const val SELECTION_DELAY = PULSE_DELAY + PULSE_FREQ * 3 - 10
 
     }
 }

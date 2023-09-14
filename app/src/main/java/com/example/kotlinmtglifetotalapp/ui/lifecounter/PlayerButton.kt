@@ -16,6 +16,8 @@ import android.os.CombinedVibration
 import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
+import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
+import android.os.VibrationEffect.createOneShot
 import android.os.VibrationEffect.createPredefined
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -57,6 +59,7 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
     private var disposable: Disposable? = null
     private val resetRecentChangeRunnable = Runnable {
         recentChange = 0
+        invalidate()
     }
 
     private val paintSmall: Paint
@@ -161,8 +164,6 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
         }
 
         jiggleAnimator.start()
-        val time = System.nanoTime() / 1_000_000_00
-        println("jiggle $time")
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -204,10 +205,8 @@ class PlayerButton(context: Context, attrs: AttributeSet?) : AppCompatButton(con
         }
     }
 
-
     private fun vibrate() {
-
-        vibration.vibrate(CombinedVibration.createParallel(createPredefined(VibrationEffect.EFFECT_TICK)))
+        vibration.vibrate(CombinedVibration.createParallel(createPredefined(EFFECT_HEAVY_CLICK)))
     }
 
     override fun performClick(): Boolean {
