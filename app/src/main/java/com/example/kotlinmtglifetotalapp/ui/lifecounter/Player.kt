@@ -1,6 +1,8 @@
 package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
 import android.graphics.Color
+import android.os.Handler
+import android.os.Looper
 import android.os.Parcel
 import android.os.Parcelable
 
@@ -16,6 +18,45 @@ data class Player(
 
     val playerColor: Int
         get() = if (life <= 0) Color.GRAY else originalPlayerColor
+
+    private var _recentChange = 0
+    val recentChange get() = _recentChange
+
+    private val handler: Handler = Handler(Looper.getMainLooper())
+
+    private val resetRecentChangeRunnable = Runnable {
+        _recentChange = 0
+        notifyObserver()
+    }
+
+    private var observer: PlayerObserver? = null
+
+    fun setObserver(observer: PlayerObserver) {
+        this.observer = observer
+    }
+
+    private fun notifyObserver() {
+        observer?.onPlayerUpdated(this)
+    }
+
+    override fun toString() : String {
+        return "P${playerNum}"
+    }
+
+    fun increment(value: Int) {
+        this._life += value
+        _recentChange += value
+        resetRecentChange()
+        notifyObserver()
+    }
+
+
+    private fun resetRecentChange() {
+        handler.removeCallbacks(resetRecentChangeRunnable)
+        handler.postDelayed(resetRecentChangeRunnable, 1500)
+    }
+
+    // Parcelable related code
 
     companion object CREATOR : Parcelable.Creator<Player>{
         private var currentPlayers: Int = 0
@@ -52,14 +93,6 @@ data class Player(
         parcel.readInt(),
         parcel.readInt()
     )
-
-    override fun toString() : String {
-        return "P${playerNum}"
-    }
-
-    fun increment(value: Int) {
-        this._life += value
-    }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(life)

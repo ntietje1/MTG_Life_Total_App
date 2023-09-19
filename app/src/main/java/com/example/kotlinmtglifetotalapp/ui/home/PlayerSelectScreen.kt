@@ -106,7 +106,7 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
-                if (selectedId != -1) {
+                if (selectedId == -1 && activePointers.size() < 6) {
                     performClick()
                     val p = PointT(event.getX(pointerIndex), event.getY(pointerIndex))
                     activePointers.put(pointerId, p)
@@ -163,8 +163,6 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
             canvas.drawCircle(x, y, 125f * activePointers[id].size, touchPaint)
             i++
         }
-        canvas.drawText("Total pointers: " + activePointers.size(), 10f, 40f, textPaint)
-        canvas.drawText("SelectedID: " + selectedId, 10f, 80f, textPaint)
     }
 
     private fun popInAnimator(id: Int): ValueAnimator {
@@ -213,8 +211,10 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
     }
 
     companion object {
-        private const val PULSE_DELAY = 1000L
-        private const val PULSE_FREQ = 900L
+        private const val PULSE_DELAY = 200L
+        private const val PULSE_FREQ = 100L
+//        private const val PULSE_DELAY = 1000L
+//        private const val PULSE_FREQ = 900L
         private const val SELECTION_DELAY = PULSE_DELAY + PULSE_FREQ * 3 - 10
 
     }
