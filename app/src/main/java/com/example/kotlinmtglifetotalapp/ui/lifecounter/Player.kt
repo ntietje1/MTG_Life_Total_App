@@ -43,11 +43,15 @@ data class Player(
         return "P${playerNum}"
     }
 
-    fun increment(value: Int) {
+    fun incrementLife(value: Int) {
         this._life += value
         _recentChange += value
         resetRecentChange()
         notifyObserver()
+    }
+
+    fun incrementCommander(value: Int) {
+
     }
 
 

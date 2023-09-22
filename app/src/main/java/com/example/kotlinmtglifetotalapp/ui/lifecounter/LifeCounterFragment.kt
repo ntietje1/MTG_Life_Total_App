@@ -1,7 +1,10 @@
 package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.Gravity
 
 import android.view.LayoutInflater
 
@@ -10,7 +13,11 @@ import android.view.View
 import android.view.ViewGroup
 
 import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.LinearLayout
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.setPadding
 
 import androidx.fragment.app.Fragment
 
@@ -50,8 +57,18 @@ class LifeCounterFragment : Fragment() {
             2 -> arrayOf(1f)
             3 -> arrayOf(1f, 1.67f)
             4 -> arrayOf(1f, 1f)
-            5 -> arrayOf(1f, 1f, 1.15f)
+            5 -> arrayOf(1f, 1f, 1.2f)
             6 -> arrayOf(1f, 1f, 1f)
+            else -> throw IllegalArgumentException("invalid number of players")
+        }
+
+    private val middlePos: Float
+        get() = when(numPlayers) {
+            2 -> 0.0f
+            3 -> 0.12f
+            4 -> 0.0f
+            5 -> -0.124f
+            6 -> -0.166f
             else -> throw IllegalArgumentException("invalid number of players")
         }
 
@@ -148,6 +165,7 @@ class LifeCounterFragment : Fragment() {
 
     private fun removeAllViews() {
         binding.linearLayout.removeAllViews()
+        binding.frameLayout.removeAllViews()
 
         for (button in playerButtons) {
             (button.parent as RotateLayout).removeAllViews()
@@ -180,18 +198,41 @@ class LifeCounterFragment : Fragment() {
             vLayout.addView(hLayout)
         }
 
-        makeGoPlayerSelectButton(vLayout)
+        val fLayout = binding.frameLayout
+        val middleButton = ImageButton(context).apply {
+            setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.middle_solid_icon))
+            background = AppCompatResources.getDrawable(context, R.drawable.circular_background_black)
+
+            //rotation -= 90f
+            stateListAnimator = null
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.CENTER
+//                setMargins(20, 20, 20, 20)
+
+            }
+            setPadding(10)
+            setOnClickListener {
+                val bundle = Bundle()
+                viewModel.fillPlayerBundle(bundle)
+                Navigation.findNavController(this).navigate(R.id.navigation_home, bundle)
+            }
+        }
+        fLayout.addView(middleButton)
+
+
+        val screenHeight = resources.displayMetrics.heightPixels
+        val middleButtonY = (screenHeight * middlePos).toInt()
+        val middleButtonLayoutParams = middleButton.layoutParams as FrameLayout.LayoutParams
+        middleButtonLayoutParams.topMargin = middleButtonY
+        middleButton.layoutParams = middleButtonLayoutParams
+
     }
 
-    private fun makeGoPlayerSelectButton(vLayout: LinearLayout) {
-        val button = Button(context)
-        button.text = "Go to player select"
-        button.setOnClickListener {
-            val bundle = Bundle()
-            viewModel.fillPlayerBundle(bundle)
-            Navigation.findNavController(button).navigate(R.id.navigation_home, bundle)
-        }
-        vLayout.addView(button)
-    }
+
+
+
 
 }

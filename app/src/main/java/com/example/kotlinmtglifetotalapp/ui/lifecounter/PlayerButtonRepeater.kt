@@ -11,11 +11,11 @@ class PlayerButtonRepeater (private val playerButtonBase: PlayerButtonBase, priv
     private var disposable: Disposable? = null
 
     fun startRepeating(change: Int) {
-        playerButtonBase.player!!.increment(change)
+        playerButtonBase.player!!.incrementLife(change)
         disposable?.dispose()
         disposable = Observable.interval(initialDelay, repeatDelay, TimeUnit.MILLISECONDS)
             .takeWhile { isRepeating }.subscribe({
-                playerButtonBase.player!!.increment(change)
+                playerButtonBase.player!!.incrementLife(change)
             }, {
                 it.printStackTrace()
             })

@@ -23,7 +23,7 @@ class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayou
         )
     }
 
-    private val additionalButton = ImageButton(context).apply {
+    private val commanderButton = ImageButton(context).apply {
         setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.commander_solid_icon))
         background = ColorDrawable(Color.TRANSPARENT)
         rotation -= 90f
@@ -39,16 +39,27 @@ class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayou
 
     }
 
+    private val settingsButton = ImageButton(context).apply {
+        setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.settings_solid_icon))
+        background = AppCompatResources.getDrawable(context, R.drawable.circular_background).apply {}
+        rotation -= 90f
+        stateListAnimator = null
+        layoutParams = LayoutParams(
+            LayoutParams.WRAP_CONTENT,
+            LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = Gravity.END or Gravity.TOP
+            setMargins(20, 20, 20, 20)
+        }
+        setPadding(5)
+
+    }
+
     init {
         addView(buttonBase)
-        addView(additionalButton)
-
-
+        addView(commanderButton)
+        addView(settingsButton)
     }
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        additionalButton.bringToFront()
-    }
 
 }
