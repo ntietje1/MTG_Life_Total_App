@@ -11,11 +11,11 @@ class PlayerButtonRepeater (private val playerButtonBase: PlayerButtonBase, priv
     private var disposable: Disposable? = null
 
     fun startRepeating(change: Int) {
-        playerButtonBase.player!!.incrementLife(change)
+        increment(change)
         disposable?.dispose()
         disposable = Observable.interval(initialDelay, repeatDelay, TimeUnit.MILLISECONDS)
             .takeWhile { isRepeating }.subscribe({
-                playerButtonBase.player!!.incrementLife(change)
+                increment(change)
             }, {
                 it.printStackTrace()
             })
@@ -26,5 +26,17 @@ class PlayerButtonRepeater (private val playerButtonBase: PlayerButtonBase, priv
         disposable?.dispose()
         disposable = null
         isRepeating = false
+    }
+
+    private fun increment(change: Int) {
+        val player = playerButtonBase.player!!
+        when (playerButtonBase.state) {
+            PlayerButtonState.NORMAL -> player.incrementLife(change)
+            PlayerButtonState.COMMANDER_RECEIVER -> {
+                player.incrementCommander(change)
+                PlayerButtonBase.currCommanderDamage[player.playerNum - 1] += change
+            }
+            PlayerButtonState.COMMANDER_DEALER -> Unit
+        }
     }
 }

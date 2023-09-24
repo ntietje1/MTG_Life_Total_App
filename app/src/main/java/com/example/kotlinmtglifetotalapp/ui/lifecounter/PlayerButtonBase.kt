@@ -2,17 +2,36 @@ package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.RippleDrawable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatButton
-import androidx.core.graphics.ColorUtils
 
-class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton(context, attrs), PlayerObserver {
+class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton(context, attrs),
+    PlayerObserver {
+
+    companion object {
+        private val allPlayerButtons = mutableListOf<PlayerButtonBase>()
+        private var currDealer: Player? = null
+        val currCommanderDamage: ArrayList<Int>
+            get() {
+                return if (currDealer != null) {
+                    currDealer!!.commanderDamage
+                } else {
+                    arrayListOf()
+                }
+            }
+
+        fun switchAllToMode(mode: PlayerButtonState) {
+            allPlayerButtons.forEach {
+                it.state = mode
+                it.updateUI()
+                it.player!!.zeroRecentChange()
+            }
+        }
+    }
+
+    lateinit var playerButtonCallback: PlayerButton
 
     var player: Player? = null
         set(value) {
@@ -25,19 +44,49 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
     private val repeater = PlayerButtonRepeater(this, 500, 100)
     private val drawer = PlayerButtonDrawer(this)
 
+    var state = PlayerButtonState.NORMAL
+        private set(value) {
+            field = value
+            playerButtonCallback.updateButtonVisibility()
+        }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        allPlayerButtons.add(this)
         animator = PlayerButtonAnimator(this.parent as PlayerButton)
     }
 
-    override fun onPlayerUpdated(player: Player) {
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        allPlayerButtons.remove(this)
+    }
+
+    override fun onPlayerUpdated() {
         updateUI()
+    }
+
+    fun switchToCommanderDealer() {
+        switchAllToMode(PlayerButtonState.COMMANDER_RECEIVER)
+        state = PlayerButtonState.COMMANDER_DEALER
+        currDealer = player
+        updateUI()
+    }
+
+    fun switchToNormal() {
+        switchAllToMode(PlayerButtonState.NORMAL)
+        currDealer = null
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val isVertical = rotation == 90f || rotation == 270f
-        setMeasuredDimension(if (isVertical) measuredHeight else measuredWidth, if (isVertical) measuredWidth else measuredHeight)
-        super.onMeasure(if (isVertical) heightMeasureSpec else widthMeasureSpec, if (isVertical) widthMeasureSpec else heightMeasureSpec)
+        setMeasuredDimension(
+            if (isVertical) measuredHeight else measuredWidth,
+            if (isVertical) measuredWidth else measuredHeight
+        )
+        super.onMeasure(
+            if (isVertical) heightMeasureSpec else widthMeasureSpec,
+            if (isVertical) widthMeasureSpec else heightMeasureSpec
+        )
     }
 
     override fun draw(canvas: Canvas) {
@@ -56,6 +105,8 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (state == PlayerButtonState.COMMANDER_DEALER) return true
+
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 performClick()
@@ -79,16 +130,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
     }
 
     private fun updateUI() {
-        val rippleDrawable = background as RippleDrawable
-        val gradientDrawable =
-            rippleDrawable.findDrawableByLayerId(android.R.id.background) as GradientDrawable
-
-        val colorStateListRipple =
-            ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 60))
-        rippleDrawable.setColor(colorStateListRipple)
-
-        val colorStateListBackground = ColorStateList.valueOf(player!!.playerColor)
-        gradientDrawable.color = colorStateListBackground
+        drawer.setBackground()
         invalidate()
     }
 
@@ -98,11 +140,6 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
         } else {
             if (x < this.width / 2) 1 else -1
         }
-
         return change
     }
-
-
-
-
 }

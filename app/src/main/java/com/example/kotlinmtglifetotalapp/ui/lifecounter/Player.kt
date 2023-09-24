@@ -7,9 +7,9 @@ import android.os.Parcel
 import android.os.Parcelable
 
 // add player name functionality
-data class Player(
+class Player(
     private var _life: Int,
-    private val playerNum: Int,
+    val playerNum: Int,
     private val originalPlayerColor: Int
 ): Parcelable {
 
@@ -17,15 +17,24 @@ data class Player(
         get() = _life
 
     val playerColor: Int
-        get() = if (life <= 0) Color.GRAY else originalPlayerColor
+        get() = if (isDead) Color.GRAY else originalPlayerColor
+
+    val commanderDamage: ArrayList<Int> = arrayListOf<Int>().apply {
+        for (i in 0 until MAX_PLAYERS) {
+            add(0)
+        }
+    }
+
+    private val isDead get() = life <= 0
 
     private var _recentChange = 0
     val recentChange get() = _recentChange
 
+
     private val handler: Handler = Handler(Looper.getMainLooper())
 
     private val resetRecentChangeRunnable = Runnable {
-        _recentChange = 0
+        zeroRecentChange()
         notifyObserver()
     }
 
@@ -36,8 +45,9 @@ data class Player(
     }
 
     private fun notifyObserver() {
-        observer?.onPlayerUpdated(this)
+        observer?.onPlayerUpdated()
     }
+
 
     override fun toString() : String {
         return "P${playerNum}"
@@ -46,24 +56,31 @@ data class Player(
     fun incrementLife(value: Int) {
         this._life += value
         _recentChange += value
-        resetRecentChange()
+        resetRecentChangeRunnable()
         notifyObserver()
     }
 
     fun incrementCommander(value: Int) {
-
+        this._life -= value
+        _recentChange += value
+        resetRecentChangeRunnable()
+        notifyObserver()
     }
 
-
-    private fun resetRecentChange() {
+    private fun resetRecentChangeRunnable() {
         handler.removeCallbacks(resetRecentChangeRunnable)
         handler.postDelayed(resetRecentChangeRunnable, 1500)
+    }
+
+    fun zeroRecentChange() {
+        _recentChange = 0
     }
 
     // Parcelable related code
 
     companion object CREATOR : Parcelable.Creator<Player>{
-        private var currentPlayers: Int = 0
+        private const val MAX_PLAYERS = 6
+        var currentPlayers: ArrayList<Player> = arrayListOf()
 
         private var availableColors: MutableList<Int> = mutableListOf(
             Color.parseColor("#F75FA8"),
@@ -85,10 +102,11 @@ data class Player(
 
         fun generatePlayer(): Player {
             val maxLife = 40
-            currentPlayers++
             availableColors.shuffle()
             val playerColor = availableColors.removeAt(0)
-            return Player(maxLife, currentPlayers, playerColor)
+            val player = Player(maxLife, currentPlayers.size + 1, playerColor)
+            currentPlayers.add(player)
+            return player
         }
     }
 

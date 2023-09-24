@@ -1,25 +1,39 @@
 package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
+import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.PointF
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.RippleDrawable
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.toColor
 import androidx.core.graphics.withMatrix
 import com.example.kotlinmtglifetotalapp.R
 
-class PlayerButtonDrawer (private val playerButtonBase: PlayerButtonBase){
+class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
 
     private val context = playerButtonBase.context
 
-    private val heartIcon = AppCompatResources.getDrawable(context, R.drawable.heart_solid_icon)?.toBitmap()!!
-    private val heartIconLeft get() = centerX - heartIcon.width.toFloat() / 2
-    private val heartIconTop get() = midLineY + paintLarge.descent() - playerButtonBase.height / 20
+    private val player get() = playerButtonBase.player!!
 
-//    private val commanderIcon = AppCompatResources.getDrawable(context, R.drawable.commander_solid_icon)?.toBitmap()!!
-//    private val commanderIconLeft get() = - playerButtonBase.height * 0.45f + playerButtonBase.width * 0.49f
-//    private val commanderIconTop get() = playerButtonBase.height - playerButtonBase.width * 1f + playerButtonBase.height * 0.1f
+    private val icon: Bitmap
+        get() {
+            val drawableResId = when (playerButtonBase.state) {
+                PlayerButtonState.NORMAL -> R.drawable.heart_solid_icon
+                PlayerButtonState.COMMANDER_RECEIVER -> R.drawable.commander_solid_icon_small
+                PlayerButtonState.COMMANDER_DEALER -> R.drawable.transparent
+            }
+
+            val drawable = AppCompatResources.getDrawable(context, drawableResId)
+            return drawable?.toBitmap() ?: throw IllegalStateException("Drawable is null")
+        }
 
     private val paintSmall: Paint
         get() = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -46,7 +60,7 @@ class PlayerButtonDrawer (private val playerButtonBase: PlayerButtonBase){
         get() = centerY - playerButtonBase.height * 0.1f - playerButtonBase.width / 10
 
     private val midLineY: Float
-        get() = centerY * 0.675f + (paintLarge.descent() - paintLarge.ascent()) - playerButtonBase.width / 5.25f
+        get() = centerY * 0.625f + (paintLarge.descent() - paintLarge.ascent()) - playerButtonBase.width / 5.25f
 
     private val rotatedMatrix
         get(): Matrix {
@@ -55,30 +69,113 @@ class PlayerButtonDrawer (private val playerButtonBase: PlayerButtonBase){
             }
         }
 
+    private val mainText: String
+        get(): String {
+            return when (playerButtonBase.state) {
+                PlayerButtonState.NORMAL -> player.life.toString()
+                PlayerButtonState.COMMANDER_RECEIVER -> PlayerButtonBase.currCommanderDamage[player.playerNum - 1].toString()
+                PlayerButtonState.COMMANDER_DEALER -> ""
+            }
+        }
+
+    private val recentChangeText: String
+        get(): String {
+//            return when (playerButtonBase.state) {
+//                PlayerButtonState.NORMAL -> {
+//                    if (player.recentChange > 0) {
+//                        (if (player.recentChange > 0) "+" else "") + player.recentChange.toString()
+//                    } else {
+//                        ""
+//                    }
+//                }
+//
+//                PlayerButtonState.COMMANDER_RECEIVER -> {
+//                    if (player.recentChange > 0) {
+//                        (if (player.recentChange > 0) "+" else "") + player.recentChange.toString()
+//                    } else {
+//                        ""
+//                    }
+//                }
+//
+//                PlayerButtonState.COMMANDER_DEALER -> ""
+//            }
+            return if (player.recentChange > 0) {
+                (if (player.recentChange > 0) "+" else "") + player.recentChange.toString()
+            } else {
+                ""
+            }
+
+        }
+
+
+    // TODO: add text to commander damage dealer
     fun draw(canvas: Canvas) {
-        val player = playerButtonBase.player!!
         with(canvas) {
             save()
             rotate(playerButtonBase.rotation, centerX, centerY)
             withMatrix(rotatedMatrix) {
-                if (player.recentChange != 0) {
-                    var recentChangeString = if (player.recentChange > 0) "+" else ""
-                    recentChangeString += player.recentChange.toString()
-                    drawText(
-                        recentChangeString,
-                        centerX + paintLarge.measureText(player.life.toString()) / 2 + 100,
-                        midLineY - 75,
-                        paintSmall
-                    )
-                }
-                drawText(player.toString(), centerX, topLineY, paintSmall)
-                drawText(player.life.toString(), centerX, midLineY, paintLarge)
+                drawText(
+                    recentChangeText,
+                    centerX + paintLarge.measureText(mainText) / 2 + 100,
+                    midLineY - 75,
+                    paintSmall
+                )
+                //drawText(player.toString(), centerX, topLineY, paintSmall)
+                drawText(mainText, centerX, midLineY, paintLarge)
+                //drawText(player.commanderDamage.toString(), centerX, topLineY, paintSmall)
 
-                drawBitmap(heartIcon, heartIconLeft, heartIconTop, paintSmall)
-                //drawBitmap(commanderIcon, heartIconLeft, heartIconTop, paintSmall)
-//                drawBitmap(commanderIcon, commanderIconLeft, commanderIconTop, paintSmall)
+                val iconPos = calculateIconTopLeft(icon)
+
+                drawBitmap(icon, iconPos.x, iconPos.y, paintSmall)
+
             }
             restore()
         }
+    }
+
+    fun setBackground() {
+        with (playerButtonBase) {
+            setBackgroundResource(R.drawable.rounded_corners)
+            val rippleDrawable = background as RippleDrawable
+            val gradientDrawable =
+                rippleDrawable.findDrawableByLayerId(android.R.id.background) as GradientDrawable
+
+            val colorStateListRipple =
+                ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 60))
+            rippleDrawable.setColor(colorStateListRipple)
+
+            val colorStateListBackground = when (state) {
+                PlayerButtonState.NORMAL -> ColorStateList.valueOf(player!!.playerColor)
+                PlayerButtonState.COMMANDER_RECEIVER -> ColorStateList.valueOf(Color.DKGRAY)
+                PlayerButtonState.COMMANDER_DEALER -> ColorStateList.valueOf(darkenColor(desaturateColor(player!!.playerColor)))
+            }
+
+            gradientDrawable.color = colorStateListBackground
+        }
+    }
+
+    private fun darkenColor(color: Int): Int {
+        val factor = 0.6f
+        val red = Color.red(color) * factor
+        val green = Color.green(color) * factor
+        val blue = Color.blue(color) * factor
+        return Color.rgb(red.toInt(), green.toInt(), blue.toInt())
+    }
+
+    private fun desaturateColor(color: Int): Int {
+        val factor = 0.6f
+        val hsl = FloatArray(3)
+        ColorUtils.colorToHSL(color, hsl)
+
+        // Reduce the saturation
+        hsl[1] *= factor
+
+        return ColorUtils.HSLToColor(hsl)
+    }
+
+    private fun calculateIconTopLeft(bitmap: Bitmap): PointF {
+        val iconLeft = centerX - bitmap.width.toFloat() / 2
+        val iconTop = midLineY + paintLarge.descent() - playerButtonBase.height / 20
+        return PointF(iconLeft, iconTop)
     }
 }

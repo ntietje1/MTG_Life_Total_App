@@ -1,21 +1,18 @@
 package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
 import android.content.Context
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.view.marginBottom
 import androidx.core.view.setPadding
 import com.example.kotlinmtglifetotalapp.R
 
 class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayout(context) {
 
     val buttonBase = buttonBase.apply{
-
         stateListAnimator = null
         layoutParams = LayoutParams(
             LayoutParams.MATCH_PARENT,
@@ -36,7 +33,13 @@ class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayou
             setMargins(40, 40, 40, 40)
         }
         setPadding(5)
-
+        setOnClickListener {
+            when (buttonBase.state) {
+                PlayerButtonState.NORMAL -> buttonBase.switchToCommanderDealer()
+                PlayerButtonState.COMMANDER_DEALER -> buttonBase.switchToNormal()
+                else -> throw IllegalStateException()
+            }
+        }
     }
 
     private val settingsButton = ImageButton(context).apply {
@@ -52,14 +55,34 @@ class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayou
             setMargins(20, 20, 20, 20)
         }
         setPadding(5)
-
     }
 
+
     init {
+        buttonBase.playerButtonCallback = this
         addView(buttonBase)
         addView(commanderButton)
         addView(settingsButton)
     }
+
+    fun updateButtonVisibility() {
+        when (buttonBase.state) {
+            PlayerButtonState.NORMAL -> {
+                commanderButton.visibility = VISIBLE
+                settingsButton.visibility = VISIBLE
+            }
+            PlayerButtonState.COMMANDER_DEALER -> {
+                commanderButton.visibility = VISIBLE
+                settingsButton.visibility = GONE
+            }
+            PlayerButtonState.COMMANDER_RECEIVER -> {
+                commanderButton.visibility = GONE
+                settingsButton.visibility = GONE
+            }
+        }
+    }
+
+
 
 
 }

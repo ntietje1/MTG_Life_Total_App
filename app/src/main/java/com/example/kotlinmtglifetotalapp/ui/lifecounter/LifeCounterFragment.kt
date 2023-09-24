@@ -36,11 +36,11 @@ class LifeCounterFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private val numPlayers get() = viewModel.playerStates.value!!.size
+    private val numPlayers get() = Player.currentPlayers.size
 
     private var playerButtons = arrayListOf<PlayerButton>()
 
-    private lateinit var viewModel: LifeCounterViewModel
+    //private lateinit var viewModel: LifeCounterViewModel
 
     private val angleConfigurations: Array<Int>
         get() = when (numPlayers) {
@@ -79,17 +79,17 @@ class LifeCounterFragment : Fragment() {
     ): View {
         _binding = LifeCounterLayoutBinding.inflate(inflater, container, false)
         val root: View = binding.root
-        viewModel = ViewModelProvider(this)[LifeCounterViewModel::class.java]
+        //viewModel = ViewModelProvider(this)[LifeCounterViewModel::class.java]
         val arguments = arguments
 
         if (savedInstanceState != null) {
-            viewModel.acceptPlayerBundle(savedInstanceState)
+            unpackBundle(savedInstanceState)
             println("got bundle")
         } else if (arguments != null) {
-            viewModel.acceptPlayerBundle(arguments)
+            unpackBundle(arguments)
             println("no bundle, got arguments")
         } else {
-            viewModel.acceptPlayerBundle(Bundle())
+            unpackBundle(Bundle())
             println("no bundle or arguments, using empty bundle")
         }
 
@@ -99,13 +99,11 @@ class LifeCounterFragment : Fragment() {
             playerButtons.add(playerButton)
         }
 
-        viewModel.playerStates.observe(viewLifecycleOwner) { playerStates ->
-            for ((i, player) in playerStates.withIndex()) {
-                playerButtons[i].buttonBase.player = player
-            }
+        for ((i, player) in Player.currentPlayers.withIndex()) {
+            playerButtons[i].buttonBase.player = player
         }
-        return root
 
+        return root
     }
 
 
@@ -138,8 +136,6 @@ class LifeCounterFragment : Fragment() {
         )
     ): PlayerButton {
 
-        playerButton.buttonBase.setBackgroundResource(R.drawable.rounded_corners)
-
         val rotateLayout = RotateLayout(context)
         rotateLayout.addView(playerButton)
         rotateLayout.layoutParams = LinearLayout.LayoutParams(
@@ -160,12 +156,46 @@ class LifeCounterFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         removeAllViews()
-        viewModel.fillPlayerBundle(outState)
+
+        packBundle(outState)
+    }
+
+    private fun packBundle(outState: Bundle) {
+        outState.putInt("numPlayers", Player.currentPlayers.size)
+        for (player in Player.currentPlayers) {
+            println("Saved $player")
+            outState.putParcelable(player.toString(), player)
+        }
+    }
+
+    private fun unpackBundle(inState: Bundle) {
+        val players = arrayListOf<Player>()
+
+        val numPlayers = inState.getInt("numPlayers")
+        println("bundle says: $numPlayers players")
+
+        for (i in 1..numPlayers) {
+
+            var player = inState.getParcelable("P$i", Player::class.java)
+
+            if (player == null) {
+                println("Couldn't load player P$i, generating new player")
+                player = Player.generatePlayer()
+
+            } else {
+                println("Successfully loaded P$i")
+            }
+
+            players.add(player)
+
+        }
+
+        Player.currentPlayers = players
     }
 
     private fun removeAllViews() {
-        binding.linearLayout.removeAllViews()
         binding.frameLayout.removeAllViews()
+        binding.linearLayout.removeAllViews()
 
         for (button in playerButtons) {
             (button.parent as RotateLayout).removeAllViews()
@@ -216,7 +246,7 @@ class LifeCounterFragment : Fragment() {
             setPadding(10)
             setOnClickListener {
                 val bundle = Bundle()
-                viewModel.fillPlayerBundle(bundle)
+                packBundle(bundle)
                 Navigation.findNavController(this).navigate(R.id.navigation_home, bundle)
             }
         }
