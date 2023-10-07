@@ -47,6 +47,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.7.1'
     implementation 'androidx.compose.material3:material3:1.1.1'
     implementation "io.reactivex.rxjava3:rxjava:3.1.6"
+    //implementation project(':renderscript-toolkit')
     //implementation 'rongi.rotate-layout:rotate-layout:3.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

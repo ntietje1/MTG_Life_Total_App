@@ -1,5 +1,6 @@
 package com.example.kotlinmtglifetotalapp.ui.home
 
+import kotlin.math.abs
 import kotlin.math.pow
 
 class PointT(x: Float, y: Float) {
@@ -46,7 +47,11 @@ class PointT(x: Float, y: Float) {
             return y + adj / HISTORY_SIZE.pow(HISTORY_SIZE / 1.85f)
         }
 
-    var size: Float = 1f
+    private val baseSize = 1.0f
+
+    val size get() = baseSize * sizeMultiplier
+
+    var sizeMultiplier: Float = 1f
 
     init {
     }

@@ -44,7 +44,7 @@ class HomeFragment : Fragment() {
         val arguments = arguments
 
         if (arguments != null) {
-            // Retrieve the data from the bundle using the key "data_key"
+
             for (key in arguments.keySet()) {
                 println("$key -> " + arguments.getParcelable(key, Player::class.java))
             }

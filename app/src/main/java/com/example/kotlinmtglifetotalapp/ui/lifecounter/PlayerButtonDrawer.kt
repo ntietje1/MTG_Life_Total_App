@@ -35,6 +35,13 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
             return drawable?.toBitmap() ?: throw IllegalStateException("Drawable is null")
         }
 
+    private val paintVerySmall: Paint
+        get() = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = (playerButtonBase.height / 20f)
+            textAlign = Paint.Align.CENTER
+            color = Color.WHITE
+        }
+
     private val paintSmall: Paint
         get() = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             textSize = (playerButtonBase.height / 15f) + (playerButtonBase.width / 30f)
@@ -74,37 +81,17 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
             return when (playerButtonBase.state) {
                 PlayerButtonState.NORMAL -> player.life.toString()
                 PlayerButtonState.COMMANDER_RECEIVER -> PlayerButtonBase.currCommanderDamage[player.playerNum - 1].toString()
-                PlayerButtonState.COMMANDER_DEALER -> ""
+                PlayerButtonState.COMMANDER_DEALER -> "Deal damage with your commander"
             }
         }
 
     private val recentChangeText: String
         get(): String {
-//            return when (playerButtonBase.state) {
-//                PlayerButtonState.NORMAL -> {
-//                    if (player.recentChange > 0) {
-//                        (if (player.recentChange > 0) "+" else "") + player.recentChange.toString()
-//                    } else {
-//                        ""
-//                    }
-//                }
-//
-//                PlayerButtonState.COMMANDER_RECEIVER -> {
-//                    if (player.recentChange > 0) {
-//                        (if (player.recentChange > 0) "+" else "") + player.recentChange.toString()
-//                    } else {
-//                        ""
-//                    }
-//                }
-//
-//                PlayerButtonState.COMMANDER_DEALER -> ""
-//            }
             return if (player.recentChange > 0) {
                 (if (player.recentChange > 0) "+" else "") + player.recentChange.toString()
             } else {
                 ""
             }
-
         }
 
 
@@ -121,7 +108,12 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
                     paintSmall
                 )
                 //drawText(player.toString(), centerX, topLineY, paintSmall)
-                drawText(mainText, centerX, midLineY, paintLarge)
+                if (playerButtonBase.state != PlayerButtonState.COMMANDER_DEALER) {
+                    drawText(mainText, centerX, midLineY, paintLarge)
+                } else {
+                    drawText(mainText, centerX, centerY + (paintVerySmall.descent()), paintVerySmall)
+                }
+
                 //drawText(player.commanderDamage.toString(), centerX, topLineY, paintSmall)
 
                 val iconPos = calculateIconTopLeft(icon)

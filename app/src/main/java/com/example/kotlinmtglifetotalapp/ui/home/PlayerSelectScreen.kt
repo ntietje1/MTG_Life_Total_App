@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -27,6 +28,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import com.example.kotlinmtglifetotalapp.R
+import com.example.kotlinmtglifetotalapp.ui.lifecounter.Player
+import java.lang.Float.max
 import kotlin.random.Random
 
 
@@ -39,19 +42,34 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
         strokeWidth = 15f
     }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 20f
+        textSize = 100f
         color = Color.WHITE
     }
+
+    private val helperText = "Hold to select player"
+
+    private val helperTextBounds = Rect()
+
+    private val helperTextX get() = width/2f - helperTextBounds.width()/2.1f
+    private val helperTextY get() = height/2f
+    private var showHelperText = true
 
     private val rand = Random(System.currentTimeMillis())
 
     private var lastNewClick = System.currentTimeMillis()
 
-    private var clickHandler = Handler(Looper.getMainLooper())
+    private val clickHandler = Handler(Looper.getMainLooper())
 
     private var selectedId = -1
 
     private var numPlayers = -1
+
+    private val helperTextHandler = Handler(Looper.getMainLooper())
+
+    private val showHelperTextRunnable = Runnable {
+        showHelperText = true
+        invalidate()
+    }
 
     private val selectionRunnable = Runnable {
         val randomIndex = rand.nextInt(activePointers.size())
@@ -76,24 +94,6 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
         }
     }
 
-    private val pulseAnimator = ValueAnimator.ofFloat(1.0f, 1.25f, 1.0f).apply {
-        addUpdateListener { animation ->
-            run {
-                for (id in activePointers.keyIterator()) {
-                    if (activePointers[id] != null) {
-                        activePointers[id].size = animation.animatedValue as Float
-                    }
-                }
-                invalidate()
-            }
-        }
-        duration = 1000
-        interpolator = DecelerateInterpolator(0.8f)
-    }
-
-    init {
-
-    }
 
     override fun performClick(): Boolean {
         lastNewClick = System.currentTimeMillis()
@@ -111,14 +111,14 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
                     val p = PointT(event.getX(pointerIndex), event.getY(pointerIndex))
                     activePointers.put(pointerId, p)
                     popInAnimator(pointerId).start()
+                    showHelperText = false
+                    helperTextHandler.removeCallbacks(showHelperTextRunnable)
 
                     if (activePointers.size() > 1) {
                         removeCallbacks()
                         postCallbacks()
                     }
-
                 }
-
             }
 
             MotionEvent.ACTION_MOVE -> {
@@ -137,6 +137,7 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 activePointers.remove(pointerId)
                 removeCallbacks()
+                helperTextHandler.postDelayed(showHelperTextRunnable, SHOW_HELPER_TEXT_DELAY)
 
                 if (activePointers.size() > 1 && selectedId == -1) {
                     postCallbacks()
@@ -163,13 +164,23 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
             canvas.drawCircle(x, y, 125f * activePointers[id].size, touchPaint)
             i++
         }
+        if (showHelperText && activePointers.size() == 0) {
+            with (canvas) {
+                textPaint.getTextBounds(helperText, 0, helperText.length, helperTextBounds)
+                save()
+                rotate(90f, width/2f, height/2f)
+                canvas.drawText(helperText, helperTextX, helperTextY,  textPaint)
+                restore()
+            }
+        }
+
     }
 
     private fun popInAnimator(id: Int): ValueAnimator {
         return ValueAnimator.ofFloat(0.0f, 1.0f).apply {
             addUpdateListener { animation ->
                 if (activePointers[id] != null) {
-                    activePointers[id].size = animation.animatedValue as Float
+                    activePointers[id].sizeMultiplier = animation.animatedValue as Float
                     invalidate()
                 }
             }
@@ -183,7 +194,7 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
             addUpdateListener { animation ->
                 run {
                     if (activePointers[id] != null) {
-                        activePointers[id].size = animation.animatedValue as Float
+                        activePointers[id].sizeMultiplier = animation.animatedValue as Float
                         invalidate()
                     }
                 }
@@ -193,11 +204,29 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
         }
     }
 
+    private val pulseAnimator = ValueAnimator.ofFloat(1.0f, 1.25f, 1.0f).apply {
+        addUpdateListener { animation ->
+            run {
+                for (id in activePointers.keyIterator()) {
+                    if (activePointers[id] != null) {
+                        activePointers[id].sizeMultiplier = animation.animatedValue as Float
+                    }
+                }
+                invalidate()
+            }
+        }
+        duration = 1000
+        interpolator = DecelerateInterpolator(0.8f)
+    }
+
     private fun sendToLifeCounter() {
         val bundle = Bundle()
-        bundle.putInt("numPlayers", numPlayers)
+        if (Player.currentPlayers.size != 0) {
+            Player.packBundle(bundle)
+        } else {
+            bundle.putInt("numPlayers", numPlayers)
+        }
         Navigation.findNavController(this).navigate(R.id.navigation_life_counter, bundle)
-        clickHandler = Handler(Looper.getMainLooper())
     }
 
     private fun postCallbacks() {
@@ -213,8 +242,11 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
     companion object {
         private const val PULSE_DELAY = 200L
         private const val PULSE_FREQ = 100L
+
 //        private const val PULSE_DELAY = 1000L
 //        private const val PULSE_FREQ = 900L
+
+        private const val SHOW_HELPER_TEXT_DELAY = 3000L
         private const val SELECTION_DELAY = PULSE_DELAY + PULSE_FREQ * 3 - 10
 
     }

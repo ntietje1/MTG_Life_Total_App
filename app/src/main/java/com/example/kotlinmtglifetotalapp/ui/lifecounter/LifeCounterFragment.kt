@@ -1,36 +1,30 @@
 package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import MiddleButtonDialog
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.os.Bundle
 import android.view.Gravity
-
 import android.view.LayoutInflater
-
 import android.view.View
-
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
-
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.setPadding
-
 import androidx.fragment.app.Fragment
-
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-
 import com.example.kotlinmtglifetotalapp.R
-
 import com.example.kotlinmtglifetotalapp.databinding.LifeCounterLayoutBinding
 
 
 class LifeCounterFragment : Fragment() {
-
 
     private var _binding: LifeCounterLayoutBinding? = null
 
@@ -63,7 +57,7 @@ class LifeCounterFragment : Fragment() {
         }
 
     private val middlePos: Float
-        get() = when(numPlayers) {
+        get() = when (numPlayers) {
             2 -> 0.0f
             3 -> 0.12f
             4 -> 0.0f
@@ -72,10 +66,43 @@ class LifeCounterFragment : Fragment() {
             else -> throw IllegalArgumentException("invalid number of players")
         }
 
+    private val middleButton
+        get() = ImageButton(context).apply {
+            setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.middle_solid_icon))
+            background =
+                AppCompatResources.getDrawable(context, R.drawable.circular_background_black)
+
+            stateListAnimator = null
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.CENTER
+//                setMargins(20, 20, 20, 20)
+
+            }
+            setPadding(10)
+            setOnClickListener {
+                //goToPlayerSelect(this)
+                //toggleMiddleMenu()
+
+
+                toggleImageViewVis()
+                val fragment = MiddleButtonDialog()
+                fragment.show(
+                    this@LifeCounterFragment.childFragmentManager, "middle_button_fragment_tag"
+                )
+            }
+
+            val screenHeight = resources.displayMetrics.heightPixels
+            val middleButtonY = (screenHeight * middlePos).toInt()
+            val middleButtonLayoutParams = this.layoutParams as FrameLayout.LayoutParams
+            middleButtonLayoutParams.topMargin = middleButtonY
+            this.layoutParams = middleButtonLayoutParams
+
+        }
+
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = LifeCounterLayoutBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -97,13 +124,23 @@ class LifeCounterFragment : Fragment() {
             val playerButton = generateButton()
             playerButton.id = View.generateViewId()
             playerButtons.add(playerButton)
+            playerButton.buttonBase.player = Player.currentPlayers[i]
         }
 
-        for ((i, player) in Player.currentPlayers.withIndex()) {
-            playerButtons[i].buttonBase.player = player
-        }
+        println("on create")
+
+        val imageView = binding.imageView
+
+        imageView.setRenderEffect(
+            RenderEffect.createBlurEffect(
+                15.0f, 15.0f, Shader.TileMode.CLAMP
+            )
+        )
 
         return root
+    }
+
+    init {
     }
 
 
@@ -111,6 +148,7 @@ class LifeCounterFragment : Fragment() {
         super.onResume()
         generateButtons()
         placeButtons()
+        println("on resume")
     }
 
     /**
@@ -131,21 +169,18 @@ class LifeCounterFragment : Fragment() {
      */
     private fun generateButton(
         playerButton: PlayerButton = PlayerButton(
-            requireContext(),
-            PlayerButtonBase(requireContext(), null)
+            requireContext(), PlayerButtonBase(requireContext(), null)
         )
     ): PlayerButton {
 
         val rotateLayout = RotateLayout(context)
         rotateLayout.addView(playerButton)
         rotateLayout.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.MATCH_PARENT, 1f
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1f
         )
 
         playerButton.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.MATCH_PARENT
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT
         )
 
         return playerButton
@@ -161,11 +196,7 @@ class LifeCounterFragment : Fragment() {
     }
 
     private fun packBundle(outState: Bundle) {
-        outState.putInt("numPlayers", Player.currentPlayers.size)
-        for (player in Player.currentPlayers) {
-            println("Saved $player")
-            outState.putParcelable(player.toString(), player)
-        }
+        Player.packBundle(outState)
     }
 
     private fun unpackBundle(inState: Bundle) {
@@ -194,7 +225,6 @@ class LifeCounterFragment : Fragment() {
     }
 
     private fun removeAllViews() {
-        binding.frameLayout.removeAllViews()
         binding.linearLayout.removeAllViews()
 
         for (button in playerButtons) {
@@ -229,40 +259,60 @@ class LifeCounterFragment : Fragment() {
         }
 
         val fLayout = binding.frameLayout
-        val middleButton = ImageButton(context).apply {
-            setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.middle_solid_icon))
-            background = AppCompatResources.getDrawable(context, R.drawable.circular_background_black)
-
-            //rotation -= 90f
-            stateListAnimator = null
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                gravity = Gravity.CENTER
-//                setMargins(20, 20, 20, 20)
-
-            }
-            setPadding(10)
-            setOnClickListener {
-                val bundle = Bundle()
-                packBundle(bundle)
-                Navigation.findNavController(this).navigate(R.id.navigation_home, bundle)
-            }
-        }
         fLayout.addView(middleButton)
-
-
-        val screenHeight = resources.displayMetrics.heightPixels
-        val middleButtonY = (screenHeight * middlePos).toInt()
-        val middleButtonLayoutParams = middleButton.layoutParams as FrameLayout.LayoutParams
-        middleButtonLayoutParams.topMargin = middleButtonY
-        middleButton.layoutParams = middleButtonLayoutParams
 
     }
 
 
+    private fun setImageView() {
+        val fLayout = binding.frameLayout
+        val imageView = binding.imageView
+        val screenshot = Bitmap.createBitmap(fLayout.width, fLayout.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(screenshot)
 
+        fLayout.draw(canvas)
+        imageView.setImageBitmap(screenshot)
+    }
+
+    internal fun toggleImageViewVis() {
+        setImageView()
+        val imageView = binding.imageView
+        imageView.visibility = when (imageView.visibility) {
+            VISIBLE -> GONE
+            GONE -> VISIBLE
+            else -> VISIBLE
+        }
+    }
+
+    internal fun resetPlayers() {
+        for (player in Player.currentPlayers) {
+            player.resetPlayer()
+        }
+    }
+
+    internal fun goToPlayerSelect() {
+        val bundle = Bundle()
+        packBundle(bundle)
+        Navigation.findNavController(binding.linearLayout).navigate(R.id.navigation_home, bundle)
+    }
+
+    internal fun setPlayerNum(numPlayers: Int) {
+        resetPlayers()
+        println("WAS ${Player.currentPlayers.size} Players")
+        while (Player.currentPlayers.size > numPlayers) {
+            Player.currentPlayers.removeLast()
+            println("minus 1 player")
+        }
+        while (Player.currentPlayers.size < numPlayers) {
+            Player.generatePlayer()
+            println("plus 1 player")
+        }
+
+        println("NOW ${Player.currentPlayers.size} Players")
+        val bundle = Bundle()
+        packBundle(bundle)
+        Navigation.findNavController(binding.linearLayout).navigate(R.id.navigation_life_counter, bundle)
+    }
 
 
 }

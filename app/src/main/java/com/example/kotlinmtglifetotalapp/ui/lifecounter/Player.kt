@@ -1,6 +1,7 @@
 package com.example.kotlinmtglifetotalapp.ui.lifecounter
 
 import android.graphics.Color
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Parcel
@@ -9,9 +10,10 @@ import android.os.Parcelable
 // add player name functionality
 class Player(
     private var _life: Int,
-    val playerNum: Int,
     private val originalPlayerColor: Int
 ): Parcelable {
+
+    val playerNum get() = currentPlayers.indexOf(this) + 1
 
     val life: Int
         get() = _life
@@ -48,10 +50,19 @@ class Player(
         observer?.onPlayerUpdated()
     }
 
-
-    override fun toString() : String {
-        return "P${playerNum}"
+    fun resetPlayer(){
+        _life = startingLife
+        resetCommanderDamage()
+        notifyObserver()
     }
+
+    private fun resetCommanderDamage() {
+        for (i in 0 until 6) {
+            commanderDamage.removeAt(0)
+            commanderDamage.add(0)
+        }
+    }
+
 
     fun incrementLife(value: Int) {
         this._life += value
@@ -81,8 +92,9 @@ class Player(
     companion object CREATOR : Parcelable.Creator<Player>{
         private const val MAX_PLAYERS = 6
         var currentPlayers: ArrayList<Player> = arrayListOf()
+        var startingLife = 40
 
-        private var availableColors: MutableList<Int> = mutableListOf(
+        private var availableColors: ArrayList<Int> = arrayListOf(
             Color.parseColor("#F75FA8"),
             Color.parseColor("#F75F5F"),
             Color.parseColor("#F7C45F"),
@@ -92,6 +104,9 @@ class Player(
             Color.parseColor("#C25FF7"),
         )
 
+        private var unavailableColors: ArrayList<Int> = arrayListOf()
+
+
         override fun createFromParcel(parcel: Parcel): Player {
             return Player(parcel)
         }
@@ -100,18 +115,44 @@ class Player(
             return arrayOfNulls(size)
         }
 
-        fun generatePlayer(): Player {
-            val maxLife = 40
+        private fun getRandColor(): Int {
             availableColors.shuffle()
-            val playerColor = availableColors.removeAt(0)
-            val player = Player(maxLife, currentPlayers.size + 1, playerColor)
+            if (availableColors.size == 0) {
+                availableColors = unavailableColors
+                unavailableColors = arrayListOf()
+            }
+            var playerColor = availableColors.removeLast()
+            val usedColors = arrayListOf<Int>()
+            for (player in currentPlayers) {
+                usedColors.add(player.playerColor)
+            }
+            while (playerColor in usedColors) {
+                playerColor = getRandColor()
+            }
+
+            unavailableColors.add(playerColor)
+            return playerColor
+        }
+
+        fun generatePlayer(): Player {
+            val playerColor = getRandColor()
+            val player = Player(startingLife, playerColor)
             currentPlayers.add(player)
             return player
+        }
+
+        fun packBundle(outState: Bundle) {
+            outState.putInt("numPlayers", currentPlayers.size)
+            for (i in 1..currentPlayers.size) {
+                val pString = "P$i"
+                val player = currentPlayers[i-1]
+                println("Saved $pString")
+                outState.putParcelable(pString, player)
+            }
         }
     }
 
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
         parcel.readInt(),
         parcel.readInt()
     )

@@ -10,6 +10,15 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.setPadding
 import com.example.kotlinmtglifetotalapp.R
 
+/**
+ * TODO: implement these features in settings
+ * monarchy
+ * change color/name
+ * counters
+ * city's blessing?
+ *
+ *
+ */
 class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayout(context) {
 
     val buttonBase = buttonBase.apply{
