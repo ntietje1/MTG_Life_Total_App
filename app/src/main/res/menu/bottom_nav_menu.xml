@@ -3,17 +3,14 @@
 
     <item
             android:id="@+id/navigation_home"
-            android:icon="@drawable/ic_home_black_24dp"
             android:title="@string/title_home" />
 
     <item
             android:id="@+id/navigation_life_counter"
-            android:icon="@drawable/heart_solid_icon"
             android:title="@string/title_life_counter" />
 
     <item
             android:id="@+id/navigation_settings"
-            android:icon="@drawable/settings_solid_icon"
             android:title="@string/title_settings" />
 
 </menu>

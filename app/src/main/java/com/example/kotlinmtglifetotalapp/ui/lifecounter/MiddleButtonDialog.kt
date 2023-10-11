@@ -13,10 +13,10 @@ import com.example.kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
 
 /**
  * TODO: implement these features in settings
- * reset button
+ *
  *
  * dice
- * change number of players
+ *
  *
  */
 class MiddleButtonDialog : DialogFragment() {
@@ -36,7 +36,7 @@ class MiddleButtonDialog : DialogFragment() {
     }
 
     private val resetButton get() = SettingsButton(requireContext(), null).apply {
-        //imageResource = R.drawable.player_select_icon
+        imageResource = R.drawable.reset_icon
         text = "Reset game"
         setOnClickListener {
             parentFrag.resetPlayers()
@@ -45,7 +45,7 @@ class MiddleButtonDialog : DialogFragment() {
     }
 
     private val changeNumPlayersButton get() = SettingsButton(requireContext(), null).apply {
-        //imageResource = R.drawable.player_select_icon
+        imageResource = R.drawable.player_count_icon
         text = "Player number"
         setOnClickListener {
             parentFrag.toggleImageViewVis()
@@ -53,7 +53,22 @@ class MiddleButtonDialog : DialogFragment() {
             fragment.show(
                 parentFrag.childFragmentManager, "num_players_dialog_tag"
             )
-            dismiss()
+        }
+    }
+
+    private val diceRollButton get() = SettingsButton(requireContext(), null).apply {
+        imageResource = R.drawable.six_icon
+        text = "Dice roll"
+        setOnClickListener {
+
+        }
+    }
+
+    private val coinFlipButton get() = SettingsButton(requireContext(), null).apply {
+        imageResource = R.drawable.coin_icon
+        text = "Coin flip"
+        setOnClickListener {
+
         }
     }
 
@@ -82,7 +97,9 @@ class MiddleButtonDialog : DialogFragment() {
         middleMenu.addView(playerSelectButton)
         middleMenu.addView(resetButton)
         middleMenu.addView(changeNumPlayersButton)
-        for (i in 0 until 3) {
+        middleMenu.addView(diceRollButton)
+        middleMenu.addView(coinFlipButton)
+        for (i in 0 until 1) {
             middleMenu.addView(SettingsButton(requireContext(), null))
         }
     }

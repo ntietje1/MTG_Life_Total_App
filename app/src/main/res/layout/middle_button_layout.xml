@@ -5,6 +5,25 @@
         android:id="@+id/middle_menu"
         android:layout_gravity="center"
         android:background="@drawable/rounded_corners"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:orientation="horizontal">
+
+    <!--    <Button android:text="test">-->
+
+
+    <!--    </Button>-->
+
+    <!--    <Button android:text="test">-->
+
+    <!--    </Button>-->
+
+    <!--    <Button android:text="test">-->
+
+    <!--    </Button>-->
+
+    <!--    <Button android:text="test">-->
+
+    <!--    </Button>-->
+
 
 </GridLayout>

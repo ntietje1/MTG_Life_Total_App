@@ -16,8 +16,8 @@ class NumPlayersDialog: DialogFragment() {
     private val middleMenu get() = binding.middleMenu
 
     private val button1 get() = SettingsButton(requireContext(), null).apply {
-        //imageResource = R.drawable.player_select_icon
-        text = "1"
+        imageResource = R.drawable.one_icon
+        text = ""
         setOnClickListener {
             println("CHANGE PLAYER NUM")
             (parentFragment as LifeCounterFragment).setPlayerNum(1)
@@ -25,8 +25,8 @@ class NumPlayersDialog: DialogFragment() {
     }
 
     private val button2 get() = SettingsButton(requireContext(), null).apply {
-        //imageResource = R.drawable.player_select_icon
-        text = "2"
+        imageResource = R.drawable.two_icon
+        text = ""
         setOnClickListener {
             println("CHANGE PLAYER NUM")
             (parentFragment as LifeCounterFragment).setPlayerNum(2)
@@ -34,8 +34,8 @@ class NumPlayersDialog: DialogFragment() {
     }
 
     private val button3 get() = SettingsButton(requireContext(), null).apply {
-        //imageResource = R.drawable.player_select_icon
-        text = "3"
+        imageResource = R.drawable.three_icon
+        text = ""
         setOnClickListener {
             println("CHANGE PLAYER NUM")
             (parentFragment as LifeCounterFragment).setPlayerNum(3)
@@ -43,8 +43,8 @@ class NumPlayersDialog: DialogFragment() {
     }
 
     private val button4 get() = SettingsButton(requireContext(), null).apply {
-        //imageResource = R.drawable.player_select_icon
-        text = "4"
+        imageResource = R.drawable.four_icon
+        text = ""
         setOnClickListener {
             println("CHANGE PLAYER NUM")
             (parentFragment as LifeCounterFragment).setPlayerNum(4)
@@ -52,8 +52,8 @@ class NumPlayersDialog: DialogFragment() {
     }
 
     private val button5 get() = SettingsButton(requireContext(), null).apply {
-        //imageResource = R.drawable.player_select_icon
-        text = "5"
+        imageResource = R.drawable.five_icon
+        text = ""
         setOnClickListener {
             println("CHANGE PLAYER NUM")
             (parentFragment as LifeCounterFragment).setPlayerNum(5)
@@ -61,8 +61,8 @@ class NumPlayersDialog: DialogFragment() {
     }
 
     private val button6 get() = SettingsButton(requireContext(), null).apply {
-        //imageResource = R.drawable.player_select_icon
-        text = "6"
+        imageResource = R.drawable.six_icon
+        text = ""
         setOnClickListener {
             println("CHANGE PLAYER NUM")
             (parentFragment as LifeCounterFragment).setPlayerNum(6)
