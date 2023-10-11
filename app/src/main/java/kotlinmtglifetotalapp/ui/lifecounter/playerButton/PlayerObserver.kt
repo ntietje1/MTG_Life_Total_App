@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton
+package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 interface PlayerObserver {
     fun onPlayerUpdated()

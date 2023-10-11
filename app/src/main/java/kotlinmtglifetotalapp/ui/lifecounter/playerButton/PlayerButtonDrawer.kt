@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton
+package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 import android.content.res.ColorStateList
 import android.graphics.Bitmap

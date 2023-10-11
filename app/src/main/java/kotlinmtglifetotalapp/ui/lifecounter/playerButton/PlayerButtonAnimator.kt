@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton
+package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder

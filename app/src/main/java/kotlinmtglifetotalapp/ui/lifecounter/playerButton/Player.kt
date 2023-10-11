@@ -6,7 +6,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Parcel
 import android.os.Parcelable
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.PlayerObserver
 
 // add player name functionality
 class Player(

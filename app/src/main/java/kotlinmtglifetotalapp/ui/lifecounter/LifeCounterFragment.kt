@@ -24,7 +24,7 @@ import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.LifeCounterLayoutBinding
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.Player
 import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.PlayerButton
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.PlayerButtonBase
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonBase
 
 
 class LifeCounterFragment : Fragment() {
