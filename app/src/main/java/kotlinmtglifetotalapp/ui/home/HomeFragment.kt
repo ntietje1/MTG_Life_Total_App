@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 
 import com.example.kotlinmtglifetotalapp.databinding.FragmentHomeBinding
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.Player
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.Player
 
 class HomeFragment : Fragment() {
 

@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter
+package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 import android.graphics.Color
 import android.os.Bundle
@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Parcel
 import android.os.Parcelable
+import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.PlayerObserver
 
 // add player name functionality
 class Player(

@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter
+package com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton
 
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable

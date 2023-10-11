@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter;
+package kotlinmtglifetotalapp.utils;
 
 import android.content.Context;
 import android.content.res.TypedArray;

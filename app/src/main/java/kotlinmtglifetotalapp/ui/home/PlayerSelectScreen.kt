@@ -19,7 +19,7 @@ import android.view.animation.OvershootInterpolator
 import androidx.core.util.keyIterator
 import androidx.navigation.Navigation
 import com.example.kotlinmtglifetotalapp.R
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.Player
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.Player
 import kotlin.random.Random
 
 

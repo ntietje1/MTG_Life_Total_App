@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter
+package com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton
 
 
 import android.content.Context
@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatButton
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.Player
 
 class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton(context, attrs),
     PlayerObserver {

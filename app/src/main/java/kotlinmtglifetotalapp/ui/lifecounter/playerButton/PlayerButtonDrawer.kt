@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter
+package com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton
 
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
@@ -7,13 +7,11 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.PointF
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.toColor
 import androidx.core.graphics.withMatrix
 import com.example.kotlinmtglifetotalapp.R
 
