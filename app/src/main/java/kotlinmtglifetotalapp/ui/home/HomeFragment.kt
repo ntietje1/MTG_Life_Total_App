@@ -1,27 +1,13 @@
 package com.example.kotlinmtglifetotalapp.ui.home
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
-
-import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.FragmentHomeBinding
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.Player
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.RotateLayout
+import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.Player
 
 class HomeFragment : Fragment() {
 

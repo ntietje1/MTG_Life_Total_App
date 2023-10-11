@@ -7,10 +7,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.kotlinmtglifetotalapp.databinding.ActivityMainBinding
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.Player
 
 class MainActivity : AppCompatActivity() {
 

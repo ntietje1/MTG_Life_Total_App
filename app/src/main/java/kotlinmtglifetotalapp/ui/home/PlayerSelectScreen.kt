@@ -1,10 +1,8 @@
 package com.example.kotlinmtglifetotalapp.ui.home
 
 
-import android.animation.AnimatorInflater
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -16,20 +14,12 @@ import android.util.AttributeSet
 import android.util.SparseArray
 import android.view.MotionEvent
 import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.compose.animation.core.RepeatMode
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.util.keyIterator
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import androidx.navigation.findNavController
 import com.example.kotlinmtglifetotalapp.R
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.Player
-import java.lang.Float.max
+import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.Player
 import kotlin.random.Random
 
 

@@ -22,6 +22,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.LifeCounterLayoutBinding
+import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.Player
+import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.PlayerButton
+import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.PlayerButtonBase
 
 
 class LifeCounterFragment : Fragment() {
