@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter
+package kotlinmtglifetotalapp.ui.lifecounter
 
 import android.content.DialogInterface
 import android.os.Bundle

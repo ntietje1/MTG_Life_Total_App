@@ -1,4 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter
+package kotlinmtglifetotalapp.ui.lifecounter
 
 import android.content.Context
 import android.graphics.Color
@@ -7,7 +7,6 @@ import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.view.setMargins
 import androidx.core.view.setPadding
 import com.example.kotlinmtglifetotalapp.R
 

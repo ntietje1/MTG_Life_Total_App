@@ -21,17 +21,18 @@ class Player(
     val playerColor: Int
         get() = if (isDead) Color.GRAY else originalPlayerColor
 
+    lateinit var name: String
+
     val commanderDamage: ArrayList<Int> = arrayListOf<Int>().apply {
         for (i in 0 until MAX_PLAYERS) {
             add(0)
         }
     }
 
-    private val isDead get() = life <= 0
+    private val isDead get() = (life <= 0)
 
     private var _recentChange = 0
     val recentChange get() = _recentChange
-
 
     private val handler: Handler = Handler(Looper.getMainLooper())
 
@@ -138,6 +139,7 @@ class Player(
             val playerColor = getRandColor()
             val player = Player(startingLife, playerColor)
             currentPlayers.add(player)
+            player.name = ("P" + player.playerNum)
             return player
         }
 
@@ -159,7 +161,6 @@ class Player(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(life)
-        parcel.writeInt(playerNum)
         parcel.writeInt(originalPlayerColor)
     }
 

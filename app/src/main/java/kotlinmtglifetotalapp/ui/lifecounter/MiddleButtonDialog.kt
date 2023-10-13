@@ -3,13 +3,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
 import androidx.fragment.app.DialogFragment
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.MiddleButtonLayoutBinding
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.LifeCounterFragment
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.NumPlayersDialog
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
+import kotlinmtglifetotalapp.ui.lifecounter.LifeCounterFragment
+import kotlinmtglifetotalapp.ui.lifecounter.NumPlayersDialog
+import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
 
 /**
  * TODO: implement these features in settings

@@ -62,10 +62,12 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
         get() = playerButtonBase.height / 2f
 
     private val topLineY: Float
-        get() = centerY - playerButtonBase.height * 0.1f - playerButtonBase.width / 10
+        get() = midLineY + paintLarge.ascent()*0.85f
+//    get() = centerY - playerButtonBase.height * 0.1f - playerButtonBase.width / 10
 
     private val midLineY: Float
-        get() = centerY * 0.625f + (paintLarge.descent() - paintLarge.ascent()) - playerButtonBase.width / 5.25f
+        get() = centerY - paintLarge.ascent()/2.5f
+    //get() = centerY * 0.625f + (paintLarge.descent() - paintLarge.ascent()) - playerButtonBase.width / 5.25f
 
     private val rotatedMatrix
         get(): Matrix {
@@ -92,8 +94,6 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
             }
         }
 
-
-    // TODO: add text to commander damage dealer
     fun draw(canvas: Canvas) {
         with(canvas) {
             save()
@@ -105,14 +105,14 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
                     midLineY - 75,
                     paintSmall
                 )
-                //drawText(player.toString(), centerX, topLineY, paintSmall)
+                drawText(player.name, centerX, topLineY, paintSmall)
                 if (playerButtonBase.state != PlayerButtonState.COMMANDER_DEALER) {
                     drawText(mainText, centerX, midLineY, paintLarge)
                 } else {
                     drawText(mainText, centerX, centerY + (paintVerySmall.descent()), paintVerySmall)
                 }
 
-                //drawText(player.commanderDamage.toString(), centerX, topLineY, paintSmall)
+
 
                 val iconPos = calculateIconTopLeft(icon)
 

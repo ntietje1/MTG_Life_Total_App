@@ -1,5 +1,4 @@
-package com.example.kotlinmtglifetotalapp.ui.lifecounter
-
+package kotlinmtglifetotalapp.ui.lifecounter
 
 import MiddleButtonDialog
 import android.graphics.Bitmap
@@ -17,14 +16,14 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.LifeCounterLayoutBinding
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.Player
-import com.example.kotlinmtglifetotalapp.ui.lifecounter.PlayerButton.PlayerButton
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButton
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonBase
+import kotlinmtglifetotalapp.utils.RotateLayout
 
 
 class LifeCounterFragment : Fragment() {
@@ -83,7 +82,7 @@ class LifeCounterFragment : Fragment() {
 //                setMargins(20, 20, 20, 20)
 
             }
-            setPadding(10)
+            setPadding(10, 10, 10, 10)
             setOnClickListener {
                 //goToPlayerSelect(this)
                 //toggleMiddleMenu()
