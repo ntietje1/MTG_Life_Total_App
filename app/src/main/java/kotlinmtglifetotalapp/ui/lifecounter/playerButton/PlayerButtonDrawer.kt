@@ -107,7 +107,9 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
                     midLineY - 75,
                     paintSmall
                 )
-                drawText(player.name, centerX, topLineY, paintSmall)
+                if (playerButtonBase.state != PlayerButtonState.SETTINGS) {
+                    drawText(player.name, centerX, topLineY, paintSmall)
+                }
                 if (playerButtonBase.state != PlayerButtonState.COMMANDER_DEALER) {
                     drawText(mainText, centerX, midLineY, paintLarge)
                 } else {

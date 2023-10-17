@@ -68,19 +68,21 @@ class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayou
             when (buttonBase.state) {
                 PlayerButtonState.NORMAL -> this@PlayerButton.switchToSettings()
                 PlayerButtonState.SETTINGS -> this@PlayerButton.switchFromSettings()
-                else -> throw IllegalStateException()
+                else -> this@PlayerButton.switchToSettings()
             }
         }
     }
 
     private fun switchFromSettings() {
+        println("switch from settings")
         buttonBase.switchState(PlayerButtonState.NORMAL)
-        TODO("Not yet implemented")
+
     }
 
     private fun switchToSettings() {
+        println("switch to settings")
         buttonBase.switchState(PlayerButtonState.SETTINGS)
-        TODO("Not yet implemented")
+
     }
 
 

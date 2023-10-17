@@ -23,11 +23,9 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
             }
 
         fun switchAllStates(mode: PlayerButtonState) {
+            currDealer = null
             allPlayerButtons.forEach {
                 it.state = mode
-                it.updateUI()
-                it.player!!.zeroRecentChange()
-                currDealer = null
             }
         }
     }
@@ -39,6 +37,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
             field = value
             field?.setObserver(this)
             updateUI()
+            field?.zeroRecentChange()
         }
 
     private lateinit var animator: PlayerButtonAnimator
@@ -49,6 +48,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
         private set(value) {
             field = value
             playerButtonCallback.updateButtonVisibility()
+            updateUI()
         }
 
     override fun onAttachedToWindow() {
@@ -83,11 +83,10 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
         switchAllStates(PlayerButtonState.COMMANDER_RECEIVER)
         state = PlayerButtonState.COMMANDER_DEALER
         currDealer = player
-        updateUI()
     }
 
     private fun switchToNormal() {
-        state = PlayerButtonState.SETTINGS
+        state = PlayerButtonState.NORMAL
     }
 
     private fun switchToSettings() {
