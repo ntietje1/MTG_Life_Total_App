@@ -44,8 +44,8 @@ class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayou
         setPadding(5)
         setOnClickListener {
             when (buttonBase.state) {
-                PlayerButtonState.NORMAL -> buttonBase.switchToCommanderDealer()
-                PlayerButtonState.COMMANDER_DEALER -> buttonBase.switchToNormal()
+                PlayerButtonState.NORMAL -> buttonBase.switchState(PlayerButtonState.COMMANDER_DEALER)
+                PlayerButtonState.COMMANDER_DEALER -> PlayerButtonBase.switchAllStates(PlayerButtonState.NORMAL)
                 else -> throw IllegalStateException()
             }
         }
@@ -64,6 +64,23 @@ class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayou
             setMargins(20, 20, 20, 20)
         }
         setPadding(5)
+        setOnClickListener {
+            when (buttonBase.state) {
+                PlayerButtonState.NORMAL -> this@PlayerButton.switchToSettings()
+                PlayerButtonState.SETTINGS -> this@PlayerButton.switchFromSettings()
+                else -> throw IllegalStateException()
+            }
+        }
+    }
+
+    private fun switchFromSettings() {
+        buttonBase.switchState(PlayerButtonState.NORMAL)
+        TODO("Not yet implemented")
+    }
+
+    private fun switchToSettings() {
+        buttonBase.switchState(PlayerButtonState.SETTINGS)
+        TODO("Not yet implemented")
     }
 
 
@@ -87,6 +104,10 @@ class PlayerButton (context: Context, buttonBase: PlayerButtonBase) : FrameLayou
             PlayerButtonState.COMMANDER_RECEIVER -> {
                 commanderButton.visibility = GONE
                 settingsButton.visibility = GONE
+            }
+            PlayerButtonState.SETTINGS -> {
+                commanderButton.visibility = GONE
+                settingsButton.visibility = VISIBLE
             }
         }
     }

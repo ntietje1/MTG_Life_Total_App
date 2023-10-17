@@ -22,11 +22,12 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
                 }
             }
 
-        fun switchAllToMode(mode: PlayerButtonState) {
+        fun switchAllStates(mode: PlayerButtonState) {
             allPlayerButtons.forEach {
                 it.state = mode
                 it.updateUI()
                 it.player!!.zeroRecentChange()
+                currDealer = null
             }
         }
     }
@@ -65,16 +66,32 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
         updateUI()
     }
 
-    fun switchToCommanderDealer() {
-        switchAllToMode(PlayerButtonState.COMMANDER_RECEIVER)
+    fun switchState(state: PlayerButtonState) {
+        when (state) {
+            PlayerButtonState.NORMAL -> switchToNormal()
+            PlayerButtonState.COMMANDER_RECEIVER -> switchToCommanderReceiver()
+            PlayerButtonState.COMMANDER_DEALER -> switchToCommanderDealer()
+            PlayerButtonState.SETTINGS -> switchToSettings()
+        }
+    }
+
+    private fun switchToCommanderReceiver() {
+        state = PlayerButtonState.COMMANDER_RECEIVER
+    }
+
+    private fun switchToCommanderDealer() {
+        switchAllStates(PlayerButtonState.COMMANDER_RECEIVER)
         state = PlayerButtonState.COMMANDER_DEALER
         currDealer = player
         updateUI()
     }
 
-    fun switchToNormal() {
-        switchAllToMode(PlayerButtonState.NORMAL)
-        currDealer = null
+    private fun switchToNormal() {
+        state = PlayerButtonState.SETTINGS
+    }
+
+    private fun switchToSettings() {
+        state = PlayerButtonState.SETTINGS
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

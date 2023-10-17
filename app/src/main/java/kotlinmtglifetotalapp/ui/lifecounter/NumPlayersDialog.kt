@@ -98,13 +98,6 @@ class NumPlayersDialog: DialogFragment() {
         middleMenu.addView(button6)
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        with(parentFragment as LifeCounterFragment) {
-            toggleImageViewVis()
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

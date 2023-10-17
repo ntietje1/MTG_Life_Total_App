@@ -3,9 +3,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.MiddleButtonLayoutBinding
+import kotlinmtglifetotalapp.ui.lifecounter.CoinFlipDialog
 import kotlinmtglifetotalapp.ui.lifecounter.LifeCounterFragment
 import kotlinmtglifetotalapp.ui.lifecounter.NumPlayersDialog
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
@@ -47,7 +49,6 @@ class MiddleButtonDialog : DialogFragment() {
         imageResource = R.drawable.player_count_icon
         text = "Player number"
         setOnClickListener {
-            parentFrag.toggleImageViewVis()
             val fragment = NumPlayersDialog()
             fragment.show(
                 parentFrag.childFragmentManager, "num_players_dialog_tag"
@@ -67,7 +68,25 @@ class MiddleButtonDialog : DialogFragment() {
         imageResource = R.drawable.coin_icon
         text = "Coin flip"
         setOnClickListener {
+            val fragment = CoinFlipDialog()
 
+//            val width = this@MiddleButtonDialog.view?.width ?: 0
+//            val height = this@MiddleButtonDialog.view?.height ?: 0
+            val width = 2000
+            val height = 4000
+
+            // Set the dimensions of the CoinFlipDialog
+            val params = WindowManager.LayoutParams()
+            params.width = width
+            params.height = height
+            fragment.dialog?.window?.attributes = params
+
+            //fragment.dialog?.window?.attributes = this@MiddleButtonDialog.dialog?.window?.attributes
+
+
+            fragment.show(
+                parentFrag.childFragmentManager, "coin_flip_dialog_tag"
+            )
         }
     }
 
@@ -105,9 +124,7 @@ class MiddleButtonDialog : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        with(parentFragment as LifeCounterFragment) {
-            toggleImageViewVis()
-        }
+        parentFrag.toggleImageViewVis()
     }
 
     override fun onDestroyView() {

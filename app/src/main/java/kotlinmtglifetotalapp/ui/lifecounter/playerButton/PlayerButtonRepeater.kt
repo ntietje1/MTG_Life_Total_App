@@ -36,7 +36,7 @@ class PlayerButtonRepeater (private val playerButtonBase: PlayerButtonBase, priv
                 player.incrementCommander(change)
                 PlayerButtonBase.currCommanderDamage[player.playerNum - 1] += change
             }
-            PlayerButtonState.COMMANDER_DEALER -> Unit
+            else -> Unit
         }
     }
 }

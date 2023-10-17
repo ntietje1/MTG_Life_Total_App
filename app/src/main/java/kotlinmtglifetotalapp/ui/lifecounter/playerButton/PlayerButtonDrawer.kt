@@ -26,7 +26,7 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
             val drawableResId = when (playerButtonBase.state) {
                 PlayerButtonState.NORMAL -> R.drawable.heart_solid_icon
                 PlayerButtonState.COMMANDER_RECEIVER -> R.drawable.commander_solid_icon_small
-                PlayerButtonState.COMMANDER_DEALER -> R.drawable.transparent
+                else -> R.drawable.transparent
             }
 
             val drawable = AppCompatResources.getDrawable(context, drawableResId)
@@ -42,7 +42,8 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
 
     private val paintSmall: Paint
         get() = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            textSize = (playerButtonBase.height / 15f) + (playerButtonBase.width / 30f)
+            textSize = paintLarge.textSize / 5f
+//            textSize = (playerButtonBase.height / 15f) + (playerButtonBase.width / 30f)
             textAlign = Paint.Align.CENTER
             color = Color.WHITE
         }
@@ -62,7 +63,7 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
         get() = playerButtonBase.height / 2f
 
     private val topLineY: Float
-        get() = midLineY + paintLarge.ascent()*0.85f
+        get() = midLineY + paintLarge.ascent()*0.865f
 //    get() = centerY - playerButtonBase.height * 0.1f - playerButtonBase.width / 10
 
     private val midLineY: Float
@@ -82,12 +83,13 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
                 PlayerButtonState.NORMAL -> player.life.toString()
                 PlayerButtonState.COMMANDER_RECEIVER -> PlayerButtonBase.currCommanderDamage[player.playerNum - 1].toString()
                 PlayerButtonState.COMMANDER_DEALER -> "Deal damage with your commander"
+                else -> ""
             }
         }
 
     private val recentChangeText: String
         get(): String {
-            return if (player.recentChange > 0) {
+            return if (player.recentChange != 0) {
                 (if (player.recentChange > 0) "+" else "") + player.recentChange.toString()
             } else {
                 ""
@@ -138,6 +140,7 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
                 PlayerButtonState.NORMAL -> ColorStateList.valueOf(player!!.playerColor)
                 PlayerButtonState.COMMANDER_RECEIVER -> ColorStateList.valueOf(Color.DKGRAY)
                 PlayerButtonState.COMMANDER_DEALER -> ColorStateList.valueOf(darkenColor(desaturateColor(player!!.playerColor)))
+                else -> ColorStateList.valueOf(Color.GRAY)
             }
 
             gradientDrawable.color = colorStateListBackground

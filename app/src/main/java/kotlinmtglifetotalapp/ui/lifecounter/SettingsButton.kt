@@ -24,7 +24,6 @@ class SettingsButton(context: Context, attrs: AttributeSet?) : LinearLayout(cont
             textView.text = value
         }
 
-
     private val imageView = ImageView(context).apply {
         val imageSize =
             context.resources.getDimensionPixelSize(R.dimen.settings_button_size) - context.resources.getDimensionPixelSize(

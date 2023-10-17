@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:background="@drawable/rounded_corners">
+
+    <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="@drawable/rounded_corners"
+            android:columnCount="2"
+            android:rowCount="3"
+            android:visibility="invisible"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="32dp">
+
+        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+
+        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
+    </GridLayout>
+
+
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/heads"
+            android:id="@+id/coin"
+            android:layout_gravity="center" />
+<!--     | bottom-->
+
+
+</FrameLayout>
