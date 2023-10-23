@@ -23,7 +23,7 @@ class CoinFlipDialog : DialogFragment() {
     private val headsToHeads get() = Rotate3dAnimation(
         coinImage,
         R.drawable.heads,
-        R.drawable.heads,
+        R.drawable.tails,
         0f,
         180f,
         0f,
@@ -68,7 +68,7 @@ class CoinFlipDialog : DialogFragment() {
     private val tailsToTails get() = Rotate3dAnimation(
         coinImage,
         R.drawable.tails,
-        R.drawable.tails,
+        R.drawable.heads,
         0f,
         180f,
         0f,
@@ -101,7 +101,6 @@ class CoinFlipDialog : DialogFragment() {
     ): View {
         _binding = CoinFlipLayoutBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

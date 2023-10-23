@@ -28,7 +28,7 @@ class MiddleButtonDialog : DialogFragment() {
     private val middleMenu get() = binding.middleMenu
     private val parentFrag get() = parentFragment as LifeCounterFragment
 
-    private val playerSelectButton get() = SettingsButton(requireContext(), null).apply {
+    private val playerSelectButton get() = SettingsButton(requireContext()).apply {
         imageResource = R.drawable.player_select_icon
         text = "Player Select"
         setOnClickListener {
@@ -36,7 +36,7 @@ class MiddleButtonDialog : DialogFragment() {
         }
     }
 
-    private val resetButton get() = SettingsButton(requireContext(), null).apply {
+    private val resetButton get() = SettingsButton(requireContext()).apply {
         imageResource = R.drawable.reset_icon
         text = "Reset game"
         setOnClickListener {
@@ -45,7 +45,7 @@ class MiddleButtonDialog : DialogFragment() {
         }
     }
 
-    private val changeNumPlayersButton get() = SettingsButton(requireContext(), null).apply {
+    private val changeNumPlayersButton get() = SettingsButton(requireContext()).apply {
         imageResource = R.drawable.player_count_icon
         text = "Player number"
         setOnClickListener {
@@ -56,7 +56,7 @@ class MiddleButtonDialog : DialogFragment() {
         }
     }
 
-    private val diceRollButton get() = SettingsButton(requireContext(), null).apply {
+    private val diceRollButton get() = SettingsButton(requireContext()).apply {
         imageResource = R.drawable.six_icon
         text = "Dice roll"
         setOnClickListener {

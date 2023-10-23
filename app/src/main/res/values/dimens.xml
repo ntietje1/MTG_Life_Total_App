@@ -10,4 +10,6 @@
     <dimen name="text_size">5sp</dimen>
     <dimen name="text_view_height">15dp</dimen>
     <dimen name="text_reverse_padding">-5dp</dimen>
+
+    <dimen name="background_picker_button_size">50dp</dimen>
 </resources>

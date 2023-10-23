@@ -2,10 +2,16 @@ package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.RippleDrawable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatButton
+import androidx.core.graphics.ColorUtils
+import com.example.kotlinmtglifetotalapp.R
 
 class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton(context, attrs),
     PlayerObserver {
@@ -25,6 +31,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
         fun switchAllStates(mode: PlayerButtonState) {
             currDealer = null
             allPlayerButtons.forEach {
+                it.playerButtonCallback.resetState()
                 it.state = mode
             }
         }
@@ -42,7 +49,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
 
     private lateinit var animator: PlayerButtonAnimator
     private val repeater = PlayerButtonRepeater(this, 500, 100)
-    private val drawer = PlayerButtonDrawer(this)
+    val drawer = PlayerButtonDrawer(this)
 
     var state = PlayerButtonState.NORMAL
         private set(value) {
@@ -55,6 +62,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
         super.onAttachedToWindow()
         allPlayerButtons.add(this)
         animator = PlayerButtonAnimator(this.parent as PlayerButton)
+
     }
 
     override fun onDetachedFromWindow() {
@@ -145,7 +153,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
         return super.onTouchEvent(event)
     }
 
-    private fun updateUI() {
+    fun updateUI() {
         drawer.setBackground()
         invalidate()
     }

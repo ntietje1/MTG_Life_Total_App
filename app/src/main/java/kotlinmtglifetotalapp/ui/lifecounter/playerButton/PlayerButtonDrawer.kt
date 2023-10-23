@@ -21,6 +21,21 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
 
     private val player get() = playerButtonBase.player!!
 
+    private val rippleDrawable get() = playerButtonBase.background as RippleDrawable
+    private val background get() = rippleDrawable.findDrawableByLayerId(android.R.id.background) as GradientDrawable
+
+    private var colorList: ColorStateList
+        get() = background.color!!
+        set(value) {
+            background.color = value
+        }
+
+    private var color: Int
+        get() = colorList.defaultColor
+        set(value) {
+            colorList = ColorStateList.valueOf(value)
+        }
+
     private val icon: Bitmap
         get() {
             val drawableResId = when (playerButtonBase.state) {
@@ -96,17 +111,31 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
             }
         }
 
+    init {
+        playerButtonBase.setBackgroundResource(R.drawable.rounded_corners)
+        val colorStateListRipple =
+            ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 60))
+        rippleDrawable.setColor(colorStateListRipple)
+
+        // Modify the stroke width and color
+        val newStrokeWidth = 0 // Change this to your desired stroke width in pixels
+        val newStrokeColor = Color.YELLOW // Change this to your desired stroke color
+        background.setStroke(newStrokeWidth, newStrokeColor)
+    }
+
     fun draw(canvas: Canvas) {
         with(canvas) {
             save()
             rotate(playerButtonBase.rotation, centerX, centerY)
             withMatrix(rotatedMatrix) {
-                drawText(
-                    recentChangeText,
-                    centerX + paintLarge.measureText(mainText) / 2 + 100,
-                    midLineY - 75,
-                    paintSmall
-                )
+                if (playerButtonBase.state == PlayerButtonState.NORMAL || playerButtonBase.state == PlayerButtonState.COMMANDER_RECEIVER) {
+                    drawText(
+                        recentChangeText,
+                        centerX + paintLarge.measureText(mainText) / 2 + 100,
+                        midLineY - 75,
+                        paintSmall
+                    )
+                }
                 if (playerButtonBase.state != PlayerButtonState.SETTINGS) {
                     drawText(player.name, centerX, topLineY, paintSmall)
                 }
@@ -115,8 +144,6 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
                 } else {
                     drawText(mainText, centerX, centerY + (paintVerySmall.descent()), paintVerySmall)
                 }
-
-
 
                 val iconPos = calculateIconTopLeft(icon)
 
@@ -129,36 +156,32 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
 
     fun setBackground() {
         with (playerButtonBase) {
-            setBackgroundResource(R.drawable.rounded_corners)
-            val rippleDrawable = background as RippleDrawable
-            val gradientDrawable =
-                rippleDrawable.findDrawableByLayerId(android.R.id.background) as GradientDrawable
-
-            val colorStateListRipple =
-                ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 60))
-            rippleDrawable.setColor(colorStateListRipple)
-
-            val colorStateListBackground = when (state) {
-                PlayerButtonState.NORMAL -> ColorStateList.valueOf(player!!.playerColor)
-                PlayerButtonState.COMMANDER_RECEIVER -> ColorStateList.valueOf(Color.DKGRAY)
-                PlayerButtonState.COMMANDER_DEALER -> ColorStateList.valueOf(darkenColor(desaturateColor(player!!.playerColor)))
-                else -> ColorStateList.valueOf(Color.GRAY)
+            color = when (state) {
+                PlayerButtonState.NORMAL -> {
+                    if (player!!.isDead) {
+                        desaturateColor(player!!.playerColor, 0.9f)
+                    } else {
+                        player!!.playerColor
+                    }
+                }
+                PlayerButtonState.COMMANDER_RECEIVER -> Color.DKGRAY
+                PlayerButtonState.COMMANDER_DEALER -> darkenColor(desaturateColor(player!!.playerColor))
+                else -> desaturateColor(player!!.playerColor, 0.2f)
             }
 
-            gradientDrawable.color = colorStateListBackground
         }
+
+
     }
 
-    private fun darkenColor(color: Int): Int {
-        val factor = 0.6f
+    private fun darkenColor(color: Int, factor: Float = 0.6f): Int {
         val red = Color.red(color) * factor
         val green = Color.green(color) * factor
         val blue = Color.blue(color) * factor
         return Color.rgb(red.toInt(), green.toInt(), blue.toInt())
     }
 
-    private fun desaturateColor(color: Int): Int {
-        val factor = 0.6f
+    private fun desaturateColor(color: Int, factor: Float = 0.6f): Int {
         val hsl = FloatArray(3)
         ColorUtils.colorToHSL(color, hsl)
 

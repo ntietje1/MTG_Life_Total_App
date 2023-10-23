@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.core.view.setPadding
 import com.example.kotlinmtglifetotalapp.R
 
-class SettingsButton(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
+class SettingsButton(context: Context, attrs: AttributeSet? = null) : LinearLayout(context, attrs) {
 
     var imageResource = R.drawable.placeholder_icon
         set(value) {

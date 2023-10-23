@@ -6,20 +6,18 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Parcel
 import android.os.Parcelable
+import java.util.Collections.addAll
 
 // add player name functionality
 class Player(
     private var _life: Int,
-    private val originalPlayerColor: Int
-): Parcelable {
+    public var playerColor: Int
+) : Parcelable {
 
     val playerNum get() = currentPlayers.indexOf(this) + 1
 
     val life: Int
         get() = _life
-
-    val playerColor: Int
-        get() = if (isDead) Color.GRAY else originalPlayerColor
 
     lateinit var name: String
 
@@ -29,7 +27,7 @@ class Player(
         }
     }
 
-    private val isDead get() = (life <= 0)
+    val isDead get() = (life <= 0)
 
     private var _recentChange = 0
     val recentChange get() = _recentChange
@@ -51,7 +49,7 @@ class Player(
         observer?.onPlayerUpdated()
     }
 
-    fun resetPlayer(){
+    fun resetPlayer() {
         _life = startingLife
         resetCommanderDamage()
         notifyObserver()
@@ -90,12 +88,12 @@ class Player(
 
     // Parcelable related code
 
-    companion object CREATOR : Parcelable.Creator<Player>{
+    companion object CREATOR : Parcelable.Creator<Player> {
         private const val MAX_PLAYERS = 6
         var currentPlayers: ArrayList<Player> = arrayListOf()
         var startingLife = 40
 
-        private var availableColors: ArrayList<Int> = arrayListOf(
+        val allColors: ArrayList<Int> = arrayListOf(
             Color.parseColor("#F75FA8"),
             Color.parseColor("#F75F5F"),
             Color.parseColor("#F7C45F"),
@@ -103,7 +101,14 @@ class Player(
             Color.parseColor("#5FEAF7"),
             Color.parseColor("#625FF7"),
             Color.parseColor("#C25FF7"),
+            Color.parseColor("#f78e55"),
+            Color.parseColor("#c28efc"),
+            Color.parseColor("#409c5a")
         )
+
+        private var availableColors: ArrayList<Int> = arrayListOf<Int>().apply {
+            addAll(allColors)
+        }
 
         private var unavailableColors: ArrayList<Int> = arrayListOf()
 
@@ -147,7 +152,7 @@ class Player(
             outState.putInt("numPlayers", currentPlayers.size)
             for (i in 1..currentPlayers.size) {
                 val pString = "P$i"
-                val player = currentPlayers[i-1]
+                val player = currentPlayers[i - 1]
                 println("Saved $pString")
                 outState.putParcelable(pString, player)
             }
@@ -161,7 +166,7 @@ class Player(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(life)
-        parcel.writeInt(originalPlayerColor)
+        parcel.writeInt(playerColor)
     }
 
     override fun describeContents(): Int {
