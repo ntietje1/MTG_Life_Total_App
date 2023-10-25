@@ -166,7 +166,7 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
                 }
                 PlayerButtonState.COMMANDER_RECEIVER -> Color.DKGRAY
                 PlayerButtonState.COMMANDER_DEALER -> darkenColor(desaturateColor(player!!.playerColor))
-                else -> desaturateColor(player!!.playerColor, 0.2f)
+                else -> darkenColor(desaturateColor(player!!.playerColor))
             }
 
         }

@@ -4,7 +4,7 @@
 
     <item android:id="@android:id/background">
         <shape android:shape="rectangle">
-            <solid android:color="@color/material_dynamic_neutral20" />
+            <solid android:color="#404040" />
             <stroke
                     android:width="0dp"
             android:color="@color/white" />

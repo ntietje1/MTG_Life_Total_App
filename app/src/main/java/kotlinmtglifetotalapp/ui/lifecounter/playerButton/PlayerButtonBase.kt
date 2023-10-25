@@ -49,7 +49,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
 
     private lateinit var animator: PlayerButtonAnimator
     private val repeater = PlayerButtonRepeater(this, 500, 100)
-    val drawer = PlayerButtonDrawer(this)
+    private val drawer = PlayerButtonDrawer(this)
 
     var state = PlayerButtonState.NORMAL
         private set(value) {
