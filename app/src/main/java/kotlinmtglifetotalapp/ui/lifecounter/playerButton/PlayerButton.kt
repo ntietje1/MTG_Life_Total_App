@@ -3,16 +3,15 @@ package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.text.Editable
-import android.text.InputType
 import android.text.TextWatcher
 import android.view.Gravity
-import android.view.View
+import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -20,11 +19,11 @@ import android.widget.GridLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.view.setMargins
 import androidx.core.view.setPadding
 import com.example.kotlinmtglifetotalapp.R
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
+import java.lang.Integer.min
+import java.lang.Math.max
 
 /**
  * TODO: implement these features in settings
@@ -92,47 +91,35 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         }
     }
 
-    private val changeColorButton: SettingsButton
-        get() = SettingsButton(context).apply {
-            //imageResource = R.drawable.six_icon
-            text = "Change Color"
-            setOnClickListener {
+    private val settingsButtonSize
+        get() = max(
+            (this.width / 3f).toInt(),
+            (this.height / 5f).toInt()
+        )
 
-                settingsPicker.visibility = GONE
-                println("change color button clicked")
-                backgroundPicker.visibility = VISIBLE
+    private val columns
+        get() =
+            if (this.width / 3f > this.height / 5f) {
+                3
+            } else {
+                2
             }
-        }
 
-    private val changeNameButton: SettingsButton
-        get() = SettingsButton(context).apply {
-            //imageResource = R.drawable.six_icon
-            text = "Change Name"
-            setOnClickListener {
-                settingsPicker.visibility = GONE
-                println("change name button clicked")
-                changeNameField.setText(buttonBase.player!!.name)
-                nameChangeLayout.visibility = VISIBLE
+    private val rows
+        get() =
+            if (this.width / 3f > this.height / 5f) {
+                2
+            } else {
+                3
             }
-        }
 
-    private val settingsPicker: GridLayout = GridLayout(context).apply {
-        columnCount = 2
-        rowCount = 2
-        setPadding(40, 40, 40, 40)
-        rotation = 270f
-        layoutParams = LayoutParams(
-            LayoutParams.WRAP_CONTENT,
-            LayoutParams.WRAP_CONTENT
-        ).apply {
-            gravity = Gravity.CENTER
-        }
-        addView(changeColorButton)
-        addView(changeNameButton)
-        addView(SettingsButton(context))
-        addView(SettingsButton(context))
-        visibility = GONE
-    }
+
+    private lateinit var changeColorButton: SettingsButton
+
+
+    private lateinit var changeNameButton: SettingsButton
+
+    private lateinit var settingsPicker: GridLayout
 
     private val backgroundPicker: GridLayout = GridLayout(context).apply {
         for (c in Player.allColors) {
@@ -154,7 +141,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         }
         columnCount = 5
         rowCount = 2
-        rotation = 270f
+        rotation -= 90f
         layoutParams = LayoutParams(
             LayoutParams.WRAP_CONTENT,
             LayoutParams.WRAP_CONTENT
@@ -226,7 +213,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         grad.alpha = 25
 
         orientation = LinearLayout.HORIZONTAL
-        rotation = 270f
+        rotation -= 90f
         layoutParams = LayoutParams(
             LayoutParams.WRAP_CONTENT,
             LayoutParams.WRAP_CONTENT
@@ -238,6 +225,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         addView(enterButton)
         visibility = GONE
     }
+
 
     private fun switchToNormal() {
         settingsPicker.visibility = GONE
@@ -260,13 +248,77 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
     init {
         buttonBase.playerButtonCallback = this
-        switchToNormal()
+        setLayoutListener()
+    }
+
+    private fun addAllViews() {
         addView(buttonBase)
         addView(commanderButton)
         addView(settingsButton)
         addView(settingsPicker)
         addView(backgroundPicker)
         addView(nameChangeLayout)
+    }
+
+    private fun setLayoutListener() {
+        viewTreeObserver.addOnGlobalLayoutListener(object :
+            ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+
+                initSettingsButtons()
+                addAllViews()
+
+                // Remove the listener to avoid multiple calls
+                this@PlayerButton.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+        })
+    }
+
+    private fun initSettingsButtons() {
+        settingsPicker = GridLayout(context).apply {
+            columnCount = columns
+            rowCount = rows
+            rotation -= 90f
+            layoutParams = LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.CENTER
+            }
+
+            visibility = GONE
+        }
+
+        changeColorButton = SettingsButton(context, null, settingsButtonSize).apply {
+            //imageResource = R.drawable.six_icon
+            text = "Change Color"
+            setOnClickListener {
+
+                settingsPicker.visibility = GONE
+                println("change color button clicked")
+                backgroundPicker.visibility = VISIBLE
+            }
+        }
+
+        changeNameButton = SettingsButton(context, null, settingsButtonSize).apply {
+            //imageResource = R.drawable.six_icon
+            text = "Change Name"
+            setOnClickListener {
+                settingsPicker.visibility = GONE
+                println("change name button clicked")
+                changeNameField.setText(buttonBase.player!!.name)
+                nameChangeLayout.visibility = VISIBLE
+            }
+        }
+
+        settingsPicker.apply {
+            addView(changeColorButton)
+            addView(changeNameButton)
+            addView(SettingsButton(context, null, settingsButtonSize))
+            addView(SettingsButton(context, null, settingsButtonSize))
+            addView(SettingsButton(context, null, settingsButtonSize))
+            addView(SettingsButton(context, null, settingsButtonSize))
+        }
     }
 
     fun updateButtonVisibility() {
@@ -293,8 +345,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         }
     }
 
-    inner class MyTextWatcher(editText: EditText): TextWatcher {
-        val editText = editText
+    inner class MyTextWatcher(editText: EditText) : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             // This method is called before the text changes.
 

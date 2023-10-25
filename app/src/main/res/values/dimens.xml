@@ -4,12 +4,6 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <dimen name="settings_button_size">130dp</dimen>
-    <dimen name="layout_padding">10dp</dimen>
-    <dimen name="button_image_size">100dp</dimen>
-    <dimen name="button_image_margin_horiz">15dp</dimen>
-    <dimen name="text_size">5sp</dimen>
-    <dimen name="text_view_height">15dp</dimen>
-    <dimen name="text_reverse_padding">-5dp</dimen>
-
+    <dimen name="small_settings_button_size">100dp</dimen>
     <dimen name="background_picker_button_size">50dp</dimen>
 </resources>
