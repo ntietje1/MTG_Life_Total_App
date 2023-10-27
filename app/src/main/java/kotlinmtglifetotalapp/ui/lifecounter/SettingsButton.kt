@@ -30,6 +30,7 @@ class SettingsButton(
 
     private val margin = size / 130 * 15
 
+    //TODO: NORMALIZE IMAGE SIZE
     private val imageView = ImageView(context).apply {
         val imageSize = size - margin * 2
         this.layoutParams = LayoutParams(imageSize, imageSize).apply {

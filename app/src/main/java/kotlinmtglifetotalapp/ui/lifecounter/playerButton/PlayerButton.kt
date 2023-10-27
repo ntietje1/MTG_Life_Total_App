@@ -125,7 +125,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
             addView(changeColorButton)
             addView(changeNameButton)
             addView(monarchyButton)
-            addView(SettingsButton(context, null, settingsButtonSize))
+            addView(changeBackgroundButton)
             addView(SettingsButton(context, null, settingsButtonSize))
             addView(SettingsButton(context, null, settingsButtonSize))
         }
@@ -144,7 +144,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
     private val settingsButtonMarginSize = context.resources.getDimensionPixelSize(R.dimen.one) * 6
 
     private val changeColorButton get() = SettingsButton(context, null, settingsButtonSize).apply {
-        //imageResource = R.drawable.six_icon
+        imageResource = R.drawable.color_picker_icon
         text = "Change Color"
         setOnClickListener {
             settingsPicker.visibility = GONE
@@ -153,7 +153,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
     }
 
     private val changeNameButton get() = SettingsButton(context, null, settingsButtonSize).apply {
-        //imageResource = R.drawable.six_icon
+        imageResource = R.drawable.change_name_icon
         text = "Change Name"
         setOnClickListener {
             changeNameField.setText(buttonBase.player!!.name)
@@ -163,10 +163,20 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
     }
 
     private val monarchyButton get() = SettingsButton(context, null, settingsButtonSize).apply {
+        imageResource = R.drawable.monarchy_icon
         text = "Monarch"
         setOnClickListener {
             this@PlayerButton.buttonBase.player!!.monarch = true
             this@PlayerButton.resetState()
+        }
+    }
+
+    private val changeBackgroundButton get() = SettingsButton(context, null, settingsButtonSize).apply {
+        imageResource = R.drawable.change_background_icon
+        text = "Change Background"
+        setOnClickListener {
+            settingsPicker.visibility = GONE
+            backgroundPicker.visibility = VISIBLE
         }
     }
 
