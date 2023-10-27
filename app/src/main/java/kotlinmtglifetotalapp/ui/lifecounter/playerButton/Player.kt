@@ -11,13 +11,25 @@ import java.util.Collections.addAll
 // add player name functionality
 class Player(
     private var _life: Int,
-    public var playerColor: Int
+    public var playerColor: Int,
+    private var _monarch: Boolean = false
 ) : Parcelable {
 
     val playerNum get() = currentPlayers.indexOf(this) + 1
 
     val life: Int
         get() = _life
+
+    var monarch: Boolean
+        get() = _monarch
+        set(v) = run {
+            if (v) {
+                for (player in currentPlayers) {
+                    player.monarch = false
+                }
+            }
+            this._monarch = v
+        }
 
     lateinit var name: String
 
@@ -51,6 +63,7 @@ class Player(
 
     fun resetPlayer() {
         _life = startingLife
+        monarch = false
         resetCommanderDamage()
         notifyObserver()
     }
@@ -161,12 +174,14 @@ class Player(
 
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
-        parcel.readInt()
+        parcel.readInt(),
+        parcel.readBoolean()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(life)
         parcel.writeInt(playerColor)
+        parcel.writeBoolean(monarch)
     }
 
     override fun describeContents(): Int {
