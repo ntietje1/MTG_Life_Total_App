@@ -14,6 +14,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.withMatrix
 import com.example.kotlinmtglifetotalapp.R
+import java.lang.Integer.min
 
 class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
 
@@ -116,11 +117,6 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
         val colorStateListRipple =
             ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 60))
         rippleDrawable.setColor(colorStateListRipple)
-
-        // Modify the stroke width and color
-        val newStrokeWidth = 0 // Change this to your desired stroke width in pixels
-        val newStrokeColor = Color.YELLOW // Change this to your desired stroke color
-        background.setStroke(newStrokeWidth, newStrokeColor)
     }
 
     fun draw(canvas: Canvas) {
@@ -154,6 +150,13 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
         }
     }
 
+    private val strokeWidth
+        get() = if (playerButtonBase.player!!.monarch) {
+            playerButtonBase.width / 50
+        } else {
+            0
+        }
+
     fun setBackground() {
         with (playerButtonBase) {
             color = when (state) {
@@ -166,9 +169,12 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
                 }
                 PlayerButtonState.COMMANDER_RECEIVER -> Color.DKGRAY
                 PlayerButtonState.COMMANDER_DEALER -> darkenColor(desaturateColor(player!!.playerColor))
-                else -> darkenColor(desaturateColor(player!!.playerColor))
+                else -> darkenColor(desaturateColor(player!!.playerColor, 0.8f), 0.8f)
             }
 
+            // Modify the stroke width and color
+            val newStrokeColor = Color.parseColor("#f2d100")
+            this@PlayerButtonDrawer.background.setStroke(strokeWidth, newStrokeColor)
         }
 
 
@@ -184,10 +190,7 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
     private fun desaturateColor(color: Int, factor: Float = 0.6f): Int {
         val hsl = FloatArray(3)
         ColorUtils.colorToHSL(color, hsl)
-
-        // Reduce the saturation
         hsl[1] *= factor
-
         return ColorUtils.HSLToColor(hsl)
     }
 

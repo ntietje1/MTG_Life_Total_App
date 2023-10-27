@@ -74,6 +74,11 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
         updateUI()
     }
 
+    fun updateUI() {
+        drawer.setBackground()
+        invalidate()
+    }
+
     fun switchState(state: PlayerButtonState) {
         when (state) {
             PlayerButtonState.NORMAL -> switchToNormal()
@@ -153,10 +158,6 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
         return super.onTouchEvent(event)
     }
 
-    fun updateUI() {
-        drawer.setBackground()
-        invalidate()
-    }
 
     private fun determineChange(x: Float): Int {
         val change: Int = if (rotation == 90f || rotation == 270f) {

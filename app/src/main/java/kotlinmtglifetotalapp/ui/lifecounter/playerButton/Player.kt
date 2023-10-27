@@ -29,6 +29,7 @@ class Player(
                 }
             }
             this._monarch = v
+            notifyObserver()
         }
 
     lateinit var name: String
