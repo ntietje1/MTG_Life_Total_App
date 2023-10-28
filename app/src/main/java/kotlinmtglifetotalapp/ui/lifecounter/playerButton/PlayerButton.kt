@@ -145,7 +145,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
     private val changeColorButton get() = SettingsButton(context, null, settingsButtonSize).apply {
         imageResource = R.drawable.color_picker_icon
-        text = "Change Color"
+        text = "Set Color"
         setOnClickListener {
             settingsPicker.visibility = GONE
             backgroundPicker.visibility = VISIBLE
@@ -173,7 +173,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
     private val changeBackgroundButton get() = SettingsButton(context, null, settingsButtonSize).apply {
         imageResource = R.drawable.change_background_icon
-        text = "Change Background"
+        text = "Set Image"
         setOnClickListener {
             settingsPicker.visibility = GONE
             backgroundPicker.visibility = VISIBLE
@@ -264,11 +264,10 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
     }
 
     private val nameChangeLayout: LinearLayout = LinearLayout(context).apply {
-        background = AppCompatResources.getDrawable(context, R.drawable.rounded_corners)
-        val rippleDrawable = this.background as RippleDrawable
-        val grad = rippleDrawable.findDrawableByLayerId(android.R.id.background) as GradientDrawable
-        grad.color = ColorStateList.valueOf(Color.LTGRAY)
-        grad.alpha = 25
+        val roundedCornerDrawable = RoundedCornerDrawable.create(context)
+        roundedCornerDrawable.backgroundColor = Color.LTGRAY
+        roundedCornerDrawable.backgroundAlpha = 45
+        background = roundedCornerDrawable
 
         orientation = LinearLayout.HORIZONTAL
         rotation -= 90f

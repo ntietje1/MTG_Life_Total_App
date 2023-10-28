@@ -39,7 +39,10 @@ class SettingsButton(
         }
         this.setImageResource(imageResource)
         this.setBackgroundColor(Color.TRANSPARENT)
+        scaleType = ImageView.ScaleType.FIT_CENTER
     }
+
+    private val myTextSize get() = margin / 2.5f
 
     private val textView = TextView(context).apply {
         this.layoutParams = LayoutParams(size, margin*2).apply {
@@ -48,11 +51,11 @@ class SettingsButton(
         this.gravity = Gravity.TOP
         this.text = this@SettingsButton.text
         this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-        this.textSize = margin / 2f
+        this.textSize = myTextSize
         this.setTextColor(Color.WHITE)
         this.setBackgroundColor(Color.TRANSPARENT)
         this.isClickable = false
-        this.setPadding(0, -margin/2, 0, 0)
+        this.setPadding(0, -myTextSize.toInt(), 0, 0)
     }
 
     init {
