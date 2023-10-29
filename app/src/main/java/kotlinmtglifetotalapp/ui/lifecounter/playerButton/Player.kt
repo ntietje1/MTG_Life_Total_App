@@ -114,7 +114,6 @@ class Player(
             Color.parseColor("#92F75F"),
             Color.parseColor("#5FEAF7"),
             Color.parseColor("#625FF7"),
-            Color.parseColor("#C25FF7"),
             Color.parseColor("#f78e55"),
             Color.parseColor("#c28efc"),
             Color.parseColor("#409c5a")

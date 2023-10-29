@@ -180,6 +180,30 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         }
     }
 
+    private val colorPickerButtonSize get() = settingsButtonSize / 2
+
+    private lateinit var customColorButton: ImageButton
+
+    private fun customColorButton() {
+        customColorButton = ImageButton(context).apply {
+            setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.custom_color_icon))
+            background = ColorDrawable(Color.TRANSPARENT)
+            stateListAnimator = null
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            layoutParams = LayoutParams(
+                colorPickerButtonSize,
+                colorPickerButtonSize
+            ).apply {
+                gravity = Gravity.CENTER
+                setMargins(context.resources.getDimensionPixelSize(R.dimen.one) * 4)
+            }
+            setOnClickListener {
+                //buttonBase.player?.let { it1 -> applyBackground(it1) }
+                buttonBase.updateUI()
+            }
+        }
+    }
+
     private lateinit var backgroundPicker: GridLayout
 
     private fun backgroundPicker() {
@@ -188,8 +212,8 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
                 val colorButton = ColorPickerButton(context).apply {
                     color = c
                     layoutParams = LayoutParams(
-                        settingsButtonSize / 2,
-                        settingsButtonSize / 2
+                        colorPickerButtonSize,
+                        colorPickerButtonSize
                     ).apply {
                         gravity = Gravity.CENTER
                         setMargins(context.resources.getDimensionPixelSize(R.dimen.one) * 4)
@@ -201,6 +225,8 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
                 }
                 addView(colorButton)
             }
+            customColorButton()
+            addView(customColorButton)
             columnCount = 5
             rowCount = 2
             rotation -= 90f

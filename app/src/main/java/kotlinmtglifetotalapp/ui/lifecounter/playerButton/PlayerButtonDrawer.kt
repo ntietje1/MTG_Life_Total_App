@@ -176,8 +176,6 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
             val newStrokeColor = Color.parseColor("#f2d100")
             this@PlayerButtonDrawer.background.setStroke(strokeWidth, newStrokeColor)
         }
-
-
     }
 
     private fun darkenColor(color: Int, factor: Float = 0.6f): Int {

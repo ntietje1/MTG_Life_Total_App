@@ -7,14 +7,17 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.foundation.shape.CircleShape
+import androidx.core.graphics.ColorUtils
 import com.example.kotlinmtglifetotalapp.R
 
 class RoundedCornerDrawable(val context: Context, val rippleDrawable: RippleDrawable) :
     RippleDrawable(
         ColorStateList.valueOf(Color.DKGRAY),
         rippleDrawable, // Use the provided rippleDrawable
-        ShapeDrawable()
+        null
     ) {
 
     // Other constructor code if needed
@@ -31,7 +34,7 @@ class RoundedCornerDrawable(val context: Context, val rippleDrawable: RippleDraw
         }
     }
 
-    private val gradientDrawable: GradientDrawable get() = rippleDrawable.findDrawableByLayerId(android.R.id.background) as GradientDrawable
+    val gradientDrawable: GradientDrawable get() = rippleDrawable.findDrawableByLayerId(android.R.id.background) as GradientDrawable
 
     var backgroundColor: Int = Color.DKGRAY
         set(v) = run {
@@ -59,6 +62,7 @@ class RoundedCornerDrawable(val context: Context, val rippleDrawable: RippleDraw
 
     init {
         radius = 30
+        rippleDrawable.setColor(ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 0)))
     }
 
 
