@@ -1,17 +1,15 @@
 package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.RippleDrawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.ViewTreeObserver
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -25,6 +23,7 @@ import androidx.core.view.setMargins
 import androidx.core.view.setPadding
 import com.example.kotlinmtglifetotalapp.R
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
+import yuku.ambilwarna.AmbilWarnaDialog
 import java.lang.Math.max
 
 /**
@@ -42,6 +41,8 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
             LayoutParams.MATCH_PARENT
         )
     }
+
+    val player: Player get() = buttonBase.player!!
 
     private lateinit var commanderButton: ImageButton
 
@@ -197,9 +198,22 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
                 gravity = Gravity.CENTER
                 setMargins(context.resources.getDimensionPixelSize(R.dimen.one) * 4)
             }
+            setPadding(0)
             setOnClickListener {
-                //buttonBase.player?.let { it1 -> applyBackground(it1) }
-                buttonBase.updateUI()
+                val initialColor = player.playerColor
+
+                val colorPickerDialog = AmbilWarnaDialog(context, initialColor, object : AmbilWarnaDialog.OnAmbilWarnaListener {
+                    override fun onCancel(dialog: AmbilWarnaDialog?) {
+                        // User canceled the color picker dialog
+                    }
+
+                    override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
+                        player.playerColor = color
+                        resetState()
+                    }
+                })
+                colorPickerDialog.dialog?.window?.setBackgroundDrawable(RoundedCornerDrawable.create(context))
+                colorPickerDialog.show()
             }
         }
     }

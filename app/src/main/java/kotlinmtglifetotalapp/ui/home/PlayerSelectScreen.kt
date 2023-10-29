@@ -230,11 +230,11 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?) : View(context,
     }
 
     companion object {
-//        private const val PULSE_DELAY = 200L
-//        private const val PULSE_FREQ = 100L
+        private const val PULSE_DELAY = 200L
+        private const val PULSE_FREQ = 100L
 
-        private const val PULSE_DELAY = 1000L
-        private const val PULSE_FREQ = 900L
+//        private const val PULSE_DELAY = 1000L
+//        private const val PULSE_FREQ = 900L
 
         private const val SHOW_HELPER_TEXT_DELAY = 3000L
         private const val SELECTION_DELAY = PULSE_DELAY + PULSE_FREQ * 3 - 10
