@@ -100,7 +100,19 @@ class Player(
         _recentChange = 0
     }
 
-    // Parcelable related code
+    override fun toString(): String {
+        return "$name:$playerColor"
+    }
+
+    fun fromString(s: String) {
+        println("PARSING PLAYER:$s")
+        val parts = s.split(":")
+        if (parts.size == 2) {
+            name = parts[0]
+            playerColor = parts[1].toInt()
+        }
+    }
+
 
     companion object CREATOR : Parcelable.Creator<Player> {
         private const val MAX_PLAYERS = 6

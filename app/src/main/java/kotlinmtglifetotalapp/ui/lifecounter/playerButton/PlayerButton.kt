@@ -127,8 +127,8 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
             addView(changeNameButton)
             addView(monarchyButton)
             addView(changeBackgroundButton)
-            addView(SettingsButton(context, null, settingsButtonSize))
-            addView(SettingsButton(context, null, settingsButtonSize))
+            addView(savePlayerButton)
+            addView(loadPlayerButton)
         }
 
         for (child in settingsPicker.children) {
@@ -169,6 +169,24 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         setOnClickListener {
             this@PlayerButton.buttonBase.player!!.monarch = true
             this@PlayerButton.resetState()
+        }
+    }
+
+    private val savePlayerButton get() = SettingsButton(context, null, settingsButtonSize).apply {
+        //imageResource = R.drawable.save_icon
+        text = "Save Player"
+        setOnClickListener {
+            PlayerDataManager(context).savePlayer(player)
+            resetState()
+        }
+    }
+
+    private val loadPlayerButton get() = SettingsButton(context, null, settingsButtonSize).apply {
+        //imageResource = R.drawable.load_icon
+        text = "Load Player"
+        setOnClickListener {
+            PlayerDataManager(context).loadPlayer(player)
+            resetState()
         }
     }
 
