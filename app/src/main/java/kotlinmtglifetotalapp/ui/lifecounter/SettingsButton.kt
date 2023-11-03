@@ -30,32 +30,34 @@ class SettingsButton(
 
     private val margin = size / 130 * 15
 
-    //TODO: NORMALIZE IMAGE SIZE
     private val imageView = ImageView(context).apply {
         val imageSize = size - margin * 2
         this.layoutParams = LayoutParams(imageSize, imageSize).apply {
             gravity = Gravity.CENTER
-            setMargins(margin, 0, margin, 0)
+            setMargins(margin, margin, margin, -margin/2)
         }
         this.setImageResource(imageResource)
         this.setBackgroundColor(Color.TRANSPARENT)
         scaleType = ImageView.ScaleType.FIT_CENTER
     }
 
-    private val myTextSize get() = margin / 2.5f
+//    private val myTextSize get() = margin / 2.5f
+    private val myTextSize get() = margin / 5f + context.resources.getDimensionPixelSize(R.dimen.oneSp)*2
 
     private val textView = TextView(context).apply {
-        this.layoutParams = LayoutParams(size, margin*2).apply {
+        this.layoutParams = LayoutParams(size, margin*3).apply {
             gravity = Gravity.CENTER_HORIZONTAL
+            setMargins(0,0,0, margin)
         }
         this.gravity = Gravity.TOP
         this.text = this@SettingsButton.text
         this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-        this.textSize = myTextSize
+        this.textSize = myTextSize.toFloat()
         this.setTextColor(Color.WHITE)
         this.setBackgroundColor(Color.TRANSPARENT)
         this.isClickable = false
-        this.setPadding(0, -myTextSize.toInt(), 0, 0)
+        //this.setPadding(0, myTextSize.toInt(), 0, 0)
+
     }
 
     init {
