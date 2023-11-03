@@ -11,7 +11,7 @@ import java.util.Collections.addAll
 // add player name functionality
 class Player(
     private var _life: Int,
-    public var playerColor: Int,
+    public var playerColor: Int = Color.LTGRAY,
     private var _monarch: Boolean = false
 ) : Parcelable {
 
@@ -32,7 +32,7 @@ class Player(
             notifyObserver()
         }
 
-    lateinit var name: String
+    var name: String = "#Placeholder"
 
     val commanderDamage: ArrayList<Int> = arrayListOf<Int>().apply {
         for (i in 0 until MAX_PLAYERS) {
@@ -110,6 +110,8 @@ class Player(
         if (parts.size == 2) {
             name = parts[0]
             playerColor = parts[1].toInt()
+        } else {
+            return
         }
     }
 
@@ -118,6 +120,32 @@ class Player(
         private const val MAX_PLAYERS = 6
         var currentPlayers: ArrayList<Player> = arrayListOf()
         var startingLife = 40
+
+        fun allToString(players: ArrayList<Player>): String {
+            var res = ""
+            if (players.isEmpty()) {
+                return res
+            }
+            for (player in players) {
+                val pString = player.toString()
+                res += "$pString,"
+            }
+            return res.substring(0, res.length - 1)
+        }
+//
+//        /**
+//         * Return a list of strings representing editable player data
+//         */
+//        fun allFromString(s: String): ArrayList<Player> {
+//            val res = arrayListOf<Player>()
+//            val pstrings = s.split(",")
+//            for (p in pstrings) {
+//                val player = Player(40, 0)
+//                player.fromString(p)
+//                res.add(player)
+//            }
+//            return res
+//        }
 
         val allColors: ArrayList<Int> = arrayListOf(
             Color.parseColor("#F75FA8"),

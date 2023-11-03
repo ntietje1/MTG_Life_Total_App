@@ -72,11 +72,11 @@ class PlayerButtonAnimator (private val playerButton: PlayerButton){
     }
 
 
-    private fun jiggle() {
+    fun jiggle() {
         jiggleAnimator.start()
     }
 
-    private fun vibrate() {
+    fun vibrate() {
         vibration.vibrate(
             CombinedVibration.createParallel(
                 VibrationEffect.createPredefined(

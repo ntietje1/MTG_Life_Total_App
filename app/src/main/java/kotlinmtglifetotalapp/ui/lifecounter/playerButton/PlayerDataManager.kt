@@ -2,39 +2,65 @@ package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.google.gson.Gson
 
 class PlayerDataManager(private val context: Context) {
 
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("player_data", Context.MODE_PRIVATE)
-    private val gson = Gson()
 
-    fun savePlayer(player: Player) {
-        with (sharedPreferences.edit()) {
-            putString("test", player.toString())
+    init {
+        with(sharedPreferences.edit()) {
+            putString("default", "error")
             apply()
         }
     }
 
-    fun loadPlayer(player: Player){
-        val s = sharedPreferences.getString("test", "failed")!!
-        player.fromString(s)
+    fun savePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
+        deletePlayer(player, playerList)
+        playerList.add(player)
+        //println("SAVING PLAYER:" + player.name)
+        savePlayers(playerList)
     }
 
-//    fun savePlayer(player: Player) {
-//        val playerList = loadPlayerList()
-//        playerList.add(player)
-//        val playerListJson = gson.toJson(playerList)
-//        sharedPreferences.edit().putString("player_list", playerListJson).apply()
-//    }
-//
-//    fun loadPlayerList(): MutableList<Player> {
-//        val playerListJson = sharedPreferences.getString("player_list", null)
-//        return if (playerListJson != null) {
-//            gson.fromJson(playerListJson, mutableListOf<Player>()::class.java)
-//        } else {
-//            mutableListOf()
-//        }
-//    }
+    fun deletePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
+        //println("DELETING PLAYER:" + player.name)
+        val iterator = playerList.iterator()
+        while (iterator.hasNext()) {
+            val p = iterator.next()
+            if (p.name == player.name) {
+                iterator.remove()  // Safely remove the element
+                //println("SUCCESSFULLY DELETED PLAYER:" + player.name)
+            }
+        }
+
+        savePlayers(playerList)
+    }
+
+    fun loadPlayers(): ArrayList<Player> {
+        //println("LOADING ALL PLAYERS")
+        val res = arrayListOf<Player>()
+        val allPrefString = sharedPreferences.getString("playerPrefs", "default")!!
+        //println("ALL PLAYER DATA: $allPrefString")
+        val pstrings = allPrefString.split(",")
+        println(pstrings)
+
+        if (pstrings.isEmpty() || pstrings[0] == "default") {
+            return arrayListOf()
+        }
+        for (p in pstrings) {
+            val player = Player(40)
+            player.fromString(p)
+            res.add(player)
+        }
+        return res
+    }
+
+    fun savePlayers(players: ArrayList<Player>) {
+        //println("SAVING ALL PLAYERS")
+        val allPrefString = Player.allToString(players)
+        with(sharedPreferences.edit()) {
+            putString("playerPrefs", allPrefString)
+            apply()
+        }
+    }
 }

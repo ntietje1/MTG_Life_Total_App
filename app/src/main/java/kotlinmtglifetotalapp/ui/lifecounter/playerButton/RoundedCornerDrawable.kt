@@ -36,6 +36,12 @@ class RoundedCornerDrawable(val context: Context, val rippleDrawable: RippleDraw
 
     val gradientDrawable: GradientDrawable get() = rippleDrawable.findDrawableByLayerId(android.R.id.background) as GradientDrawable
 
+    var rippleColor: Int = Color.WHITE
+        set(v) = run {
+            rippleDrawable.setColor(ColorStateList.valueOf(v))
+            invalidateSelf()
+        }
+
     var backgroundColor: Int = Color.DKGRAY
         set(v) = run {
             gradientDrawable.color = ColorStateList.valueOf(v)
@@ -53,6 +59,7 @@ class RoundedCornerDrawable(val context: Context, val rippleDrawable: RippleDraw
             gradientDrawable.cornerRadius =
                 context.resources.getDimensionPixelSize(R.dimen.one) * v.toFloat()
             invalidateSelf()
+
         }
 
     fun setOutline(width: Int, color: Int) {
@@ -63,6 +70,7 @@ class RoundedCornerDrawable(val context: Context, val rippleDrawable: RippleDraw
     init {
         radius = 30
         rippleDrawable.setColor(ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 0)))
+        setOutline(0, 0)
     }
 
 

@@ -6,11 +6,12 @@ import android.graphics.drawable.ColorDrawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
+import android.view.Gravity.CENTER
 import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.ViewTreeObserver
-import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.GridLayout
@@ -23,6 +24,7 @@ import androidx.core.view.setMargins
 import androidx.core.view.setPadding
 import com.example.kotlinmtglifetotalapp.R
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
+import kotlinmtglifetotalapp.utils.RotateLayout
 import yuku.ambilwarna.AmbilWarnaDialog
 import java.lang.Math.max
 
@@ -46,9 +48,14 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
     private lateinit var commanderButton: ImageButton
 
-    private fun commanderButton() {
+    private fun initCommanderButton() {
         commanderButton = ImageButton(context).apply {
-            setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.commander_solid_icon))
+            setImageDrawable(
+                AppCompatResources.getDrawable(
+                    context,
+                    R.drawable.commander_solid_icon
+                )
+            )
             background = ColorDrawable(Color.TRANSPARENT)
             rotation -= 90f
             stateListAnimator = null
@@ -76,9 +83,14 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
     private lateinit var settingsButton: ImageButton
 
-    private fun settingsButton() {
+    private fun initSettingsButton() {
         settingsButton = ImageButton(context).apply {
-            setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.settings_solid_icon))
+            setImageDrawable(
+                AppCompatResources.getDrawable(
+                    context,
+                    R.drawable.settings_solid_icon
+                )
+            )
             background =
                 AppCompatResources.getDrawable(context, R.drawable.circular_background).apply {}
             rotation -= 90f
@@ -107,7 +119,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
     /**
      * Must be called after initializing all child layouts
      */
-    private fun settingsPicker() {
+    private fun initSettingsPicker() {
         settingsPicker = GridLayout(context).apply {
             columnCount = 2
             rowCount = 3
@@ -124,9 +136,9 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
         settingsPicker.apply {
             addView(changeColorButton)
-            addView(changeNameButton)
-            addView(monarchyButton)
             addView(changeBackgroundButton)
+            addView(monarchyButton)
+            addView(changeNameButton)
             addView(savePlayerButton)
             addView(loadPlayerButton)
         }
@@ -144,66 +156,172 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
     private val settingsButtonMarginSize = context.resources.getDimensionPixelSize(R.dimen.one) * 6
 
-    private val changeColorButton get() = SettingsButton(context, null, settingsButtonSize).apply {
-        imageResource = R.drawable.color_picker_icon
-        text = "Set Color"
-        setOnClickListener {
-            settingsPicker.visibility = GONE
-            backgroundPicker.visibility = VISIBLE
+    private val changeColorButton
+        get() = SettingsButton(context, null, settingsButtonSize).apply {
+            imageResource = R.drawable.color_picker_icon
+            text = "Set Color"
+            setOnClickListener {
+                settingsPicker.visibility = GONE
+                backgroundPicker.visibility = VISIBLE
+            }
+        }
+
+    private val changeNameButton
+        get() = SettingsButton(context, null, settingsButtonSize).apply {
+            imageResource = R.drawable.change_name_icon
+            text = "Change Name"
+            setOnClickListener {
+                changeNameField.setText(buttonBase.player!!.name)
+                settingsPicker.visibility = GONE
+                nameChangeLayout.visibility = VISIBLE
+            }
+        }
+
+    private val monarchyButton
+        get() = SettingsButton(context, null, settingsButtonSize).apply {
+            imageResource = R.drawable.monarchy_icon
+            text = "Monarch"
+            setOnClickListener {
+                this@PlayerButton.buttonBase.player!!.monarch = true
+                this@PlayerButton.resetState()
+            }
+        }
+
+    private val savePlayerButton
+        get() = SettingsButton(context, null, settingsButtonSize).apply {
+            imageResource = R.drawable.upload_icon
+            text = "Save Player"
+            setOnClickListener {
+                PlayerDataManager(context).savePlayer(player)
+                with(loadPlayerPicker) {
+                    this@with.removeAllViews()
+                    for (b in generateMiniPlayerButtons()) {
+                        addView(b)
+                    }
+                }
+                resetState()
+            }
+        }
+
+    private val loadPlayerButton
+        get() = SettingsButton(context, null, settingsButtonSize).apply {
+            imageResource = R.drawable.download_icon
+            text = "Load Player"
+            setOnClickListener {
+                refreshLoadPlayerPicker()
+                settingsPicker.visibility = GONE
+                loadPlayerPicker.visibility = VISIBLE
+            }
+        }
+
+    //private lateinit var loadPlayerLayout: ScrollView
+
+    private fun refreshLoadPlayerPicker() {
+        with(loadPlayerPicker) {
+            removeAllViews()
+            for (b in generateMiniPlayerButtons()) {
+                addView(b)
+            }
         }
     }
 
-    private val changeNameButton get() = SettingsButton(context, null, settingsButtonSize).apply {
-        imageResource = R.drawable.change_name_icon
-        text = "Change Name"
-        setOnClickListener {
-            changeNameField.setText(buttonBase.player!!.name)
-            settingsPicker.visibility = GONE
-            nameChangeLayout.visibility = VISIBLE
+    private lateinit var loadPlayerPicker: GridLayout
+
+    private fun initLoadPlayerPicker() {
+        if (this::loadPlayerPicker.isInitialized) {
+            return
         }
+
+        loadPlayerPicker = GridLayout(context).apply {
+            columnCount = 2
+            rowCount = 3
+            orientation = GridLayout.HORIZONTAL
+
+            layoutParams = LayoutParams(
+                WRAP_CONTENT,
+                WRAP_CONTENT
+            ).apply {
+                gravity = CENTER
+            }
+            visibility = GONE
+        }
+
+        refreshLoadPlayerPicker()
+
     }
 
-    private val monarchyButton get() = SettingsButton(context, null, settingsButtonSize).apply {
-        imageResource = R.drawable.monarchy_icon
-        text = "Monarch"
-        setOnClickListener {
-            this@PlayerButton.buttonBase.player!!.monarch = true
-            this@PlayerButton.resetState()
+    private fun generateMiniPlayerButtons(): ArrayList<FrameLayout> {
+        val res = arrayListOf<FrameLayout>()
+        val playerList = PlayerDataManager(context).loadPlayers()
+        println(playerList)
+        println("LOADED " + playerList.size + " PLAYERS")
+
+        for (p in playerList) {
+            if (p.name == "#Placeholder") {
+                continue
+            }
+            val button = Button(context).apply {
+                background = RoundedCornerDrawable.create(context).apply {
+                    backgroundColor = p.playerColor
+                    backgroundRadius = (backgroundRadius * 0.75f).toInt()
+                    rippleColor = Color.RED
+                }
+                layoutParams = LayoutParams(
+                    settingsButtonSize,
+                    (settingsButtonSize * 0.6f).toInt()
+                )
+                text = p.name
+                setOnClickListener {
+                    player.fromString(p.toString())
+                    resetState()
+                }
+                setOnLongClickListener {
+                    println("LONG CLICK")
+                    buttonBase.vibrate()
+                    PlayerDataManager(context).deletePlayer(p)
+                    loadPlayerPicker.removeAllViews()
+                    for (b in generateMiniPlayerButtons()) {
+                        loadPlayerPicker.addView(b)
+                    }
+                    true
+                }
+
+            }
+
+            val rotateLayout = RotateLayout(context).apply {
+                this.angle += 90
+                addView(button)
+            }
+            val frameLayout = FrameLayout(context).apply {
+                addView(rotateLayout)
+                layoutParams = LayoutParams(
+                    WRAP_CONTENT,
+                    WRAP_CONTENT
+                ).apply {
+                    setMargins(settingsButtonMarginSize / 5)
+                }
+            }
+
+            res.add(frameLayout)
         }
+        return res
     }
 
-    private val savePlayerButton get() = SettingsButton(context, null, settingsButtonSize).apply {
-        //imageResource = R.drawable.save_icon
-        text = "Save Player"
-        setOnClickListener {
-            PlayerDataManager(context).savePlayer(player)
-            resetState()
+    private val changeBackgroundButton
+        get() = SettingsButton(context, null, settingsButtonSize).apply {
+            imageResource = R.drawable.change_background_icon
+            text = "Set Image"
+            setOnClickListener {
+                settingsPicker.visibility = GONE
+                backgroundPicker.visibility = VISIBLE
+            }
         }
-    }
-
-    private val loadPlayerButton get() = SettingsButton(context, null, settingsButtonSize).apply {
-        //imageResource = R.drawable.load_icon
-        text = "Load Player"
-        setOnClickListener {
-            PlayerDataManager(context).loadPlayer(player)
-            resetState()
-        }
-    }
-
-    private val changeBackgroundButton get() = SettingsButton(context, null, settingsButtonSize).apply {
-        imageResource = R.drawable.change_background_icon
-        text = "Set Image"
-        setOnClickListener {
-            settingsPicker.visibility = GONE
-            backgroundPicker.visibility = VISIBLE
-        }
-    }
 
     private val colorPickerButtonSize get() = settingsButtonSize / 2
 
     private lateinit var customColorButton: ImageButton
 
-    private fun customColorButton() {
+    private fun initCustomColorButton() {
         customColorButton = ImageButton(context).apply {
             setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.custom_color_icon))
             background = ColorDrawable(Color.TRANSPARENT)
@@ -220,17 +338,24 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
             setOnClickListener {
                 val initialColor = player.playerColor
 
-                val colorPickerDialog = AmbilWarnaDialog(context, initialColor, object : AmbilWarnaDialog.OnAmbilWarnaListener {
-                    override fun onCancel(dialog: AmbilWarnaDialog?) {
-                        // User canceled the color picker dialog
-                    }
+                val colorPickerDialog = AmbilWarnaDialog(
+                    context,
+                    initialColor,
+                    object : AmbilWarnaDialog.OnAmbilWarnaListener {
+                        override fun onCancel(dialog: AmbilWarnaDialog?) {
+                            // User canceled the color picker dialog
+                        }
 
-                    override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
-                        player.playerColor = color
-                        resetState()
-                    }
-                })
-                colorPickerDialog.dialog?.window?.setBackgroundDrawable(RoundedCornerDrawable.create(context))
+                        override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
+                            player.playerColor = color
+                            resetState()
+                        }
+                    })
+                colorPickerDialog.dialog?.window?.setBackgroundDrawable(
+                    RoundedCornerDrawable.create(
+                        context
+                    )
+                )
                 colorPickerDialog.show()
             }
         }
@@ -238,7 +363,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
     private lateinit var backgroundPicker: GridLayout
 
-    private fun backgroundPicker() {
+    private fun initBackgroundPicker() {
         backgroundPicker = GridLayout(context).apply {
             for (c in Player.allColors) {
                 val colorButton = ColorPickerButton(context).apply {
@@ -257,7 +382,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
                 }
                 addView(colorButton)
             }
-            customColorButton()
+            initCustomColorButton()
             addView(customColorButton)
             columnCount = 5
             rowCount = 2
@@ -351,6 +476,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         settingsPicker.visibility = GONE
         backgroundPicker.visibility = GONE
         nameChangeLayout.visibility = GONE
+        loadPlayerPicker.visibility = GONE
     }
 
     private fun switchToSettings() {
@@ -383,13 +509,15 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         addView(settingsPicker)
         addView(backgroundPicker)
         addView(nameChangeLayout)
+        addView(loadPlayerPicker)
     }
 
     private fun initViews() {
-        backgroundPicker()
-        commanderButton()
-        settingsButton()
-        settingsPicker()
+        initBackgroundPicker()
+        initCommanderButton()
+        initSettingsButton()
+        initSettingsPicker()
+        initLoadPlayerPicker()
     }
 
     fun updateButtonVisibility() {

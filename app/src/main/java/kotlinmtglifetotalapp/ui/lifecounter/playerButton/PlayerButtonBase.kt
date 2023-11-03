@@ -58,6 +58,10 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
             updateUI()
         }
 
+    fun vibrate() {
+        animator.vibrate()
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         allPlayerButtons.add(this)
