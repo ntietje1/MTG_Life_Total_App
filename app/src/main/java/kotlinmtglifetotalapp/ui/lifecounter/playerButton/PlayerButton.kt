@@ -1,7 +1,6 @@
 package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.text.Editable
 import android.text.TextWatcher
@@ -19,14 +18,28 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.children
 import androidx.core.view.setMargins
 import androidx.core.view.setPadding
 import com.example.kotlinmtglifetotalapp.R
+import kotlinmtglifetotalapp.ui.lifecounter.AnimatedBorderCard
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
 import kotlinmtglifetotalapp.utils.RotateLayout
 import yuku.ambilwarna.AmbilWarnaDialog
 import java.lang.Math.max
+
 
 /**
  * TODO: implement these features in settings
@@ -34,9 +47,9 @@ import java.lang.Math.max
  * city's blessing?
  * save/load player setting buttons
  */
-class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout(context) {
+class PlayerButton(context: Context, player: Player?) : FrameLayout(context) {
 
-    val buttonBase: PlayerButtonBase = buttonBase.apply {
+    val buttonBase: PlayerButtonBase = PlayerButtonBase(context, null).apply {
         stateListAnimator = null
         layoutParams = LayoutParams(
             LayoutParams.MATCH_PARENT,
@@ -44,7 +57,51 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
         )
     }
 
-    val player: Player get() = buttonBase.player!!
+    private val composeView = ComposeView(context).apply {
+        setContent {
+            animatedBorderCard(0.dp)
+        }
+
+        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+    }
+
+    private fun toggleMonarchy() {
+        composeView.setContent{}
+        if (player.monarch) {
+            composeView.setContent {
+                animatedBorderCard(0.dp)
+            }
+        } else {
+            composeView.setContent {
+                animatedBorderCard(4.dp)
+            }
+        }
+        player.monarch = !player.monarch
+    }
+
+    private val animatedBorderCard: @Composable (Dp) -> Unit = { borderWidth ->
+        AnimatedBorderCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(all = (0).dp),
+            gradient = Brush.sweepGradient(listOf(Color.Magenta, Color.Cyan)),
+            borderWidth = borderWidth
+        ) {
+            AndroidView(
+                factory = {
+                    buttonBase
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+
+
+    var player: Player
+        get() = buttonBase.player!!
+        set(p) = run {
+            buttonBase.player = p
+        }
 
     private lateinit var commanderButton: ImageButton
 
@@ -56,7 +113,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
                     R.drawable.commander_solid_icon
                 )
             )
-            background = ColorDrawable(Color.TRANSPARENT)
+            background = AppCompatResources.getDrawable(context, R.drawable.transparent)
             rotation -= 90f
             stateListAnimator = null
             scaleType = ImageView.ScaleType.FIT_CENTER
@@ -91,8 +148,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
                     R.drawable.settings_solid_icon
                 )
             )
-            background =
-                AppCompatResources.getDrawable(context, R.drawable.circular_background).apply {}
+            background = AppCompatResources.getDrawable(context, R.drawable.circular_background)
             rotation -= 90f
             stateListAnimator = null
             scaleType = ImageView.ScaleType.FIT_CENTER
@@ -182,7 +238,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
             imageResource = R.drawable.monarchy_icon
             text = "Monarch"
             setOnClickListener {
-                this@PlayerButton.buttonBase.player!!.monarch = true
+                toggleMonarchy()
                 this@PlayerButton.resetState()
             }
         }
@@ -264,7 +320,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
                 background = RoundedCornerDrawable.create(context).apply {
                     backgroundColor = p.playerColor
                     backgroundRadius = (backgroundRadius * 0.75f).toInt()
-                    rippleColor = Color.RED
+                    rippleColor = Color.Red.toArgb()
                 }
                 layoutParams = LayoutParams(
                     settingsButtonSize,
@@ -304,6 +360,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
             res.add(frameLayout)
         }
+
         return res
     }
 
@@ -324,7 +381,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
     private fun initCustomColorButton() {
         customColorButton = ImageButton(context).apply {
             setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.custom_color_icon))
-            background = ColorDrawable(Color.TRANSPARENT)
+            background = AppCompatResources.getDrawable(context, R.drawable.transparent)
             stateListAnimator = null
             scaleType = ImageView.ScaleType.FIT_CENTER
             layoutParams = LayoutParams(
@@ -448,7 +505,7 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
 
     private val nameChangeLayout: LinearLayout = LinearLayout(context).apply {
         val roundedCornerDrawable = RoundedCornerDrawable.create(context)
-        roundedCornerDrawable.backgroundColor = Color.LTGRAY
+        roundedCornerDrawable.backgroundColor = Color.LightGray.toArgb()
         roundedCornerDrawable.backgroundAlpha = 45
         background = roundedCornerDrawable
 
@@ -503,7 +560,8 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
     }
 
     private fun addAllViews() {
-        addView(buttonBase)
+//        addView(buttonBase)
+        addView(composeView)
         addView(commanderButton)
         addView(settingsButton)
         addView(settingsPicker)
@@ -561,6 +619,4 @@ class PlayerButton(context: Context, buttonBase: PlayerButtonBase) : FrameLayout
             // This method is called after the text changes.
         }
     }
-
-
 }

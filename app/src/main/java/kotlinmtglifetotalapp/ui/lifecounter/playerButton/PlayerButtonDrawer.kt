@@ -117,6 +117,7 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
         val colorStateListRipple =
             ColorStateList.valueOf(ColorUtils.setAlphaComponent(Color.WHITE, 60))
         rippleDrawable.setColor(colorStateListRipple)
+        //rippleDrawable.alpha = 100
     }
 
     fun draw(canvas: Canvas) {
@@ -150,12 +151,12 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
         }
     }
 
-    private val strokeWidth
-        get() = if (playerButtonBase.player!!.monarch) {
-            playerButtonBase.width / 50
-        } else {
-            0
-        }
+    private val strokeWidth = 0
+//        get() = if (playerButtonBase.player!!.monarch) {
+//            playerButtonBase.width / 50
+//        } else {
+//            0
+//        }
 
     fun setBackground() {
         with (playerButtonBase) {

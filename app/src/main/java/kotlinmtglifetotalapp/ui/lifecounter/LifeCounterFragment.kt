@@ -16,13 +16,22 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.LifeCounterLayoutBinding
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.Player
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButton
-import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonBase
 import kotlinmtglifetotalapp.utils.RotateLayout
 
 
@@ -34,9 +43,13 @@ class LifeCounterFragment : Fragment() {
 
     private val numPlayers get() = Player.currentPlayers.size
 
-    private var playerButtons = arrayListOf<PlayerButton>()
+    private val playerButtons = arrayListOf<PlayerButton>()
 
-    //private lateinit var viewModel: LifeCounterViewModel
+    private val playerButtonWrappers = arrayListOf<View>()
+
+    private val rotateLayouts = arrayListOf<RotateLayout>()
+
+    private val viewsToDestroy = arrayListOf<View>()
 
     private val angleConfigurations: Array<Int>
         get() = when (numPlayers) {
@@ -123,10 +136,10 @@ class LifeCounterFragment : Fragment() {
         }
 
         for (i in 0 until numPlayers) {
-            val playerButton = generateButton()
+            val playerButton = generateButtonWrapper()
             playerButton.id = View.generateViewId()
             playerButtons.add(playerButton)
-            playerButton.buttonBase.player = Player.currentPlayers[i]
+            playerButton.player = Player.currentPlayers[i]
         }
 
         println("on create")
@@ -142,13 +155,9 @@ class LifeCounterFragment : Fragment() {
         return root
     }
 
-    init {
-    }
-
-
     override fun onResume() {
         super.onResume()
-        generateButtons()
+        generateButtonWrappers()
         placeButtons()
         println("on resume")
     }
@@ -156,34 +165,60 @@ class LifeCounterFragment : Fragment() {
     /**
      * Remove any previous parental layouts and create new ones
      */
-    private fun generateButtons() {
+    private fun generateButtonWrappers() {
+        removeAllViews()
         for (playerButton in playerButtons) {
-            if (playerButton.parent != null) {
-                val parent = playerButton.parent as RotateLayout
-                parent.removeAllViews()
-            }
-            generateButton(playerButton)
+            playerButtonWrappers.add(generateButtonWrapper(playerButton))
         }
     }
 
     /**
-     * Make a rotateLayout to wrap this playerButton and set layoutParams accordingly
+     * Make layouts to wrap this playerButton and set layoutParams accordingly
+     * RotateLayout > PlayerButton
      */
-    private fun generateButton(
+    private fun generateButtonWrapper(
         playerButton: PlayerButton = PlayerButton(
-            requireContext(), PlayerButtonBase(requireContext(), null)
+            requireContext(), null
         )
     ): PlayerButton {
+        val topLevelLayoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1f
+        )
+        val defaultLayoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT
+        )
+
+        playerButton.layoutParams = defaultLayoutParams
+
+//        val composeView = ComposeView(requireContext())
+//        composeView.setContent {
+//            AnimatedBorderCard(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(all = (0).dp),
+//                gradient = Brush.sweepGradient(listOf(Color.Magenta, Color.Cyan)),
+//                borderWidth = 1.dp
+//            ) {
+//                AndroidView(
+//                    factory = {
+//                        playerButton
+//                    },
+//                    modifier = Modifier.fillMaxSize()
+//                )
+//            }
+//        }
+//        composeView.layoutParams = ViewGroup.LayoutParams(
+//            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+//        )
 
         val rotateLayout = RotateLayout(context)
         rotateLayout.addView(playerButton)
-        rotateLayout.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1f
-        )
+        rotateLayout.layoutParams = topLevelLayoutParams
+        rotateLayouts.add(rotateLayout)
 
-        playerButton.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT
-        )
+
+//        viewsToDestroy.add(composeView)
+        viewsToDestroy.add(rotateLayout)
 
         return playerButton
 
@@ -227,11 +262,12 @@ class LifeCounterFragment : Fragment() {
     }
 
     private fun removeAllViews() {
-        binding.linearLayout.removeAllViews()
-
-        for (button in playerButtons) {
-            (button.parent as RotateLayout).removeAllViews()
+        viewsToDestroy.add(binding.linearLayout)
+        for (v in viewsToDestroy) {
+            (v as ViewGroup).removeAllViews()
         }
+        rotateLayouts.clear()
+        viewsToDestroy.clear()
     }
 
 
@@ -252,8 +288,9 @@ class LifeCounterFragment : Fragment() {
 
             for (j in i until minOf(i + 2, numPlayers)) {
                 val angle = angleConfigurations[j]
-                val button = playerButtons[j]
-                val rotateLayout = button.parent as RotateLayout
+//                val button = playerButtons[j]
+                //val rotateLayout = button.parent as RotateLayout
+                val rotateLayout = rotateLayouts[j]
                 rotateLayout.angle = angle
                 hLayout.addView(rotateLayout)
             }

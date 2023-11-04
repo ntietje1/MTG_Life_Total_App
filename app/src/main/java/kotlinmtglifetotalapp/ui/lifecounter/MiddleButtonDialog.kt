@@ -1,4 +1,6 @@
 import android.content.DialogInterface
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +14,7 @@ import kotlinmtglifetotalapp.ui.lifecounter.CoinFlipDialog
 import kotlinmtglifetotalapp.ui.lifecounter.LifeCounterFragment
 import kotlinmtglifetotalapp.ui.lifecounter.NumPlayersDialog
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.RoundedCornerDrawable
 
 /**
  * TODO: implement these features in settings
@@ -91,8 +94,6 @@ class MiddleButtonDialog : DialogFragment() {
         }
     }
 
-
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -107,7 +108,15 @@ class MiddleButtonDialog : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        dialog?.window?.setBackgroundDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.rounded_corners))
+        val background = RoundedCornerDrawable.create(requireContext()).apply {
+//            backgroundColor = Color.DKGRAY
+//            backgroundAlpha = 0
+            rippleDrawable.alpha = 0
+            rippleDrawable.setColor(ColorStateList.valueOf(Color.DKGRAY))
+        }
+
+
+        dialog?.window?.setBackgroundDrawable(background)
 
         addButtons()
     }

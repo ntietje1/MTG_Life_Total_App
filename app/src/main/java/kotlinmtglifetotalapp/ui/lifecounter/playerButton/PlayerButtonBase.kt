@@ -65,7 +65,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         allPlayerButtons.add(this)
-        animator = PlayerButtonAnimator(this.parent as PlayerButton)
+        animator = PlayerButtonAnimator(this.playerButtonCallback)
 
     }
 
