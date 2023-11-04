@@ -2,16 +2,10 @@ package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.RippleDrawable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatButton
-import androidx.core.graphics.ColorUtils
-import com.example.kotlinmtglifetotalapp.R
 
 class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton(context, attrs),
     PlayerObserver {
@@ -54,7 +48,7 @@ class PlayerButtonBase(context: Context, attrs: AttributeSet?) : AppCompatButton
     var state = PlayerButtonState.NORMAL
         private set(value) {
             field = value
-            playerButtonCallback.updateButtonVisibility()
+            playerButtonCallback.updateUI()
             updateUI()
         }
 

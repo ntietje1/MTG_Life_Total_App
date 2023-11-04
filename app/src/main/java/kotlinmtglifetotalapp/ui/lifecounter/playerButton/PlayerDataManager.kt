@@ -18,18 +18,16 @@ class PlayerDataManager(private val context: Context) {
     fun savePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
         deletePlayer(player, playerList)
         playerList.add(player)
-        //println("SAVING PLAYER:" + player.name)
         savePlayers(playerList)
     }
 
     fun deletePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
-        //println("DELETING PLAYER:" + player.name)
+
         val iterator = playerList.iterator()
         while (iterator.hasNext()) {
             val p = iterator.next()
             if (p.name == player.name) {
-                iterator.remove()  // Safely remove the element
-                //println("SUCCESSFULLY DELETED PLAYER:" + player.name)
+                iterator.remove()
             }
         }
 
@@ -37,13 +35,10 @@ class PlayerDataManager(private val context: Context) {
     }
 
     fun loadPlayers(): ArrayList<Player> {
-        //println("LOADING ALL PLAYERS")
+
         val res = arrayListOf<Player>()
         val allPrefString = sharedPreferences.getString("playerPrefs", "default")!!
-        //println("ALL PLAYER DATA: $allPrefString")
         val pstrings = allPrefString.split(",")
-        println(pstrings)
-
         if (pstrings.isEmpty() || pstrings[0] == "default") {
             return arrayListOf()
         }
@@ -56,7 +51,6 @@ class PlayerDataManager(private val context: Context) {
     }
 
     fun savePlayers(players: ArrayList<Player>) {
-        //println("SAVING ALL PLAYERS")
         val allPrefString = Player.allToString(players)
         with(sharedPreferences.edit()) {
             putString("playerPrefs", allPrefString)

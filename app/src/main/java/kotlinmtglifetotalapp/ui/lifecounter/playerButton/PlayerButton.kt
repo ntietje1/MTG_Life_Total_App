@@ -1,7 +1,6 @@
 package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 import android.content.Context
-import android.graphics.drawable.ColorDrawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -21,12 +20,14 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -57,51 +58,57 @@ class PlayerButton(context: Context, player: Player?) : FrameLayout(context) {
         )
     }
 
-    private val composeView = ComposeView(context).apply {
-        setContent {
-            animatedBorderCard(0.dp)
-        }
-
-        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-    }
-
-    private fun toggleMonarchy() {
-        composeView.setContent{}
-        if (player.monarch) {
-            composeView.setContent {
-                animatedBorderCard(0.dp)
-            }
-        } else {
-            composeView.setContent {
-                animatedBorderCard(4.dp)
-            }
-        }
-        player.monarch = !player.monarch
-    }
-
-    private val animatedBorderCard: @Composable (Dp) -> Unit = { borderWidth ->
-        AnimatedBorderCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(all = (0).dp),
-            gradient = Brush.sweepGradient(listOf(Color.Magenta, Color.Cyan)),
-            borderWidth = borderWidth
-        ) {
-            AndroidView(
-                factory = {
-                    buttonBase
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-    }
-
-
     var player: Player
         get() = buttonBase.player!!
         set(p) = run {
             buttonBase.player = p
         }
+
+    private val composeView = ComposeView(context).apply {
+//        setViewCompositionStrategy(
+//            ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+//        )
+        setContent {
+            AnimatedBorderCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(all = 0.dp),
+                gradient = Brush.sweepGradient(
+                    listOf(
+                        Color(this@PlayerButton.player.playerColor),
+                        Color.Yellow,
+                        Color.Yellow,
+                        Color.Yellow
+                    )
+                ),
+                borderWidth = borderWidth,
+                animationDuration = 6500
+            ) {
+                AndroidView(
+                    factory = {
+                        buttonBase
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+    }
+
+    private var borderWidth: MutableState<Dp> = mutableStateOf(0.dp)
+
+    private fun toggleMonarchy() {
+        player.monarch = !player.monarch
+    }
+
+    fun updateMonarchy() {
+        if (player.monarch) {
+            borderWidth.value = 4.dp
+        } else {
+            borderWidth.value = 0.dp
+        }
+    }
 
     private lateinit var commanderButton: ImageButton
 
@@ -423,8 +430,8 @@ class PlayerButton(context: Context, player: Player?) : FrameLayout(context) {
     private fun initBackgroundPicker() {
         backgroundPicker = GridLayout(context).apply {
             for (c in Player.allColors) {
-                val colorButton = ColorPickerButton(context).apply {
-                    color = c
+                val colorButton = Button(context).apply {
+                    setBackgroundColor(c)
                     layoutParams = LayoutParams(
                         colorPickerButtonSize,
                         colorPickerButtonSize
@@ -433,7 +440,7 @@ class PlayerButton(context: Context, player: Player?) : FrameLayout(context) {
                         setMargins(context.resources.getDimensionPixelSize(R.dimen.one) * 4)
                     }
                     setOnClickListener {
-                        buttonBase.player?.let { it1 -> applyBackground(it1) }
+                        player.playerColor = c
                         buttonBase.updateUI()
                     }
                 }
@@ -578,7 +585,7 @@ class PlayerButton(context: Context, player: Player?) : FrameLayout(context) {
         initLoadPlayerPicker()
     }
 
-    fun updateButtonVisibility() {
+    fun updateUI() {
         when (buttonBase.state) {
             PlayerButtonState.NORMAL -> {
                 commanderButton.visibility = VISIBLE

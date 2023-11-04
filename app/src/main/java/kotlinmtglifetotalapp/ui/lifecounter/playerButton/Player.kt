@@ -222,6 +222,7 @@ class Player(
         parcel.writeInt(life)
         parcel.writeInt(playerColor)
         parcel.writeBoolean(monarch)
+        println("WRITING PLAYER: $name, IS MONARCH: $monarch")
     }
 
     override fun describeContents(): Int {

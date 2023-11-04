@@ -190,34 +190,11 @@ class LifeCounterFragment : Fragment() {
 
         playerButton.layoutParams = defaultLayoutParams
 
-//        val composeView = ComposeView(requireContext())
-//        composeView.setContent {
-//            AnimatedBorderCard(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(all = (0).dp),
-//                gradient = Brush.sweepGradient(listOf(Color.Magenta, Color.Cyan)),
-//                borderWidth = 1.dp
-//            ) {
-//                AndroidView(
-//                    factory = {
-//                        playerButton
-//                    },
-//                    modifier = Modifier.fillMaxSize()
-//                )
-//            }
-//        }
-//        composeView.layoutParams = ViewGroup.LayoutParams(
-//            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-//        )
-
         val rotateLayout = RotateLayout(context)
         rotateLayout.addView(playerButton)
         rotateLayout.layoutParams = topLevelLayoutParams
         rotateLayouts.add(rotateLayout)
 
-
-//        viewsToDestroy.add(composeView)
         viewsToDestroy.add(rotateLayout)
 
         return playerButton
@@ -228,11 +205,6 @@ class LifeCounterFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         removeAllViews()
-
-        packBundle(outState)
-    }
-
-    private fun packBundle(outState: Bundle) {
         Player.packBundle(outState)
     }
 
@@ -252,6 +224,7 @@ class LifeCounterFragment : Fragment() {
 
             } else {
                 println("Successfully loaded P$i")
+                println("P$i IS MONARCH: ${player.monarch}")
             }
 
             players.add(player)
@@ -331,7 +304,7 @@ class LifeCounterFragment : Fragment() {
 
     internal fun goToPlayerSelect() {
         val bundle = Bundle()
-        packBundle(bundle)
+        Player.packBundle(bundle)
         Navigation.findNavController(binding.linearLayout).navigate(R.id.navigation_home, bundle)
     }
 
@@ -349,7 +322,7 @@ class LifeCounterFragment : Fragment() {
 
         println("NOW ${Player.currentPlayers.size} Players")
         val bundle = Bundle()
-        packBundle(bundle)
+        Player.packBundle(bundle)
         Navigation.findNavController(binding.linearLayout).navigate(R.id.navigation_life_counter, bundle)
     }
 

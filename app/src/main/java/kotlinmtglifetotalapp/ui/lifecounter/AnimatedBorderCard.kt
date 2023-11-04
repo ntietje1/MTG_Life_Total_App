@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,11 +36,12 @@ import java.lang.Float.max
 fun AnimatedBorderCard(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(30.dp),
-    borderWidth: Dp = 2.dp,
+    borderWidth: MutableState<Dp> = mutableStateOf(4.dp),
     gradient: Brush = Brush.sweepGradient(listOf(Color.Magenta, Color.Cyan)),
     animationDuration: Int = 10000,
     onCardClick: () -> Unit = {},
     content: @Composable (Size) -> Unit
+
 ) {
     val contentSize = remember { mutableStateOf(Size(0f, 0f)) }
     val infiniteTransition = rememberInfiniteTransition(label = "Infinite Color Animation")
@@ -56,11 +58,11 @@ fun AnimatedBorderCard(
     Box(
         modifier = modifier
             .clip(shape)
-            .padding(borderWidth)
+            .padding(borderWidth.value)
             .drawBehind {
                 rotate(degrees = degrees) {
                     // Calculate the radius based on content size
-                    val radius = (max(size.width, size.height)) + (borderWidth.toPx() / 2)
+                    val radius = (max(size.width, size.height))
                     drawCircle(
                         brush = gradient,
                         radius = radius,

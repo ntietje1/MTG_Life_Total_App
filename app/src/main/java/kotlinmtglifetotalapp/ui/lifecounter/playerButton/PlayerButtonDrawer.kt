@@ -151,12 +151,12 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
         }
     }
 
-    private val strokeWidth = 0
-//        get() = if (playerButtonBase.player!!.monarch) {
-//            playerButtonBase.width / 50
-//        } else {
-//            0
-//        }
+    private val strokeWidth
+        get() = if (playerButtonBase.player!!.monarch) {
+            0
+        } else {
+            0
+        }
 
     fun setBackground() {
         with (playerButtonBase) {
@@ -176,7 +176,9 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
             // Modify the stroke width and color
             val newStrokeColor = Color.parseColor("#f2d100")
             this@PlayerButtonDrawer.background.setStroke(strokeWidth, newStrokeColor)
+            playerButtonCallback.updateMonarchy()
         }
+
     }
 
     private fun darkenColor(color: Int, factor: Float = 0.6f): Int {
