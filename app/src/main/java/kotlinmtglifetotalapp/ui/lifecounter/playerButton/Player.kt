@@ -150,13 +150,13 @@ class Player(
         val allColors: ArrayList<Int> = arrayListOf(
             Color.parseColor("#F75FA8"),
             Color.parseColor("#F75F5F"),
-            Color.parseColor("#F7C45F"),
-            Color.parseColor("#92F75F"),
-            Color.parseColor("#5FEAF7"),
+            Color.parseColor("#f0bd56"),
+            Color.parseColor("#0ce4a3"),
+            Color.parseColor("#16e0f3"),
             Color.parseColor("#625FF7"),
             Color.parseColor("#f78e55"),
             Color.parseColor("#c28efc"),
-            Color.parseColor("#409c5a")
+            Color.parseColor("#46ce73")
         )
 
         private var availableColors: ArrayList<Int> = arrayListOf<Int>().apply {

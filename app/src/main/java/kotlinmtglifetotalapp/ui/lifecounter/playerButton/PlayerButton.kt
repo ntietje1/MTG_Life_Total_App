@@ -75,7 +75,7 @@ class PlayerButton(context: Context, player: Player?) : FrameLayout(context) {
                     .padding(all = 0.dp),
                 gradient = Brush.sweepGradient(
                     listOf(
-                        Color(this@PlayerButton.player.playerColor),
+                        Color(this@PlayerButton.player.playerColor.desaturateColor(0.7f)),
                         Color.Yellow,
                         Color.Yellow,
                         Color.Yellow

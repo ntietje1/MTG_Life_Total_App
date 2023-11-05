@@ -6,42 +6,20 @@
         android:background="@drawable/rounded_corners">
 
     <GridLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/grid_layout"
             android:layout_gravity="center"
             android:background="@drawable/rounded_corners"
-            android:columnCount="2"
-            android:rowCount="3"
-            android:visibility="invisible"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:paddingTop="32dp"
-            android:paddingBottom="32dp">
+            android:padding="10dp">
 
-        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        <kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
-
-        </kotlinmtglifetotalapp.ui.lifecounter.SettingsButton>
     </GridLayout>
+
+    <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom|center_horizontal" />
 
 
     <ImageView
@@ -50,7 +28,7 @@
             app:srcCompat="@drawable/heads"
             android:id="@+id/coin"
             android:layout_gravity="center" />
-<!--     | bottom-->
+
 
 
 </FrameLayout>

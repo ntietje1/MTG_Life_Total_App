@@ -4,22 +4,52 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Interpolator
 import android.view.animation.LinearInterpolator
+import androidx.compose.foundation.background
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.CoinFlipLayoutBinding
 import kotlinmtglifetotalapp.utils.Rotate3dAnimation
 
-// TODO: FIX SAME SIDE FLIPPING
 class CoinFlipDialog : DialogFragment() {
     private var _binding: CoinFlipLayoutBinding? = null
     private val binding get() = _binding!!
+    private val gridLayout get() = binding.gridLayout
 
     private val coinImage get() = binding.coin
     private var curSide = R.drawable.heads
     private var targetSide = R.drawable.heads
     private val sides = listOf(R.drawable.heads, R.drawable.tails)
-    private val numFlips = 3
+    private val numFlips = 2
+    private val animationDuration = 200L
+
+    private val history = mutableStateListOf<String>()
+
+    private val animationInterpolator = LinearInterpolator()
     private val headsToHeads get() = Rotate3dAnimation(
         coinImage,
         R.drawable.heads,
@@ -32,8 +62,8 @@ class CoinFlipDialog : DialogFragment() {
         0f
     ).apply {
         repeatCount = numFlips
-        duration = 120
-        interpolator = LinearInterpolator()
+        duration = animationDuration
+        interpolator = animationInterpolator
     }
     private val headsToTails get() = Rotate3dAnimation(
         coinImage,
@@ -46,9 +76,9 @@ class CoinFlipDialog : DialogFragment() {
         0f,
         0f
     ).apply {
-        repeatCount = numFlips + 1
-        duration = 120
-        interpolator = LinearInterpolator()
+        repeatCount = numFlips
+        duration = animationDuration
+        interpolator = animationInterpolator
     }
     private val tailsToHeads get() = Rotate3dAnimation(
         coinImage,
@@ -61,9 +91,9 @@ class CoinFlipDialog : DialogFragment() {
         0f,
         0f
     ).apply {
-        repeatCount = numFlips + 1
-        duration = 120
-        interpolator = LinearInterpolator()
+        repeatCount = numFlips
+        duration = animationDuration
+        interpolator = animationInterpolator
     }
     private val tailsToTails get() = Rotate3dAnimation(
         coinImage,
@@ -77,8 +107,8 @@ class CoinFlipDialog : DialogFragment() {
         0f
     ).apply {
         repeatCount = numFlips
-        duration = 120
-        interpolator = LinearInterpolator()
+        duration = animationDuration
+        interpolator = animationInterpolator
     }
 
     private val flipAnimation
@@ -108,6 +138,15 @@ class CoinFlipDialog : DialogFragment() {
 
         dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
+        generateInvisibleGrid()
+
+        binding.composeView.apply {
+
+            setContent {
+                FlipHistory(history)
+            }
+        }
+
         coinImage.isClickable = true
         coinImage.setOnClickListener {
             flip()
@@ -118,10 +157,80 @@ class CoinFlipDialog : DialogFragment() {
         targetSide = sides.random()
         coinImage.startAnimation(flipAnimation)
         curSide = targetSide
+        if (targetSide == R.drawable.heads) {
+            addToHistory("H")
+            println("H")
+        } else {
+            addToHistory("T")
+            println("T")
+        }
+    }
+
+    private fun addToHistory(v: String) {
+        if (history.size >= 20) {
+            history.removeAt(0)
+        }
+        history.add(v)
+
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun generateInvisibleGrid() {
+        gridLayout.columnCount = 2
+        gridLayout.rowCount = 3
+        for (i in 1..6) {
+            val placeholderButton = SettingsButton(requireContext(), null).apply {
+                imageResource = R.drawable.one_icon
+                text = ""
+                visibility = View.INVISIBLE
+            }
+            gridLayout.addView(placeholderButton)
+
+        }
+    }
+}
+
+@Composable
+fun FlipHistory(coinFlipHistory: MutableList<String>) {
+    val hPadding = 5.dp
+    val vPadding = 5.dp
+
+    Column() {
+
+        Text(
+            text = "Flip History",
+            color = Color.Black, // Set the text color to white or another contrasting color
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(horizontal = hPadding, vertical = vPadding)
+        )
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth() // Fill the available width within the Box
+                .height(40.dp)
+                .clip(RoundedCornerShape(30.dp))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = hPadding, vertical = vPadding)
+            ) {
+
+                Text(
+                    text = coinFlipHistory.joinToString(" "),
+                    color = Color.Black, // Set the text color to white or another contrasting color
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(horizontal = hPadding, vertical = vPadding)
+                )
+
+            }
+        }
     }
 }

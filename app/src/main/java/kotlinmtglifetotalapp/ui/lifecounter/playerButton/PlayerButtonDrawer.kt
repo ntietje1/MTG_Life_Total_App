@@ -163,14 +163,14 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
             color = when (state) {
                 PlayerButtonState.NORMAL -> {
                     if (player!!.isDead) {
-                        desaturateColor(player!!.playerColor, 0.9f)
+                        player!!.playerColor.desaturateColor(0.9f)
                     } else {
                         player!!.playerColor
                     }
                 }
                 PlayerButtonState.COMMANDER_RECEIVER -> Color.DKGRAY
-                PlayerButtonState.COMMANDER_DEALER -> darkenColor(desaturateColor(player!!.playerColor))
-                else -> darkenColor(desaturateColor(player!!.playerColor, 0.8f), 0.8f)
+                PlayerButtonState.COMMANDER_DEALER -> player!!.playerColor.desaturateColor().darkenColor()
+                else -> player!!.playerColor.desaturateColor(0.8f).darkenColor(0.8f)
             }
 
             // Modify the stroke width and color
@@ -181,23 +181,23 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
 
     }
 
-    private fun darkenColor(color: Int, factor: Float = 0.6f): Int {
-        val red = Color.red(color) * factor
-        val green = Color.green(color) * factor
-        val blue = Color.blue(color) * factor
-        return Color.rgb(red.toInt(), green.toInt(), blue.toInt())
-    }
-
-    private fun desaturateColor(color: Int, factor: Float = 0.6f): Int {
-        val hsl = FloatArray(3)
-        ColorUtils.colorToHSL(color, hsl)
-        hsl[1] *= factor
-        return ColorUtils.HSLToColor(hsl)
-    }
-
     private fun calculateIconTopLeft(bitmap: Bitmap): PointF {
         val iconLeft = centerX - bitmap.width.toFloat() / 2
         val iconTop = midLineY + paintLarge.descent() - playerButtonBase.height / 20
         return PointF(iconLeft, iconTop)
     }
+}
+
+fun Int.darkenColor(factor: Float = 0.6f): Int {
+    val red = Color.red(this) * factor
+    val green = Color.green(this) * factor
+    val blue = Color.blue(this) * factor
+    return Color.rgb(red.toInt(), green.toInt(), blue.toInt())
+}
+
+fun Int.desaturateColor(factor: Float = 0.6f): Int {
+    val hsl = FloatArray(3)
+    ColorUtils.colorToHSL(this, hsl)
+    hsl[1] *= factor
+    return ColorUtils.HSLToColor(hsl)
 }
