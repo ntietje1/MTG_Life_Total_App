@@ -1,12 +1,9 @@
 import android.content.DialogInterface
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.DialogFragment
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.MiddleButtonLayoutBinding
@@ -14,7 +11,8 @@ import kotlinmtglifetotalapp.ui.lifecounter.CoinFlipDialog
 import kotlinmtglifetotalapp.ui.lifecounter.LifeCounterFragment
 import kotlinmtglifetotalapp.ui.lifecounter.NumPlayersDialog
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
-import kotlinmtglifetotalapp.ui.lifecounter.playerButton.RoundedCornerDrawable
+import kotlinmtglifetotalapp.ui.lifecounter.RoundedCornerDrawable
+import kotlinmtglifetotalapp.ui.lifecounter.StartingLifeDialog
 
 /**
  * TODO: implement these features in settings
@@ -74,24 +72,29 @@ class MiddleButtonDialog : DialogFragment() {
         setOnClickListener {
             val fragment = CoinFlipDialog()
 
-//            val width = this@MiddleButtonDialog.view?.width ?: 0
-//            val height = this@MiddleButtonDialog.view?.height ?: 0
-            val width = 2000
-            val height = 4000
-
-            // Set the dimensions of the CoinFlipDialog
-            val params = WindowManager.LayoutParams()
-            params.width = width
-            params.height = height
-            fragment.dialog?.window?.attributes = params
-
-            //fragment.dialog?.window?.attributes = this@MiddleButtonDialog.dialog?.window?.attributes
-
-
             fragment.show(
                 parentFrag.childFragmentManager, "coin_flip_dialog_tag"
             )
         }
+    }
+
+    private val changeStartingLifeButton get() = SettingsButton(requireContext()).apply {
+        imageResource = R.drawable.fourty_icon
+        text = "Starting Life"
+        setOnClickListener {
+            val fragment = StartingLifeDialog()
+
+            fragment.show(
+                parentFrag.childFragmentManager, "starting_life_dialog_tag"
+            )
+        }
+    }
+
+    private val bground get() = RoundedCornerDrawable.create(requireContext()).apply {
+            backgroundColor = Color.DKGRAY
+//            backgroundAlpha = 0
+        rippleDrawable.alpha = 0
+//        rippleDrawable.setColor(ColorStateList.valueOf(Color.DKGRAY))
     }
 
     override fun onCreateView(
@@ -108,15 +111,15 @@ class MiddleButtonDialog : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val background = RoundedCornerDrawable.create(requireContext()).apply {
-//            backgroundColor = Color.DKGRAY
-//            backgroundAlpha = 0
-            rippleDrawable.alpha = 0
-            rippleDrawable.setColor(ColorStateList.valueOf(Color.DKGRAY))
-        }
+//        val background = RoundedCornerDrawable.create(requireContext()).apply {
+////            backgroundColor = Color.DKGRAY
+////            backgroundAlpha = 0
+//            rippleDrawable.alpha = 0
+//            rippleDrawable.setColor(ColorStateList.valueOf(Color.DKGRAY))
+//        }
 
 
-        dialog?.window?.setBackgroundDrawable(background)
+        dialog?.window?.setBackgroundDrawable(bground)
 
         addButtons()
     }
@@ -127,9 +130,7 @@ class MiddleButtonDialog : DialogFragment() {
         middleMenu.addView(changeNumPlayersButton)
         middleMenu.addView(diceRollButton)
         middleMenu.addView(coinFlipButton)
-        for (i in 0 until 1) {
-            middleMenu.addView(SettingsButton(requireContext(), null))
-        }
+        middleMenu.addView(changeStartingLifeButton)
     }
 
     override fun onDismiss(dialog: DialogInterface) {

@@ -27,9 +27,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.fragment.app.DialogFragment
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.CoinFlipLayoutBinding
@@ -200,34 +205,42 @@ fun FlipHistory(coinFlipHistory: MutableList<String>) {
     val vPadding = 5.dp
 
     Column() {
-
         Text(
             text = "Flip History",
-            color = Color.Black, // Set the text color to white or another contrasting color
+            color = Color.White, // Set the text color to white or another contrasting color
             fontWeight = FontWeight.Bold,
+            style = TextStyle(fontSize = 20.sp),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(horizontal = hPadding, vertical = vPadding)
+                .padding(vertical = vPadding)
         )
 
         Surface(
             modifier = Modifier
-                .fillMaxWidth() // Fill the available width within the Box
+                .fillMaxWidth()
                 .height(40.dp)
-                .clip(RoundedCornerShape(30.dp))
+                .clip(RoundedCornerShape(30.dp)),
+            color = Color(0x60, 0x60, 0x60)
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = hPadding, vertical = vPadding)
+                    .fillMaxWidth()
+                    .padding(vertical = vPadding)
             ) {
 
                 Text(
-                    text = coinFlipHistory.joinToString(" "),
-                    color = Color.Black, // Set the text color to white or another contrasting color
+                    text = buildAnnotatedString {
+                        coinFlipHistory.forEach { result ->
+                            withStyle(style = SpanStyle(color = if (result == "H") Color.Green else Color.Red)) {
+                                append("$result ")
+                            }
+                        }
+                    },
+                    fontWeight = FontWeight.Bold,
+                    style = TextStyle(fontSize = 16.sp),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .padding(horizontal = hPadding, vertical = vPadding)
+                        .padding(vertical = vPadding)
                 )
 
             }

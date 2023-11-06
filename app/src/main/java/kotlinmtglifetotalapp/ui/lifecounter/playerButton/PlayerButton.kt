@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -36,6 +35,7 @@ import androidx.core.view.setMargins
 import androidx.core.view.setPadding
 import com.example.kotlinmtglifetotalapp.R
 import kotlinmtglifetotalapp.ui.lifecounter.AnimatedBorderCard
+import kotlinmtglifetotalapp.ui.lifecounter.RoundedCornerDrawable
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
 import kotlinmtglifetotalapp.utils.RotateLayout
 import yuku.ambilwarna.AmbilWarnaDialog
@@ -75,10 +75,10 @@ class PlayerButton(context: Context, player: Player?) : FrameLayout(context) {
                     .padding(all = 0.dp),
                 gradient = Brush.sweepGradient(
                     listOf(
-                        Color(this@PlayerButton.player.playerColor.desaturateColor(0.7f)),
-                        Color.Yellow,
-                        Color.Yellow,
-                        Color.Yellow
+                        Color.White.copy(alpha = 0.1f),
+                        Color(255, 191, 8),
+                        Color(255, 191, 8),
+                        Color(255, 191, 8),
                     )
                 ),
                 borderWidth = borderWidth,

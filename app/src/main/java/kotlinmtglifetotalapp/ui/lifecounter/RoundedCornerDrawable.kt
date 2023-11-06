@@ -1,4 +1,4 @@
-package kotlinmtglifetotalapp.ui.lifecounter.playerButton
+package kotlinmtglifetotalapp.ui.lifecounter
 
 import android.content.Context
 import android.content.res.ColorStateList
