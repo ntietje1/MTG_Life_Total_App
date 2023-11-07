@@ -1,18 +1,44 @@
+import android.app.Activity
 import android.content.DialogInterface
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.DialogFragment
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.MiddleButtonLayoutBinding
 import kotlinmtglifetotalapp.ui.lifecounter.CoinFlipDialog
 import kotlinmtglifetotalapp.ui.lifecounter.LifeCounterFragment
 import kotlinmtglifetotalapp.ui.lifecounter.NumPlayersDialog
-import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
 import kotlinmtglifetotalapp.ui.lifecounter.RoundedCornerDrawable
-import kotlinmtglifetotalapp.ui.lifecounter.StartingLifeDialog
+import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.Player
 
 /**
  * TODO: implement these features in settings
@@ -30,72 +56,131 @@ class MiddleButtonDialog : DialogFragment() {
     private val middleMenu get() = binding.middleMenu
     private val parentFrag get() = parentFragment as LifeCounterFragment
 
-    private val playerSelectButton get() = SettingsButton(requireContext()).apply {
-        imageResource = R.drawable.player_select_icon
-        text = "Player Select"
-        setOnClickListener {
-            (parentFragment as LifeCounterFragment).goToPlayerSelect()
+    private val playerSelectButton
+        get() = SettingsButton(requireContext()).apply {
+            imageResource = R.drawable.player_select_icon
+            text = "Player Select"
+            setOnClickListener {
+                (parentFragment as LifeCounterFragment).goToPlayerSelect()
+            }
         }
-    }
 
-    private val resetButton get() = SettingsButton(requireContext()).apply {
-        imageResource = R.drawable.reset_icon
-        text = "Reset game"
-        setOnClickListener {
-            parentFrag.resetPlayers()
-            dismiss()
+    private val resetButton
+        get() = SettingsButton(requireContext()).apply {
+            imageResource = R.drawable.reset_icon
+            text = "Reset game"
+            setOnClickListener {
+                parentFrag.resetPlayers()
+                dismiss()
+            }
         }
-    }
 
-    private val changeNumPlayersButton get() = SettingsButton(requireContext()).apply {
-        imageResource = R.drawable.player_count_icon
-        text = "Player number"
-        setOnClickListener {
-            val fragment = NumPlayersDialog()
-            fragment.show(
-                parentFrag.childFragmentManager, "num_players_dialog_tag"
-            )
+    private val changeNumPlayersButton
+        get() = SettingsButton(requireContext()).apply {
+            imageResource = R.drawable.player_count_icon
+            text = "Player number"
+            setOnClickListener {
+                val fragment = NumPlayersDialog()
+                fragment.show(
+                    parentFrag.childFragmentManager, "num_players_dialog_tag"
+                )
+            }
         }
-    }
 
-    private val diceRollButton get() = SettingsButton(requireContext()).apply {
-        imageResource = R.drawable.six_icon
-        text = "Dice roll"
-        setOnClickListener {
+    private val diceRollButton
+        get() = SettingsButton(requireContext()).apply {
+            imageResource = R.drawable.six_icon
+            text = "Dice roll"
+            setOnClickListener {
 
+            }
         }
-    }
 
-    private val coinFlipButton get() = SettingsButton(requireContext(), null).apply {
-        imageResource = R.drawable.coin_icon
-        text = "Coin flip"
-        setOnClickListener {
-            val fragment = CoinFlipDialog()
+    private val coinFlipButton
+        get() = SettingsButton(requireContext(), null).apply {
+            imageResource = R.drawable.coin_icon
+            text = "Coin flip"
+            setOnClickListener {
+                val fragment = CoinFlipDialog()
 
-            fragment.show(
-                parentFrag.childFragmentManager, "coin_flip_dialog_tag"
-            )
+                fragment.show(
+                    parentFrag.childFragmentManager, "coin_flip_dialog_tag"
+                )
+            }
         }
-    }
 
-    private val changeStartingLifeButton get() = SettingsButton(requireContext()).apply {
-        imageResource = R.drawable.fourty_icon
-        text = "Starting Life"
-        setOnClickListener {
-            val fragment = StartingLifeDialog()
+    private val changeStartingLifeButton
+        get() = SettingsButton(requireContext()).apply {
+            imageResource = R.drawable.forty_icon
+            text = "Starting Life"
 
-            fragment.show(
-                parentFrag.childFragmentManager, "starting_life_dialog_tag"
-            )
+            val activity = context as Activity
+            setOnClickListener {
+
+                activity.addContentView(
+                    ComposeView(activity).apply {
+                        setContent {
+                            var showDialog by remember { mutableStateOf(true) }
+                            if (showDialog) {
+                                GridDialog(items = listOf(
+                                    { SettingsButton(
+                                        imageResource = painterResource(id = R.drawable.forty_icon),
+                                        text = "forty",
+                                        onClick = {
+                                            Player.startingLife = 40
+                                            parentFrag.resetPlayers()
+                                            showDialog = false
+                                        }
+                                    ) },
+                                    { SettingsButton(
+                                        imageResource = painterResource(id = R.drawable.thirty_icon),
+                                        text = "thirty",
+                                        onClick = {
+                                            Player.startingLife = 30
+                                            parentFrag.resetPlayers()
+                                            showDialog = false
+                                        }
+                                    ) },
+                                    { SettingsButton(
+                                        imageResource = painterResource(id = R.drawable.twenty_icon),
+                                        text = "twenty",
+                                        onClick = {
+                                            Player.startingLife = 20
+                                            parentFrag.resetPlayers()
+                                            showDialog = false
+                                        }
+                                    ) },
+                                    { SettingsButton(
+//                                        imageResource = painterResource(id = R.drawable.thirty_icon),
+                                        text = "custom",
+                                        onClick = {
+                                            Player.startingLife = -1
+                                            parentFrag.resetPlayers()
+                                            showDialog = false
+                                        }
+                                    ) }
+                                    ), onDismiss = {
+                                    showDialog = false
+                                })
+                            }
+                        }
+                    },
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                )
+
+            }
         }
-    }
 
-    private val bground get() = RoundedCornerDrawable.create(requireContext()).apply {
-            backgroundColor = Color.DKGRAY
+    private val bground
+        get() = RoundedCornerDrawable.create(requireContext()).apply {
+            backgroundColor = Color.DarkGray.toArgb()
 //            backgroundAlpha = 0
-        rippleDrawable.alpha = 0
+            rippleDrawable.alpha = 0
 //        rippleDrawable.setColor(ColorStateList.valueOf(Color.DKGRAY))
-    }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -143,3 +228,54 @@ class MiddleButtonDialog : DialogFragment() {
         _binding = null
     }
 }
+
+@Composable
+fun GridDialog(
+    items: List<@Composable () -> Unit> = emptyList(),
+    color: Color = Color.DarkGray,
+    onDismiss: () -> Unit
+) {
+    val animationDuration = 400
+    var dialogInitialSize by remember { mutableStateOf(Size(0.dp.value, 0.dp.value)) }
+    val dialogFinalSize by remember { mutableStateOf(Size(250.dp.value, 400.dp.value)) }
+    val transition = updateTransition(targetState = dialogInitialSize, label = "grow to size")
+
+    val width by transition.animateDp(
+        transitionSpec = {
+            tween(durationMillis = animationDuration)
+        }, label = "width animation"
+    ) { size -> size.width.dp }
+    val height by transition.animateDp(
+        transitionSpec = {
+            tween(durationMillis = animationDuration)
+        }, label = "height animation"
+    ) { size -> size.height.dp }
+    Dialog(onDismissRequest = onDismiss) {
+        Box(
+            modifier = Modifier.size(dialogInitialSize.width.dp, dialogInitialSize.height.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                modifier = Modifier
+                    .size(width, height)
+                    .clip(RoundedCornerShape(30.dp)),
+                color = color,
+                shadowElevation = 5.dp,
+            ) {
+                LazyVerticalGrid(
+                    modifier = Modifier.padding(vertical = 15.dp / 2),
+                    columns = GridCells.Fixed(2),
+                    content = {
+                        items(items.size) { index ->
+                            items[index]()
+                        }
+                    }
+                )
+            }
+        }
+    }
+    LaunchedEffect(dialogInitialSize) {
+        dialogInitialSize = dialogFinalSize
+    }
+}
+
