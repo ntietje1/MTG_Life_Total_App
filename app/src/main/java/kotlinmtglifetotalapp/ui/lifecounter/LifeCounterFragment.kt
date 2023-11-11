@@ -1,6 +1,7 @@
 package kotlinmtglifetotalapp.ui.lifecounter
 
-import MiddleButtonDialog
+import MiddleButtonDialogComposable
+import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.RenderEffect
@@ -16,16 +17,11 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import com.example.kotlinmtglifetotalapp.R
@@ -97,14 +93,30 @@ class LifeCounterFragment : Fragment() {
             }
             setPadding(10, 10, 10, 10)
             setOnClickListener {
-                //goToPlayerSelect(this)
-                //toggleMiddleMenu()
+//                toggleImageViewVis()
+//                val fragment = MiddleButtonDialog()
+//                fragment.show(
+//                    this@LifeCounterFragment.childFragmentManager, "middle_button_fragment_tag"
+//                )
 
+                val activity = context as Activity
 
-                toggleImageViewVis()
-                val fragment = MiddleButtonDialog()
-                fragment.show(
-                    this@LifeCounterFragment.childFragmentManager, "middle_button_fragment_tag"
+                activity.addContentView(
+                    ComposeView(activity).apply {
+                        setContent {
+                            var showDialog by remember { mutableStateOf(true) }
+                            if (showDialog) {
+                                MiddleButtonDialogComposable(
+                                    parentFrag = this@LifeCounterFragment,
+                                    onDismiss = { showDialog = false },
+                                )
+                            }
+                        }
+                    },
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
                 )
             }
 
@@ -323,7 +335,8 @@ class LifeCounterFragment : Fragment() {
         println("NOW ${Player.currentPlayers.size} Players")
         val bundle = Bundle()
         Player.packBundle(bundle)
-        Navigation.findNavController(binding.linearLayout).navigate(R.id.navigation_life_counter, bundle)
+        Navigation.findNavController(binding.linearLayout)
+            .navigate(R.id.navigation_life_counter, bundle)
     }
 
 

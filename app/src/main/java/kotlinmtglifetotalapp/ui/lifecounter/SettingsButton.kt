@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -105,24 +106,20 @@ fun SettingsButton(
     text: String = "placeholder",
     onClick: () -> Unit = {}
 ) {
-    val cornerRadius = 30.dp
-    val margin = 15.dp
-    val imageSize = size - margin * 2
-    val bottomPadding = margin / 2
+    val cornerRadius = size/6
+    val margin = size/12
+    val imageSize = if (text.isNotEmpty()) size - margin * 2.5f else size - margin * 1.5f
     val fontSize = (size / 10).value.sp
 
-    // Utilize the lambda version of Modifier and graphicsLayer for optimization
     Box(
-        modifier = Modifier
-            .width(IntrinsicSize.Min)
-            .height(IntrinsicSize.Min)
+        modifier = Modifier.wrapContentSize().padding(top = margin/2)
             .clickable(onClick = onClick)
             .clip(RoundedCornerShape(cornerRadius))
             .background(color)
-            .graphicsLayer() // Use graphicsLayer for optimization
+            .graphicsLayer()
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.wrapContentSize().padding(bottom = margin/2),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -135,8 +132,7 @@ fun SettingsButton(
             Text(
                 text = text,
                 color = Color.White,
-                style = TextStyle(fontSize = fontSize),
-                modifier = Modifier.padding(bottom = bottomPadding)
+                style = TextStyle(fontSize = fontSize)
             )
         }
     }

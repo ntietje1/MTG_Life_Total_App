@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,18 +33,13 @@ import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.MiddleButtonLayoutBinding
 import kotlinmtglifetotalapp.ui.lifecounter.CoinFlipDialog
 import kotlinmtglifetotalapp.ui.lifecounter.LifeCounterFragment
-import kotlinmtglifetotalapp.ui.lifecounter.NumPlayersDialog
 import kotlinmtglifetotalapp.ui.lifecounter.RoundedCornerDrawable
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.Player
 
 /**
  * TODO: implement these features in settings
- *
- *
  * dice
- *
- *
  */
 class MiddleButtonDialog : DialogFragment() {
 
@@ -76,11 +72,83 @@ class MiddleButtonDialog : DialogFragment() {
         get() = SettingsButton(requireContext()).apply {
             imageResource = R.drawable.player_count_icon
             text = "Player number"
+
+            val activity = context as Activity
             setOnClickListener {
-                val fragment = NumPlayersDialog()
-                fragment.show(
-                    parentFrag.childFragmentManager, "num_players_dialog_tag"
+
+                activity.addContentView(
+                    ComposeView(activity).apply {
+                        setContent {
+                            var showDialog by remember { mutableStateOf(true) }
+                            if (showDialog) {
+                                GridDialog(items = listOf(
+                                    {
+                                        SettingsButton(
+                                            imageResource = painterResource(R.drawable.one_icon),
+                                            text = "",
+                                            onClick = {
+                                                parentFrag.setPlayerNum(1)
+                                                showDialog = false
+                                            }
+                                        )
+                                    }, {
+                                        SettingsButton(
+                                            imageResource = painterResource(R.drawable.two_icon),
+                                            text = "",
+                                            onClick = {
+                                                parentFrag.setPlayerNum(2)
+                                                showDialog = false
+                                            }
+                                        )
+                                    }, {
+                                        SettingsButton(
+                                            imageResource = painterResource(R.drawable.three_icon),
+                                            text = "",
+                                            onClick = {
+                                                parentFrag.setPlayerNum(3)
+                                                showDialog = false
+                                            }
+                                        )
+                                    }, {
+                                        SettingsButton(
+                                            imageResource = painterResource(R.drawable.four_icon),
+                                            text = "",
+                                            onClick = {
+                                                parentFrag.setPlayerNum(4)
+                                                showDialog = false
+                                            }
+                                        )
+                                    }, {
+                                        SettingsButton(
+                                            imageResource = painterResource(R.drawable.five_icon),
+                                            text = "",
+                                            onClick = {
+                                                parentFrag.setPlayerNum(5)
+                                                showDialog = false
+                                            }
+                                        )
+                                    }, {
+                                        SettingsButton(
+                                            imageResource = painterResource(R.drawable.six_icon),
+                                            text = "",
+                                            onClick = {
+                                                parentFrag.setPlayerNum(6)
+                                                showDialog = false
+                                            }
+                                        )
+                                    }
+                                ), onDismiss = {
+                                    showDialog = false
+                                })
+                            }
+                        }
+                    },
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
                 )
+
             }
         }
 
@@ -98,15 +166,7 @@ class MiddleButtonDialog : DialogFragment() {
             imageResource = R.drawable.coin_icon
             text = "Coin flip"
             setOnClickListener {
-//                val fragment = CoinFlipDialog()
-//
-//                fragment.show(
-//                    parentFrag.childFragmentManager, "coin_flip_dialog_tag"
-//                )
-
                 val activity = context as Activity
-
-
                 activity.addContentView(
                     ComposeView(activity).apply {
                         setContent {
@@ -154,8 +214,7 @@ class MiddleButtonDialog : DialogFragment() {
                                                 showDialog = false
                                             }
                                         )
-                                    },
-                                    {
+                                    }, {
                                         SettingsButton(
                                             imageResource = painterResource(id = R.drawable.thirty_icon),
                                             text = "thirty",
@@ -165,8 +224,7 @@ class MiddleButtonDialog : DialogFragment() {
                                                 showDialog = false
                                             }
                                         )
-                                    },
-                                    {
+                                    }, {
                                         SettingsButton(
                                             imageResource = painterResource(id = R.drawable.twenty_icon),
                                             text = "twenty",
@@ -176,8 +234,7 @@ class MiddleButtonDialog : DialogFragment() {
                                                 showDialog = false
                                             }
                                         )
-                                    },
-                                    {
+                                    }, {
                                         SettingsButton(
 //                                        imageResource = painterResource(id = R.drawable.thirty_icon),
                                             text = "custom",
@@ -224,17 +281,7 @@ class MiddleButtonDialog : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-//        val background = RoundedCornerDrawable.create(requireContext()).apply {
-////            backgroundColor = Color.DKGRAY
-////            backgroundAlpha = 0
-//            rippleDrawable.alpha = 0
-//            rippleDrawable.setColor(ColorStateList.valueOf(Color.DKGRAY))
-//        }
-
-
         dialog?.window?.setBackgroundDrawable(bground)
-
         addButtons()
     }
 
@@ -259,27 +306,191 @@ class MiddleButtonDialog : DialogFragment() {
 }
 
 @Composable
-fun SettingsDialog(
-    content: @Composable () -> Unit = {},
-    onDismiss: () -> Unit = {},
-    width: Dp = 300.dp,
-    height: Dp = 425.dp
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Box(
-            modifier = Modifier.size(width, height),
-            contentAlignment = Alignment.Center
-        ) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(30.dp)),
-                color = Color.DarkGray,
-                shadowElevation = 5.dp,
-            ) {
-                content()
-            }
+fun MiddleButtonDialogComposable(parentFrag: LifeCounterFragment, onDismiss: () -> Unit) {
+    val showCoinFlipDialog = remember { mutableStateOf(false) }
+    val showPlayerNumberDialog = remember { mutableStateOf(false) }
+    val showStartingLifeDialog = remember { mutableStateOf(false) }
+    val showDiceRollDialog = remember { mutableStateOf(false)}
+
+    GridDialog(items = listOf(
+        {
+            SettingsButton(
+                imageResource = painterResource(id = R.drawable.player_select_icon),
+                text = "Player Select",
+                onClick = {
+                    parentFrag.goToPlayerSelect()
+                    onDismiss()
+                }
+            )
+        },{
+            SettingsButton(
+                imageResource = painterResource(id = R.drawable.reset_icon),
+                text = "Reset Game",
+                onClick = {
+                    parentFrag.resetPlayers()
+                    onDismiss()
+                }
+            )
+        },{
+            SettingsButton(
+                imageResource = painterResource(id = R.drawable.player_count_icon),
+                text = "Player Number",
+                onClick = {
+                    showPlayerNumberDialog.value = true
+//                    onDismiss()
+
+                }
+            )
+        },{
+            SettingsButton(
+                imageResource = painterResource(R.drawable.six_icon),
+                text = "Dice roll",
+                onClick = {
+//                    onDismiss()
+                    showDiceRollDialog.value
+                }
+            )
+        },{
+            SettingsButton(
+                imageResource = painterResource(R.drawable.coin_icon),
+                text = "Coin Flip",
+                onClick = {
+//                    onDismiss()
+                    showCoinFlipDialog.value = true
+                }
+            )
+        },{
+            SettingsButton(
+                imageResource = painterResource(R.drawable.forty_icon),
+                text = "Starting Life",
+                onClick = {
+                    showStartingLifeDialog.value = true
+                }
+            )
         }
+    ), onDismiss = {
+        onDismiss()
+    })
+
+    if (showCoinFlipDialog.value) {
+        CoinFlipDialog(
+            onDismiss = {
+                onDismiss()
+                showCoinFlipDialog.value = false
+            }
+        )
+    }
+
+    if (showPlayerNumberDialog.value) {
+        GridDialog(items = listOf(
+            {
+                SettingsButton(
+                    imageResource = painterResource(R.drawable.one_icon),
+                    text = "",
+                    onClick = {
+                        parentFrag.setPlayerNum(1)
+                        showPlayerNumberDialog.value = false
+                    }
+                )
+            }, {
+                SettingsButton(
+                    imageResource = painterResource(R.drawable.two_icon),
+                    text = "",
+                    onClick = {
+                        parentFrag.setPlayerNum(2)
+                        showPlayerNumberDialog.value = false
+                    }
+                )
+            }, {
+                SettingsButton(
+                    imageResource = painterResource(R.drawable.three_icon),
+                    text = "",
+                    onClick = {
+                        parentFrag.setPlayerNum(3)
+                        showPlayerNumberDialog.value = false
+                    }
+                )
+            }, {
+                SettingsButton(
+                    imageResource = painterResource(R.drawable.four_icon),
+                    text = "",
+                    onClick = {
+                        parentFrag.setPlayerNum(4)
+                        showPlayerNumberDialog.value = false
+                    }
+                )
+            }, {
+                SettingsButton(
+                    imageResource = painterResource(R.drawable.five_icon),
+                    text = "",
+                    onClick = {
+                        parentFrag.setPlayerNum(5)
+                        showPlayerNumberDialog.value = false
+                    }
+                )
+            }, {
+                SettingsButton(
+                    imageResource = painterResource(R.drawable.six_icon),
+                    text = "",
+                    onClick = {
+                        parentFrag.setPlayerNum(6)
+                        showPlayerNumberDialog.value = false
+                    }
+                )
+            }
+        ), onDismiss = {
+            onDismiss()
+            showPlayerNumberDialog.value = false
+        })
+    }
+
+    if (showStartingLifeDialog.value) {
+        GridDialog(items = listOf(
+            {
+                SettingsButton(
+                    imageResource = painterResource(id = R.drawable.forty_icon),
+                    text = "forty",
+                    onClick = {
+                        Player.startingLife = 40
+                        parentFrag.resetPlayers()
+                        showStartingLifeDialog.value = false
+                    }
+                )
+            }, {
+                SettingsButton(
+                    imageResource = painterResource(id = R.drawable.thirty_icon),
+                    text = "thirty",
+                    onClick = {
+                        Player.startingLife = 30
+                        parentFrag.resetPlayers()
+                        showStartingLifeDialog.value = false
+                    }
+                )
+            }, {
+                SettingsButton(
+                    imageResource = painterResource(id = R.drawable.twenty_icon),
+                    text = "twenty",
+                    onClick = {
+                        Player.startingLife = 20
+                        parentFrag.resetPlayers()
+                        showStartingLifeDialog.value = false
+                    }
+                )
+            }, {
+                SettingsButton(
+//                  imageResource = painterResource(id = R.drawable.thirty_icon),
+                    text = "custom",
+                    onClick = {
+                        Player.startingLife = -1
+                        parentFrag.resetPlayers()
+                        showStartingLifeDialog.value = false
+                    }
+                )
+            }
+        ), onDismiss = {
+            onDismiss()
+            showStartingLifeDialog.value = false
+        })
     }
 }
 
@@ -306,7 +517,30 @@ fun GridDialog(
 }
 
 
-
+@Composable
+fun SettingsDialog(
+    content: @Composable () -> Unit = {},
+    onDismiss: () -> Unit = {},
+    width: Dp = 300.dp,
+    height: Dp = 425.dp
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Box(
+            modifier = Modifier.size(width, height),
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(30.dp)),
+                color = Color.DarkGray,
+                shadowElevation = 5.dp,
+            ) {
+                content()
+            }
+        }
+    }
+}
 
 
 
