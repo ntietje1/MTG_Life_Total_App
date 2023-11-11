@@ -4,10 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.animation.core.animateDp
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -15,7 +13,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,11 +20,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.DialogFragment
@@ -101,11 +98,35 @@ class MiddleButtonDialog : DialogFragment() {
             imageResource = R.drawable.coin_icon
             text = "Coin flip"
             setOnClickListener {
-                val fragment = CoinFlipDialog()
+//                val fragment = CoinFlipDialog()
+//
+//                fragment.show(
+//                    parentFrag.childFragmentManager, "coin_flip_dialog_tag"
+//                )
 
-                fragment.show(
-                    parentFrag.childFragmentManager, "coin_flip_dialog_tag"
+                val activity = context as Activity
+
+
+                activity.addContentView(
+                    ComposeView(activity).apply {
+                        setContent {
+                            var showDialog by remember { mutableStateOf(true) }
+                            if (showDialog) {
+                                CoinFlipDialog(
+                                    onDismiss = {
+                                        showDialog = false
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
                 )
+
+
             }
         }
 
@@ -123,43 +144,51 @@ class MiddleButtonDialog : DialogFragment() {
                             var showDialog by remember { mutableStateOf(true) }
                             if (showDialog) {
                                 GridDialog(items = listOf(
-                                    { SettingsButton(
-                                        imageResource = painterResource(id = R.drawable.forty_icon),
-                                        text = "forty",
-                                        onClick = {
-                                            Player.startingLife = 40
-                                            parentFrag.resetPlayers()
-                                            showDialog = false
-                                        }
-                                    ) },
-                                    { SettingsButton(
-                                        imageResource = painterResource(id = R.drawable.thirty_icon),
-                                        text = "thirty",
-                                        onClick = {
-                                            Player.startingLife = 30
-                                            parentFrag.resetPlayers()
-                                            showDialog = false
-                                        }
-                                    ) },
-                                    { SettingsButton(
-                                        imageResource = painterResource(id = R.drawable.twenty_icon),
-                                        text = "twenty",
-                                        onClick = {
-                                            Player.startingLife = 20
-                                            parentFrag.resetPlayers()
-                                            showDialog = false
-                                        }
-                                    ) },
-                                    { SettingsButton(
+                                    {
+                                        SettingsButton(
+                                            imageResource = painterResource(id = R.drawable.forty_icon),
+                                            text = "forty",
+                                            onClick = {
+                                                Player.startingLife = 40
+                                                parentFrag.resetPlayers()
+                                                showDialog = false
+                                            }
+                                        )
+                                    },
+                                    {
+                                        SettingsButton(
+                                            imageResource = painterResource(id = R.drawable.thirty_icon),
+                                            text = "thirty",
+                                            onClick = {
+                                                Player.startingLife = 30
+                                                parentFrag.resetPlayers()
+                                                showDialog = false
+                                            }
+                                        )
+                                    },
+                                    {
+                                        SettingsButton(
+                                            imageResource = painterResource(id = R.drawable.twenty_icon),
+                                            text = "twenty",
+                                            onClick = {
+                                                Player.startingLife = 20
+                                                parentFrag.resetPlayers()
+                                                showDialog = false
+                                            }
+                                        )
+                                    },
+                                    {
+                                        SettingsButton(
 //                                        imageResource = painterResource(id = R.drawable.thirty_icon),
-                                        text = "custom",
-                                        onClick = {
-                                            Player.startingLife = -1
-                                            parentFrag.resetPlayers()
-                                            showDialog = false
-                                        }
-                                    ) }
-                                    ), onDismiss = {
+                                            text = "custom",
+                                            onClick = {
+                                                Player.startingLife = -1
+                                                parentFrag.resetPlayers()
+                                                showDialog = false
+                                            }
+                                        )
+                                    }
+                                ), onDismiss = {
                                     showDialog = false
                                 })
                             }
@@ -230,52 +259,54 @@ class MiddleButtonDialog : DialogFragment() {
 }
 
 @Composable
-fun GridDialog(
-    items: List<@Composable () -> Unit> = emptyList(),
-    color: Color = Color.DarkGray,
-    onDismiss: () -> Unit
+fun SettingsDialog(
+    content: @Composable () -> Unit = {},
+    onDismiss: () -> Unit = {},
+    width: Dp = 300.dp,
+    height: Dp = 425.dp
 ) {
-    val animationDuration = 400
-    var dialogInitialSize by remember { mutableStateOf(Size(0.dp.value, 0.dp.value)) }
-    val dialogFinalSize by remember { mutableStateOf(Size(250.dp.value, 400.dp.value)) }
-    val transition = updateTransition(targetState = dialogInitialSize, label = "grow to size")
-
-    val width by transition.animateDp(
-        transitionSpec = {
-            tween(durationMillis = animationDuration)
-        }, label = "width animation"
-    ) { size -> size.width.dp }
-    val height by transition.animateDp(
-        transitionSpec = {
-            tween(durationMillis = animationDuration)
-        }, label = "height animation"
-    ) { size -> size.height.dp }
     Dialog(onDismissRequest = onDismiss) {
         Box(
-            modifier = Modifier.size(dialogInitialSize.width.dp, dialogInitialSize.height.dp),
+            modifier = Modifier.size(width, height),
             contentAlignment = Alignment.Center
         ) {
             Surface(
                 modifier = Modifier
-                    .size(width, height)
+                    .fillMaxSize()
                     .clip(RoundedCornerShape(30.dp)),
-                color = color,
+                color = Color.DarkGray,
                 shadowElevation = 5.dp,
             ) {
-                LazyVerticalGrid(
-                    modifier = Modifier.padding(vertical = 15.dp / 2),
-                    columns = GridCells.Fixed(2),
-                    content = {
-                        items(items.size) { index ->
-                            items[index]()
-                        }
-                    }
-                )
+                content()
             }
         }
     }
-    LaunchedEffect(dialogInitialSize) {
-        dialogInitialSize = dialogFinalSize
-    }
 }
+
+@Composable
+fun GridDialog(
+    items: List<@Composable () -> Unit> = emptyList(),
+    onDismiss: () -> Unit = {}
+) {
+    SettingsDialog(
+        onDismiss = onDismiss,
+        content = {
+            LazyVerticalGrid(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 15.dp / 2),
+                columns = GridCells.Fixed(2),
+                content = {
+                    items(items.size) { index ->
+                        items[index]()
+                    }
+                }
+            )
+        })
+}
+
+
+
+
+
 

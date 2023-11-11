@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
@@ -110,6 +111,7 @@ fun SettingsButton(
     val bottomPadding = margin / 2
     val fontSize = (size / 10).value.sp
 
+    // Utilize the lambda version of Modifier and graphicsLayer for optimization
     Box(
         modifier = Modifier
             .width(IntrinsicSize.Min)
@@ -117,12 +119,10 @@ fun SettingsButton(
             .clickable(onClick = onClick)
             .clip(RoundedCornerShape(cornerRadius))
             .background(color)
+            .graphicsLayer() // Use graphicsLayer for optimization
     ) {
         Column(
-            modifier = Modifier
-//                .width(IntrinsicSize.Min)
-//                .height(IntrinsicSize.Min),
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -130,7 +130,7 @@ fun SettingsButton(
                 painter = imageResource,
                 contentDescription = "settings button image",
                 modifier = Modifier
-                    .size(imageSize) // Adjust the size as needed
+                    .size(imageSize)
             )
             Text(
                 text = text,
@@ -140,7 +140,5 @@ fun SettingsButton(
             )
         }
     }
-
-
 }
 

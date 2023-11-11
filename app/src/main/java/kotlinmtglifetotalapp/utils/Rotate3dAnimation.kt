@@ -9,12 +9,12 @@ class Rotate3dAnimation(
     private val imageView: ImageView,
     private var curDrawable: Int,
     private var nextDrawable: Int,
-    private val fromXDegrees: Float,
-    private val toXDegrees: Float,
-    private val fromYDegrees: Float,
-    private val toYDegrees: Float,
-    private val fromZDegrees: Float,
-    private val toZDegrees: Float
+    private val fromXDegrees: Float = 0f,
+    private val toXDegrees: Float = 180f,
+    private val fromYDegrees: Float = 0f,
+    private val toYDegrees: Float = 0f,
+    private val fromZDegrees: Float = 0f,
+    private val toZDegrees: Float = 0f
 ) : Animation() {
     private var camera: Camera? = null
     private var width = 0
