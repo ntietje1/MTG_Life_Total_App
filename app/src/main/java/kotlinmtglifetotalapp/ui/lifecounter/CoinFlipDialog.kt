@@ -38,6 +38,20 @@ import com.wajahatkarim.flippable.FlippableState
 import com.wajahatkarim.flippable.rememberFlipController
 import kotlin.random.Random
 
+@Composable
+fun CoinFlipDialogBox() {
+    val history = remember { mutableStateListOf<String>() }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                CoinFlippable(history)
+                FlipHistory(
+                    history,
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 0.dp)
+                )
+            }
+}
 
 @Composable
 fun CoinFlipDialog(onDismiss: () -> Unit = {}) {
@@ -61,10 +75,10 @@ fun CoinFlipDialog(onDismiss: () -> Unit = {}) {
 @Composable
 fun CoinFlippable(history: MutableList<String>) {
     val flipEnabled by remember { mutableStateOf(true) }
-    val initialDuration = 275
+    val initialDuration = 300
     var duration by remember { mutableIntStateOf(initialDuration) }
     var flipAnimationType by remember { mutableStateOf(FlipAnimationType.VERTICAL_ANTI_CLOCKWISE) }
-    val totalFlips = 3 // + 1
+    val totalFlips = 2 // + 1
     var flipCount by remember { mutableIntStateOf(totalFlips) }
     val flipController = rememberFlipController()
 
@@ -77,7 +91,7 @@ fun CoinFlippable(history: MutableList<String>) {
 
     fun decrementFlipCount() {
         flipCount--
-        duration += 75
+        duration += 90
     }
 
     fun resetCount() {

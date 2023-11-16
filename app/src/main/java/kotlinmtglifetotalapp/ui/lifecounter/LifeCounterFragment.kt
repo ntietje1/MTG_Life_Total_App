@@ -1,5 +1,6 @@
 package kotlinmtglifetotalapp.ui.lifecounter
 
+
 import MiddleButtonDialogComposable
 import android.app.Activity
 import android.graphics.Bitmap
@@ -93,12 +94,6 @@ class LifeCounterFragment : Fragment() {
             }
             setPadding(10, 10, 10, 10)
             setOnClickListener {
-//                toggleImageViewVis()
-//                val fragment = MiddleButtonDialog()
-//                fragment.show(
-//                    this@LifeCounterFragment.childFragmentManager, "middle_button_fragment_tag"
-//                )
-
                 val activity = context as Activity
 
                 activity.addContentView(
