@@ -1,12 +1,11 @@
 package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,12 +23,11 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -53,6 +51,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinmtglifetotalapp.R
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonStateManager.currentDealer
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonStateManager.getDamageToPlayer
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonStateManager.setDealer
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -62,96 +63,98 @@ import kotlinx.coroutines.launch
 //    NORMAL, COMMANDER_DEALER, COMMANDER_RECEIVER, SETTINGS
 //}
 
-data class PlayerButtonKey(val id: Int)
 
 object PlayerButtonStateManager {
-    val buttonStates = mutableMapOf<PlayerButtonKey, PlayerButtonState>()
+    private val buttonStates = arrayListOf<MutableState<PlayerButtonState>>()
 
-    fun updateOtherInstancesToReceiver(currentKey: PlayerButtonKey) {
-        println("updateOtherInstancesToReceiver")
-        buttonStates.keys.forEach { key ->
-            if (key != currentKey) {
-                buttonStates[key] = PlayerButtonState.COMMANDER_RECEIVER
-            }
-        }
+    fun registerButtonState(state: MutableState<PlayerButtonState>) {
+        buttonStates.add(state)
     }
 
-    fun updateOtherInstancesToNormal(currentKey: PlayerButtonKey) {
-        println("updateOtherInstancesToNormal")
-        buttonStates.keys.forEach { key ->
-            if (key != currentKey) {
-                buttonStates[key] = PlayerButtonState.NORMAL
-            }
-        }
+    fun updateAllStates(state: PlayerButtonState) {
+        buttonStates.forEach { it.value = state }
+    }
+
+    var currentDealer: Player? = null
+
+    fun setDealer(dealer: Player) {
+        currentDealer = dealer
+    }
+
+    fun addDamageToPlayer(receiver: Int, damage: Int) {
+        val dealer = currentDealer!!
+        dealer.commanderDamage[receiver] = dealer.commanderDamage[receiver] + damage
+        println("Added $damage damage to player $receiver : ${dealer.commanderDamage[receiver]}")
+    }
+
+    fun getDamageToPlayer(receiver: Int): Int {
+        val dealer = currentDealer ?: return 0
+        val damage = dealer.commanderDamage[receiver]
+        println("Getting damage ($damage) to player $receiver")
+        return damage
     }
 }
+
 
 @Preview
 @Composable
 fun ExampleScreen() {
     Column() {
         PlayerButton(
-            key = PlayerButtonKey(1),
-            playerName = "test player 1",
-            playerLife = 40,
-            playerColor = Color(Color.Cyan.toArgb().desaturateColor(0.6f)),
-            onIncrementLife = {},
-            onDecrementLife = {}
+            player = Player.generatePlayer(),
+            initialState = PlayerButtonState.NORMAL
         )
         PlayerButton(
-            key = PlayerButtonKey(2),
-            playerName = "test player 2",
-            playerLife = 40,
-            playerColor = Color(Color.Magenta.toArgb().desaturateColor(0.6f)),
-            onIncrementLife = {},
-            onDecrementLife = {}
+            player = Player.generatePlayer(),
+            initialState = PlayerButtonState.NORMAL
         )
     }
 }
 
 @Composable
 fun PlayerButton(
-    key: PlayerButtonKey,
-    playerName: String,
-    playerLife: Int,
-    playerColor: Color,
-    onIncrementLife: () -> Unit,
-    onDecrementLife: () -> Unit,
+    player: Player,
+    initialState: PlayerButtonState,
     width: Dp = 400.dp,
     height: Dp = 300.dp
 ) {
 
-    val state = remember(key) { mutableStateOf(PlayerButtonState.NORMAL) }
-    val life = remember {mutableIntStateOf(playerLife)}
+    val state = remember { mutableStateOf(initialState) }
+    val life = remember { mutableIntStateOf(player.life) }
 
-    DisposableEffect(Unit) {
-        PlayerButtonStateManager.buttonStates[key] = state.value
-        onDispose {
-            PlayerButtonStateManager.buttonStates.remove(key)
+    PlayerButtonStateManager.registerButtonState(state)
+    val id = player.playerNum
+
+    val commanderDamage = remember { mutableIntStateOf(getDamageToPlayer(id)) }
+
+    LaunchedEffect(life.intValue) {
+        if (state.value == PlayerButtonState.COMMANDER_RECEIVER) {
+            commanderDamage.intValue = getDamageToPlayer(id)
         }
     }
 
     val visibleColor = when (state.value) {
         PlayerButtonState.NORMAL -> {
             if (life.intValue <= 0) {
-                Color(playerColor.toArgb().desaturateColor(0.9f))
+                Color(player.playerColor.desaturateColor(0.9f))
             } else {
-                playerColor
+                Color(player.playerColor)
             }
         }
         PlayerButtonState.COMMANDER_RECEIVER -> Color.DarkGray
-        PlayerButtonState.COMMANDER_DEALER -> Color(playerColor.toArgb().desaturateColor().darkenColor())
-        else -> Color(playerColor.toArgb().desaturateColor(0.8f).darkenColor(0.8f))
+        PlayerButtonState.COMMANDER_DEALER -> Color(player.playerColor.desaturateColor().darkenColor())
+        else -> Color(player.playerColor.desaturateColor(0.8f).darkenColor(0.8f))
     }
 
     fun commanderButtonOnClick() {
         state.value = when (state.value) {
             PlayerButtonState.NORMAL -> {
-                PlayerButtonStateManager.updateOtherInstancesToReceiver(key)
+                PlayerButtonStateManager.updateAllStates(PlayerButtonState.COMMANDER_RECEIVER)
+                setDealer(player)
                 PlayerButtonState.COMMANDER_DEALER
             }
             PlayerButtonState.COMMANDER_DEALER -> {
-                PlayerButtonStateManager.updateOtherInstancesToNormal(key)
+                PlayerButtonStateManager.updateAllStates(PlayerButtonState.NORMAL)
                 PlayerButtonState.NORMAL
             }
             else -> throw Exception("Invalid state for commanderButtonOnClick")
@@ -166,6 +169,28 @@ fun PlayerButton(
         }
     }
 
+    fun onIncrementLife() {
+        when (state.value) {
+            PlayerButtonState.NORMAL -> life.intValue++
+            PlayerButtonState.COMMANDER_RECEIVER -> {
+                PlayerButtonStateManager.addDamageToPlayer(id, 1)
+                life.intValue--
+            }
+            else -> {}
+        }
+    }
+
+    fun onDecrementLife() {
+        when (state.value) {
+            PlayerButtonState.NORMAL -> life.intValue--
+            PlayerButtonState.COMMANDER_RECEIVER -> {
+                PlayerButtonStateManager.addDamageToPlayer(id, -1)
+                life.intValue++
+            }
+            else -> {}
+        }
+    }
+
     Box(
         modifier = Modifier
             .width(width)
@@ -177,15 +202,17 @@ fun PlayerButton(
     ) {
         // Overlay LifeChangeButtons on top of PlayerInfo
         LifeChangeButtons(
-            onIncrementLife = { life.value++ },
-            onDecrementLife = { life.value-- },
+            onIncrementLife = { onIncrementLife() },
+            onDecrementLife = { onDecrementLife() },
             color = visibleColor
         )
 
+
+
         // Overlay PlayerInfo in the center
         when (state.value) {
-            PlayerButtonState.NORMAL -> PlayerInfo(playerName = playerName, life = life.intValue, state = state.value)
-            PlayerButtonState.COMMANDER_RECEIVER -> PlayerInfo(playerName = playerName, life = life.intValue, state=state.value)
+            PlayerButtonState.NORMAL -> PlayerInfo(playerName = player.name, life = life.intValue, state = state.value)
+            PlayerButtonState.COMMANDER_RECEIVER -> PlayerInfo(playerName = player.name, life = commanderDamage.intValue, state=state.value)
             PlayerButtonState.COMMANDER_DEALER -> Text(
                 text = "Deal damage with your commander",
                 color = Color.White,
@@ -280,7 +307,9 @@ fun PlayerInfo(playerName: String, life: Int, state: PlayerButtonState) {
         PlayerButtonState.SETTINGS -> R.drawable.transparent
         else -> R.drawable.transparent
     }
+
     Box() {
+
         Text(
             text = life.toString(),
             color = Color.White,
@@ -303,6 +332,7 @@ fun PlayerInfo(playerName: String, life: Int, state: PlayerButtonState) {
             )
         }
     }
+
 }
 
 @Composable
@@ -393,34 +423,24 @@ fun Modifier.repeatingClickable(
 ): Modifier = composed {
 
     val currentClickListener by rememberUpdatedState(onClick)
+    val isEnabled by rememberUpdatedState(enabled)
 
-    pointerInput(interactionSource, enabled) {
-        forEachGesture {
-            coroutineScope {
-                awaitPointerEventScope {
-                    val down = awaitFirstDown(requireUnconsumed = false)
-//                    val downPress = PressInteraction.Press(down.position)
-                    val heldButtonJob = launch {
-                        var currentDelayMillis = maxDelayMillis
-//                        interactionSource.emit(downPress)
-                        while (enabled && down.pressed) {
-                            currentClickListener()
-                            delay(currentDelayMillis)
-                            val nextMillis = currentDelayMillis - (currentDelayMillis * delayDecayFactor)
-                            currentDelayMillis = nextMillis.toLong().coerceAtLeast(minDelayMillis)
-                        }
+    pointerInput(interactionSource, isEnabled) {
+        coroutineScope {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                val job = launch {
+                    var currentDelayMillis = maxDelayMillis
+                    while (isEnabled && down.pressed) {
+                        currentClickListener()
+                        delay(currentDelayMillis)
+                        val nextMillis =
+                            currentDelayMillis - (currentDelayMillis * delayDecayFactor)
+                        currentDelayMillis = nextMillis.toLong().coerceAtLeast(minDelayMillis)
                     }
-                    waitForUpOrCancellation()
-                    heldButtonJob.cancel()
-//                    val releaseOrCancel = when (up) {
-//                        null -> PressInteraction.Cancel(downPress)
-//                        else -> PressInteraction.Release(downPress)
-//                    }
-//                    launch {
-//                        // Send the result through the interaction source
-//                        interactionSource.emit(releaseOrCancel)
-//                    }
                 }
+                waitForUpOrCancellation()
+                job.cancel()
             }
         }
     }
