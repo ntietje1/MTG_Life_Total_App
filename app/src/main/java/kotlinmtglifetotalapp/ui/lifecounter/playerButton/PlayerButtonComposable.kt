@@ -1,9 +1,13 @@
 package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -23,10 +27,14 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.LocalRippleTheme
+import androidx.compose.material.ripple.RippleAlpha
+import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -34,15 +42,19 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,7 +63,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinmtglifetotalapp.R
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
-import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonStateManager.currentDealer
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonStateManager.getDamageToPlayer
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonStateManager.setDealer
 import kotlinx.coroutines.coroutineScope
@@ -141,8 +152,12 @@ fun PlayerButton(
                 Color(player.playerColor)
             }
         }
+
         PlayerButtonState.COMMANDER_RECEIVER -> Color.DarkGray
-        PlayerButtonState.COMMANDER_DEALER -> Color(player.playerColor.desaturateColor().darkenColor())
+        PlayerButtonState.COMMANDER_DEALER -> Color(
+            player.playerColor.desaturateColor().darkenColor()
+        )
+
         else -> Color(player.playerColor.desaturateColor(0.8f).darkenColor(0.8f))
     }
 
@@ -153,10 +168,12 @@ fun PlayerButton(
                 setDealer(player)
                 PlayerButtonState.COMMANDER_DEALER
             }
+
             PlayerButtonState.COMMANDER_DEALER -> {
                 PlayerButtonStateManager.updateAllStates(PlayerButtonState.NORMAL)
                 PlayerButtonState.NORMAL
             }
+
             else -> throw Exception("Invalid state for commanderButtonOnClick")
         }
     }
@@ -176,6 +193,7 @@ fun PlayerButton(
                 PlayerButtonStateManager.addDamageToPlayer(id, 1)
                 life.intValue--
             }
+
             else -> {}
         }
     }
@@ -187,56 +205,68 @@ fun PlayerButton(
                 PlayerButtonStateManager.addDamageToPlayer(id, -1)
                 life.intValue++
             }
+
             else -> {}
         }
     }
 
-    Box(
-        modifier = Modifier
-            .width(width)
-            .height(height)
-            .background(Color.Transparent)
-            .padding(5.dp)
-            .clip(RoundedCornerShape(30.dp)),
-        contentAlignment = Alignment.Center
-    ) {
-        // Overlay LifeChangeButtons on top of PlayerInfo
-        LifeChangeButtons(
-            onIncrementLife = { onIncrementLife() },
-            onDecrementLife = { onDecrementLife() },
-            color = visibleColor
-        )
-
-
-
-        // Overlay PlayerInfo in the center
-        when (state.value) {
-            PlayerButtonState.NORMAL -> PlayerInfo(playerName = player.name, life = life.intValue, state = state.value)
-            PlayerButtonState.COMMANDER_RECEIVER -> PlayerInfo(playerName = player.name, life = commanderDamage.intValue, state=state.value)
-            PlayerButtonState.COMMANDER_DEALER -> Text(
-                text = "Deal damage with your commander",
-                color = Color.White,
-                fontSize = 20.sp,
-                modifier = Modifier.align(Alignment.Center)
+    Box(modifier = Modifier.bounceClick()) {
+        Box(
+            modifier = Modifier
+                .width(width)
+                .height(height)
+                .background(Color.Transparent)
+                .padding(5.dp)
+                .clip(RoundedCornerShape(30.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            LifeChangeButtons(
+                onIncrementLife = { onIncrementLife() },
+                onDecrementLife = { onDecrementLife() },
+                color = visibleColor
             )
-            PlayerButtonState.SETTINGS -> SettingsMenu(
-                onColorButtonClick = { /* Handle color button click */ },
-                onChangeNameButtonClick = { /* Handle change name button click */ },
-                onMonarchyButtonClick = { /* Handle monarchy button click */ },
-                onSavePlayerButtonClick = { /* Handle save player button click */ },
-                onLoadPlayerButtonClick = { /* Handle load player button click */ },
-                onImageButtonClick = { /* Handle image button click */ }
+
+
+            when (state.value) {
+                PlayerButtonState.NORMAL -> PlayerInfo(
+                    playerName = player.name,
+                    life = life.intValue,
+                    state = state.value
+                )
+
+                PlayerButtonState.COMMANDER_RECEIVER -> PlayerInfo(
+                    playerName = player.name,
+                    life = commanderDamage.intValue,
+                    state = state.value
+                )
+
+                PlayerButtonState.COMMANDER_DEALER -> Text(
+                    text = "Deal damage with your commander",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                PlayerButtonState.SETTINGS -> SettingsMenu(
+                    onColorButtonClick = { /* Handle color button click */ },
+                    onChangeNameButtonClick = { /* Handle change name button click */ },
+                    onMonarchyButtonClick = { /* Handle monarchy button click */ },
+                    onSavePlayerButtonClick = { /* Handle save player button click */ },
+                    onLoadPlayerButtonClick = { /* Handle load player button click */ },
+                    onImageButtonClick = { /* Handle image button click */ }
+                )
+            }
+
+            // Overlay PlayerButtonStateIcon on top-right corner
+            PlayerButtonStateButtons(
+                state = state.value,
+                commanderButtonOnClick = { commanderButtonOnClick() },
+                settingsButtonOnClick = { settingsButtonOnClick() }
             )
+
         }
-
-        // Overlay PlayerButtonStateIcon on top-right corner
-        PlayerButtonStateButtons(
-            state = state.value,
-            commanderButtonOnClick = { commanderButtonOnClick() },
-            settingsButtonOnClick = { settingsButtonOnClick() }
-        )
-
     }
+
 }
 
 @Composable
@@ -245,22 +275,24 @@ fun PlayerButtonStateButtons(
     commanderButtonOnClick: () -> Unit,
     settingsButtonOnClick: () -> Unit
 ) {
-    val commanderButtonVisible = state != PlayerButtonState.COMMANDER_RECEIVER && state != PlayerButtonState.SETTINGS
-    val settingsButtonVisible = state != PlayerButtonState.COMMANDER_DEALER && state != PlayerButtonState.COMMANDER_RECEIVER
+    val commanderButtonVisible =
+        state != PlayerButtonState.COMMANDER_RECEIVER && state != PlayerButtonState.SETTINGS
+    val settingsButtonVisible =
+        state != PlayerButtonState.COMMANDER_DEALER && state != PlayerButtonState.COMMANDER_RECEIVER
 
     Box(Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp)
-                .align(Alignment.BottomCenter),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-
+        CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp)
+                    .align(Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 IconButton(
                     onClick = { commanderButtonOnClick() },
                     modifier = Modifier
-                        .size(50.dp)
+                        .size(65.dp)
                         .padding(bottom = 2.5.dp, start = 2.5.dp)
                         .clip(RoundedCornerShape(0.dp))
                         .background(Color.Transparent)
@@ -279,19 +311,20 @@ fun PlayerButtonStateButtons(
                 IconButton(
                     onClick = { settingsButtonOnClick() },
                     modifier = Modifier
-                        .size(50.dp)
+                        .size(65.dp)
                         .background(Color.Transparent)
                         .alpha(if (settingsButtonVisible) 1f else 0f),
                     enabled = settingsButtonVisible,
                     content = {
                         Icon(
-                            modifier = Modifier.fillMaxSize(0.85f),
+                            modifier = Modifier.fillMaxSize(0.825f),
                             imageVector = ImageVector.vectorResource(id = R.drawable.settings_solid_icon),
                             contentDescription = null,
                             tint = Color.White
                         )
                     }
                 )
+            }
 
         }
     }
@@ -308,8 +341,7 @@ fun PlayerInfo(playerName: String, life: Int, state: PlayerButtonState) {
         else -> R.drawable.transparent
     }
 
-    Box() {
-
+    Box {
         Text(
             text = life.toString(),
             color = Color.White,
@@ -344,7 +376,16 @@ fun SettingsMenu(
     onLoadPlayerButtonClick: () -> Unit,
     onImageButtonClick: () -> Unit
 ) {
-    val size = 110.dp
+    val size = 100.dp
+
+    var showDefaultSettings by remember { mutableStateOf(true) }
+    var showColorPicker by remember { mutableStateOf(false) }
+    var showChangeName by remember { mutableStateOf(false) }
+
+    var showLoadPlayer by remember { mutableStateOf(false) }
+    var showSetBackground by remember { mutableStateOf(false) }
+
+
     LazyHorizontalGrid(
         modifier = Modifier
             .wrapContentWidth()
@@ -412,13 +453,11 @@ fun SettingsMenu(
     }
 }
 
-
-fun Modifier.repeatingClickable(
+fun Modifier.constantRepeatingClickable(
     interactionSource: MutableInteractionSource,
     enabled: Boolean,
-    maxDelayMillis: Long = 1000,
-    minDelayMillis: Long = 5,
-    delayDecayFactor: Float = .20f,
+    initialDelayMillis: Long = 500,
+    repeatingDelayMillis: Long = 100,
     onClick: () -> Unit
 ): Modifier = composed {
 
@@ -430,19 +469,17 @@ fun Modifier.repeatingClickable(
             awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false)
                 val job = launch {
-                    var currentDelayMillis = maxDelayMillis
+                    delay(initialDelayMillis)
                     while (isEnabled && down.pressed) {
-                        currentClickListener()
-                        delay(currentDelayMillis)
-                        val nextMillis =
-                            currentDelayMillis - (currentDelayMillis * delayDecayFactor)
-                        currentDelayMillis = nextMillis.toLong().coerceAtLeast(minDelayMillis)
+                        currentClickListener() // Repeating click after initial delay
+                        delay(repeatingDelayMillis)
                     }
                 }
                 waitForUpOrCancellation()
                 job.cancel()
             }
         }
+        detectTapGestures(onPress = { onClick() }) { }
     }
 }
 
@@ -455,43 +492,104 @@ fun LifeChangeButtons(
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        IconButton(
-            onClick = { onIncrementLife() },
+
+        CustomIncrementButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.5f)
-                .background(color)
-                .then(
-                    Modifier.repeatingClickable(
-                        interactionSource = interactionSource,
-                        enabled = true,
-                        onClick = { onIncrementLife() }
-                    )
-                )
-        ) {
-            // Icon(imageVector = Icons.Default.KeyboardArrowUp, contentDescription = null)
-        }
-        IconButton(
-            onClick = { onDecrementLife() },
+                .fillMaxHeight(0.5f),
+            onIncrementLife = onIncrementLife,
+            color = color,
+            interactionSource = interactionSource
+        )
+
+        CustomIncrementButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()
-                .background(
-                    Color(
-                        color
-                            .toArgb()
-                            .darkenColor(0.97f)
-                    )
-                )
-                .then(
-                    Modifier.repeatingClickable(
-                        interactionSource = interactionSource,
-                        enabled = true,
-                        onClick = { onDecrementLife() }
-                    )
-                )
-        ) {
-            // Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = null)
-        }
+                .fillMaxHeight(1.0f),
+            onIncrementLife = onDecrementLife,
+            color = Color(color.toArgb().darkenColor(0.97f)),
+            interactionSource = interactionSource
+        )
+
     }
+}
+
+@Composable
+private fun CustomIncrementButton(
+    modifier: Modifier = Modifier,
+    onIncrementLife: () -> Unit = {},
+    color: Color = Color.Unspecified,
+    interactionSource: MutableInteractionSource
+) {
+    val haptic = LocalHapticFeedback.current
+
+    CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+        Box(
+            modifier = modifier
+                .background(color)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = {
+                            onIncrementLife()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        },
+                    )
+                }
+                .then(
+                    Modifier
+                        .constantRepeatingClickable(
+                            interactionSource = interactionSource,
+                            enabled = true,
+                            onClick = {
+                                onIncrementLife()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                        )
+                )
+        )
+    }
+}
+
+enum class ButtonState { Pressed, Idle }
+
+fun Modifier.bounceClick() = composed {
+    var buttonState by remember { mutableStateOf(ButtonState.Idle) }
+    val scale by animateFloatAsState(
+        targetValue = if (buttonState == ButtonState.Pressed) 1.0f else 0.9925f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "scale"
+    )
+
+    this
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
+        .clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = { }
+        )
+        .pointerInput(buttonState) {
+            awaitPointerEventScope {
+                buttonState = if (buttonState == ButtonState.Pressed) {
+                    waitForUpOrCancellation()
+                    ButtonState.Idle
+                } else {
+                    awaitFirstDown(false)
+                    ButtonState.Pressed
+                }
+            }
+        }
+}
+
+private object NoRippleTheme : RippleTheme {
+    @Composable
+    override fun defaultColor() = Color.Unspecified
+
+    @Composable
+    override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f, 0.0f, 0.0f, 0.0f)
 }
