@@ -27,6 +27,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import com.example.kotlinmtglifetotalapp.R
 import com.example.kotlinmtglifetotalapp.databinding.LifeCounterLayoutBinding
+import kotlinmtglifetotalapp.ui.lifecounter.playerButton.ExampleScreen
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.Player
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButton
 import kotlinmtglifetotalapp.utils.RotateLayout
@@ -101,10 +102,11 @@ class LifeCounterFragment : Fragment() {
                         setContent {
                             var showDialog by remember { mutableStateOf(true) }
                             if (showDialog) {
-                                MiddleButtonDialogComposable(
-                                    parentFrag = this@LifeCounterFragment,
-                                    onDismiss = { showDialog = false },
-                                )
+//                                MiddleButtonDialogComposable(
+//                                    parentFrag = this@LifeCounterFragment,
+//                                    onDismiss = { showDialog = false },
+//                                )
+                                ExampleScreen()
                             }
                         }
                     },

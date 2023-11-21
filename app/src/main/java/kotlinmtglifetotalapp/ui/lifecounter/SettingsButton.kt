@@ -12,12 +12,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -101,7 +97,7 @@ class SettingsButton(
 @Composable
 fun SettingsButton(
     size: Dp = 130.dp,
-    color: Color = Color.DarkGray,
+    backgroundColor: Color = Color.DarkGray,
     imageResource: Painter = painterResource(id = R.drawable.placeholder_icon),
     text: String = "placeholder",
     onClick: () -> Unit = {}
@@ -115,7 +111,7 @@ fun SettingsButton(
         modifier = Modifier.wrapContentSize().padding(top = margin/2)
             .clickable(onClick = onClick)
             .clip(RoundedCornerShape(cornerRadius))
-            .background(color)
+            .background(backgroundColor)
             .graphicsLayer()
     ) {
         Column(

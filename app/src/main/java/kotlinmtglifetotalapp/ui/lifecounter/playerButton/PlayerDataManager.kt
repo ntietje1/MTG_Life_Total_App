@@ -43,7 +43,7 @@ class PlayerDataManager(private val context: Context) {
             return arrayListOf()
         }
         for (p in pstrings) {
-            val player = Player(40)
+            val player = Player()
             player.fromString(p)
             res.add(player)
         }

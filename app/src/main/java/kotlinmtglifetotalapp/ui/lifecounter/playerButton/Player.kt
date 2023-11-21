@@ -6,33 +6,42 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import java.util.Collections.addAll
 
 // add player name functionality
 class Player(
-    private var _life: Int,
-    public var playerColor: Int = Color.LTGRAY,
-    private var _monarch: Boolean = false
+    private var _life: MutableState<Int> = mutableIntStateOf(startingLife),
+    public var _playerColor: MutableState<Int> = mutableIntStateOf(Color.LTGRAY),
+    private var _monarch: MutableState<Boolean> = mutableStateOf(false),
+    private var _name: MutableState<String> = mutableStateOf("#Placeholder"),
+    private var _recentChange: MutableState<Int> = mutableIntStateOf(0)
 ) : Parcelable {
 
     val playerNum get() = currentPlayers.indexOf(this) + 1
 
-    val life: Int
-        get() = _life
+    var life: Int by _life
+        private set
+
+    var playerColor: Int by _playerColor
 
     var monarch: Boolean
-        get() = _monarch
+        get() = _monarch.value
         set(v) = run {
             if (v) {
                 for (player in currentPlayers) {
                     player.monarch = false
                 }
             }
-            this._monarch = v
+            this._monarch.value = v
             notifyObserver()
         }
 
-    var name: String = "#Placeholder"
+    var name: String by _name
 
     val commanderDamage: ArrayList<Int> = arrayListOf<Int>().apply {
         for (i in 0 until MAX_PLAYERS) {
@@ -42,8 +51,7 @@ class Player(
 
     val isDead get() = (life <= 0)
 
-    private var _recentChange = 0
-    val recentChange get() = _recentChange
+    val recentChange by _recentChange
 
     private val handler: Handler = Handler(Looper.getMainLooper())
 
@@ -63,7 +71,7 @@ class Player(
     }
 
     fun resetPlayer() {
-        _life = startingLife
+        life = startingLife
         monarch = false
         resetCommanderDamage()
         notifyObserver()
@@ -78,15 +86,16 @@ class Player(
 
 
     fun incrementLife(value: Int) {
-        this._life += value
-        _recentChange += value
+        println("PLAYER INCREMENT LIFE: $value")
+        this.life += value
+        _recentChange.value += value
         resetRecentChangeRunnable()
         notifyObserver()
     }
 
     fun incrementCommander(value: Int) {
-        this._life -= value
-        _recentChange += value
+        this.life -= value
+        _recentChange.value += value
         resetRecentChangeRunnable()
         notifyObserver()
     }
@@ -97,7 +106,7 @@ class Player(
     }
 
     fun zeroRecentChange() {
-        _recentChange = 0
+        _recentChange.value = 0
     }
 
     override fun toString(): String {
@@ -195,7 +204,7 @@ class Player(
 
         fun generatePlayer(): Player {
             val playerColor = getRandColor()
-            val player = Player(startingLife, playerColor)
+            val player = Player(mutableIntStateOf(startingLife), mutableIntStateOf(playerColor))
             currentPlayers.add(player)
             player.name = ("P" + player.playerNum)
             return player
@@ -213,9 +222,9 @@ class Player(
     }
 
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readBoolean()
+        mutableIntStateOf(parcel.readInt()),
+        mutableIntStateOf(parcel.readInt()),
+        mutableStateOf(parcel.readBoolean())
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
