@@ -20,7 +20,6 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -93,11 +92,10 @@ class PlayerButton(context: Context, player: Player?) : FrameLayout(context) {
                 )
             }
         }
-
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
     }
 
-    private var borderWidth: MutableState<Dp> = mutableStateOf(0.dp)
+    private var borderWidth: Dp = 0.dp
 
     private fun toggleMonarchy() {
         player.monarch = !player.monarch
@@ -105,9 +103,9 @@ class PlayerButton(context: Context, player: Player?) : FrameLayout(context) {
 
     fun updateMonarchy() {
         if (player.monarch) {
-            borderWidth.value = 4.dp
+            borderWidth = 4.dp
         } else {
-            borderWidth.value = 0.dp
+            borderWidth = 0.dp
         }
     }
 

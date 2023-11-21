@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import java.util.Collections.addAll
 
 // add player name functionality
 class Player(
@@ -19,7 +18,7 @@ class Player(
     public var _playerColor: MutableState<Int> = mutableIntStateOf(Color.LTGRAY),
     private var _monarch: MutableState<Boolean> = mutableStateOf(false),
     private var _name: MutableState<String> = mutableStateOf("#Placeholder"),
-    private var _recentChange: MutableState<Int> = mutableIntStateOf(0)
+    private var _recentLifeChange: MutableState<Int> = mutableIntStateOf(0)
 ) : Parcelable {
 
     val playerNum get() = currentPlayers.indexOf(this) + 1
@@ -51,7 +50,7 @@ class Player(
 
     val isDead get() = (life <= 0)
 
-    val recentChange by _recentChange
+    val recentLifeChange by _recentLifeChange
 
     private val handler: Handler = Handler(Looper.getMainLooper())
 
@@ -88,14 +87,14 @@ class Player(
     fun incrementLife(value: Int) {
         println("PLAYER INCREMENT LIFE: $value")
         this.life += value
-        _recentChange.value += value
+        _recentLifeChange.value += value
         resetRecentChangeRunnable()
         notifyObserver()
     }
 
     fun incrementCommander(value: Int) {
         this.life -= value
-        _recentChange.value += value
+        _recentLifeChange.value += value
         resetRecentChangeRunnable()
         notifyObserver()
     }
@@ -106,7 +105,7 @@ class Player(
     }
 
     fun zeroRecentChange() {
-        _recentChange.value = 0
+        _recentLifeChange.value = 0
     }
 
     override fun toString(): String {
@@ -168,11 +167,11 @@ class Player(
             Color.parseColor("#46ce73")
         )
 
-        private var availableColors: ArrayList<Int> = arrayListOf<Int>().apply {
-            addAll(allColors)
-        }
-
-        private var unavailableColors: ArrayList<Int> = arrayListOf()
+//        private var availableColors: ArrayList<Int> = arrayListOf<Int>().apply {
+//            addAll(allColors)
+//        }
+//
+//        private var unavailableColors: ArrayList<Int> = arrayListOf()
 
 
         override fun createFromParcel(parcel: Parcel): Player {
@@ -184,22 +183,27 @@ class Player(
         }
 
         private fun getRandColor(): Int {
-            availableColors.shuffle()
-            if (availableColors.size == 0) {
-                availableColors = unavailableColors
-                unavailableColors = arrayListOf()
-            }
-            var playerColor = availableColors.removeLast()
-            val usedColors = arrayListOf<Int>()
-            for (player in currentPlayers) {
-                usedColors.add(player.playerColor)
-            }
-            while (playerColor in usedColors) {
-                playerColor = getRandColor()
-            }
-
-            unavailableColors.add(playerColor)
-            return playerColor
+//            availableColors.shuffle()
+//            if (availableColors.size == 0) {
+//                availableColors = unavailableColors
+//                unavailableColors = arrayListOf()
+//            }
+//            if (availableColors.size == 0) {
+//                return Color.LTGRAY
+//            }
+////            var playerColor = availableColors.removeLast()
+//            var playerColor = availableColors.last()
+//            val usedColors = arrayListOf<Int>()
+//            for (player in currentPlayers) {
+//                usedColors.add(player.playerColor)
+//            }
+//            while (playerColor in usedColors) {
+//                playerColor = getRandColor()
+//            }
+//
+//            unavailableColors.add(playerColor)
+//            return playerColor
+            return allColors.random()
         }
 
         fun generatePlayer(): Player {

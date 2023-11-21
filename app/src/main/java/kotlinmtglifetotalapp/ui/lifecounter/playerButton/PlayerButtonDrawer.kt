@@ -105,8 +105,8 @@ class PlayerButtonDrawer(private val playerButtonBase: PlayerButtonBase) {
 
     private val recentChangeText: String
         get(): String {
-            return if (player.recentChange != 0) {
-                (if (player.recentChange > 0) "+" else "") + player.recentChange.toString()
+            return if (player.recentLifeChange != 0) {
+                (if (player.recentLifeChange > 0) "+" else "") + player.recentLifeChange.toString()
             } else {
                 ""
             }
