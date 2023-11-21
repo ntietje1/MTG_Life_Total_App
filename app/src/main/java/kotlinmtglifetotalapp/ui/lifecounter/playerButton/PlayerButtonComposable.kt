@@ -1,8 +1,10 @@
 package kotlinmtglifetotalapp.ui.lifecounter.playerButton
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -12,9 +14,7 @@ import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-
 import androidx.compose.foundation.layout.Column
-
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -29,10 +29,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -43,6 +41,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -65,11 +64,15 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -84,6 +87,7 @@ import kotlinmtglifetotalapp.ui.lifecounter.AnimatedBorderCard
 import kotlinmtglifetotalapp.ui.lifecounter.SettingsButton
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonStateManager.getDamageToPlayer
 import kotlinmtglifetotalapp.ui.lifecounter.playerButton.PlayerButtonStateManager.setDealer
+import kotlinmtglifetotalapp.utils.ImageLoader
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -142,6 +146,11 @@ fun ExampleScreen() {
     }
 }
 
+enum class PlayerButtonBackgroundMode {
+    SOLID, IMAGE
+}
+
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun PlayerButton(
     player: Player,
@@ -152,6 +161,8 @@ fun PlayerButton(
 
     val state = remember { mutableStateOf(initialState) }
     PlayerButtonStateManager.registerButtonState(state)
+
+    val backgroundType = remember { mutableStateOf(PlayerButtonBackgroundMode.SOLID) }
     val id = player.playerNum
 
     val life by remember(player) {
@@ -182,12 +193,16 @@ fun PlayerButton(
 
     val context = LocalContext.current
 
+    val bitmap = remember {
+        ImageLoader.decodeSampledBitmapFromResource(context.resources, R.drawable.sqrl, 500, 200)
+    }
+
     LaunchedEffect(life) {
         if (state.value == PlayerButtonState.COMMANDER_RECEIVER) {
             commanderDamage.intValue = getDamageToPlayer(id)
         }
     }
-//    Color(baseColor.toArgb().desaturateColor(0.4f).darkenColor(1.1f))
+
     val visibleColor by remember(baseColor, state) {
         derivedStateOf {
             var c = when (state.value) {
@@ -197,7 +212,11 @@ fun PlayerButton(
                     baseColor.toArgb().desaturateColor().darkenColor()
                 )
 
-                else -> Color(baseColor.toArgb().desaturateColor(0.8f).darkenColor(0.8f))
+                PlayerButtonState.SETTINGS -> Color(
+                    baseColor.toArgb().desaturateColor(0.8f).darkenColor(0.8f)
+                )
+
+                else -> throw Exception("unsupported state")
             }
             if (player.isDead) {
                 c = Color(c.toArgb().desaturateColor(0.4f).darkenColor(1.1f))
@@ -257,6 +276,69 @@ fun PlayerButton(
         }
     }
 
+    val normalColorMatrix = remember {
+        ColorMatrix().apply {
+            setToSaturation(1.0f)
+            timesAssign(ColorMatrix().apply { setToScale(1.0f, 1.0f, 1.0f, 1.0f) })
+        }
+    }
+
+    val receiverColorMatrix = remember {
+        ColorMatrix().apply {
+            setToSaturation(0.0f)
+            timesAssign(ColorMatrix().apply { setToScale(0.5f, 0.5f, 0.5f, 1.0f) })
+        }
+    }
+
+    val dealerColorMatrix = remember {
+        ColorMatrix().apply {
+            setToSaturation(0.6f)
+            timesAssign(ColorMatrix().apply { setToScale(0.6f, 0.6f, 0.6f, 1.0f) })
+        }
+    }
+
+    val settingsColorMatrix = remember {
+        ColorMatrix().apply {
+            setToSaturation(0.8f)
+            timesAssign(ColorMatrix().apply { setToScale(0.8f, 0.8f, 0.8f, 1.0f) })
+        }
+    }
+
+    val deadMatrix = remember {
+        ColorMatrix().apply {
+            setToSaturation(0.4f)
+            timesAssign(ColorMatrix().apply { setToScale(1.1f, 1.1f, 1.1f, 1.0f) })
+        }
+    }
+
+    val deadNormalColorMatrix = remember {
+        ColorMatrix().apply {
+            timesAssign(normalColorMatrix)
+            timesAssign(deadMatrix)
+        }
+    }
+
+    val deadReceiverColorMatrix = remember {
+        ColorMatrix().apply {
+            timesAssign(receiverColorMatrix)
+            timesAssign(deadMatrix)
+        }
+    }
+
+    val deadDealerColorMatrix = remember {
+        ColorMatrix().apply {
+            timesAssign(dealerColorMatrix)
+            timesAssign(deadMatrix)
+        }
+    }
+
+    val deadSettingsColorMatrix = remember {
+        ColorMatrix().apply {
+            timesAssign(settingsColorMatrix)
+            timesAssign(deadMatrix)
+        }
+    }
+
     Box(modifier = Modifier.bounceClick()) {
         if (monarch) {
             AnimatedBorderCard(
@@ -294,12 +376,69 @@ fun PlayerButton(
                 .clip(RoundedCornerShape(30.dp)),
             contentAlignment = Alignment.Center
         ) {
+            when (backgroundType.value) {
+                PlayerButtonBackgroundMode.SOLID -> {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = visibleColor
+                    ) {}
+                }
+
+                PlayerButtonBackgroundMode.IMAGE -> {
+                    val colorMatrix = when (state.value) {
+                        PlayerButtonState.NORMAL -> {
+                            if (player.isDead) {
+                                deadNormalColorMatrix
+                            } else {
+                                normalColorMatrix
+                            }
+                        }
+
+                        PlayerButtonState.COMMANDER_RECEIVER -> {
+                            if (player.isDead) {
+                                deadReceiverColorMatrix
+                            } else {
+                                receiverColorMatrix
+                            }
+                        }
+
+                        PlayerButtonState.COMMANDER_DEALER -> {
+                            if (player.isDead) {
+                                deadDealerColorMatrix
+                            } else {
+                                dealerColorMatrix
+                            }
+                        }
+
+                        PlayerButtonState.SETTINGS -> {
+                            if (player.isDead) {
+                                deadSettingsColorMatrix
+                            } else {
+                                settingsColorMatrix
+                            }
+                        }
+
+                        else -> throw Exception("unsupported state")
+                    }
+
+                    Image(
+                        modifier = Modifier.fillMaxSize(),
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "Player uploaded image",
+                        contentScale = ContentScale.Crop,
+                        colorFilter = ColorFilter.colorMatrix(
+                            colorMatrix = colorMatrix
+                        )
+                    )
+
+                }
+            }
+
             LifeChangeButtons(
                 onIncrementLife = { onIncrementLife() },
                 onDecrementLife = { onDecrementLife() },
-                color = visibleColor
+                color = Color.Transparent
             )
-
 
             when (state.value) {
                 PlayerButtonState.NORMAL -> PlayerInfo(
@@ -328,11 +467,20 @@ fun PlayerButton(
                     onColorButtonClick = { /* Handle color button click */ },
                     onChangeNameButtonClick = { /* Handle change name button click */ },
                     onMonarchyButtonClick = {
-                        player.monarch = !player.monarch},
+                        player.monarch = !player.monarch
+                    },
                     onSavePlayerButtonClick = {
-                        PlayerDataManager(context).savePlayer(player)},
+                        PlayerDataManager(context).savePlayer(player)
+                    },
                     onLoadPlayerButtonClick = { /* Handle load player button click */ },
-                    onImageButtonClick = { /* Handle image button click */ },
+                    onImageButtonClick = {
+                        if (backgroundType.value == PlayerButtonBackgroundMode.SOLID) {
+                            backgroundType.value = PlayerButtonBackgroundMode.IMAGE
+                        } else {
+                            backgroundType.value = PlayerButtonBackgroundMode.SOLID
+
+                        }
+                    },
                     closeSettingsMenu = { state.value = PlayerButtonState.NORMAL }
                 )
             }
@@ -441,9 +589,11 @@ fun PlayerInfo(playerName: String, life: Int, recentChange: Int, state: PlayerBu
                 if (recentChange == 0) ""
                 else if (recentChange > 0) "+$recentChange"
                 else "$recentChange"
-            Box(modifier = Modifier
-                .weight(0.9f)
-                .fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .weight(0.9f)
+                    .fillMaxWidth()
+            ) {
                 Text(
                     modifier = Modifier,
                     text = recentChangeText,
@@ -566,7 +716,7 @@ fun SettingsMenu(
                         imageResource = painterResource(R.drawable.change_background_icon),
                         text = "Set Background",
                         onClick = {
-//                            onImageButtonClick()
+                            onImageButtonClick()
                         },
                         size = size,
                         backgroundColor = Color.Transparent
@@ -604,6 +754,7 @@ fun SettingsMenu(
                 }
             )
         }
+
         SettingsState.LoadPlayer -> {
             val context = LocalContext.current
             val playerList = remember { mutableStateListOf<Player>() }
@@ -671,7 +822,7 @@ fun SettingsMenu(
                         .fillMaxWidth()
                         .height(50.dp),
 
-                ) {
+                    ) {
                     Text("Save Name")
                 }
             }
@@ -721,7 +872,6 @@ fun MiniPlayerButton(currPlayer: Player, player: Player, playerList: MutableList
         }
     }
 }
-
 
 
 @Composable
@@ -843,7 +993,7 @@ fun LifeChangeButtons(
                 .fillMaxWidth()
                 .fillMaxHeight(1.0f),
             onIncrementLife = onDecrementLife,
-            color = Color(color.toArgb().darkenColor(0.985f)),
+            color = color, // darken this one?
             interactionSource = interactionSource
         )
 
@@ -929,3 +1079,5 @@ private object NoRippleTheme : RippleTheme {
     @Composable
     override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f, 0.0f, 0.0f, 0.0f)
 }
+
+
