@@ -1,11 +1,7 @@
 package mtglifeappcompose.views.lifecounter
 
 
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.VectorConverter
-import mtglifeappcompose.views.MiddleButtonDialogComposable
 import androidx.compose.animation.core.animateOffsetAsState
-import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,15 +27,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
-
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.mtglifeappcompose.R
 import mtglifeappcompose.data.Player
+import mtglifeappcompose.views.MiddleButtonDialogComposable
 
 
 //@Preview
@@ -53,7 +48,13 @@ import mtglifeappcompose.data.Player
 //}
 
 @Composable
-fun LifeCounterScreen(players: MutableList<Player>, resetPlayers: () -> Unit, setPlayerNum: (Int) -> Unit, setStartingLife: (Int) -> Unit, goToPlayerSelect: () -> Unit) {
+fun LifeCounterScreen(
+    players: MutableList<Player>,
+    resetPlayers: () -> Unit,
+    setPlayerNum: (Int) -> Unit,
+    setStartingLife: (Int) -> Unit,
+    goToPlayerSelect: () -> Unit
+) {
     val numPlayers = players.size
 
     val configuration = LocalConfiguration.current
@@ -78,10 +79,12 @@ fun LifeCounterScreen(players: MutableList<Player>, resetPlayers: () -> Unit, se
         1 -> arrayOf(
             DpSize(screenHeight, screenWidth)
         )
+
         2 -> arrayOf(
             DpSize(screenWidth, screenHeight / 2),
             DpSize(screenWidth, screenHeight / 2)
         )
+
         3 -> arrayOf(
             DpSize(screenHeight - screenWidth * offset3, screenWidth / 2),
             DpSize(screenHeight - screenWidth * offset3, screenWidth / 2),
@@ -118,10 +121,14 @@ fun LifeCounterScreen(players: MutableList<Player>, resetPlayers: () -> Unit, se
     var showDialog by remember { mutableStateOf(false) }
     var showButtons = remember { mutableStateOf(false) }
 
+
     LazyColumn(
-        modifier = Modifier.fillMaxSize().onGloballyPositioned {
+        modifier = Modifier
+            .fillMaxSize()
+            .onGloballyPositioned {
                 showButtons.value = true
             },
+        userScrollEnabled = false,
         verticalArrangement = Arrangement.Center,
         content = {
             val rowRange = (0 until numPlayers step 2) // first player index for each row
@@ -143,6 +150,7 @@ fun LifeCounterScreen(players: MutableList<Player>, resetPlayers: () -> Unit, se
                     item {
                         LazyRow(
                             modifier = Modifier.fillMaxSize(),
+                            userScrollEnabled = false,
                             horizontalArrangement = Arrangement.Center,
                             content = {
                                 playerRange.forEach { j ->
@@ -180,7 +188,7 @@ fun LifeCounterScreen(players: MutableList<Player>, resetPlayers: () -> Unit, se
                 setPlayerNum = {
                     showButtons.value = false
                     setPlayerNum(it)
-                               },
+                },
                 goToPlayerSelect = { goToPlayerSelect() }
             )
         }
@@ -189,14 +197,20 @@ fun LifeCounterScreen(players: MutableList<Player>, resetPlayers: () -> Unit, se
 
 
 @Composable
-fun AnimatedPlayerButton(visible: MutableState<Boolean>, player: Player, rotation: Float, width: Dp, height: Dp) {
+fun AnimatedPlayerButton(
+    visible: MutableState<Boolean>,
+    player: Player,
+    rotation: Float,
+    width: Dp,
+    height: Dp
+) {
     val targetOffset = if (visible.value) Offset(0f, 0f) else {
         when (rotation) {
-            0f -> Offset(0f, height.value*3)
-            90f -> Offset(-width.value*3, 0f)
-            180f -> Offset(0f, -height.value*3)
-            270f -> Offset(width.value*3, 0f)
-            else -> Offset(0f, height.value*3)
+            0f -> Offset(0f, height.value * 3)
+            90f -> Offset(-width.value * 3, 0f)
+            180f -> Offset(0f, -height.value * 3)
+            270f -> Offset(width.value * 3, 0f)
+            else -> Offset(0f, height.value * 3)
         }
     }
 
@@ -218,7 +232,8 @@ fun AnimatedPlayerButton(visible: MutableState<Boolean>, player: Player, rotatio
 //    )
 
     Box(
-        modifier = Modifier.offset{ IntOffset(offset.x.toInt(), offset.y.toInt()) }
+        modifier = Modifier
+            .offset { IntOffset(offset.x.toInt(), offset.y.toInt()) }
             .graphicsLayer(
 //                alpha = if (visible.value) alpha else 0f,
 //                translationY = if (!visible.value) height.value else 0f
@@ -236,13 +251,18 @@ fun AnimatedPlayerButton(visible: MutableState<Boolean>, player: Player, rotatio
 @Composable
 fun MiddleDialogButton(modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit) {
     IconButton(
-        modifier = modifier.size(48.dp).background(Color.Transparent),
+        modifier = modifier
+            .size(48.dp)
+            .background(Color.Transparent),
         onClick = {
             onMiddleButtonClick()
         }
     ) {
         Icon(
-            modifier = Modifier.fillMaxSize().background(Color.Black).padding(2.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .padding(2.dp),
             imageVector = ImageVector.vectorResource(id = R.drawable.middle_solid_icon),
             contentDescription = null,
             tint = Color.White
