@@ -97,7 +97,8 @@ class Player(
     }
 
     override fun toString(): String {
-        return "$name:$playerColor"
+        val colorInt = playerColor.toArgb()
+        return "$name:$colorInt"
     }
 
     fun fromString(s: String) {
@@ -128,29 +129,8 @@ class Player(
             }
             return res.substring(0, res.length - 1)
         }
-//
-//        /**
-//         * Return a list of strings representing editable player data
-//         */
-//        fun allFromString(s: String): ArrayList<Player> {
-//            val res = arrayListOf<Player>()
-//            val pstrings = s.split(",")
-//            for (p in pstrings) {
-//                val player = Player(40, 0)
-//                player.fromString(p)
-//                res.add(player)
-//            }
-//            return res
-//        }
 
         val allColors: List<Color> = allPlayerColors
-
-//        private var availableColors: ArrayList<Int> = arrayListOf<Int>().apply {
-//            addAll(allColors)
-//        }
-//
-//        private var unavailableColors: ArrayList<Int> = arrayListOf()
-
 
         override fun createFromParcel(parcel: Parcel): Player {
             return Player(parcel)
@@ -161,27 +141,11 @@ class Player(
         }
 
         private fun getRandColor(): Color {
-//            availableColors.shuffle()
-//            if (availableColors.size == 0) {
-//                availableColors = unavailableColors
-//                unavailableColors = arrayListOf()
-//            }
-//            if (availableColors.size == 0) {
-//                return Color.LTGRAY
-//            }
-////            var playerColor = availableColors.removeLast()
-//            var playerColor = availableColors.last()
-//            val usedColors = arrayListOf<Int>()
-//            for (player in currentPlayers) {
-//                usedColors.add(player.playerColor)
-//            }
-//            while (playerColor in usedColors) {
-//                playerColor = getRandColor()
-//            }
-//
-//            unavailableColors.add(playerColor)
-//            return playerColor
-            return allColors.random()
+            var color = allColors.random()
+            while (currentPlayers.any { it.playerColor == color }) {
+                color = allColors.random()
+            }
+            return color
         }
 
         fun generatePlayer(): Player {
