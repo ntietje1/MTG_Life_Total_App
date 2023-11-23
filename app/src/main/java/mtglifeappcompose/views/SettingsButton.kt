@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,74 +26,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mtglifeappcompose.R
-
-class SettingsButton(
-    context: Context,
-    attrs: AttributeSet? = null,
-    var size: Int = 130.dp.value.toInt()
-) : LinearLayout(context, attrs) {
-
-    private var imageResource = R.drawable.placeholder_icon
-        set(value) {
-            field = value
-            imageView.setImageResource(value)
-        }
-
-    private var text = "placeholder"
-        set(value) {
-            field = value
-            textView.text = value
-        }
-
-    private val margin = size / 130 * 15
-
-    private val imageView = ImageView(context).apply {
-        val imageSize = size - margin * 2
-        this.layoutParams = LayoutParams(imageSize, imageSize).apply {
-            gravity = Gravity.CENTER
-            setMargins(margin, margin, margin, -margin / 2)
-        }
-        this.setImageResource(imageResource)
-        this.setBackgroundColor(Color.Transparent.toArgb())
-        scaleType = ImageView.ScaleType.FIT_CENTER
-    }
-
-    //    private val myTextSize get() = margin / 2.5f
-    private val myTextSize get() = margin / 5f + 2.sp.value
-
-    private val textView = TextView(context).apply {
-        this.layoutParams = LayoutParams(size, margin * 3).apply {
-            gravity = Gravity.CENTER_HORIZONTAL
-            setMargins(0, 0, 0, margin)
-        }
-        this.gravity = Gravity.TOP
-        this.text = this@SettingsButton.text
-        this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-        this.textSize = myTextSize.toFloat()
-        this.setTextColor(Color.White.toArgb())
-        this.setBackgroundColor(Color.Transparent.toArgb())
-        this.isClickable = false
-        //this.setPadding(0, myTextSize.toInt(), 0, 0)
-
-    }
-
-    init {
-        isClickable = true
-        layoutParams = LayoutParams(size, size)
-        orientation = VERTICAL
-        setBackgroundResource(R.drawable.transparent)
-        gravity = Gravity.CENTER
-
-        addView(imageView)
-        addView(textView)
-    }
-}
+import mtglifeappcompose.data.PlayerDataManager
 
 @Composable
 fun SettingsButton(
@@ -109,7 +51,13 @@ fun SettingsButton(
 
     Box(
         modifier = Modifier.wrapContentSize().padding(top = margin/2)
-            .clickable(onClick = onClick)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        onClick()
+                    },
+                )
+            }
             .clip(RoundedCornerShape(cornerRadius))
             .background(backgroundColor)
             .graphicsLayer()

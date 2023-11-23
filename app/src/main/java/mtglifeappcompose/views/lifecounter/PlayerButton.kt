@@ -500,15 +500,21 @@ fun PlayerButtonStateButtons(
                     .align(Alignment.BottomCenter),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(
-                    onClick = { commanderButtonOnClick() },
-                    modifier = Modifier
+                Box(modifier = Modifier
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    if (commanderButtonVisible) {
+                                        commanderButtonOnClick()
+                                    }
+                                },
+                            )
+                        }
                         .size(smallButtonSize)
                         .padding(bottom = smallButtonSize / 30f, start = smallButtonSize / 30f)
                         .clip(RoundedCornerShape(0.dp))
                         .background(Color.Transparent)
                         .alpha(if (commanderButtonVisible) 1f else 0f),
-                    enabled = commanderButtonVisible,
                     content = {
                         Icon(
                             modifier = Modifier.fillMaxSize(0.75f),
@@ -518,14 +524,20 @@ fun PlayerButtonStateButtons(
                         )
                     }
                 )
-
-                IconButton(
-                    onClick = { settingsButtonOnClick() },
+                Box(
                     modifier = Modifier
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    if (settingsButtonVisible) {
+                                        settingsButtonOnClick()
+                                    }
+                                },
+                            )
+                        }
                         .size(smallButtonSize)
                         .background(Color.Transparent)
                         .alpha(if (settingsButtonVisible) 1f else 0f),
-                    enabled = settingsButtonVisible,
                     content = {
                         Icon(
                             modifier = Modifier.fillMaxSize(0.825f),
