@@ -1,12 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="one">1dp</dimen>
-    <dimen name="oneSp">1sp</dimen>
 
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
-
-    <dimen name="settings_button_size">130dp</dimen>
-    <dimen name="small_settings_button_size">100dp</dimen>
-    <dimen name="background_picker_button_size">50dp</dimen>
 </resources>
