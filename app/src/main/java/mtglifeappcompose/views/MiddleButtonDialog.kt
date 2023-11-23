@@ -55,7 +55,7 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit
                         SettingsButton(
                             imageResource = painterResource(id = R.drawable.player_select_icon),
                             text = "Player Select",
-                            onClick = {
+                            onPress = {
                                 goToPlayerSelect()
                                 onDismiss()
                             }
@@ -64,7 +64,7 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit
                         SettingsButton(
                             imageResource = painterResource(id = R.drawable.reset_icon),
                             text = "Reset Game",
-                            onClick = {
+                            onPress = {
                                 resetPlayers()
                                 onDismiss()
                             }
@@ -73,7 +73,7 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit
                         SettingsButton(
                             imageResource = painterResource(id = R.drawable.player_count_icon),
                             text = "Player Number",
-                            onClick = {
+                            onPress = {
                                 showPlayerNumberDialog.value = true
                             }
                         )
@@ -81,7 +81,7 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit
                         SettingsButton(
                             imageResource = painterResource(R.drawable.six_icon),
                             text = "Dice roll",
-                            onClick = {
+                            onPress = {
                                 showDiceRollDialog.value = true
                             }
                         )
@@ -89,7 +89,7 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit
                         SettingsButton(
                             imageResource = painterResource(R.drawable.coin_icon),
                             text = "Coin Flip",
-                            onClick = {
+                            onPress = {
                                 showCoinFlipDialog.value = true
                             }
                         )
@@ -97,7 +97,7 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit
                         SettingsButton(
                             imageResource = painterResource(R.drawable.forty_icon),
                             text = "Starting Life",
-                            onClick = {
+                            onPress = {
                                 showStartingLifeDialog.value = true
                             }
                         )
@@ -138,7 +138,7 @@ fun PlayerNumberDialogContent(
             SettingsButton(
                 imageResource = painterResource(R.drawable.one_icon),
                 text = "",
-                onClick = {
+                onPress = {
                     setPlayerNum(1)
                     resetPlayers()
                     onDismiss()
@@ -149,7 +149,7 @@ fun PlayerNumberDialogContent(
             SettingsButton(
                 imageResource = painterResource(R.drawable.two_icon),
                 text = "",
-                onClick = {
+                onPress = {
                     setPlayerNum(2)
                     resetPlayers()
                     onDismiss()
@@ -160,7 +160,7 @@ fun PlayerNumberDialogContent(
             SettingsButton(
                 imageResource = painterResource(R.drawable.three_icon),
                 text = "",
-                onClick = {
+                onPress = {
                     setPlayerNum(3)
                     resetPlayers()
                     onDismiss()
@@ -171,7 +171,7 @@ fun PlayerNumberDialogContent(
             SettingsButton(
                 imageResource = painterResource(R.drawable.four_icon),
                 text = "",
-                onClick = {
+                onPress = {
                     setPlayerNum(4)
                     resetPlayers()
                     onDismiss()
@@ -182,7 +182,7 @@ fun PlayerNumberDialogContent(
             SettingsButton(
                 imageResource = painterResource(R.drawable.five_icon),
                 text = "",
-                onClick = {
+                onPress = {
                     setPlayerNum(5)
                     resetPlayers()
                     onDismiss()
@@ -193,7 +193,7 @@ fun PlayerNumberDialogContent(
             SettingsButton(
                 imageResource = painterResource(R.drawable.six_icon),
                 text = "",
-                onClick = {
+                onPress = {
                     setPlayerNum(6)
                     resetPlayers()
                     onDismiss()
@@ -215,7 +215,7 @@ fun StartingLifeDialogContent(
             SettingsButton(
                 imageResource = painterResource(id = R.drawable.forty_icon),
                 text = "",
-                onClick = {
+                onPress = {
                     setStartingLife(40)
                     onDismiss()
                     showStartingLifeDialog.value = false
@@ -225,7 +225,7 @@ fun StartingLifeDialogContent(
             SettingsButton(
                 imageResource = painterResource(id = R.drawable.thirty_icon),
                 text = "",
-                onClick = {
+                onPress = {
                     setStartingLife(30)
                     onDismiss()
                     showStartingLifeDialog.value = false
@@ -235,7 +235,7 @@ fun StartingLifeDialogContent(
             SettingsButton(
                 imageResource = painterResource(id = R.drawable.twenty_icon),
                 text = "",
-                onClick = {
+                onPress = {
                     setStartingLife(20)
                     onDismiss()
                     showStartingLifeDialog.value = false
@@ -245,7 +245,7 @@ fun StartingLifeDialogContent(
             SettingsButton(
 //                  imageResource = painterResource(id = R.drawable.thirty_icon),
                 text = "custom",
-                onClick = {
+                onPress = {
                     setStartingLife(-1)
                     onDismiss()
                     showStartingLifeDialog.value = false
