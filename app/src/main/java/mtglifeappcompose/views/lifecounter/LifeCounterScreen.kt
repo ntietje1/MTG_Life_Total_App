@@ -126,7 +126,6 @@ fun LifeCounterScreen(players: MutableList<Player>, resetPlayers: () -> Unit, se
         content = {
             val rowRange = (0 until numPlayers step 2) // first player index for each row
             rowRange.forEach { i ->
-//                val weight = weights[i]
                 val playerRange = (i until minOf(i + 2, numPlayers)) // 1 or 2 players
                 if (numPlayers == 2) {
                     playerRange.forEach { j ->
@@ -144,7 +143,6 @@ fun LifeCounterScreen(players: MutableList<Player>, resetPlayers: () -> Unit, se
                     item {
                         LazyRow(
                             modifier = Modifier.fillMaxSize(),
-//                    .weight(1f / numPlayers * weight),
                             horizontalArrangement = Arrangement.Center,
                             content = {
                                 playerRange.forEach { j ->
@@ -204,11 +202,11 @@ fun AnimatedPlayerButton(visible: MutableState<Boolean>, player: Player, rotatio
 
 //    val targetAlpha = if (visible.value) 1.0f else 0.0f
 
-    val easing = CubicBezierEasing(0f, 0.1f, 0.3f, 0.9f)
+//    val easing = CubicBezierEasing(0f, 0.1f, 0.3f, 0.9f)
 
     val offset by animateOffsetAsState(
         targetValue = targetOffset,
-        animationSpec = tween(durationMillis = 2500, easing = easing),
+        animationSpec = tween(durationMillis = 2500),
         label = ""
     )
 
@@ -228,9 +226,9 @@ fun AnimatedPlayerButton(visible: MutableState<Boolean>, player: Player, rotatio
     ) {
         PlayerButton(
             player = player,
-            rotation = rotation,
             width = width,
-            height = height
+            height = height,
+            rotation = rotation
         )
     }
 }
