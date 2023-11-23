@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.mtglifeappcompose.R
 import mtglifeappcompose.dialogs.CoinFlipDialogBox
-import com.example.mtglifeappcompose.views.SettingsButton
+import mtglifeappcompose.views.SettingsButton
 
 /**
  * TODO: implement these features in settings

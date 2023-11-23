@@ -99,7 +99,6 @@ import mtglifeappcompose.ui.theme.allPlayerColors
 import mtglifeappcompose.ui.theme.darkenColor
 import mtglifeappcompose.ui.theme.desaturateColor
 import mtglifeappcompose.utilities.ImageLoader
-import com.example.mtglifeappcompose.views.SettingsButton
 import mtglifeappcompose.views.PlayerButtonStateManager.getDamageToPlayer
 import mtglifeappcompose.views.PlayerButtonStateManager.setDealer
 import kotlinx.coroutines.coroutineScope

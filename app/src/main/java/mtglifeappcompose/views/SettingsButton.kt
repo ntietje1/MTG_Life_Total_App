@@ -1,4 +1,4 @@
-package com.example.mtglifeappcompose.views
+package mtglifeappcompose.views
 
 import android.content.Context
 import android.util.AttributeSet
@@ -35,7 +35,7 @@ import com.example.mtglifeappcompose.R
 class SettingsButton(
     context: Context,
     attrs: AttributeSet? = null,
-    var size: Int = context.resources.getDimensionPixelSize(R.dimen.settings_button_size)
+    var size: Int = 130.dp.value.toInt()
 ) : LinearLayout(context, attrs) {
 
     var imageResource = R.drawable.placeholder_icon
@@ -64,7 +64,7 @@ class SettingsButton(
     }
 
     //    private val myTextSize get() = margin / 2.5f
-    private val myTextSize get() = margin / 5f + context.resources.getDimensionPixelSize(R.dimen.oneSp) * 2
+    private val myTextSize get() = margin / 5f + 2.sp.value
 
     private val textView = TextView(context).apply {
         this.layoutParams = LayoutParams(size, margin * 3).apply {
