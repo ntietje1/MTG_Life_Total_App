@@ -3,6 +3,7 @@ package mtglifeappcompose.ui.theme
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 
 
@@ -19,12 +20,12 @@ val Gold = Color(255, 191, 8)
 
 
 val PlayerColor1 = Color(0xFFF75FA8)
-val PlayerColor2 = Color(0xFFF75F5F)
-val PlayerColor3 = Color(0xFFf78e55)
-val PlayerColor4 = Color(0xFFF7C45F)
-val PlayerColor5 = Color(0xFF92F75F)
-val PlayerColor6 = Color(0xFF409c5a)
-val PlayerColor7 = Color(0xFF5FEAF7)
+val PlayerColor2 = Color(0xFFee4c87)
+val PlayerColor3 = Color(0xFFF75F5F)
+val PlayerColor4 = Color(0xFFf78e55)
+val PlayerColor5 = Color(0xFFF7C45F)
+val PlayerColor6 = Color(0xFF44da5c)
+val PlayerColor7 = Color(0xFF46e7db)
 val PlayerColor8 = Color(0xFF625FF7)
 val PlayerColor9 = Color(0xFFc28efc)
 
@@ -63,6 +64,14 @@ fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = fals
         timesAssign(ColorMatrix().apply { setToSaturation(s) })
         timesAssign(ColorMatrix().apply { setToScale(l, l, l, 1.0f) })
     }
+}
+
+fun Color.darkenColor(factor: Float = 0.6f): Color {
+    return Color(this.toArgb().darkenColor(factor))
+}
+
+fun Color.desaturateColor(factor: Float = 0.6f): Color {
+    return Color(this.toArgb().desaturateColor(factor))
 }
 
 fun Int.darkenColor(factor: Float = 0.6f): Int {
