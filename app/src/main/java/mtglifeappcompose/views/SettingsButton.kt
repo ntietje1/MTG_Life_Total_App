@@ -1,14 +1,7 @@
 package mtglifeappcompose.views
 
-import android.content.Context
-import android.util.AttributeSet
-import android.view.Gravity
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,10 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -34,36 +24,53 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mtglifeappcompose.R
-import mtglifeappcompose.data.PlayerDataManager
 
 @Composable
 fun SettingsButton(
+    modifier: Modifier = Modifier,
     size: Dp = 130.dp,
     backgroundColor: Color = Color.DarkGray,
     imageResource: Painter = painterResource(id = R.drawable.placeholder_icon),
-    text: String = "placeholder",
-    onClick: () -> Unit = {}
+    text: String = "",
+    enabled: Boolean = true,
+    visible: Boolean = true,
+    onPress: () -> Unit = {},
+    onTap: () -> Unit = {},
+    onLongPress: () -> Unit = {},
+    onDoubleTap: () -> Unit = {}
 ) {
-    val cornerRadius = size/6
-    val margin = size/12
+    val cornerRadius = size / 6
+    val margin = size / 12
     val imageSize = if (text.isNotEmpty()) size - margin * 2.5f else size - margin * 1.5f
     val fontSize = (size / 10).value.sp
 
-    Box(
-        modifier = Modifier.wrapContentSize().padding(top = margin/2)
-            .pointerInput(Unit) {
+    Box(modifier = modifier
+        .wrapContentSize()
+        .pointerInput(Unit) {
+            if (enabled && visible) {
                 detectTapGestures(
                     onPress = {
-                        onClick()
+                        onPress()
                     },
+                    onTap = {
+                        onTap()
+                    },
+                    onLongPress = {
+                        onLongPress()
+                    },
+                    onDoubleTap = {
+                        onDoubleTap()
+                    }
                 )
             }
-            .clip(RoundedCornerShape(cornerRadius))
-            .background(backgroundColor)
-            .graphicsLayer()
+        }
+        .clip(RoundedCornerShape(cornerRadius))
+        .background(backgroundColor)
     ) {
         Column(
-            modifier = Modifier.wrapContentSize().padding(bottom = margin/2),
+            modifier = Modifier
+                .wrapContentSize()
+                .padding(vertical = margin / 2),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
