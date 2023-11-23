@@ -1,4 +1,4 @@
-package mtglifeappcompose.fragments
+package mtglifeappcompose.components
 
 import kotlin.math.pow
 
@@ -51,7 +51,4 @@ class PointT(x: Float, y: Float) {
     val size get() = baseSize * sizeMultiplier
 
     var sizeMultiplier: Float = 1f
-
-    init {
-    }
 }

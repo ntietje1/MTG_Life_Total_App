@@ -1,4 +1,4 @@
-package mtglifeappcompose.fragments
+package mtglifeappcompose.views.lifecounter
 
 
 import MiddleButtonDialogComposable
@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.mtglifeappcompose.R
 import mtglifeappcompose.data.Player
-import mtglifeappcompose.views.PlayerButton
 
 
 @Preview

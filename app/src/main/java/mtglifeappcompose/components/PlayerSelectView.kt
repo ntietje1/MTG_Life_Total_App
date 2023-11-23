@@ -1,4 +1,4 @@
-package mtglifeappcompose.fragments
+package mtglifeappcompose.components
 
 
 import android.animation.ValueAnimator
@@ -21,7 +21,7 @@ import androidx.core.util.keyIterator
 import kotlin.random.Random
 
 
-class PlayerSelectScreen(context: Context, attrs: AttributeSet?, numPlayers: MutableState<Int>, private val goToLifeCounter: () -> Unit) : View(context, attrs) {
+class PlayerSelectView(context: Context, attrs: AttributeSet?, numPlayers: MutableState<Int>, private val goToLifeCounter: () -> Unit) : View(context, attrs) {
 
     private val activePointers: SparseArray<PointT> = SparseArray()
     private val touchPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -62,8 +62,9 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?, numPlayers: Mut
     private val selectionRunnable = Runnable {
         val randomIndex = rand.nextInt(activePointers.size())
         selectedId = activePointers.keyAt(randomIndex)
-        numPlayers.value = activePointers.size()
-
+        if (numPlayers.value == 0) {
+            numPlayers.value = activePointers.size()
+        }
         for (id in activePointers.keyIterator()) {
             if (id == selectedId) {
                 selectionAnimator(id).start()
@@ -209,13 +210,6 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?, numPlayers: Mut
 
     private fun sendToLifeCounter() {
         goToLifeCounter()
-//        val bundle = Bundle()
-//        if (Player.currentPlayers.size != 0) {
-//            Player.packBundle(bundle)
-//        } else {
-//            bundle.putInt("numPlayers", numPlayers)
-//        }
-//        Navigation.findNavController(this).navigate(R.id.navigation_life_counter, bundle)
     }
 
     private fun postCallbacks() {
@@ -229,11 +223,8 @@ class PlayerSelectScreen(context: Context, attrs: AttributeSet?, numPlayers: Mut
     }
 
     companion object {
-        private const val PULSE_DELAY = 200L
-        private const val PULSE_FREQ = 100L
-
-//        private const val PULSE_DELAY = 1000L
-//        private const val PULSE_FREQ = 750L
+        private const val PULSE_DELAY = 1000L
+        private const val PULSE_FREQ = 750L
 
         private const val SHOW_HELPER_TEXT_DELAY = 5000L
         private const val SELECTION_DELAY = PULSE_DELAY + PULSE_FREQ * 3 - 10

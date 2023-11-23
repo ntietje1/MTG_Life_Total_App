@@ -1,4 +1,4 @@
-package mtglifeappcompose.views
+package mtglifeappcompose.views.lifecounter
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -99,11 +99,13 @@ import mtglifeappcompose.ui.theme.allPlayerColors
 import mtglifeappcompose.ui.theme.darkenColor
 import mtglifeappcompose.ui.theme.desaturateColor
 import mtglifeappcompose.utilities.ImageLoader
-import mtglifeappcompose.views.PlayerButtonStateManager.getDamageToPlayer
-import mtglifeappcompose.views.PlayerButtonStateManager.setDealer
+import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.getDamageToPlayer
+import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.setDealer
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mtglifeappcompose.views.AnimatedBorderCard
+import mtglifeappcompose.views.SettingsButton
 import yuku.ambilwarna.AmbilWarnaDialog
 
 

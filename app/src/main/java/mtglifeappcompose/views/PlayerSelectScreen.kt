@@ -19,8 +19,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import mtglifeappcompose.data.Player
-import mtglifeappcompose.fragments.LifeCounterScreen
-import mtglifeappcompose.fragments.PlayerSelectScreen
+import mtglifeappcompose.components.PlayerSelectView
+import mtglifeappcompose.views.lifecounter.LifeCounterScreen
 
 /**
  * enum values that represent the screens in the app
@@ -67,7 +67,7 @@ fun MTGLifeTotalApp(
 fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, numPlayers: MutableState<Int>) {
     Box(Modifier.fillMaxSize()) {
         AndroidView(factory = { context ->
-            PlayerSelectScreen(context, null, numPlayers, goToLifeCounter)
+            PlayerSelectView(context, null, numPlayers, goToLifeCounter)
         }, update = { view ->
             // Update the view if needed
         }, modifier = Modifier.fillMaxSize())
