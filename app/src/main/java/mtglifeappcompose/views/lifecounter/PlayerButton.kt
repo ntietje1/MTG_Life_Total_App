@@ -84,6 +84,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -406,8 +407,7 @@ fun PlayerButton(
 
             LifeChangeButtons(
                 onIncrementLife = { onIncrementLife() },
-                onDecrementLife = { onDecrementLife() },
-                color = Color.Transparent
+                onDecrementLife = { onDecrementLife() }
             )
 
             when (state.value) {
@@ -550,13 +550,15 @@ fun PlayerInfo(
         else -> R.drawable.transparent
     }
 
-    val largeTextSize = buttonSize.value.sp / 2f
+    val largeTextSize = buttonSize.value.sp / 1.8f
     val smallTextSize = buttonSize.value.sp / 12f
+    val recentChangeSize = buttonSize.value.sp / 15f
 
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween, // Center large text
@@ -566,7 +568,8 @@ fun PlayerInfo(
             Text(
                 text = life.toString(),
                 color = Color.White,
-                fontSize = largeTextSize
+                fontSize = largeTextSize,
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.weight(0.1f))
             val recentChangeText =
@@ -582,7 +585,7 @@ fun PlayerInfo(
                     modifier = Modifier,
                     text = recentChangeText,
                     color = Color.White,
-                    fontSize = smallTextSize
+                    fontSize = recentChangeSize
                 )
             }
         }
@@ -600,7 +603,7 @@ fun PlayerInfo(
                 fontSize = smallTextSize,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(buttonSize / 2f))
+            Spacer(modifier = Modifier.height(buttonSize / 1.65f))
             Icon(
                 painter = painterResource(iconID),
                 contentDescription = null,
@@ -987,8 +990,7 @@ fun CustomColorPickerButton(player: Player, buttonSize: Dp) {
 @Composable
 fun LifeChangeButtons(
     onIncrementLife: () -> Unit,
-    onDecrementLife: () -> Unit,
-    color: Color
+    onDecrementLife: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -1100,7 +1102,7 @@ fun Modifier.constantRepeatingClickable(
     val currentClickListener by rememberUpdatedState(onClick)
     val isEnabled by rememberUpdatedState(enabled)
 
-    pointerInput(interactionSource, isEnabled) {
+    this.pointerInput(interactionSource, isEnabled) {
         coroutineScope {
             awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false)
@@ -1175,6 +1177,4 @@ fun Modifier.rotateVertically(rotation: VerticalRotation) = then(
 enum class VerticalRotation(val value: Float) {
     CLOCKWISE(90f), COUNTER_CLOCKWISE(270f)
 }
-
-
 
