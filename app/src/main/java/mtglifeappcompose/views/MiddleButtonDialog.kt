@@ -1,3 +1,5 @@
+package mtglifeappcompose.views
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,8 +21,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.mtglifeappcompose.R
-import mtglifeappcompose.dialogs.CoinFlipDialogBox
-import mtglifeappcompose.views.SettingsButton
 
 /**
  * TODO: implement these features in settings
@@ -28,7 +28,7 @@ import mtglifeappcompose.views.SettingsButton
  */
 
 @Composable
-fun MiddleButtonDialogComposable(onDismiss: () -> Unit) {
+fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit, setPlayerNum: (Int) -> Unit, setStartingLife: (Int) -> Unit, goToPlayerSelect: () -> Unit) {
     val showCoinFlipDialog = remember { mutableStateOf(false) }
     val showPlayerNumberDialog = remember { mutableStateOf(false) }
     val showStartingLifeDialog = remember { mutableStateOf(false) }
@@ -42,11 +42,11 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit) {
             }
 
             showPlayerNumberDialog.value -> {
-                PlayerNumberDialogContent(onDismiss, showPlayerNumberDialog)
+                PlayerNumberDialogContent(onDismiss, showPlayerNumberDialog, setPlayerNum, resetPlayers)
             }
 
             showStartingLifeDialog.value -> {
-                StartingLifeDialogContent(onDismiss, showStartingLifeDialog)
+                StartingLifeDialogContent(onDismiss, showStartingLifeDialog, setStartingLife)
             }
 
             else -> {
@@ -56,7 +56,7 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit) {
                             imageResource = painterResource(id = R.drawable.player_select_icon),
                             text = "Player Select",
                             onClick = {
-//                                parentFrag.goToPlayerSelect()
+                                goToPlayerSelect()
                                 onDismiss()
                             }
                         )
@@ -65,7 +65,7 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit) {
                             imageResource = painterResource(id = R.drawable.reset_icon),
                             text = "Reset Game",
                             onClick = {
-//                                parentFrag.resetPlayers()
+                                resetPlayers()
                                 onDismiss()
                             }
                         )
@@ -129,7 +129,9 @@ fun CoinFlipDialogContent(
 @Composable
 fun PlayerNumberDialogContent(
     onDismiss: () -> Unit,
-    showPlayerNumberDialog: MutableState<Boolean>
+    showPlayerNumberDialog: MutableState<Boolean>,
+    setPlayerNum: (Int) -> Unit,
+    resetPlayers: () -> Unit
 ) {
     GridDialogContent(items = listOf(
         {
@@ -137,7 +139,8 @@ fun PlayerNumberDialogContent(
                 imageResource = painterResource(R.drawable.one_icon),
                 text = "",
                 onClick = {
-//                    parentFrag.setPlayerNum(1)
+                    setPlayerNum(1)
+                    resetPlayers()
                     onDismiss()
                     showPlayerNumberDialog.value = false
                 }
@@ -147,7 +150,8 @@ fun PlayerNumberDialogContent(
                 imageResource = painterResource(R.drawable.two_icon),
                 text = "",
                 onClick = {
-//                    parentFrag.setPlayerNum(2)
+                    setPlayerNum(2)
+                    resetPlayers()
                     onDismiss()
                     showPlayerNumberDialog.value = false
                 }
@@ -157,7 +161,8 @@ fun PlayerNumberDialogContent(
                 imageResource = painterResource(R.drawable.three_icon),
                 text = "",
                 onClick = {
-//                    parentFrag.setPlayerNum(3)
+                    setPlayerNum(3)
+                    resetPlayers()
                     onDismiss()
                     showPlayerNumberDialog.value = false
                 }
@@ -167,7 +172,8 @@ fun PlayerNumberDialogContent(
                 imageResource = painterResource(R.drawable.four_icon),
                 text = "",
                 onClick = {
-//                    parentFrag.setPlayerNum(4)
+                    setPlayerNum(4)
+                    resetPlayers()
                     onDismiss()
                     showPlayerNumberDialog.value = false
                 }
@@ -177,7 +183,8 @@ fun PlayerNumberDialogContent(
                 imageResource = painterResource(R.drawable.five_icon),
                 text = "",
                 onClick = {
-//                    parentFrag.setPlayerNum(5)
+                    setPlayerNum(5)
+                    resetPlayers()
                     onDismiss()
                     showPlayerNumberDialog.value = false
                 }
@@ -187,7 +194,8 @@ fun PlayerNumberDialogContent(
                 imageResource = painterResource(R.drawable.six_icon),
                 text = "",
                 onClick = {
-//                    parentFrag.setPlayerNum(6)
+                    setPlayerNum(6)
+                    resetPlayers()
                     onDismiss()
                     showPlayerNumberDialog.value = false
                 }
@@ -199,7 +207,8 @@ fun PlayerNumberDialogContent(
 @Composable
 fun StartingLifeDialogContent(
     onDismiss: () -> Unit,
-    showStartingLifeDialog: MutableState<Boolean>
+    showStartingLifeDialog: MutableState<Boolean>,
+    setStartingLife: (Int) -> Unit
 ) {
     GridDialogContent(items = listOf(
         {
@@ -207,8 +216,7 @@ fun StartingLifeDialogContent(
                 imageResource = painterResource(id = R.drawable.forty_icon),
                 text = "",
                 onClick = {
-//                    Player.startingLife = 40
-//                    parentFrag.resetPlayers()
+                    setStartingLife(40)
                     onDismiss()
                     showStartingLifeDialog.value = false
                 }
@@ -218,8 +226,7 @@ fun StartingLifeDialogContent(
                 imageResource = painterResource(id = R.drawable.thirty_icon),
                 text = "",
                 onClick = {
-//                    Player.startingLife = 30
-//                    parentFrag.resetPlayers()
+                    setStartingLife(30)
                     onDismiss()
                     showStartingLifeDialog.value = false
                 }
@@ -229,8 +236,7 @@ fun StartingLifeDialogContent(
                 imageResource = painterResource(id = R.drawable.twenty_icon),
                 text = "",
                 onClick = {
-//                    Player.startingLife = 20
-//                    parentFrag.resetPlayers()
+                    setStartingLife(20)
                     onDismiss()
                     showStartingLifeDialog.value = false
                 }
@@ -240,8 +246,7 @@ fun StartingLifeDialogContent(
 //                  imageResource = painterResource(id = R.drawable.thirty_icon),
                 text = "custom",
                 onClick = {
-//                    Player.startingLife = -1
-//                    parentFrag.resetPlayers()
+                    setStartingLife(-1)
                     onDismiss()
                     showStartingLifeDialog.value = false
                 }

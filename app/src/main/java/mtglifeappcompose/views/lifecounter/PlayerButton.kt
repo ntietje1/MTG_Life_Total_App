@@ -92,20 +92,28 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mtglifeappcompose.R
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import mtglifeappcompose.data.Player
 import mtglifeappcompose.data.PlayerDataManager
 import mtglifeappcompose.ui.theme.Gold
 import mtglifeappcompose.ui.theme.allPlayerColors
 import mtglifeappcompose.ui.theme.darkenColor
+import mtglifeappcompose.ui.theme.deadDealerColorMatrix
+import mtglifeappcompose.ui.theme.deadNormalColorMatrix
+import mtglifeappcompose.ui.theme.deadReceiverColorMatrix
+import mtglifeappcompose.ui.theme.deadSettingsColorMatrix
+import mtglifeappcompose.ui.theme.dealerColorMatrix
 import mtglifeappcompose.ui.theme.desaturateColor
+import mtglifeappcompose.ui.theme.normalColorMatrix
+import mtglifeappcompose.ui.theme.receiverColorMatrix
+import mtglifeappcompose.ui.theme.settingsColorMatrix
 import mtglifeappcompose.utilities.ImageLoader
-import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.getDamageToPlayer
-import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.setDealer
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import mtglifeappcompose.views.AnimatedBorderCard
 import mtglifeappcompose.views.SettingsButton
+import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.getDamageToPlayer
+import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.setDealer
 import yuku.ambilwarna.AmbilWarnaDialog
 
 
@@ -295,21 +303,25 @@ fun PlayerButton(
         }
     }
 
-    val normalColorMatrix = remember { ColorMatrix().generateColorMatrix(1.0f, 1.0f) }
+    val colorMatrix = when (state.value) {
+        PlayerButtonState.NORMAL -> {
+            if (player.isDead) deadNormalColorMatrix else normalColorMatrix
+        }
 
-    val receiverColorMatrix = remember { ColorMatrix().generateColorMatrix(0.0f, 0.3f) }
+        PlayerButtonState.COMMANDER_RECEIVER -> {
+            if (player.isDead) deadReceiverColorMatrix else receiverColorMatrix
+        }
 
-    val dealerColorMatrix = remember { ColorMatrix().generateColorMatrix(0.6f, 0.4f) }
+        PlayerButtonState.COMMANDER_DEALER -> {
+            if (player.isDead) deadDealerColorMatrix else dealerColorMatrix
+        }
 
-    val settingsColorMatrix = remember { ColorMatrix().generateColorMatrix(0.8f, 0.6f) }
+        PlayerButtonState.SETTINGS -> {
+            if (player.isDead) deadSettingsColorMatrix else settingsColorMatrix
+        }
 
-    val deadNormalColorMatrix = remember { ColorMatrix().generateColorMatrix(1.0f, 1.0f, true) }
-
-    val deadReceiverColorMatrix = remember { ColorMatrix().generateColorMatrix(0.0f, 0.3f, true) }
-
-    val deadDealerColorMatrix = remember { ColorMatrix().generateColorMatrix(0.6f, 0.4f, true) }
-
-    val deadSettingsColorMatrix = remember { ColorMatrix().generateColorMatrix(0.8f, 0.6f, true) }
+        else -> throw Exception("unsupported state")
+    }
 
     BoxWithConstraints(
         modifier = Modifier
@@ -338,9 +350,9 @@ fun PlayerButton(
         if (monarch) {
             AnimatedBorderCard(
                 modifier = Modifier
-                    .wrapContentSize()
                     .padding(all = 0.dp),
-                borderWidth = 0.dp,
+                shape = RoundedCornerShape(60.dp),
+                borderWidth = 1.dp,
                 gradient = Brush.sweepGradient(
                     listOf(
                         Color.White.copy(alpha = 0.1f),
@@ -355,9 +367,9 @@ fun PlayerButton(
                     modifier = Modifier
                         .width(width)
                         .height(height)
+                        .padding(3.dp)
                         .background(Color.Transparent)
-                        .padding(5.dp)
-                        .clip(RoundedCornerShape(30.dp))
+                        .clip(RoundedCornerShape(60.dp))
                 )
             }
         }
@@ -366,8 +378,8 @@ fun PlayerButton(
             modifier = Modifier
                 .width(width)
                 .height(height)
+                .padding(3.dp)
                 .background(Color.Transparent)
-                .padding(5.dp)
                 .clip(RoundedCornerShape(30.dp)),
             contentAlignment = Alignment.Center
         ) {
@@ -380,42 +392,6 @@ fun PlayerButton(
                 }
 
                 PlayerButtonBackgroundMode.IMAGE -> {
-                    val colorMatrix = when (state.value) {
-                        PlayerButtonState.NORMAL -> {
-                            if (player.isDead) {
-                                deadNormalColorMatrix
-                            } else {
-                                normalColorMatrix
-                            }
-                        }
-
-                        PlayerButtonState.COMMANDER_RECEIVER -> {
-                            if (player.isDead) {
-                                deadReceiverColorMatrix
-                            } else {
-                                receiverColorMatrix
-                            }
-                        }
-
-                        PlayerButtonState.COMMANDER_DEALER -> {
-                            if (player.isDead) {
-                                deadDealerColorMatrix
-                            } else {
-                                dealerColorMatrix
-                            }
-                        }
-
-                        PlayerButtonState.SETTINGS -> {
-                            if (player.isDead) {
-                                deadSettingsColorMatrix
-                            } else {
-                                settingsColorMatrix
-                            }
-                        }
-
-                        else -> throw Exception("unsupported state")
-                    }
-
                     Image(
                         modifier = Modifier.fillMaxSize(),
                         bitmap = bitmap.asImageBitmap(),
@@ -1008,36 +984,6 @@ fun CustomColorPickerButton(player: Player, buttonSize: Dp) {
     }
 }
 
-fun Modifier.constantRepeatingClickable(
-    interactionSource: MutableInteractionSource,
-    enabled: Boolean,
-    initialDelayMillis: Long = 500,
-    repeatingDelayMillis: Long = 100,
-    onClick: () -> Unit
-): Modifier = composed {
-
-    val currentClickListener by rememberUpdatedState(onClick)
-    val isEnabled by rememberUpdatedState(enabled)
-
-    pointerInput(interactionSource, isEnabled) {
-        coroutineScope {
-            awaitEachGesture {
-                val down = awaitFirstDown(requireUnconsumed = false)
-                val job = launch {
-                    delay(initialDelayMillis)
-                    while (isEnabled && down.pressed) {
-                        currentClickListener() // Repeating click after initial delay
-                        delay(repeatingDelayMillis)
-                    }
-                }
-                waitForUpOrCancellation()
-                job.cancel()
-            }
-        }
-        detectTapGestures(onPress = { onClick() }) { }
-    }
-}
-
 @Composable
 fun LifeChangeButtons(
     onIncrementLife: () -> Unit,
@@ -1051,18 +997,20 @@ fun LifeChangeButtons(
         CustomIncrementButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.5f),
+                .fillMaxHeight(0.5f)
+                .alpha(0.015f),
             onIncrementLife = onIncrementLife,
-            color = color,
+            color = Color.White,
             interactionSource = interactionSource
         )
 
         CustomIncrementButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(1.0f),
+                .fillMaxHeight(1.0f)
+                .alpha(0.015f),
             onIncrementLife = onDecrementLife,
-            color = color, // darken this one?
+            color = Color.Black, // darken this one?
             interactionSource = interactionSource
         )
 
@@ -1141,21 +1089,42 @@ fun Modifier.bounceClick() = composed {
         }
 }
 
+fun Modifier.constantRepeatingClickable(
+    interactionSource: MutableInteractionSource,
+    enabled: Boolean,
+    initialDelayMillis: Long = 500,
+    repeatingDelayMillis: Long = 100,
+    onClick: () -> Unit
+): Modifier = composed {
+
+    val currentClickListener by rememberUpdatedState(onClick)
+    val isEnabled by rememberUpdatedState(enabled)
+
+    pointerInput(interactionSource, isEnabled) {
+        coroutineScope {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                val job = launch {
+                    delay(initialDelayMillis)
+                    while (isEnabled && down.pressed) {
+                        currentClickListener() // Repeating click after initial delay
+                        delay(repeatingDelayMillis)
+                    }
+                }
+                waitForUpOrCancellation()
+                job.cancel()
+            }
+        }
+        detectTapGestures(onPress = { onClick() }) { }
+    }
+}
+
 private object NoRippleTheme : RippleTheme {
     @Composable
     override fun defaultColor() = Color.Unspecified
 
     @Composable
     override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f, 0.0f, 0.0f, 0.0f)
-}
-
-fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = false): ColorMatrix {
-    val s = if (dead) sat * 0.3f else sat
-    val l = if (dead) lum * 1.1f else lum
-    return this.apply {
-        timesAssign(ColorMatrix().apply { setToSaturation(s) })
-        timesAssign(ColorMatrix().apply { setToScale(l, l, l, 1.0f) })
-    }
 }
 
 fun Modifier.rotateVertically(rotation: VerticalRotation) = then(

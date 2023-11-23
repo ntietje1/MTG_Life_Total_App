@@ -1,7 +1,10 @@
 package mtglifeappcompose.ui.theme
 
+
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.core.graphics.ColorUtils
+
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
@@ -36,6 +39,31 @@ val allPlayerColors = listOf(
     PlayerColor8,
     PlayerColor9
 )
+
+val normalColorMatrix = ColorMatrix().generateColorMatrix(1.0f, 1.0f)
+
+val receiverColorMatrix = ColorMatrix().generateColorMatrix(0.0f, 0.3f)
+
+val dealerColorMatrix = ColorMatrix().generateColorMatrix(0.6f, 0.4f)
+
+val settingsColorMatrix = ColorMatrix().generateColorMatrix(0.8f, 0.6f)
+
+val deadNormalColorMatrix = ColorMatrix().generateColorMatrix(1.0f, 1.0f, true)
+
+val deadReceiverColorMatrix = ColorMatrix().generateColorMatrix(0.0f, 0.3f, true)
+
+val deadDealerColorMatrix = ColorMatrix().generateColorMatrix(0.6f, 0.4f, true)
+
+val deadSettingsColorMatrix = ColorMatrix().generateColorMatrix(0.8f, 0.6f, true)
+
+fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = false): ColorMatrix {
+    val s = if (dead) sat * 0.3f else sat
+    val l = if (dead) lum * 1.1f else lum
+    return this.apply {
+        timesAssign(ColorMatrix().apply { setToSaturation(s) })
+        timesAssign(ColorMatrix().apply { setToScale(l, l, l, 1.0f) })
+    }
+}
 
 fun Int.darkenColor(factor: Float = 0.6f): Int {
     val red = android.graphics.Color.red(this) * factor

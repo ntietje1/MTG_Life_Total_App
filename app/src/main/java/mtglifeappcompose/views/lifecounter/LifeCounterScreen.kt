@@ -1,8 +1,11 @@
 package mtglifeappcompose.views.lifecounter
 
 
-import MiddleButtonDialogComposable
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.VectorConverter
+import mtglifeappcompose.views.MiddleButtonDialogComposable
 import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -33,23 +36,24 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.mtglifeappcompose.R
 import mtglifeappcompose.data.Player
 
 
-@Preview
-@Composable
-fun ExampleLifeCounterScreen() {
-    val players = remember { mutableListOf<Player>() }
-    repeat(4) {
-        players.add(Player.generatePlayer())
-    }
-    LifeCounterScreen(players)
-}
+//@Preview
+//@Composable
+//fun ExampleLifeCounterScreen() {
+//    val players = remember { mutableListOf<Player>() }
+//    repeat(4) {
+//        players.add(Player.generatePlayer())
+//    }
+//    LifeCounterScreen(players)
+//}
 
 @Composable
-fun LifeCounterScreen(players: MutableList<Player>) {
+fun LifeCounterScreen(players: MutableList<Player>, resetPlayers: () -> Unit, setPlayerNum: (Int) -> Unit, setStartingLife: (Int) -> Unit, goToPlayerSelect: () -> Unit) {
     val numPlayers = players.size
 
     val configuration = LocalConfiguration.current
@@ -64,7 +68,7 @@ fun LifeCounterScreen(players: MutableList<Player>) {
         4 -> arrayOf(90f, 270f, 90f, 270f)
         5 -> arrayOf(90f, 270f, 90f, 270f, 0f)
         6 -> arrayOf(90f, 270f, 90f, 270f, 90f, 270f)
-        else -> throw IllegalArgumentException("invalid number of players")
+        else -> throw IllegalArgumentException("invalid number of players: $numPlayers")
     }
 
     val offset3 = 0.8f
@@ -173,6 +177,13 @@ fun LifeCounterScreen(players: MutableList<Player>) {
         if (showDialog) {
             MiddleButtonDialogComposable(
                 onDismiss = { showDialog = false },
+                resetPlayers = { resetPlayers() },
+                setStartingLife = { setStartingLife(it) },
+                setPlayerNum = {
+                    showButtons.value = false
+                    setPlayerNum(it)
+                               },
+                goToPlayerSelect = { goToPlayerSelect() }
             )
         }
     }
@@ -183,25 +194,36 @@ fun LifeCounterScreen(players: MutableList<Player>) {
 fun AnimatedPlayerButton(visible: MutableState<Boolean>, player: Player, rotation: Float, width: Dp, height: Dp) {
     val targetOffset = if (visible.value) Offset(0f, 0f) else {
         when (rotation) {
-            0f -> Offset(0f, height.value)
-            90f -> Offset(-width.value, 0f)
-            180f -> Offset(0f, -height.value)
-            270f -> Offset(width.value, 0f)
-            else -> Offset(0f, height.value)
+            0f -> Offset(0f, height.value*3)
+            90f -> Offset(-width.value*3, 0f)
+            180f -> Offset(0f, -height.value*3)
+            270f -> Offset(width.value*3, 0f)
+            else -> Offset(0f, height.value*3)
         }
     }
 
+//    val targetAlpha = if (visible.value) 1.0f else 0.0f
+
+    val easing = CubicBezierEasing(0f, 0.1f, 0.3f, 0.9f)
+
     val offset by animateOffsetAsState(
         targetValue = targetOffset,
-        animationSpec = tween(durationMillis = 2000),
-        label = "" // Adjust the duration here
+        animationSpec = tween(durationMillis = 2500, easing = easing),
+        label = ""
     )
 
+//    val alpha by animateValueAsState(
+//        targetValue = targetAlpha,
+//        typeConverter = Float.VectorConverter,
+//        animationSpec = tween(durationMillis = 1500),
+//        label = ""
+//    )
+
     Box(
-        modifier = Modifier
-            .offset(offset.x.dp, offset.y.dp)
+        modifier = Modifier.offset{ IntOffset(offset.x.toInt(), offset.y.toInt()) }
             .graphicsLayer(
-                translationY = if (!visible.value) height.value else 0f
+//                alpha = if (visible.value) alpha else 0f,
+//                translationY = if (!visible.value) height.value else 0f
             )
     ) {
         PlayerButton(

@@ -113,8 +113,8 @@ class Player(
 
 
     companion object CREATOR : Parcelable.Creator<Player> {
-        private const val MAX_PLAYERS = 6
-        var currentPlayers: ArrayList<Player> = arrayListOf()
+        const val MAX_PLAYERS = 6
+        var currentPlayers: MutableList<Player> = mutableListOf()
         var startingLife = 40
 
         fun allToString(players: ArrayList<Player>): String {
@@ -190,6 +190,12 @@ class Player(
             currentPlayers.add(player)
             player.name = ("P" + player.playerNum)
             return player
+        }
+
+        fun resetPlayers() {
+            currentPlayers.forEach { player ->
+                player.resetPlayer()
+            }
         }
 
         fun packBundle(outState: Bundle) {

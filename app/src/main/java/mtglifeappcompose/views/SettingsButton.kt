@@ -38,13 +38,13 @@ class SettingsButton(
     var size: Int = 130.dp.value.toInt()
 ) : LinearLayout(context, attrs) {
 
-    var imageResource = R.drawable.placeholder_icon
+    private var imageResource = R.drawable.placeholder_icon
         set(value) {
             field = value
             imageView.setImageResource(value)
         }
 
-    var text = "placeholder"
+    private var text = "placeholder"
         set(value) {
             field = value
             textView.text = value

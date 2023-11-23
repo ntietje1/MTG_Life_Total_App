@@ -21,7 +21,7 @@ import androidx.core.util.keyIterator
 import kotlin.random.Random
 
 
-class PlayerSelectView(context: Context, attrs: AttributeSet?, numPlayers: MutableState<Int>, private val goToLifeCounter: () -> Unit) : View(context, attrs) {
+class PlayerSelectView(context: Context, attrs: AttributeSet?, private val setPlayerNum: (Int) -> Unit , private val goToLifeCounter: () -> Unit) : View(context, attrs) {
 
     private val activePointers: SparseArray<PointT> = SparseArray()
     private val touchPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -50,8 +50,6 @@ class PlayerSelectView(context: Context, attrs: AttributeSet?, numPlayers: Mutab
 
     private var selectedId = -1
 
-    private var numPlayers = -1
-
     private val helperTextHandler = Handler(Looper.getMainLooper())
 
     private val showHelperTextRunnable = Runnable {
@@ -62,9 +60,9 @@ class PlayerSelectView(context: Context, attrs: AttributeSet?, numPlayers: Mutab
     private val selectionRunnable = Runnable {
         val randomIndex = rand.nextInt(activePointers.size())
         selectedId = activePointers.keyAt(randomIndex)
-        if (numPlayers.value == 0) {
-            numPlayers.value = activePointers.size()
-        }
+
+        setPlayerNum(activePointers.size())
+
         for (id in activePointers.keyIterator()) {
             if (id == selectedId) {
                 selectionAnimator(id).start()
@@ -131,6 +129,7 @@ class PlayerSelectView(context: Context, attrs: AttributeSet?, numPlayers: Mutab
                 if (activePointers.size() > 1 && selectedId == -1) {
                     postCallbacks()
                 } else if (activePointers.size() == 0 && selectedId != -1) {
+                    println("ACTIVE POINTERS SIZE" + activePointers.size())
                     sendToLifeCounter()
                 }
             }
