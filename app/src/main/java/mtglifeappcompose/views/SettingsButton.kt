@@ -47,26 +47,33 @@ fun SettingsButton(
     val imageSize = if (text.isNotEmpty()) size - margin * 2.5f else size - margin * 1.5f
     val fontSize = (size / 10).value.sp
     val matrix = ColorMatrix().apply { setToScale(color.red, color.green, color.blue, color.alpha) }
+    val invisMatrix = ColorMatrix().apply { setToScale(color.red, color.green, color.blue, 0f) }
 
     Box(modifier = modifier
         .wrapContentSize()
-        .pointerInput(Unit) {
-            if (enabled && visible) {
-                detectTapGestures(
-                    onPress = {
+        .pointerInput(enabled, visible) {
+            detectTapGestures(
+                onPress = {
+                    if (enabled && visible) {
                         onPress()
-                    },
-                    onTap = {
+                    }
+                },
+                onTap = {
+                    if (enabled && visible) {
                         onTap()
-                    },
-                    onLongPress = {
+                    }
+                },
+                onLongPress = {
+                    if (enabled && visible) {
                         onLongPress()
-                    },
-                    onDoubleTap = {
+                    }
+                },
+                onDoubleTap = {
+                    if (enabled && visible) {
                         onDoubleTap()
                     }
-                )
-            }
+                }
+            )
         }
         .clip(RoundedCornerShape(cornerRadius))
         .background(backgroundColor)
@@ -82,11 +89,13 @@ fun SettingsButton(
                 modifier = Modifier.size(imageSize),
                 painter = imageResource,
                 contentDescription = "settings button image",
-                colorFilter = ColorFilter.colorMatrix(matrix)
+                colorFilter = if (visible) ColorFilter.colorMatrix(matrix) else ColorFilter.colorMatrix(
+                    invisMatrix
+                )
             )
             Text(
                 text = text,
-                color = color,
+                color = if (visible) color else Color.Transparent,
                 style = TextStyle(fontSize = fontSize)
             )
         }
