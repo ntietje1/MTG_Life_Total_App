@@ -68,6 +68,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -98,6 +99,8 @@ import mtglifeappcompose.data.Player
 import mtglifeappcompose.data.PlayerDataManager
 import mtglifeappcompose.ui.theme.Gold
 import mtglifeappcompose.ui.theme.allPlayerColors
+import mtglifeappcompose.ui.theme.blendWith
+import mtglifeappcompose.ui.theme.brightenColor
 import mtglifeappcompose.ui.theme.darkenColor
 import mtglifeappcompose.ui.theme.deadDealerColorMatrix
 import mtglifeappcompose.ui.theme.deadNormalColorMatrix
@@ -105,12 +108,13 @@ import mtglifeappcompose.ui.theme.deadReceiverColorMatrix
 import mtglifeappcompose.ui.theme.deadSettingsColorMatrix
 import mtglifeappcompose.ui.theme.dealerColorMatrix
 import mtglifeappcompose.ui.theme.desaturateColor
+import mtglifeappcompose.ui.theme.invert
 import mtglifeappcompose.ui.theme.normalColorMatrix
 import mtglifeappcompose.ui.theme.receiverColorMatrix
 import mtglifeappcompose.ui.theme.settingsColorMatrix
 import mtglifeappcompose.utilities.ImageLoader
-import mtglifeappcompose.views.AnimatedBorderCard
 import mtglifeappcompose.views.SettingsButton
+import mtglifeappcompose.views.animatedBorderCard
 import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.getDamageToPlayer
 import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.setDealer
 import yuku.ambilwarna.AmbilWarnaDialog
@@ -141,8 +145,7 @@ object PlayerButtonStateManager {
     }
 
     fun addDamageToPlayer(receiver: Int, damage: Int) {
-        val dealer = currentDealer!!
-        dealer.commanderDamage[receiver - 1] = dealer.commanderDamage[receiver - 1] + damage
+        currentDealer!!.commanderDamage[receiver - 1] += damage
     }
 
     fun getDamageToPlayer(receiver: Int): Int {
@@ -191,36 +194,10 @@ fun PlayerButton(
 
     val backgroundType = remember { mutableStateOf(PlayerButtonBackgroundMode.SOLID) }
 
-    val player by remember { mutableStateOf(player) }
-
-    val id by remember(player) {
-        derivedStateOf { player.playerNum }
-    }
-
-    val life by remember(player) {
-        derivedStateOf { player.life }
-    }
-
-    val name by remember(player) {
-        derivedStateOf { player.name }
-    }
-
-    val baseColor by remember(player) {
-        derivedStateOf { player.playerColor }
-    }
-
-    val monarch by remember(player) {
-        derivedStateOf { player.monarch }
-    }
-
-    val recentChange by remember(player) {
-        derivedStateOf { player.recentLifeChange }
-    }
-
     val context = LocalContext.current
 
-    val commanderDamage by remember(life) {
-        derivedStateOf { getDamageToPlayer(id) }
+    val commanderDamage by remember(player.life) {
+        derivedStateOf { getDamageToPlayer(player.playerNum) }
     }
 
     fun commanderButtonOnClick() {
@@ -252,7 +229,7 @@ fun PlayerButton(
         when (state.value) {
             PlayerButtonState.NORMAL -> player.incrementLife(1)
             PlayerButtonState.COMMANDER_RECEIVER -> {
-                PlayerButtonStateManager.addDamageToPlayer(id, 1)
+                PlayerButtonStateManager.addDamageToPlayer(player.playerNum, 1)
                 player.incrementLife(-1)
             }
 
@@ -264,25 +241,13 @@ fun PlayerButton(
         when (state.value) {
             PlayerButtonState.NORMAL -> player.incrementLife(-1)
             PlayerButtonState.COMMANDER_RECEIVER -> {
-                PlayerButtonStateManager.addDamageToPlayer(id, -1)
+                PlayerButtonStateManager.addDamageToPlayer(player.playerNum, -1)
                 player.incrementLife(1)
             }
 
             else -> {}
         }
     }
-
-//    val localDensity = LocalDensity.current
-//
-//    // Create element height in dp state
-//    var measuredHeight by remember {
-//        mutableStateOf(0.dp)
-//    }
-//
-//    var measuredWidth by remember {
-//        mutableStateOf(0.dp)
-//    }
-
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -313,6 +278,32 @@ fun PlayerButton(
                 }
             )
     ) {
+            Box(
+                modifier = Modifier
+                    .width(width)
+                    .height(height)
+                    .clip(RoundedCornerShape(30.dp))
+                    .background(color = Color.Black)
+                    .then(
+                        if (player.monarch) {
+                            Modifier.animatedBorderCard(
+                                shape = RoundedCornerShape(30.dp),
+                                borderWidth = 4.dp,
+                                gradient = Brush.sweepGradient(
+                                    listOf(
+                                        Color.White.copy(alpha = 0.1f),
+                                        Gold,
+                                        Gold,
+                                        Gold,
+                                    )
+                                ),
+                                animationDuration = 10000
+                            )
+                        } else {
+                            Modifier
+                        }
+                    )
+            )
 
         Box(
             modifier = Modifier
@@ -326,20 +317,14 @@ fun PlayerButton(
             when (backgroundType.value) {
                 PlayerButtonBackgroundMode.SOLID -> {
                     var c = when (state.value) {
-                        PlayerButtonState.NORMAL -> baseColor
+                        PlayerButtonState.NORMAL -> player.color
                         PlayerButtonState.COMMANDER_RECEIVER -> Color.DarkGray
-                        PlayerButtonState.COMMANDER_DEALER -> Color(
-                            baseColor.toArgb().desaturateColor().darkenColor()
-                        )
-
-                        PlayerButtonState.SETTINGS -> Color(
-                            baseColor.toArgb().desaturateColor(0.8f).darkenColor(0.8f)
-                        )
-
+                        PlayerButtonState.COMMANDER_DEALER -> player.color.desaturateColor().darkenColor()
+                        PlayerButtonState.SETTINGS -> player.color.desaturateColor(0.8f).darkenColor(0.8f)
                         else -> throw Exception("unsupported state")
                     }
                     if (player.isDead) {
-                        c = Color(c.toArgb().desaturateColor(0.4f).darkenColor(1.1f))
+                        c = c.desaturateColor(0.4f).darkenColor(1.1f)
                     }
                     Surface(
                         modifier = Modifier.fillMaxSize(),
@@ -395,24 +380,26 @@ fun PlayerButton(
 
             when (state.value) {
                 PlayerButtonState.NORMAL -> PlayerInfo(
-                    playerName = name,
-                    life = life,
-                    recentChange = recentChange,
+                    playerName = player.name,
+                    life = player.life,
+                    recentChange = player.recentChange,
+                    textColor = player.textColor,
                     state = state.value,
                     buttonSize = DpSize(width, height)
                 )
 
                 PlayerButtonState.COMMANDER_RECEIVER -> PlayerInfo(
-                    playerName = name,
+                    playerName = player.name,
                     life = commanderDamage,
                     recentChange = 0,
+                    textColor = player.textColor,
                     state = state.value,
                     buttonSize = DpSize(width, height)
                 )
 
                 PlayerButtonState.COMMANDER_DEALER -> Text(
                     text = "Deal damage with your commander",
-                    color = Color.White,
+                    color = player.textColor,
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.align(Alignment.Center)
@@ -444,41 +431,15 @@ fun PlayerButton(
 
             PlayerButtonStateButtons(
                 state = state.value,
+                color = player.textColor,
                 commanderButtonOnClick = { commanderButtonOnClick() },
                 settingsButtonOnClick = { settingsButtonOnClick() },
                 buttonSize = DpSize(width, height)
             )
         }
-    }
 
-    // TODO: Fix monarchy showing
-    if (monarch) {
-        AnimatedBorderCard(
-            modifier = Modifier
-                .padding(all = 0.dp),
-            shape = RoundedCornerShape(30.dp),
-            borderWidth = 1.dp,
-            gradient = Brush.sweepGradient(
-                listOf(
-                    Color.White.copy(alpha = 0.1f),
-                    Gold,
-                    Gold,
-                    Gold,
-                )
-            ),
-            animationDuration = 6500
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(width)
-                    .height(height)
-                    .padding(3.dp)
-                    .background(Color.Transparent)
-                    .clip(RoundedCornerShape(30.dp))
-            )
-        }
-    }
 
+    }
 }
 
 @Composable
@@ -486,6 +447,7 @@ fun PlayerButtonStateButtons(
     state: PlayerButtonState,
     commanderButtonOnClick: () -> Unit,
     settingsButtonOnClick: () -> Unit,
+    color: Color,
     buttonSize: DpSize
 ) {
     val commanderButtonVisible =
@@ -512,6 +474,7 @@ fun PlayerButtonStateButtons(
                     ),
                     size = smallButtonSize - smallButtonMargin,
                     backgroundColor = Color.Transparent,
+                    color = color,
                     imageResource = painterResource(id = R.drawable.commander_solid_icon),
                     visible = commanderButtonVisible,
                     onPress = commanderButtonOnClick
@@ -520,6 +483,7 @@ fun PlayerButtonStateButtons(
                 SettingsButton(
                     size = smallButtonSize,
                     backgroundColor = Color.Transparent,
+                    color = color,
                     imageResource = painterResource(id = R.drawable.settings_solid_icon),
                     visible = settingsButtonVisible,
                     onPress = settingsButtonOnClick
@@ -536,6 +500,7 @@ fun PlayerInfo(
     playerName: String,
     life: Int,
     recentChange: Int,
+    textColor: Color,
     state: PlayerButtonState,
     buttonSize: DpSize
 ) {
@@ -571,7 +536,7 @@ fun PlayerInfo(
             Text(
                 modifier = Modifier.wrapContentSize(unbounded = true),
                 text = life.toString(),
-                color = Color.White,
+                color = textColor,
                 fontSize = largeTextSize,
                 fontWeight = FontWeight.Bold
             )
@@ -586,7 +551,7 @@ fun PlayerInfo(
                     .weight(0.9f)
                     .align(Alignment.CenterVertically),
                 text = recentChangeText,
-                color = Color.White,
+                color = textColor,
                 fontSize = recentChangeSize
             )
         }
@@ -600,7 +565,7 @@ fun PlayerInfo(
         ) {
             Text(
                 text = playerName,
-                color = Color.White,
+                color = textColor,
                 fontSize = smallTextSize,
                 textAlign = TextAlign.Center
             )
@@ -608,7 +573,7 @@ fun PlayerInfo(
             Icon(
                 painter = painterResource(iconID),
                 contentDescription = null,
-                tint = Color.White
+                tint = textColor
             )
         }
     }
@@ -641,10 +606,11 @@ fun SettingsMenu(
     val settingsButtonSize =
         if (!wideButton) settingsButtonInitialSize else settingsButtonInitialSize * 1.25f
 
-    val smallMargin = buttonSize.height / 30f
+    val smallMargin = settingsButtonSize / 20f
     var state by remember { mutableStateOf(SettingsState.Default) }
+    val gridMarginSize = buttonSize.height / 20f
 
-    var savePlayerColor by remember { mutableStateOf(Color.White) }
+    var savePlayerColor by remember { mutableStateOf(player.textColor) }
 
     when (state) {
         SettingsState.Default -> {
@@ -665,7 +631,7 @@ fun SettingsMenu(
                         onPress = {
                             onSavePlayerButtonClick()
 //                            closeSettingsMenu()
-                            savePlayerColor = Color(0.3f, 1.0f, 0.3f)
+                            savePlayerColor = Color.Green.blendWith(player.textColor)
                         },
                         size = settingsButtonSize,
                         color = savePlayerColor,
@@ -681,6 +647,7 @@ fun SettingsMenu(
 //                            onLoadPlayerButtonClick()
                         },
                         size = settingsButtonSize,
+                        color = player.textColor,
                         backgroundColor = Color.Transparent
                     )
                 }
@@ -690,9 +657,10 @@ fun SettingsMenu(
                         text = "Monarch",
                         onPress = {
                             onMonarchyButtonClick()
-                            closeSettingsMenu()
+//                            closeSettingsMenu()
                         },
                         size = settingsButtonSize,
+                        color = player.textColor,
                         backgroundColor = Color.Transparent
                     )
                 }
@@ -705,6 +673,7 @@ fun SettingsMenu(
 //                            onChangeNameButtonClick()
                         },
                         size = settingsButtonSize,
+                        color = player.textColor,
                         backgroundColor = Color.Transparent
                     )
                 }
@@ -718,6 +687,7 @@ fun SettingsMenu(
 //                            onColorButtonClick()
                         },
                         size = settingsButtonSize,
+                        color = player.textColor,
                         backgroundColor = Color.Transparent
                     )
                 }
@@ -730,6 +700,7 @@ fun SettingsMenu(
                             onImageButtonClick()
                         },
                         size = settingsButtonSize,
+                        color = player.textColor,
                         backgroundColor = Color.Transparent
                     )
                 }
@@ -738,6 +709,18 @@ fun SettingsMenu(
 
         SettingsState.ColorPicker -> {
             val colorList = allPlayerColors
+            var modifiedPlayerColor1 = remember (player.color) {
+                derivedStateOf{
+                    player.color.desaturateColor(1.25f).brightenColor(1.4f)
+                }
+            }
+            var modifiedPlayerColor2 = remember (player.color) {
+                derivedStateOf{
+                    player.color.darkenColor(0.30f).desaturateColor(1.5f)
+                }
+            }
+
+            val textColorList = remember {listOf(mutableStateOf(Color.White), modifiedPlayerColor1, modifiedPlayerColor2, mutableStateOf(Color.Black))}
             Box(
                 modifier =
                 Modifier
@@ -746,7 +729,8 @@ fun SettingsMenu(
                         start = smallMargin,
                         top = smallMargin,
                         end = smallMargin,
-                        bottom = if (!wideButton) margin else smallMargin
+                        bottom = smallMargin
+//                        bottom = if (!wideButton) margin else smallMargin
                     )
             )
             {
@@ -759,34 +743,63 @@ fun SettingsMenu(
                             .wrapContentSize(unbounded = true)
                             .padding(bottom = buttonSize.height / 30f),
                         text = "Choose a color",
-                        color = Color.White,
+                        color = player.textColor,
                         fontSize = buttonSize.height.value.sp / 15f,
                         textAlign = TextAlign.Center
                     )
                     LazyHorizontalGrid(
                         modifier = Modifier
                             .wrapContentWidth()
-                            .height(buttonSize.height / 2.1f + buttonSize.height / 15f)
-                            .clip(RoundedCornerShape(30.dp))
+                            .height((settingsButtonSize*1.2f) + gridMarginSize)
+                            .clip(RoundedCornerShape(20.dp))
                             .background(Color.Black.copy(alpha = 0.15f))
-                            .padding(buttonSize.height / 15f),
+                            .padding(gridMarginSize),
                         rows = GridCells.Fixed(2),
                         state = rememberLazyGridState(),
                         horizontalArrangement = Arrangement.spacedBy(buttonSize.height / 150f),
                         verticalArrangement = Arrangement.spacedBy(buttonSize.height / 150f),
                         content = {
                             item {
-                                CustomColorPickerButton(player = player, buttonSize = buttonSize)
+                                CustomColorPickerButton(player = player, settingsButtonSize = settingsButtonSize)
                             }
                             items(colorList) { color ->
                                 ColorPickerButton(
-                                    player = player,
+                                    onClick = {
+                                        player.color = color
+                                    },
                                     color = color,
-                                    buttonSize = buttonSize
+                                    settingsButtonSize = settingsButtonSize
                                 )
                             }
                         }
                     )
+
+                    LazyHorizontalGrid(
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .height((settingsButtonSize*1.3f)/2f)
+                            .clip(RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 20.dp, bottomEnd = 20.dp))
+                            .background(Color.Black.copy(alpha = 0.15f))
+                            .padding(start = gridMarginSize,
+                                end = gridMarginSize,
+                                bottom = gridMarginSize),
+                        rows = GridCells.Fixed(1),
+                        state = rememberLazyGridState(),
+                        horizontalArrangement = Arrangement.spacedBy(buttonSize.height / 150f),
+                        verticalArrangement = Arrangement.spacedBy(buttonSize.height / 150f),
+                        content = {
+                            items(textColorList) { color ->
+                                ColorPickerButton(
+                                    onClick = {
+                                        player.textColor = color.value
+                                    },
+                                    color = color.value,
+                                    settingsButtonSize = settingsButtonSize
+                                )
+                            }
+                        }
+                    )
+
                 }
 
             }
@@ -817,19 +830,21 @@ fun SettingsMenu(
                         .wrapContentSize(unbounded = true)
                         .padding(bottom = smallMargin),
                     text = "Saved players",
-                    color = Color.White,
+                    color = player.textColor,
                     fontSize = buttonSize.height.value.sp / 15f,
                     textAlign = TextAlign.Center
                 )
                 LazyHorizontalGrid(
                     modifier = Modifier
                         .wrapContentWidth()
-                        .height(buttonSize.height / 1.2f + smallMargin * 1.5f)
-                        .clip(RoundedCornerShape(30.dp))
+                        .height(buttonSize.height / 2f + smallMargin * 1.5f)
+                        .clip(RoundedCornerShape(20.dp))
                         .background(Color.Black.copy(alpha = 0.15f))
                         .padding(smallMargin * 1.5f),
                     rows = GridCells.Fixed(3),
                     state = rememberLazyGridState(),
+                    horizontalArrangement = Arrangement.spacedBy(smallMargin),
+                    verticalArrangement = Arrangement.spacedBy(smallMargin),
                     content = {
                         items(playerList) { p ->
                             MiniPlayerButton(
@@ -868,7 +883,7 @@ fun ChangeNameField(
 ) {
     var newName by remember { mutableStateOf(player.name) }
     val nameFieldMargin = if (wideButton) margin else margin / 3f
-
+    val textColor = player.textColor.invert().copy(alpha = 1.0f)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -881,21 +896,23 @@ fun ChangeNameField(
             label = {
                 Text(
                     "New Name",
-                    color = player.playerColor,
+                    color = player.color,
                     fontSize = 12.sp
                 )
             },
             textStyle = TextStyle(
-                color = player.playerColor.darkenColor(0.1f),
+//                color = player.color.darkenColor(0.1f),
                 fontSize = 15.sp
             ),
             singleLine = true,
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                cursorColor = player.playerColor,
-                unfocusedIndicatorColor = Color.White,
-                focusedIndicatorColor = player.playerColor
+                focusedTextColor = textColor,
+                unfocusedTextColor = textColor,
+                focusedContainerColor = player.textColor,
+                unfocusedContainerColor = player.textColor,
+                cursorColor = player.color,
+                unfocusedIndicatorColor = player.textColor,
+                focusedIndicatorColor = player.color
             ),
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
@@ -920,8 +937,8 @@ fun ChangeNameField(
                 closeSettingsMenu()
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = player.playerColor
+                containerColor = player.textColor,
+                contentColor = player.color
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -949,9 +966,8 @@ fun MiniPlayerButton(
         modifier = Modifier
             .height(height)
             .width(height * 4)
-            .padding(buttonSize.height / 40f)
             .clip(RoundedCornerShape(15.dp))
-            .background(player.playerColor)
+            .background(player.color)
     ) {
         Box(
             modifier = Modifier
@@ -959,7 +975,7 @@ fun MiniPlayerButton(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
-                            currPlayer.playerColor = player.playerColor
+                            currPlayer.color = player.color
                             currPlayer.name = player.name
                         },
                         onLongPress = {
@@ -970,10 +986,11 @@ fun MiniPlayerButton(
                     )
                 }
         ) {
-            Text(
+            Text( //TODO: make saving player work with textcolor
                 text = player.name,
-                color = Color.White,
+                color = player.textColor,
                 fontSize = height.value.sp / 2f,
+                maxLines = 1,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
@@ -982,16 +999,16 @@ fun MiniPlayerButton(
 
 
 @Composable
-fun ColorPickerButton(player: Player, color: Color, buttonSize: DpSize) {
+fun ColorPickerButton(onClick: () -> Unit, color: Color, settingsButtonSize: Dp) {
     Box(
         modifier = Modifier
-            .size(buttonSize.height / 5f)
-            .padding(buttonSize.height / 50f)
+            .size(settingsButtonSize / 2f)
+            .padding(settingsButtonSize / 50f)
             .background(color)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
-                        player.playerColor = color
+                        onClick()
                     },
                 )
             }
@@ -1000,15 +1017,15 @@ fun ColorPickerButton(player: Player, color: Color, buttonSize: DpSize) {
 }
 
 @Composable
-fun CustomColorPickerButton(player: Player, buttonSize: DpSize) {
+fun CustomColorPickerButton(player: Player, settingsButtonSize: Dp) {
     val context = LocalContext.current
     Box(
         modifier = Modifier
-            .size(buttonSize.height / 5f)
+            .size(settingsButtonSize / 2.0f)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = {
-                        val initialColor = player.playerColor
+                        val initialColor = player.color
 
                         val colorPickerDialog = AmbilWarnaDialog(
                             context,
@@ -1019,7 +1036,7 @@ fun CustomColorPickerButton(player: Player, buttonSize: DpSize) {
                                 }
 
                                 override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
-                                    player.playerColor = Color(color)
+                                    player.color = Color(color)
                                 }
                             })
 
@@ -1037,15 +1054,14 @@ fun CustomColorPickerButton(player: Player, buttonSize: DpSize) {
                     },
                 )
             },
-
         ) {
         Icon(
             painter = painterResource(id = R.drawable.custom_color_icon),
             contentDescription = null, // provide a localized description if needed
             modifier = Modifier
                 .fillMaxSize()
-                .padding(buttonSize.height / 60f),
-            tint = Color.White // Set the tint to make the button's background transparent
+                .padding(settingsButtonSize / 80f),
+            tint = player.textColor
         )
     }
 }
