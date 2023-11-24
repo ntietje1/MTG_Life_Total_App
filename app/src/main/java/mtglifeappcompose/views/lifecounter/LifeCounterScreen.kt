@@ -1,13 +1,20 @@
 package mtglifeappcompose.views.lifecounter
 
 
-import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,24 +22,28 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.mtglifeappcompose.R
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import mtglifeappcompose.data.Player
 import mtglifeappcompose.views.MiddleButtonDialogComposable
 
@@ -73,7 +84,7 @@ fun LifeCounterScreen(
     }
 
     val offset3 = 0.8f
-    val offset5 = 0.3f
+    val offset5 = 0.265f
 
     val buttonSizes: Array<DpSize> = when (numPlayers) {
         1 -> arrayOf(
@@ -118,16 +129,26 @@ fun LifeCounterScreen(
         else -> throw IllegalArgumentException("invalid number of players")
     }
 
+    val middleButtonOffset: Float = when(numPlayers) {
+        1 -> 0.065f
+        2 -> 0.5f
+        3 -> 0.615f
+        4 -> 0.5f
+        5 -> 0.364f
+        6 -> 0.323f
+        else -> throw IllegalArgumentException("invalid number of players")
+    }
+
     var showDialog by remember { mutableStateOf(false) }
     var showButtons = remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        delay(100)
+        showButtons.value = true
+    }
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .onGloballyPositioned {
-                showButtons.value = true
-            },
+        modifier = Modifier.fillMaxSize(),
         userScrollEnabled = false,
         verticalArrangement = Arrangement.Center,
         content = {
@@ -172,26 +193,29 @@ fun LifeCounterScreen(
         }
     )
 
-    Box(Modifier.fillMaxSize()) {
-        MiddleDialogButton(
-            modifier = Modifier.align(Alignment.Center),
+    Column(Modifier.fillMaxSize()) {
+        Spacer(modifier = Modifier.weight(0 + middleButtonOffset))
+        AnimatedMiddleButton(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            visible = showButtons,
             onMiddleButtonClick = {
                 showDialog = true
             }
         )
+        Spacer(modifier = Modifier.weight(1 - middleButtonOffset))
+    }
 
-        if (showDialog) {
-            MiddleButtonDialogComposable(
-                onDismiss = { showDialog = false },
-                resetPlayers = { resetPlayers() },
-                setStartingLife = { setStartingLife(it) },
-                setPlayerNum = {
-                    showButtons.value = false
-                    setPlayerNum(it)
-                },
-                goToPlayerSelect = { goToPlayerSelect() }
-            )
-        }
+    if (showDialog) {
+        MiddleButtonDialogComposable(
+            onDismiss = { showDialog = false },
+            resetPlayers = { resetPlayers() },
+            setStartingLife = { setStartingLife(it) },
+            setPlayerNum = {
+                showButtons.value = false
+                setPlayerNum(it)
+            },
+            goToPlayerSelect = { goToPlayerSelect() }
+        )
     }
 }
 
@@ -204,39 +228,54 @@ fun AnimatedPlayerButton(
     width: Dp,
     height: Dp
 ) {
-    val targetOffset = if (visible.value) Offset(0f, 0f) else {
+    val multiplesAway = 3
+    val duration = 3000
+    val targetOffsetY = if (visible.value) 0f else {
         when (rotation) {
-            0f -> Offset(0f, height.value * 3)
-            90f -> Offset(-width.value * 3, 0f)
-            180f -> Offset(0f, -height.value * 3)
-            270f -> Offset(width.value * 3, 0f)
-            else -> Offset(0f, height.value * 3)
+            0f -> height.value * multiplesAway
+            90f -> 0f
+            180f -> -height.value * multiplesAway
+            270f -> 0f
+            else -> height.value * multiplesAway
         }
     }
 
-//    val targetAlpha = if (visible.value) 1.0f else 0.0f
+    val targetOffsetX = if (visible.value) 0f else {
+        when (rotation) {
+            0f -> 0f
+            90f -> -width.value * multiplesAway
+            180f -> 0f
+            270f -> width.value * multiplesAway
+            else -> 0f
+        }
+    }
 
-//    val easing = CubicBezierEasing(0f, 0.1f, 0.3f, 0.9f)
+    val offsetX = remember { Animatable(targetOffsetX) }
+    val offsetY = remember { Animatable(targetOffsetY) }
 
-    val offset by animateOffsetAsState(
-        targetValue = targetOffset,
-        animationSpec = tween(durationMillis = 2500),
-        label = ""
-    )
+    LaunchedEffect(visible.value) {
 
-//    val alpha by animateValueAsState(
-//        targetValue = targetAlpha,
-//        typeConverter = Float.VectorConverter,
-//        animationSpec = tween(durationMillis = 1500),
-//        label = ""
-//    )
+        launch {
+            offsetX.animateTo(
+                targetValue = if (visible.value) 0f else targetOffsetX,
+                animationSpec = tween(durationMillis = duration)
+            )
+        }
+
+        launch {
+            offsetY.animateTo(
+                targetValue = if (visible.value) 0f else targetOffsetY,
+                animationSpec = tween(durationMillis = duration)
+            )
+        }
+    }
 
     Box(
         modifier = Modifier
-            .offset { IntOffset(offset.x.toInt(), offset.y.toInt()) }
             .graphicsLayer(
-//                alpha = if (visible.value) alpha else 0f,
-//                translationY = if (!visible.value) height.value else 0f
+                translationX = offsetX.value,
+                translationY = offsetY.value,
+                compositingStrategy = CompositingStrategy.Offscreen
             )
     ) {
         PlayerButton(
@@ -247,6 +286,81 @@ fun AnimatedPlayerButton(
         )
     }
 }
+
+
+@Composable
+fun AnimatedMiddleButton(
+    modifier: Modifier = Modifier,
+    onMiddleButtonClick: () -> Unit,
+    visible: MutableState<Boolean>
+) {
+    var animationFinished by remember { mutableStateOf(false) }
+
+    val duration = 3000
+    var angle by remember { mutableFloatStateOf(0f) }
+    var scale by remember { mutableFloatStateOf(0f) }
+
+    // Use Animatable for smooth animation
+    val animatableAngle = remember { Animatable(0f) }
+    val animatableScale = remember { Animatable(0f) }
+
+    // Observe changes in the 'visible' state
+    LaunchedEffect(visible.value) {
+        // When 'visible' changes, animate the rotation
+        launch {
+            animatableAngle.animateTo(
+                targetValue = if (visible.value) 360f else 0f,
+                animationSpec = if (visible.value) {
+                    tween(durationMillis = duration, easing = LinearOutSlowInEasing)
+                } else {
+                    tween(durationMillis = duration)
+                }
+            )
+        }
+
+        launch {
+            animatableScale.animateTo(
+                targetValue = if (visible.value) 1f else 0f,
+                animationSpec = if (visible.value) {
+                    tween(durationMillis = duration, easing = LinearOutSlowInEasing)
+                } else {
+                    tween(durationMillis = duration)
+                }
+            )
+            animationFinished = true
+        }
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+
+    angle = if (!animationFinished) animatableAngle.value else infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 180000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ), label = ""
+    ).value
+
+    scale = animatableScale.value
+
+    Box(
+        modifier = modifier
+            .rotate(angle)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+    ) {
+        MiddleDialogButton(
+            modifier = Modifier.align(Alignment.Center),
+            onMiddleButtonClick = {
+                onMiddleButtonClick()
+            }
+        )
+    }
+}
+
 
 @Composable
 fun MiddleDialogButton(modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit) {
