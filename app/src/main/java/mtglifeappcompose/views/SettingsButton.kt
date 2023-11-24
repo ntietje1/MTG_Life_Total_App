@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
@@ -32,6 +34,7 @@ fun SettingsButton(
     backgroundColor: Color = Color.DarkGray,
     imageResource: Painter = painterResource(id = R.drawable.placeholder_icon),
     text: String = "",
+    color: Color = Color.White,
     enabled: Boolean = true,
     visible: Boolean = true,
     onPress: () -> Unit = {},
@@ -43,6 +46,7 @@ fun SettingsButton(
     val margin = size / 12
     val imageSize = if (text.isNotEmpty()) size - margin * 2.5f else size - margin * 1.5f
     val fontSize = (size / 10).value.sp
+    val matrix = ColorMatrix().apply { setToScale(color.red, color.green, color.blue, color.alpha) }
 
     Box(modifier = modifier
         .wrapContentSize()
@@ -75,14 +79,14 @@ fun SettingsButton(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
+                modifier = Modifier.size(imageSize),
                 painter = imageResource,
                 contentDescription = "settings button image",
-                modifier = Modifier
-                    .size(imageSize)
+                colorFilter = ColorFilter.colorMatrix(matrix)
             )
             Text(
                 text = text,
-                color = Color.White,
+                color = color,
                 style = TextStyle(fontSize = fontSize)
             )
         }

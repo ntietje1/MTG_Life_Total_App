@@ -314,33 +314,6 @@ fun PlayerButton(
             )
     ) {
 
-        if (monarch) {
-            AnimatedBorderCard(
-                modifier = Modifier
-                    .padding(all = 0.dp),
-                shape = RoundedCornerShape(30.dp),
-                borderWidth = 1.dp,
-                gradient = Brush.sweepGradient(
-                    listOf(
-                        Color.White.copy(alpha = 0.1f),
-                        Gold,
-                        Gold,
-                        Gold,
-                    )
-                ),
-                animationDuration = 6500
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(width)
-                        .height(height)
-                        .padding(3.dp)
-                        .background(Color.Transparent)
-                        .clip(RoundedCornerShape(30.dp))
-                )
-            }
-        }
-
         Box(
             modifier = Modifier
                 .width(width)
@@ -474,6 +447,34 @@ fun PlayerButton(
                 commanderButtonOnClick = { commanderButtonOnClick() },
                 settingsButtonOnClick = { settingsButtonOnClick() },
                 buttonSize = DpSize(width, height)
+            )
+        }
+    }
+
+    // TODO: Fix monarchy showing
+    if (monarch) {
+        AnimatedBorderCard(
+            modifier = Modifier
+                .padding(all = 0.dp),
+            shape = RoundedCornerShape(30.dp),
+            borderWidth = 1.dp,
+            gradient = Brush.sweepGradient(
+                listOf(
+                    Color.White.copy(alpha = 0.1f),
+                    Gold,
+                    Gold,
+                    Gold,
+                )
+            ),
+            animationDuration = 6500
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(width)
+                    .height(height)
+                    .padding(3.dp)
+                    .background(Color.Transparent)
+                    .clip(RoundedCornerShape(30.dp))
             )
         }
     }
@@ -643,6 +644,8 @@ fun SettingsMenu(
     val smallMargin = buttonSize.height / 30f
     var state by remember { mutableStateOf(SettingsState.Default) }
 
+    var savePlayerColor by remember { mutableStateOf(Color.White) }
+
     when (state) {
         SettingsState.Default -> {
             LazyHorizontalGrid(
@@ -661,9 +664,11 @@ fun SettingsMenu(
                         text = "Save Player",
                         onPress = {
                             onSavePlayerButtonClick()
-                            closeSettingsMenu()
+//                            closeSettingsMenu()
+                            savePlayerColor = Color(0.3f, 1.0f, 0.3f)
                         },
                         size = settingsButtonSize,
+                        color = savePlayerColor,
                         backgroundColor = Color.Transparent
                     )
                 }
