@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
+import java.lang.Float.max
+import java.lang.Float.min
 
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -66,6 +68,26 @@ fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = fals
     }
 }
 
+fun Color.blendWith(other: Color): Color {
+    val alpha = 0.5f
+    val blendedRed = (1 - alpha) * this.red + alpha * other.red
+    val blendedGreen = (1 - alpha) * this.green + alpha * other.green
+    val blendedBlue = (1 - alpha) * this.blue + alpha * other.blue
+
+    return Color(blendedRed, blendedGreen, blendedBlue)
+}
+
+fun Color.brightenColor(factor: Float): Color {
+    val r = (this.red*255).toInt()
+    val g = (this.green*255).toInt()
+    val b = (this.blue*255).toInt()
+    val hsl = FloatArray(3)
+    ColorUtils.RGBToHSL(r,g,b,hsl)
+    hsl[2] *= factor
+    hsl[2] = min(1.0f, hsl[2])
+    return Color.hsl(hsl[0], hsl[1], hsl[2])
+}
+
 fun Color.darkenColor(factor: Float = 0.6f): Color {
     return Color(this.toArgb().darkenColor(factor))
 }
@@ -74,14 +96,22 @@ fun Color.desaturateColor(factor: Float = 0.6f): Color {
     return Color(this.toArgb().desaturateColor(factor))
 }
 
-fun Int.darkenColor(factor: Float = 0.6f): Int {
-    val red = android.graphics.Color.red(this) * factor
-    val green = android.graphics.Color.green(this) * factor
-    val blue = android.graphics.Color.blue(this) * factor
+fun Color.invert(): Color {
+    return this.copy(red = 1f - this.red, green = 1f - this.green, blue = 1f - this.blue)
+}
+
+
+
+private fun Int.darkenColor(factor: Float = 0.6f): Int {
+    val red = max(1.0f, android.graphics.Color.red(this) * factor)
+    val green = max(1.0f, android.graphics.Color.green(this) * factor)
+    val blue = max(1.0f, android.graphics.Color.blue(this) * factor)
     return android.graphics.Color.rgb(red.toInt(), green.toInt(), blue.toInt())
 }
 
-fun Int.desaturateColor(factor: Float = 0.6f): Int {
+
+
+private fun Int.desaturateColor(factor: Float = 0.6f): Int {
     val hsl = FloatArray(3)
     ColorUtils.colorToHSL(this, hsl)
     hsl[1] *= factor
