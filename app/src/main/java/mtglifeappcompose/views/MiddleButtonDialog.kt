@@ -28,7 +28,13 @@ import com.example.mtglifeappcompose.R
  */
 
 @Composable
-fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit, setPlayerNum: (Int) -> Unit, setStartingLife: (Int) -> Unit, goToPlayerSelect: () -> Unit) {
+fun MiddleButtonDialogComposable(
+    onDismiss: () -> Unit,
+    resetPlayers: () -> Unit,
+    setPlayerNum: (Int) -> Unit,
+    setStartingLife: (Int) -> Unit,
+    goToPlayerSelect: () -> Unit
+) {
     val showCoinFlipDialog = remember { mutableStateOf(false) }
     val showPlayerNumberDialog = remember { mutableStateOf(false) }
     val showStartingLifeDialog = remember { mutableStateOf(false) }
@@ -42,7 +48,12 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit
             }
 
             showPlayerNumberDialog.value -> {
-                PlayerNumberDialogContent(onDismiss, showPlayerNumberDialog, setPlayerNum, resetPlayers)
+                PlayerNumberDialogContent(
+                    onDismiss,
+                    showPlayerNumberDialog,
+                    setPlayerNum,
+                    resetPlayers
+                )
             }
 
             showStartingLifeDialog.value -> {
@@ -81,6 +92,7 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit
                         SettingsButton(
                             imageResource = painterResource(R.drawable.six_icon),
                             text = "Dice roll",
+                            color = Color.Red,
                             onPress = {
                                 showDiceRollDialog.value = true
                             }
@@ -110,9 +122,6 @@ fun MiddleButtonDialogComposable(onDismiss: () -> Unit, resetPlayers: () -> Unit
     SettingsDialog(
         onDismiss = {
             onDismiss()
-//            showCoinFlipDialog.value = false
-//            showPlayerNumberDialog.value = false
-//            showStartingLifeDialog.value = false
         },
         content = dialogContent
     )
@@ -213,6 +222,16 @@ fun StartingLifeDialogContent(
     GridDialogContent(items = listOf(
         {
             SettingsButton(
+                imageResource = painterResource(id = R.drawable.fifty_icon),
+                text = "",
+                onPress = {
+                    setStartingLife(50)
+                    onDismiss()
+                    showStartingLifeDialog.value = false
+                }
+            )
+        }, {
+            SettingsButton(
                 imageResource = painterResource(id = R.drawable.forty_icon),
                 text = "",
                 onPress = {
@@ -237,16 +256,6 @@ fun StartingLifeDialogContent(
                 text = "",
                 onPress = {
                     setStartingLife(20)
-                    onDismiss()
-                    showStartingLifeDialog.value = false
-                }
-            )
-        }, {
-            SettingsButton(
-//                  imageResource = painterResource(id = R.drawable.thirty_icon),
-                text = "custom",
-                onPress = {
-                    setStartingLife(-1)
                     onDismiss()
                     showStartingLifeDialog.value = false
                 }

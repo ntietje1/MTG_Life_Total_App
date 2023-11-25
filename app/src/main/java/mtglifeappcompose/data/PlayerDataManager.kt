@@ -2,15 +2,17 @@ package mtglifeappcompose.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-class PlayerDataManager(private val context: Context) {
+class PlayerDataManager(context: Context) {
 
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("player_data", Context.MODE_PRIVATE)
 
     init {
         with(sharedPreferences.edit()) {
-            putString("default", "error")
+            putString("[]", "error")
             apply()
         }
     }
@@ -22,7 +24,6 @@ class PlayerDataManager(private val context: Context) {
     }
 
     fun deletePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
-
         val iterator = playerList.iterator()
         while (iterator.hasNext()) {
             val p = iterator.next()
@@ -30,28 +31,16 @@ class PlayerDataManager(private val context: Context) {
                 iterator.remove()
             }
         }
-
         savePlayers(playerList)
     }
 
     fun loadPlayers(): ArrayList<Player> {
-
-        val res = arrayListOf<Player>()
-        val allPrefString = sharedPreferences.getString("playerPrefs", "default")!!
-        val pstrings = allPrefString.split(",")
-        if (pstrings.isEmpty() || pstrings[0] == "default") {
-            return arrayListOf()
-        }
-        for (p in pstrings) {
-            val player = Player()
-            player.fromString(p)
-            res.add(player)
-        }
-        return res
+        val allPrefString = sharedPreferences.getString("playerPrefs", "[]")!!
+        return Json.decodeFromString(allPrefString)
     }
 
-    fun savePlayers(players: ArrayList<Player>) {
-        val allPrefString = Player.allToString(players)
+    private fun savePlayers(players: ArrayList<Player>) {
+        val allPrefString = Json.encodeToString(players)
         with(sharedPreferences.edit()) {
             putString("playerPrefs", allPrefString)
             apply()
