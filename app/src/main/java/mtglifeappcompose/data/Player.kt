@@ -9,8 +9,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.element
+import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
+import kotlinx.serialization.encoding.encodeStructure
 import mtglifeappcompose.ui.theme.allPlayerColors
 
+@Serializable(with = PlayerSerializer::class)
 class Player(
     life: Int = startingLife,
     color: Color = Color.LightGray,
@@ -56,37 +67,10 @@ class Player(
         monarch = false
     }
 
-    override fun toString(): String {
-        val colorInt = color.toArgb()
-        return "$name:$colorInt"
-    }
-
-    fun fromString(s: String) {
-        val parts = s.split(":")
-        if (parts.size == 2) {
-            name = parts[0]
-            color = Color(parts[1].toInt())
-        } else {
-            return
-        }
-    }
-
     companion object {
         const val MAX_PLAYERS = 6
         var currentPlayers: MutableList<Player> = mutableListOf()
         var startingLife = 40
-
-        fun allToString(players: ArrayList<Player>): String {
-            var res = ""
-            if (players.isEmpty()) {
-                return res
-            }
-            for (player in players) {
-                val pString = player.toString()
-                res += "$pString,"
-            }
-            return res.substring(0, res.length - 1)
-        }
 
         private fun getRandColor(): Color {
             var color = allPlayerColors.random()
@@ -110,123 +94,40 @@ class Player(
             }
         }
     }
-
 }
-//class Player(
-//    private var _life: MutableState<Int> = mutableStateOf(startingLife),
-//    public var _playerColor: MutableState<Color> = mutableStateOf(Color.LightGray),
-//    private var _monarch: MutableState<Boolean> = mutableStateOf(false),
-//    private var _name: MutableState<String> = mutableStateOf("#Placeholder"),
-//    private var _recentLifeChange: MutableState<Int> = mutableStateOf(0)
-//) {
-//
-//    val playerNum get() = currentPlayers.indexOf(this) + 1
-//
-//    var life: Int by _life
-//        private set
-//
-//    var playerColor: Color by _playerColor
-//
-//    var monarch: Boolean
-//        get() = _monarch.value
-//        set(v) = run {
-//            if (v) {
-//                for (player in currentPlayers) {
-//                    player.monarch = false
-//                }
-//            }
-//            this._monarch.value = v
-//        }
-//
-//    var name: String by _name
-//
-//    val isDead get() = (life <= 0)
-//
-//    val recentLifeChange by _recentLifeChange
-//
-//    private val handler: Handler = Handler(Looper.getMainLooper())
-//
-//    private val resetRecentChangeRunnable = Runnable {
-//        zeroRecentChange()
-//    }
-//
-//    fun resetPlayer() {
-//        life = startingLife
-//        monarch = false
-//    }
-//
-//    fun incrementLife(value: Int) {
-//        println("PLAYER INCREMENT LIFE: $value")
-//        this.life += value
-//        _recentLifeChange.value += value
-//        resetRecentChangeRunnable()
-//    }
-//
-//    private fun resetRecentChangeRunnable() {
-//        handler.removeCallbacks(resetRecentChangeRunnable)
-//        handler.postDelayed(resetRecentChangeRunnable, 1500)
-//    }
-//
-//    private fun zeroRecentChange() {
-//        _recentLifeChange.value = 0
-//    }
-//
-//    override fun toString(): String {
-//        val colorInt = playerColor.toArgb()
-//        return "$name:$colorInt"
-//    }
-//
-//    fun fromString(s: String) {
-//        println("PARSING PLAYER:$s")
-//        val parts = s.split(":")
-//        if (parts.size == 2) {
-//            name = parts[0]
-//            playerColor = Color(parts[1].toInt())
-//        } else {
-//            return
-//        }
-//    }
-//
-//
-//    companion object {
-//        const val MAX_PLAYERS = 6
-//        var currentPlayers: MutableList<Player> = mutableListOf()
-//        var startingLife = 40
-//
-//        fun allToString(players: ArrayList<Player>): String {
-//            var res = ""
-//            if (players.isEmpty()) {
-//                return res
-//            }
-//            for (player in players) {
-//                val pString = player.toString()
-//                res += "$pString,"
-//            }
-//            return res.substring(0, res.length - 1)
-//        }
-//
-//        val allColors: List<Color> = allPlayerColors
-//
-//        private fun getRandColor(): Color {
-//            var color = allColors.random()
-//            while (currentPlayers.any { it.playerColor == color }) {
-//                color = allColors.random()
-//            }
-//            return color
-//        }
-//
-//        fun generatePlayer(): Player {
-//            val playerColor = getRandColor()
-//            val player = Player(mutableIntStateOf(startingLife), mutableStateOf(playerColor))
-//            currentPlayers.add(player)
-//            player.name = ("P" + player.playerNum)
-//            return player
-//        }
-//
-//        fun resetPlayers() {
-//            currentPlayers.forEach { player ->
-//                player.resetPlayer()
-//            }
-//        }
-//    }
-//}
+
+object PlayerSerializer : KSerializer<Player> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Player") {
+        element<String>("playerName")
+        element<Int>("color")
+        element<Int>("textColor")
+    }
+
+    override fun serialize(encoder: Encoder, value: Player) {
+        encoder.encodeStructure(descriptor) {
+            encodeStringElement(descriptor, 0, value.name)
+            encodeIntElement(descriptor, 1, value.color.toArgb())
+            encodeIntElement(descriptor, 2, value.textColor.toArgb())
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): Player {
+        return decoder.decodeStructure(descriptor) {
+            var name = ""
+            var color = 0
+            var textColor = 0
+
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> name = decodeStringElement(descriptor, 0)
+                    1 -> color = decodeIntElement(descriptor, 1)
+                    2 -> textColor = decodeIntElement(descriptor, 2)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+
+            Player(name = name, color = Color(color), textColor = Color(textColor))
+        }
+    }
+}
