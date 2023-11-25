@@ -99,32 +99,8 @@ fun Color.saturateColor(factor: Float): Color {
     return Color.hsl(hsl[0], hsl[1], hsl[2])
 }
 
-fun Color.darkenColor(factor: Float = 0.6f): Color {
-    return Color(this.toArgb().darkenColor(factor))
-}
-
-fun Color.desaturateColor(factor: Float = 0.6f): Color {
-    return Color(this.toArgb().desaturateColor(factor))
-}
 
 fun Color.invert(): Color {
     return this.copy(red = 1f - this.red, green = 1f - this.green, blue = 1f - this.blue)
 }
 
-
-
-private fun Int.darkenColor(factor: Float = 0.6f): Int {
-    val red = max(1.0f, android.graphics.Color.red(this) * factor)
-    val green = max(1.0f, android.graphics.Color.green(this) * factor)
-    val blue = max(1.0f, android.graphics.Color.blue(this) * factor)
-    return android.graphics.Color.rgb(red.toInt(), green.toInt(), blue.toInt())
-}
-
-
-
-private fun Int.desaturateColor(factor: Float = 0.6f): Int {
-    val hsl = FloatArray(3)
-    ColorUtils.colorToHSL(this, hsl)
-    hsl[1] *= factor
-    return ColorUtils.HSLToColor(hsl)
-}

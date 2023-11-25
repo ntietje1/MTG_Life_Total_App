@@ -68,7 +68,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -101,16 +100,15 @@ import mtglifeappcompose.ui.theme.Gold
 import mtglifeappcompose.ui.theme.allPlayerColors
 import mtglifeappcompose.ui.theme.blendWith
 import mtglifeappcompose.ui.theme.brightenColor
-import mtglifeappcompose.ui.theme.darkenColor
 import mtglifeappcompose.ui.theme.deadDealerColorMatrix
 import mtglifeappcompose.ui.theme.deadNormalColorMatrix
 import mtglifeappcompose.ui.theme.deadReceiverColorMatrix
 import mtglifeappcompose.ui.theme.deadSettingsColorMatrix
 import mtglifeappcompose.ui.theme.dealerColorMatrix
-import mtglifeappcompose.ui.theme.desaturateColor
 import mtglifeappcompose.ui.theme.invert
 import mtglifeappcompose.ui.theme.normalColorMatrix
 import mtglifeappcompose.ui.theme.receiverColorMatrix
+import mtglifeappcompose.ui.theme.saturateColor
 import mtglifeappcompose.ui.theme.settingsColorMatrix
 import mtglifeappcompose.utilities.ImageLoader
 import mtglifeappcompose.views.SettingsButton
@@ -278,32 +276,32 @@ fun PlayerButton(
                 }
             )
     ) {
-            Box(
-                modifier = Modifier
-                    .width(width)
-                    .height(height)
-                    .clip(RoundedCornerShape(30.dp))
-                    .background(color = Color.Black)
-                    .then(
-                        if (player.monarch) {
-                            Modifier.animatedBorderCard(
-                                shape = RoundedCornerShape(30.dp),
-                                borderWidth = 4.dp,
-                                gradient = Brush.sweepGradient(
-                                    listOf(
-                                        Color.White.copy(alpha = 0.1f),
-                                        Gold,
-                                        Gold,
-                                        Gold,
-                                    )
-                                ),
-                                animationDuration = 10000
-                            )
-                        } else {
-                            Modifier
-                        }
-                    )
-            )
+        Box(
+            modifier = Modifier
+                .width(width)
+                .height(height)
+                .clip(RoundedCornerShape(30.dp))
+                .background(color = Color.Black)
+                .then(
+                    if (player.monarch) {
+                        Modifier.animatedBorderCard(
+                            shape = RoundedCornerShape(30.dp),
+                            borderWidth = 4.dp,
+                            gradient = Brush.sweepGradient(
+                                listOf(
+                                    Color.White.copy(alpha = 0.1f),
+                                    Gold,
+                                    Gold,
+                                    Gold,
+                                )
+                            ),
+                            animationDuration = 10000
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+        )
 
         Box(
             modifier = Modifier
@@ -318,13 +316,17 @@ fun PlayerButton(
                 PlayerButtonBackgroundMode.SOLID -> {
                     var c = when (state.value) {
                         PlayerButtonState.NORMAL -> player.color
-                        PlayerButtonState.COMMANDER_RECEIVER -> Color.DarkGray
-                        PlayerButtonState.COMMANDER_DEALER -> player.color.desaturateColor().darkenColor()
-                        PlayerButtonState.SETTINGS -> player.color.desaturateColor(0.8f).darkenColor(0.8f)
+                        PlayerButtonState.COMMANDER_RECEIVER -> player.color.saturateColor(0.2f).brightenColor(0.3f)
+                        PlayerButtonState.COMMANDER_DEALER -> player.color.saturateColor(0.5f)
+                            .brightenColor(0.6f)
+
+                        PlayerButtonState.SETTINGS -> player.color.saturateColor(0.6f)
+                            .brightenColor(0.8f)
+
                         else -> throw Exception("unsupported state")
                     }
                     if (player.isDead) {
-                        c = c.desaturateColor(0.4f).darkenColor(1.1f)
+                        c = c.saturateColor(0.4f).brightenColor(1.1f)
                     }
                     Surface(
                         modifier = Modifier.fillMaxSize(),
@@ -709,18 +711,25 @@ fun SettingsMenu(
 
         SettingsState.ColorPicker -> {
             val colorList = allPlayerColors
-            var modifiedPlayerColor1 = remember (player.color) {
-                derivedStateOf{
-                    player.color.desaturateColor(1.25f).brightenColor(1.4f)
+            var modifiedPlayerColor1 = remember(player.color) {
+                derivedStateOf {
+                    player.color.saturateColor(1.5f).brightenColor(1.35f)
                 }
             }
-            var modifiedPlayerColor2 = remember (player.color) {
-                derivedStateOf{
-                    player.color.darkenColor(0.30f).desaturateColor(1.5f)
+            var modifiedPlayerColor2 = remember(player.color) {
+                derivedStateOf {
+                    player.color.brightenColor(0.30f).saturateColor(1.5f)
                 }
             }
 
-            val textColorList = remember {listOf(mutableStateOf(Color.White), modifiedPlayerColor1, modifiedPlayerColor2, mutableStateOf(Color.Black))}
+            val textColorList = remember {
+                listOf(
+                    mutableStateOf(Color.White),
+                    modifiedPlayerColor1,
+                    modifiedPlayerColor2,
+                    mutableStateOf(Color.Black)
+                )
+            }
             Box(
                 modifier =
                 Modifier
@@ -750,7 +759,7 @@ fun SettingsMenu(
                     LazyHorizontalGrid(
                         modifier = Modifier
                             .wrapContentWidth()
-                            .height((settingsButtonSize*1.2f) + gridMarginSize)
+                            .height((settingsButtonSize * 1.2f) + gridMarginSize)
                             .clip(RoundedCornerShape(20.dp))
                             .background(Color.Black.copy(alpha = 0.15f))
                             .padding(gridMarginSize),
@@ -760,7 +769,10 @@ fun SettingsMenu(
                         verticalArrangement = Arrangement.spacedBy(buttonSize.height / 150f),
                         content = {
                             item {
-                                CustomColorPickerButton(player = player, settingsButtonSize = settingsButtonSize)
+                                CustomColorPickerButton(
+                                    player = player,
+                                    settingsButtonSize = settingsButtonSize
+                                )
                             }
                             items(colorList) { color ->
                                 ColorPickerButton(
@@ -777,12 +789,21 @@ fun SettingsMenu(
                     LazyHorizontalGrid(
                         modifier = Modifier
                             .wrapContentWidth()
-                            .height((settingsButtonSize*1.3f)/2f)
-                            .clip(RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 20.dp, bottomEnd = 20.dp))
+                            .height((settingsButtonSize * 1.3f) / 2f)
+                            .clip(
+                                RoundedCornerShape(
+                                    topStart = 0.dp,
+                                    topEnd = 0.dp,
+                                    bottomStart = 20.dp,
+                                    bottomEnd = 20.dp
+                                )
+                            )
                             .background(Color.Black.copy(alpha = 0.15f))
-                            .padding(start = gridMarginSize,
+                            .padding(
+                                start = gridMarginSize,
                                 end = gridMarginSize,
-                                bottom = gridMarginSize),
+                                bottom = gridMarginSize
+                            ),
                         rows = GridCells.Fixed(1),
                         state = rememberLazyGridState(),
                         horizontalArrangement = Arrangement.spacedBy(buttonSize.height / 150f),
@@ -977,6 +998,7 @@ fun MiniPlayerButton(
                         onTap = {
                             currPlayer.color = player.color
                             currPlayer.name = player.name
+                            currPlayer.textColor = player.textColor
                         },
                         onLongPress = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1054,7 +1076,7 @@ fun CustomColorPickerButton(player: Player, settingsButtonSize: Dp) {
                     },
                 )
             },
-        ) {
+    ) {
         Icon(
             painter = painterResource(id = R.drawable.custom_color_icon),
             contentDescription = null, // provide a localized description if needed
