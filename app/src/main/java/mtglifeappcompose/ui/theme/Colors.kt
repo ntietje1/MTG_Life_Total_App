@@ -88,6 +88,17 @@ fun Color.brightenColor(factor: Float): Color {
     return Color.hsl(hsl[0], hsl[1], hsl[2])
 }
 
+fun Color.saturateColor(factor: Float): Color {
+    val r = (this.red*255).toInt()
+    val g = (this.green*255).toInt()
+    val b = (this.blue*255).toInt()
+    val hsl = FloatArray(3)
+    ColorUtils.RGBToHSL(r,g,b,hsl)
+    hsl[1] *= factor
+    hsl[1] = min(1.0f, hsl[1])
+    return Color.hsl(hsl[0], hsl[1], hsl[2])
+}
+
 fun Color.darkenColor(factor: Float = 0.6f): Color {
     return Color(this.toArgb().darkenColor(factor))
 }
