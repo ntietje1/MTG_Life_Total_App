@@ -1,6 +1,7 @@
 package mtglifeappcompose.views.lifecounter
 
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,6 +42,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.mtglifeappcompose.R
 import kotlinx.coroutines.delay
@@ -254,7 +257,6 @@ fun AnimatedPlayerButton(
     val offsetY = remember { Animatable(targetOffsetY) }
 
     LaunchedEffect(visible.value) {
-
         launch {
             offsetX.animateTo(
                 targetValue = if (visible.value) 0f else targetOffsetX,
@@ -271,12 +273,10 @@ fun AnimatedPlayerButton(
     }
 
     Box(
-        modifier = Modifier
-            .graphicsLayer(
-                translationX = offsetX.value,
-                translationY = offsetY.value,
-                compositingStrategy = CompositingStrategy.Offscreen
-            )
+        modifier = Modifier.offset{ IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }
+//            .graphicsLayer {
+//                compositingStrategy = CompositingStrategy.Offscreen
+//            }
     ) {
         PlayerButton(
             player = player,
