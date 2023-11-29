@@ -1,6 +1,7 @@
 package mtglifeappcompose.data
 
 
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.getValue
@@ -24,12 +25,14 @@ import mtglifeappcompose.ui.theme.allPlayerColors
 @Serializable(with = PlayerSerializer::class)
 class Player(
     life: Int = startingLife,
+    imageUri: Uri? = null,
     color: Color = Color.LightGray,
     textColor: Color = Color.White,
     name: String = "Placeholder",
     monarch: Boolean = false
 ) {
     var life: Int by mutableIntStateOf(life)
+    var imageUri: Uri? by mutableStateOf(imageUri)
     var color: Color by mutableStateOf(color)
     var textColor: Color by mutableStateOf(textColor)
     var name: String by mutableStateOf(name)
@@ -42,6 +45,13 @@ class Player(
         for (i in 0 until MAX_PLAYERS) {
             add(0)
         }
+    }
+
+    fun copySettings(other: Player) {
+        this.imageUri = other.imageUri
+        this.color = other.color
+        this.textColor = other.textColor
+        this.name = other.name
     }
 
     fun incrementLife(value: Int) {
@@ -99,6 +109,7 @@ class Player(
 object PlayerSerializer : KSerializer<Player> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Player") {
         element<String>("playerName")
+        element<String>("imageUri")
         element<Int>("color")
         element<Int>("textColor")
     }
@@ -106,28 +117,35 @@ object PlayerSerializer : KSerializer<Player> {
     override fun serialize(encoder: Encoder, value: Player) {
         encoder.encodeStructure(descriptor) {
             encodeStringElement(descriptor, 0, value.name)
-            encodeIntElement(descriptor, 1, value.color.toArgb())
-            encodeIntElement(descriptor, 2, value.textColor.toArgb())
+            encodeStringElement(descriptor, 1, value.imageUri.toString())
+            encodeIntElement(descriptor, 2, value.color.toArgb())
+            encodeIntElement(descriptor, 3, value.textColor.toArgb())
         }
     }
 
     override fun deserialize(decoder: Decoder): Player {
         return decoder.decodeStructure(descriptor) {
             var name = ""
+            var imageUri = ""
             var color = 0
             var textColor = 0
 
             while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
                     0 -> name = decodeStringElement(descriptor, 0)
-                    1 -> color = decodeIntElement(descriptor, 1)
-                    2 -> textColor = decodeIntElement(descriptor, 2)
+                    1 -> imageUri = decodeStringElement(descriptor, 1)
+                    2 -> color = decodeIntElement(descriptor, 2)
+                    3 -> textColor = decodeIntElement(descriptor, 3)
                     CompositeDecoder.DECODE_DONE -> break
                     else -> error("Unexpected index: $index")
                 }
             }
-
-            Player(name = name, color = Color(color), textColor = Color(textColor))
+            println("DESERIALIZED: $name, $imageUri, $color, $textColor")
+            Player(
+                name = name,
+                imageUri = if (imageUri == "null") null else Uri.parse(imageUri),
+                color = Color(color),
+                textColor = Color(textColor))
         }
     }
 }

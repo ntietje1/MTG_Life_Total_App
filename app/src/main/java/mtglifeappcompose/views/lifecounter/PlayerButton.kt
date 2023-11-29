@@ -1,7 +1,12 @@
 package mtglifeappcompose.views.lifecounter
 
+import android.content.Context
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RoundRectShape
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -66,7 +71,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -90,6 +94,9 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.mtglifeappcompose.R
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -110,12 +117,13 @@ import mtglifeappcompose.ui.theme.normalColorMatrix
 import mtglifeappcompose.ui.theme.receiverColorMatrix
 import mtglifeappcompose.ui.theme.saturateColor
 import mtglifeappcompose.ui.theme.settingsColorMatrix
-import mtglifeappcompose.utilities.ImageLoader
 import mtglifeappcompose.views.SettingsButton
 import mtglifeappcompose.views.animatedBorderCard
 import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.getDamageToPlayer
 import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.setDealer
 import yuku.ambilwarna.AmbilWarnaDialog
+import java.io.File
+import java.io.IOException
 
 
 enum class PlayerButtonState {
@@ -173,11 +181,6 @@ fun ExampleScreen() {
     }
 }
 
-enum class PlayerButtonBackgroundMode {
-    SOLID, IMAGE
-}
-
-
 @Composable
 fun PlayerButton(
     player: Player,
@@ -189,8 +192,6 @@ fun PlayerButton(
 
     val state = remember { mutableStateOf(initialState) }
     PlayerButtonStateManager.registerButtonState(state)
-
-    val backgroundType = remember { mutableStateOf(PlayerButtonBackgroundMode.SOLID) }
 
     val context = LocalContext.current
 
@@ -246,6 +247,36 @@ fun PlayerButton(
             else -> {}
         }
     }
+
+    fun copyImageToInternalStorage(uri: Uri): Uri? {
+        try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val fileName = "${player.name}_background.jpg"
+            val outputStream = context.openFileOutput(fileName, Context.MODE_PRIVATE)
+            inputStream?.use { input ->
+                outputStream.use { output ->
+                    input.copyTo(output)
+                }
+            }
+            return FileProvider.getUriForFile(context, "mtglifeappcompose.provider", File(context.filesDir, fileName))
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            println("uri = $uri")
+            uri?.let { selectedUri ->
+                player.imageUri = uri
+                val copiedUri = copyImageToInternalStorage(selectedUri)
+                println("copiedUri = $copiedUri")
+//                player.imageUri = copiedUri
+            }
+        }
+
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -312,11 +343,12 @@ fun PlayerButton(
                 .clip(RoundedCornerShape(30.dp)),
             contentAlignment = Alignment.Center
         ) {
-            when (backgroundType.value) {
-                PlayerButtonBackgroundMode.SOLID -> {
+            if (player.imageUri == null) {
                     var c = when (state.value) {
                         PlayerButtonState.NORMAL -> player.color
-                        PlayerButtonState.COMMANDER_RECEIVER -> player.color.saturateColor(0.2f).brightenColor(0.3f)
+                        PlayerButtonState.COMMANDER_RECEIVER -> player.color.saturateColor(0.2f)
+                            .brightenColor(0.3f)
+
                         PlayerButtonState.COMMANDER_DEALER -> player.color.saturateColor(0.5f)
                             .brightenColor(0.6f)
 
@@ -333,16 +365,13 @@ fun PlayerButton(
                         color = c
                     ) {}
                 }
-
-                PlayerButtonBackgroundMode.IMAGE -> {
-                    val bitmap = remember {
-                        ImageLoader.decodeSampledBitmapFromResource(
-                            context.resources,
-                            R.drawable.sqrl,
-                            500,
-                            200
-                        )
-                    }
+                else {
+                    val painter = rememberAsyncImagePainter(
+                        ImageRequest
+                            .Builder(LocalContext.current)
+                            .data(data = player.imageUri)
+                            .build()
+                    )
                     val colorMatrix = when (state.value) {
                         PlayerButtonState.NORMAL -> {
                             if (player.isDead) deadNormalColorMatrix else normalColorMatrix
@@ -362,10 +391,10 @@ fun PlayerButton(
 
                         else -> throw Exception("unsupported state")
                     }
-                    println("Bitmap dimensions: " + bitmap.width + ", " + bitmap.height)
                     Image(
                         modifier = Modifier.fillMaxSize(),
-                        bitmap = bitmap.asImageBitmap(),
+//                        bitmap = bitmap.asImageBitmap(),
+                        painter = painter,
                         contentDescription = "Player uploaded image",
                         contentScale = ContentScale.Crop,
                         colorFilter = ColorFilter.colorMatrix(
@@ -373,7 +402,7 @@ fun PlayerButton(
                         )
                     )
                 }
-            }
+
 
             LifeChangeButtons(
                 onIncrementLife = { onIncrementLife() },
@@ -411,19 +440,18 @@ fun PlayerButton(
                     player = player,
                     onColorButtonClick = { /* Handle color button click */ },
                     onChangeNameButtonClick = { /* Handle change name button click */ },
-                    onMonarchyButtonClick = {
-                        player.monarch = !player.monarch
-                    },
-                    onSavePlayerButtonClick = {
-                        PlayerDataManager(context).savePlayer(player)
-                    },
+                    onMonarchyButtonClick = { player.monarch = !player.monarch },
+                    onSavePlayerButtonClick = { PlayerDataManager(context).savePlayer(player) },
                     onLoadPlayerButtonClick = { /* Handle load player button click */ },
                     onImageButtonClick = {
-                        if (backgroundType.value == PlayerButtonBackgroundMode.SOLID) {
-                            backgroundType.value = PlayerButtonBackgroundMode.IMAGE
+                        if (player.imageUri == null) {
+                            launcher.launch(
+                                PickVisualMediaRequest(
+                                    mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
                         } else {
-                            backgroundType.value = PlayerButtonBackgroundMode.SOLID
-
+                            player.imageUri = null
                         }
                     },
                     closeSettingsMenu = { state.value = PlayerButtonState.NORMAL },
@@ -602,7 +630,7 @@ fun SettingsMenu(
 
     val wideButton =
         margin * 2 + (settingsButtonInitialSize + settingsButtonMargin) * 3 < buttonSize.width
-    println("player: $player.playerNum is wide button: $wideButton")
+//    println("player: $player.playerNum is wide button: $wideButton")
     val bottomMargin = if (!wideButton) margin else margin / 6f
     val topMargin = margin / 6f
     val settingsButtonSize =
@@ -988,7 +1016,7 @@ fun MiniPlayerButton(
             .height(height)
             .width(height * 4)
             .clip(RoundedCornerShape(15.dp))
-            .background(player.color)
+//            .background(player.color)
     ) {
         Box(
             modifier = Modifier
@@ -996,9 +1024,7 @@ fun MiniPlayerButton(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
-                            currPlayer.color = player.color
-                            currPlayer.name = player.name
-                            currPlayer.textColor = player.textColor
+                            currPlayer.copySettings(player)
                         },
                         onLongPress = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1008,10 +1034,27 @@ fun MiniPlayerButton(
                     )
                 }
         ) {
-            Text( //TODO: make saving player work with textcolor
+            if (player.imageUri == null) {
+                Surface(modifier = Modifier.fillMaxSize(), color = player.color) {
+
+                }
+            } else {
+                val painter = rememberAsyncImagePainter(
+                    ImageRequest
+                        .Builder(LocalContext.current)
+                        .data(data = player.imageUri)
+                        .build()
+                )
+                Image(
+                    modifier = Modifier.fillMaxSize(),
+                    painter = painter,
+                    contentScale = ContentScale.Crop,
+                    contentDescription = null)
+            }
+            Text(
                 text = player.name,
                 color = player.textColor,
-                fontSize = height.value.sp / 2f,
+                fontSize = height.value.sp / 1.8f,
                 maxLines = 1,
                 modifier = Modifier.align(Alignment.Center)
             )
