@@ -37,6 +37,7 @@ class Player(
     var textColor: Color by mutableStateOf(textColor)
     var name: String by mutableStateOf(name)
     var monarch: Boolean by mutableStateOf(monarch)
+        private set
     var recentChange: Int by mutableIntStateOf(0)
     val playerNum get() = currentPlayers.indexOf(this) + 1
     val isDead get() = (life <= 0)
@@ -52,6 +53,15 @@ class Player(
         this.color = other.color
         this.textColor = other.textColor
         this.name = other.name
+    }
+
+    fun toggleMonarch() {
+        if (!this.monarch) {
+            for (player in currentPlayers) {
+                player.monarch = false
+            }
+        }
+        this.monarch = !this.monarch
     }
 
     fun incrementLife(value: Int) {
