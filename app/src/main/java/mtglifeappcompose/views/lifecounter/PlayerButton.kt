@@ -95,6 +95,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.mtglifeappcompose.R
@@ -251,31 +252,44 @@ fun PlayerButton(
     fun copyImageToInternalStorage(uri: Uri): Uri? {
         try {
             val inputStream = context.contentResolver.openInputStream(uri)
-            val fileName = "${player.name}_background.jpg"
+            val currentTime = System.currentTimeMillis()
+            val fileName = "${player.name}_${currentTime}_background.jpg"
+
+            // Delete files starting with the same player name prefix
+            context.filesDir.listFiles()?.forEach { file ->
+                if (file.name.startsWith(player.name) && file.name != fileName) {
+                    file.delete()
+                }
+            }
+
             val outputStream = context.openFileOutput(fileName, Context.MODE_PRIVATE)
             inputStream?.use { input ->
                 outputStream.use { output ->
                     input.copyTo(output)
                 }
             }
-            return FileProvider.getUriForFile(context, "mtglifeappcompose.provider", File(context.filesDir, fileName))
+
+            return FileProvider.getUriForFile(
+                context,
+                "mtglifeappcompose.provider",
+                File(context.filesDir, fileName)
+            )
         } catch (e: IOException) {
             e.printStackTrace()
         }
         return null
     }
 
+
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             println("uri = $uri")
             uri?.let { selectedUri ->
-                player.imageUri = uri
                 val copiedUri = copyImageToInternalStorage(selectedUri)
                 println("copiedUri = $copiedUri")
-//                player.imageUri = copiedUri
+                player.imageUri = copiedUri
             }
         }
-
 
     BoxWithConstraints(
         modifier = Modifier
@@ -344,64 +358,59 @@ fun PlayerButton(
             contentAlignment = Alignment.Center
         ) {
             if (player.imageUri == null) {
-                    var c = when (state.value) {
-                        PlayerButtonState.NORMAL -> player.color
-                        PlayerButtonState.COMMANDER_RECEIVER -> player.color.saturateColor(0.2f)
-                            .brightenColor(0.3f)
+                var c = when (state.value) {
+                    PlayerButtonState.NORMAL -> player.color
+                    PlayerButtonState.COMMANDER_RECEIVER -> player.color.saturateColor(0.2f)
+                        .brightenColor(0.3f)
 
-                        PlayerButtonState.COMMANDER_DEALER -> player.color.saturateColor(0.5f)
-                            .brightenColor(0.6f)
+                    PlayerButtonState.COMMANDER_DEALER -> player.color.saturateColor(0.5f)
+                        .brightenColor(0.6f)
 
-                        PlayerButtonState.SETTINGS -> player.color.saturateColor(0.6f)
-                            .brightenColor(0.8f)
+                    PlayerButtonState.SETTINGS -> player.color.saturateColor(0.6f)
+                        .brightenColor(0.8f)
 
-                        else -> throw Exception("unsupported state")
-                    }
-                    if (player.isDead) {
-                        c = c.saturateColor(0.4f).brightenColor(1.1f)
-                    }
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = c
-                    ) {}
+                    else -> throw Exception("unsupported state")
                 }
-                else {
-                    val painter = rememberAsyncImagePainter(
-                        ImageRequest
-                            .Builder(LocalContext.current)
-                            .data(data = player.imageUri)
-                            .build()
-                    )
-                    val colorMatrix = when (state.value) {
-                        PlayerButtonState.NORMAL -> {
-                            if (player.isDead) deadNormalColorMatrix else normalColorMatrix
-                        }
-
-                        PlayerButtonState.COMMANDER_RECEIVER -> {
-                            if (player.isDead) deadReceiverColorMatrix else receiverColorMatrix
-                        }
-
-                        PlayerButtonState.COMMANDER_DEALER -> {
-                            if (player.isDead) deadDealerColorMatrix else dealerColorMatrix
-                        }
-
-                        PlayerButtonState.SETTINGS -> {
-                            if (player.isDead) deadSettingsColorMatrix else settingsColorMatrix
-                        }
-
-                        else -> throw Exception("unsupported state")
-                    }
-                    Image(
-                        modifier = Modifier.fillMaxSize(),
-//                        bitmap = bitmap.asImageBitmap(),
-                        painter = painter,
-                        contentDescription = "Player uploaded image",
-                        contentScale = ContentScale.Crop,
-                        colorFilter = ColorFilter.colorMatrix(
-                            colorMatrix = colorMatrix
-                        )
-                    )
+                if (player.isDead) {
+                    c = c.saturateColor(0.4f).brightenColor(1.1f)
                 }
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = c
+                ) {}
+            } else {
+                val colorMatrix = when (state.value) {
+                    PlayerButtonState.NORMAL -> {
+                        if (player.isDead) deadNormalColorMatrix else normalColorMatrix
+                    }
+
+                    PlayerButtonState.COMMANDER_RECEIVER -> {
+                        if (player.isDead) deadReceiverColorMatrix else receiverColorMatrix
+                    }
+
+                    PlayerButtonState.COMMANDER_DEALER -> {
+                        if (player.isDead) deadDealerColorMatrix else dealerColorMatrix
+                    }
+
+                    PlayerButtonState.SETTINGS -> {
+                        if (player.isDead) deadSettingsColorMatrix else settingsColorMatrix
+                    }
+
+                    else -> throw Exception("unsupported state")
+                }
+                AsyncImage(
+                    ImageRequest
+                        .Builder(LocalContext.current)
+                        .data(data = player.imageUri)
+                        .build(),
+                    modifier = Modifier.fillMaxSize(),
+                    contentDescription = "Player uploaded image",
+                    contentScale = ContentScale.Crop,
+                    colorFilter = ColorFilter.colorMatrix(
+                        colorMatrix = colorMatrix
+                    )
+                )
+            }
 
 
             LifeChangeButtons(
@@ -440,8 +449,15 @@ fun PlayerButton(
                     player = player,
                     onColorButtonClick = { /* Handle color button click */ },
                     onChangeNameButtonClick = { /* Handle change name button click */ },
-                    onMonarchyButtonClick = { player.monarch = !player.monarch },
-                    onSavePlayerButtonClick = { PlayerDataManager(context).savePlayer(player) },
+                    onMonarchyButtonClick = { player.toggleMonarch() },
+                    onSavePlayerButtonClick = {
+                        if (player.name in arrayOf("P1", "P2", "P3", "P4", "P5", "P6")) {
+                            false
+                        } else {
+                            PlayerDataManager(context).savePlayer(player)
+                            true
+                        }
+                    },
                     onLoadPlayerButtonClick = { /* Handle load player button click */ },
                     onImageButtonClick = {
                         if (player.imageUri == null) {
@@ -618,7 +634,7 @@ fun SettingsMenu(
     onColorButtonClick: () -> Unit,
     onChangeNameButtonClick: () -> Unit,
     onMonarchyButtonClick: () -> Unit,
-    onSavePlayerButtonClick: () -> Unit,
+    onSavePlayerButtonClick: () -> Boolean,
     onLoadPlayerButtonClick: () -> Unit,
     onImageButtonClick: () -> Unit,
     closeSettingsMenu: () -> Unit,
@@ -659,9 +675,11 @@ fun SettingsMenu(
                         imageResource = painterResource(R.drawable.upload_icon),
                         text = "Save Player",
                         onPress = {
-                            onSavePlayerButtonClick()
-//                            closeSettingsMenu()
-                            savePlayerColor = Color.Green.blendWith(player.textColor)
+                            savePlayerColor = if (onSavePlayerButtonClick()) {
+                                Color.Green.blendWith(player.textColor)
+                            } else {
+                                Color.Red.blendWith(player.textColor)
+                            }
                         },
                         size = settingsButtonSize,
                         color = savePlayerColor,
@@ -723,9 +741,18 @@ fun SettingsMenu(
                 }
 
                 item {
+                    val changeBackgroundText by remember {
+                        derivedStateOf {
+                            if (player.imageUri != null) {
+                                "Remove Background"
+                            } else {
+                                "Set Background"
+                            }
+                        }
+                    }
                     SettingsButton(
                         imageResource = painterResource(R.drawable.change_background_icon),
-                        text = "Set Background",
+                        text = changeBackgroundText,
                         onPress = {
                             onImageButtonClick()
                         },
@@ -889,8 +916,8 @@ fun SettingsMenu(
                         .height(buttonSize.height / 2f + smallMargin * 1.5f)
                         .clip(RoundedCornerShape(20.dp))
                         .background(Color.Black.copy(alpha = 0.15f))
-                        .padding(smallMargin * 1.5f),
-                    rows = GridCells.Fixed(3),
+                        .padding(smallMargin * 2f),
+                    rows = GridCells.Fixed(2),
                     state = rememberLazyGridState(),
                     horizontalArrangement = Arrangement.spacedBy(smallMargin),
                     verticalArrangement = Arrangement.spacedBy(smallMargin),
@@ -1008,13 +1035,13 @@ fun MiniPlayerButton(
     playerList: MutableList<Player>,
     buttonSize: DpSize
 ) {
-    val height = buttonSize.height / 9f
+    val height = buttonSize.height / 9f * 1.5f
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     Box(
         modifier = Modifier
             .height(height)
-            .width(height * 4)
+            .width(height * 3)
             .clip(RoundedCornerShape(15.dp))
 //            .background(player.color)
     ) {
@@ -1049,7 +1076,8 @@ fun MiniPlayerButton(
                     modifier = Modifier.fillMaxSize(),
                     painter = painter,
                     contentScale = ContentScale.Crop,
-                    contentDescription = null)
+                    contentDescription = null
+                )
             }
             Text(
                 text = player.name,
