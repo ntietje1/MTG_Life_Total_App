@@ -18,6 +18,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
@@ -31,6 +33,7 @@ import com.example.mtglifeappcompose.R
 fun SettingsButton(
     modifier: Modifier = Modifier,
     size: Dp = 130.dp,
+    shape: Shape = RectangleShape,
     backgroundColor: Color = Color.DarkGray,
     imageResource: Painter = painterResource(id = R.drawable.placeholder_icon),
     text: String = "",
@@ -42,7 +45,6 @@ fun SettingsButton(
     onLongPress: () -> Unit = {},
     onDoubleTap: () -> Unit = {}
 ) {
-    val cornerRadius = size / 6
     val margin = size / 12
     val imageSize = if (text.isNotEmpty()) size - margin * 2.5f else size - margin * 1.5f
     val fontSize = (size / 10).value.sp
@@ -75,7 +77,7 @@ fun SettingsButton(
                 }
             )
         }
-        .clip(RoundedCornerShape(cornerRadius))
+        .clip(shape)
         .background(backgroundColor)
     ) {
         Column(
