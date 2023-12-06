@@ -5,21 +5,23 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.mtglifeappcompose.R
 import mtglifeappcompose.components.PlayerSelectView
 import mtglifeappcompose.data.Player
 import mtglifeappcompose.views.lifecounter.LifeCounterScreen
@@ -115,10 +117,18 @@ fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -
         }, update = { view ->
             // Update the view if needed
         }, modifier = Modifier.fillMaxSize())
-        Button(modifier = Modifier.size(50.dp), onClick = {
-            setPlayerNum(3)
-            goToLifeCounter()
-        }) {
+        SettingsButton(modifier = Modifier
+            .rotate(90f)
+            .align(Alignment.TopEnd)
+            .padding(end = 25.dp),
+            size = 100.dp,
+            backgroundColor = Color.Black,
+            text = "Skip",
+            imageResource = painterResource(id = R.drawable.enter_icon),
+            onTap = {
+                setPlayerNum(4)
+                goToLifeCounter()
+            }) {
 
         }
     }
