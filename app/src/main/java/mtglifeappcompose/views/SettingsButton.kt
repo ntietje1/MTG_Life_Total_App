@@ -34,7 +34,7 @@ fun SettingsButton(
     modifier: Modifier = Modifier,
     size: Dp = 130.dp,
     shape: Shape = RectangleShape,
-    backgroundColor: Color = Color.DarkGray,
+    backgroundColor: Color = Color.Transparent,
     imageResource: Painter = painterResource(id = R.drawable.placeholder_icon),
     text: String = "",
     color: Color = Color.White,
