@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -66,6 +67,7 @@ fun MiddleButtonDialogComposable(
                         SettingsButton(
                             imageResource = painterResource(id = R.drawable.player_select_icon),
                             text = "Player Select",
+                            color = Color.Black,
                             onPress = {
                                 goToPlayerSelect()
                                 onDismiss()
@@ -75,6 +77,7 @@ fun MiddleButtonDialogComposable(
                         SettingsButton(
                             imageResource = painterResource(id = R.drawable.reset_icon),
                             text = "Reset Game",
+                            color = Color.Black,
                             onPress = {
                                 resetPlayers()
                                 onDismiss()
@@ -84,6 +87,7 @@ fun MiddleButtonDialogComposable(
                         SettingsButton(
                             imageResource = painterResource(id = R.drawable.player_count_icon),
                             text = "Player Number",
+                            color = Color.Black,
                             onPress = {
                                 showPlayerNumberDialog.value = true
                             }
@@ -101,6 +105,7 @@ fun MiddleButtonDialogComposable(
                         SettingsButton(
                             imageResource = painterResource(R.drawable.coin_icon),
                             text = "Coin Flip",
+                            color = Color.Black,
                             onPress = {
                                 showCoinFlipDialog.value = true
                             }
@@ -109,6 +114,7 @@ fun MiddleButtonDialogComposable(
                         SettingsButton(
                             imageResource = painterResource(R.drawable.forty_icon),
                             text = "Starting Life",
+                            color = Color.Black,
                             onPress = {
                                 showStartingLifeDialog.value = true
                             }
@@ -290,6 +296,7 @@ fun SettingsDialog(
     width: Dp = 300.dp,
     height: Dp = 425.dp
 ) {
+
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier.size(width, height),
@@ -298,14 +305,16 @@ fun SettingsDialog(
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
+                    .alpha(.8f)
                     .clip(RoundedCornerShape(30.dp)),
-                color = Color.DarkGray,
+                color = Color.White,
                 shadowElevation = 5.dp,
             ) {
                 content()
             }
         }
     }
+
 }
 
 
