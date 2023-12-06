@@ -54,6 +54,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -152,11 +153,13 @@ object PlayerButtonStateManager {
     }
 
     fun addDamageToPlayer(receiver: Int, damage: Int) {
+        println("${currentDealer!!.name} dealing damage to: $receiver")
         currentDealer!!.commanderDamage[receiver - 1] += damage
     }
 
     fun getDamageToPlayer(receiver: Int): Int {
         val dealer = currentDealer ?: return 0
+        println("${dealer.name} has dealt: ${dealer.commanderDamage[receiver - 1]} to $receiver")
         return dealer.commanderDamage[receiver - 1]
     }
 }
@@ -196,15 +199,11 @@ fun PlayerButton(
 
     val context = LocalContext.current
 
-    val commanderDamage by remember(player.life) {
-        derivedStateOf { getDamageToPlayer(player.playerNum) }
-    }
-
     fun commanderButtonOnClick() {
         state.value = when (state.value) {
             PlayerButtonState.NORMAL -> {
-                PlayerButtonStateManager.updateAllStates(PlayerButtonState.COMMANDER_RECEIVER)
                 setDealer(player)
+                PlayerButtonStateManager.updateAllStates(PlayerButtonState.COMMANDER_RECEIVER)
                 PlayerButtonState.COMMANDER_DEALER
             }
 
@@ -419,20 +418,8 @@ fun PlayerButton(
             )
 
             when (state.value) {
-                PlayerButtonState.NORMAL -> PlayerInfo(
-                    playerName = player.name,
-                    life = player.life,
-                    recentChange = player.recentChange,
-                    textColor = player.textColor,
-                    state = state.value,
-                    buttonSize = DpSize(width, height)
-                )
-
-                PlayerButtonState.COMMANDER_RECEIVER -> PlayerInfo(
-                    playerName = player.name,
-                    life = commanderDamage,
-                    recentChange = 0,
-                    textColor = player.textColor,
+                PlayerButtonState.NORMAL, PlayerButtonState.COMMANDER_RECEIVER -> PlayerInfo(
+                    player = player,
                     state = state.value,
                     buttonSize = DpSize(width, height)
                 )
@@ -543,10 +530,7 @@ fun PlayerButtonStateButtons(
 
 @Composable
 fun PlayerInfo(
-    playerName: String,
-    life: Int,
-    recentChange: Int,
-    textColor: Color,
+    player: Player,
     state: PlayerButtonState,
     buttonSize: DpSize
 ) {
@@ -567,6 +551,7 @@ fun PlayerInfo(
         largeTextSize *= 1.3f
         recentChangeSize *= 1.75f
     }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -581,23 +566,27 @@ fun PlayerInfo(
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 modifier = Modifier.wrapContentSize(unbounded = true),
-                text = life.toString(),
-                color = textColor,
+                text = (when (state) {
+                    PlayerButtonState.NORMAL -> player.life
+                    PlayerButtonState.COMMANDER_RECEIVER -> getDamageToPlayer(player.playerNum)
+                    else -> throw Exception("unsupported state")
+                }).toString(),
+                color = player.textColor,
                 fontSize = largeTextSize,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.weight(0.1f))
             val recentChangeText =
-                if (recentChange == 0) ""
-                else if (recentChange > 0) "+$recentChange"
-                else "$recentChange"
+                if (player.recentChange == 0 || state == PlayerButtonState.COMMANDER_RECEIVER) ""
+                else if (player.recentChange > 0) "+${player.recentChange}"
+                else "${player.recentChange}"
 
             Text(
                 modifier = Modifier
                     .weight(0.9f)
                     .align(Alignment.CenterVertically),
                 text = recentChangeText,
-                color = textColor,
+                color = player.textColor,
                 fontSize = recentChangeSize
             )
         }
@@ -610,8 +599,8 @@ fun PlayerInfo(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = playerName,
-                color = textColor,
+                text = player.name,
+                color = player.textColor,
                 fontSize = smallTextSize,
                 textAlign = TextAlign.Center
             )
@@ -619,7 +608,7 @@ fun PlayerInfo(
             Icon(
                 painter = painterResource(iconID),
                 contentDescription = null,
-                tint = textColor
+                tint = player.textColor
             )
         }
     }
