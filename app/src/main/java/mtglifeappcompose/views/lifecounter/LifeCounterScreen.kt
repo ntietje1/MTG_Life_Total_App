@@ -93,8 +93,7 @@ fun LifeCounterScreen(
         )
 
         2 -> arrayOf(
-            DpSize(screenWidth, screenHeight / 2),
-            DpSize(screenWidth, screenHeight / 2)
+            DpSize(screenWidth, screenHeight / 2), DpSize(screenWidth, screenHeight / 2)
         )
 
         3 -> arrayOf(
@@ -147,16 +146,18 @@ fun LifeCounterScreen(
         delay(100)
         showButtons.value = true
     }
-    Box(Modifier.fillMaxSize().then(
-        if (showDialog) {
-            Modifier.blur(radius = 8.dp)
-        } else {
-            Modifier
-        }
-    )) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize(),
+    Box(
+        Modifier
+            .fillMaxSize()
+            .then(
+                if (showDialog) {
+                    Modifier.blur(radius = 20.dp)
+                } else {
+                    Modifier
+                }
+            )
+    ) {
+        LazyColumn(modifier = Modifier.fillMaxSize(),
             userScrollEnabled = false,
             verticalArrangement = Arrangement.Center,
             content = {
@@ -177,8 +178,7 @@ fun LifeCounterScreen(
                         }
                     } else {
                         item {
-                            LazyRow(
-                                modifier = Modifier.fillMaxSize(),
+                            LazyRow(modifier = Modifier.fillMaxSize(),
                                 userScrollEnabled = false,
                                 horizontalArrangement = Arrangement.Center,
                                 content = {
@@ -193,50 +193,40 @@ fun LifeCounterScreen(
                                             )
                                         }
                                     }
-                                }
-                            )
+                                })
                         }
                     }
                 }
-            }
-        )
+            })
 
         Column(Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.weight(0 + middleButtonOffset))
-            AnimatedMiddleButton(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+            AnimatedMiddleButton(modifier = Modifier.align(Alignment.CenterHorizontally),
                 visible = showButtons,
                 onMiddleButtonClick = {
                     showDialog = true
-                }
-            )
+                })
             Spacer(modifier = Modifier.weight(1 - middleButtonOffset))
         }
     }
 
 
     if (showDialog) {
-        MiddleButtonDialogComposable(
-            onDismiss = { showDialog = false },
+        MiddleButtonDialogComposable(onDismiss = { showDialog = false },
             resetPlayers = { resetPlayers() },
             setStartingLife = { setStartingLife(it) },
             setPlayerNum = {
                 showButtons.value = false
                 setPlayerNum(it)
             },
-            goToPlayerSelect = { goToPlayerSelect() }
-        )
+            goToPlayerSelect = { goToPlayerSelect() })
     }
 }
 
 
 @Composable
 fun AnimatedPlayerButton(
-    visible: MutableState<Boolean>,
-    player: Player,
-    rotation: Float,
-    width: Dp,
-    height: Dp
+    visible: MutableState<Boolean>, player: Player, rotation: Float, width: Dp, height: Dp
 ) {
     val multiplesAway = 3
     val duration = 3000
@@ -279,17 +269,13 @@ fun AnimatedPlayerButton(
         }
     }
 
-    Box(
-        modifier = Modifier.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }
+    Box(modifier = Modifier.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }
 //            .graphicsLayer {
 //                compositingStrategy = CompositingStrategy.Offscreen
 //            }
     ) {
         PlayerButton(
-            player = player,
-            width = width,
-            height = height,
-            rotation = rotation
+            player = player, width = width, height = height, rotation = rotation
         )
     }
 }
@@ -297,9 +283,7 @@ fun AnimatedPlayerButton(
 
 @Composable
 fun AnimatedMiddleButton(
-    modifier: Modifier = Modifier,
-    onMiddleButtonClick: () -> Unit,
-    visible: MutableState<Boolean>
+    modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit, visible: MutableState<Boolean>
 ) {
     var animationFinished by remember { mutableStateOf(false) }
 
@@ -316,8 +300,7 @@ fun AnimatedMiddleButton(
         // When 'visible' changes, animate the rotation
         launch {
             animatableAngle.animateTo(
-                targetValue = if (visible.value) 360f else 0f,
-                animationSpec = if (visible.value) {
+                targetValue = if (visible.value) 360f else 0f, animationSpec = if (visible.value) {
                     tween(durationMillis = duration, easing = LinearOutSlowInEasing)
                 } else {
                     tween(durationMillis = duration)
@@ -327,8 +310,7 @@ fun AnimatedMiddleButton(
 
         launch {
             animatableScale.animateTo(
-                targetValue = if (visible.value) 1f else 0f,
-                animationSpec = if (visible.value) {
+                targetValue = if (visible.value) 1f else 0f, animationSpec = if (visible.value) {
                     tween(durationMillis = duration, easing = LinearOutSlowInEasing)
                 } else {
                     tween(durationMillis = duration)
@@ -341,9 +323,7 @@ fun AnimatedMiddleButton(
     val infiniteTransition = rememberInfiniteTransition(label = "")
 
     angle = if (!animationFinished) animatableAngle.value else infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
+        initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 180000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ), label = ""
@@ -351,34 +331,26 @@ fun AnimatedMiddleButton(
 
     scale = animatableScale.value
 
-    Box(
-        modifier = modifier
-            .rotate(angle)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-    ) {
-        MiddleDialogButton(
-            modifier = Modifier.align(Alignment.Center),
-            onMiddleButtonClick = {
-                onMiddleButtonClick()
-            }
-        )
+    Box(modifier = modifier
+        .rotate(angle)
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }) {
+        MiddleDialogButton(modifier = Modifier.align(Alignment.Center), onMiddleButtonClick = {
+            onMiddleButtonClick()
+        })
     }
 }
 
 
 @Composable
 fun MiddleDialogButton(modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit) {
-    IconButton(
-        modifier = modifier
-            .size(48.dp)
-            .background(Color.Transparent),
-        onClick = {
-            onMiddleButtonClick()
-        }
-    ) {
+    IconButton(modifier = modifier
+        .size(48.dp)
+        .background(Color.Transparent), onClick = {
+        onMiddleButtonClick()
+    }) {
         Icon(
             modifier = Modifier
                 .fillMaxSize()

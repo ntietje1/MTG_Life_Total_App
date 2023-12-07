@@ -15,15 +15,11 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = White, background = Black
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Black, background = White
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -40,8 +36,7 @@ private val LightColorScheme = lightColorScheme(
 fun MTGLifeAppComposeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+    dynamicColor: Boolean = true, content: @Composable () -> Unit
 ) {
     val colorScheme = when {
         dynamicColor -> {
@@ -55,15 +50,20 @@ fun MTGLifeAppComposeTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
+
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            val insets = WindowCompat.getInsetsController(window, view)
+            window.isStatusBarContrastEnforced = false
+            window.statusBarColor = colorScheme.background.toArgb()
+            window.navigationBarColor = colorScheme.background.toArgb()
+//            window.statusBarColor = Color.Transparent.toArgb()
+//            window.navigationBarColor = Color.Transparent.toArgb()
+            insets.isAppearanceLightStatusBars = !darkTheme
+            insets.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
+        colorScheme = colorScheme, typography = Typography, content = content
     )
 }

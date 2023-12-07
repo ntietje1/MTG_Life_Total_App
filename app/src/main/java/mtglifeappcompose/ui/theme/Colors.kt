@@ -3,9 +3,7 @@ package mtglifeappcompose.ui.theme
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
-import java.lang.Float.max
 import java.lang.Float.min
 
 
@@ -18,6 +16,7 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val White = Color(0xFFFFFFFF)
+val Black = Color(0xFF000000)
 val Gold = Color(255, 191, 8)
 
 
@@ -78,22 +77,22 @@ fun Color.blendWith(other: Color): Color {
 }
 
 fun Color.brightenColor(factor: Float): Color {
-    val r = (this.red*255).toInt()
-    val g = (this.green*255).toInt()
-    val b = (this.blue*255).toInt()
+    val r = (this.red * 255).toInt()
+    val g = (this.green * 255).toInt()
+    val b = (this.blue * 255).toInt()
     val hsl = FloatArray(3)
-    ColorUtils.RGBToHSL(r,g,b,hsl)
+    ColorUtils.RGBToHSL(r, g, b, hsl)
     hsl[2] *= factor
     hsl[2] = min(1.0f, hsl[2])
     return Color.hsl(hsl[0], hsl[1], hsl[2])
 }
 
 fun Color.saturateColor(factor: Float): Color {
-    val r = (this.red*255).toInt()
-    val g = (this.green*255).toInt()
-    val b = (this.blue*255).toInt()
+    val r = (this.red * 255).toInt()
+    val g = (this.green * 255).toInt()
+    val b = (this.blue * 255).toInt()
     val hsl = FloatArray(3)
-    ColorUtils.RGBToHSL(r,g,b,hsl)
+    ColorUtils.RGBToHSL(r, g, b, hsl)
     hsl[1] *= factor
     hsl[1] = min(1.0f, hsl[1])
     return Color.hsl(hsl[0], hsl[1], hsl[2])
