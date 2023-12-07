@@ -9,6 +9,16 @@ import mtglifeappcompose.views.MTGLifeTotalApp
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        enableEdgeToEdge()
+
+//        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+//
+//        insetsController.apply {
+//            hide(WindowInsetsCompat.Type.statusBars())
+//            hide(WindowInsetsCompat.Type.navigationBars())
+//            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+//        }
+
         setContent {
             MTGLifeAppComposeTheme(darkTheme = true) {
                 MTGLifeTotalApp()
