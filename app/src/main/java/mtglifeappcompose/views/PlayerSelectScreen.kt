@@ -4,6 +4,7 @@ package mtglifeappcompose.views
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
@@ -30,10 +31,10 @@ import mtglifeappcompose.views.lifecounter.LifeCounterScreen
  * enum values that represent the screens in the app
  */
 enum class MTGScreen(val title: String) {
-    PlayerSelectScreen("Player Select Screen"),
-    LifeCounterScreen("Life Counter Screen")
+    PlayerSelectScreen("Player Select Screen"), LifeCounterScreen("Life Counter Screen")
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MTGLifeTotalApp(
 //    viewModel: PlayerViewModel = PlayerViewModel(),
@@ -81,30 +82,29 @@ fun MTGLifeTotalApp(
         startDestination = MTGScreen.PlayerSelectScreen.name,
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },
-        modifier = Modifier.fillMaxSize()
+//        modifier = Modifier.consumeWindowInsets(PaddingValues(0.dp))
     ) {
         generatePlayers()
         composable(route = MTGScreen.PlayerSelectScreen.name) {
-            Surface(Modifier.fillMaxSize(), color = Color.Black) {
-            }
-            PlayerSelectScreenWrapper(
-                setPlayerNum = {
-                    setPlayerNum(it, allowOverride = false)
-                },
-                goToLifeCounter = {
-                    goToLifeCounter()
-                }
-            )
+            Surface(Modifier.fillMaxSize(), color = Color.Black) {}
+            PlayerSelectScreenWrapper(setPlayerNum = {
+                setPlayerNum(it, allowOverride = false)
+            }, goToLifeCounter = {
+                goToLifeCounter()
+            })
         }
         composable(route = MTGScreen.LifeCounterScreen.name) {
             Surface(Modifier.fillMaxSize(), color = Color.Black) {}
-            LifeCounterScreen(
-                players = remember { Player.currentPlayers.subList(0, numPlayers.intValue) },
+            LifeCounterScreen(players = remember {
+                Player.currentPlayers.subList(
+                    0,
+                    numPlayers.intValue
+                )
+            },
                 resetPlayers = { resetPlayers() },
                 setStartingLife = { setStartingLife(it) },
                 setPlayerNum = { setPlayerNum(it) },
-                goToPlayerSelect = { goToPlayerSelect() }
-            )
+                goToPlayerSelect = { goToPlayerSelect() })
         }
     }
 }
