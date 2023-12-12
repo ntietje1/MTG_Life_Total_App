@@ -59,11 +59,12 @@ val deadDealerColorMatrix = ColorMatrix().generateColorMatrix(0.6f, 0.4f, true)
 val deadSettingsColorMatrix = ColorMatrix().generateColorMatrix(0.8f, 0.6f, true)
 
 fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = false): ColorMatrix {
-    val s = if (dead) sat * 0.3f else sat
-    val l = if (dead) lum * 1.1f else lum
+    val s = if (dead) sat * 0.2f else sat
+    val l = if (dead) lum * 1.2f else lum
+    val a = if (dead) 0.7f else 1.0f
     return this.apply {
         timesAssign(ColorMatrix().apply { setToSaturation(s) })
-        timesAssign(ColorMatrix().apply { setToScale(l, l, l, 1.0f) })
+        timesAssign(ColorMatrix().apply { setToScale(l, l, l, a) })
     }
 }
 
