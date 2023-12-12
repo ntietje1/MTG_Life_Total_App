@@ -85,12 +85,13 @@ class Player(
         life = startingLife
         recentChange = 0
         monarch = false
+
     }
 
     companion object {
         const val MAX_PLAYERS = 6
         var currentPlayers: MutableList<Player> = mutableListOf()
-        var startingLife = 40
+        var startingLife = 40 //TODO: make this store/load in preferences
 
         private fun getRandColor(): Color {
             var color = allPlayerColors.random()
@@ -155,7 +156,8 @@ object PlayerSerializer : KSerializer<Player> {
                 name = name,
                 imageUri = if (imageUri == "null") null else Uri.parse(imageUri),
                 color = Color(color),
-                textColor = Color(textColor))
+                textColor = Color(textColor)
+            )
         }
     }
 }
