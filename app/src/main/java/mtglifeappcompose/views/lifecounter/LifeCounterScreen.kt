@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -140,10 +141,10 @@ fun LifeCounterScreen(
     }
 
     var showDialog by remember { mutableStateOf(false) }
-    var showButtons = remember { mutableStateOf(false) }
+    val showButtons = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(100)
+//        delay(0)
         showButtons.value = true
     }
     Box(
@@ -210,7 +211,7 @@ fun LifeCounterScreen(
         }
     }
 
-
+    val history = remember { mutableStateListOf<String>() }
     if (showDialog) {
         MiddleButtonDialogComposable(onDismiss = { showDialog = false },
             resetPlayers = { resetPlayers() },
@@ -219,7 +220,9 @@ fun LifeCounterScreen(
                 showButtons.value = false
                 setPlayerNum(it)
             },
-            goToPlayerSelect = { goToPlayerSelect() })
+            goToPlayerSelect = { goToPlayerSelect() },
+            coinFlipHistory = history)
+
     }
 }
 
