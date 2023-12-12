@@ -1,12 +1,19 @@
 package mtglifeappcompose.views
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
@@ -18,15 +25,20 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,41 +50,31 @@ import com.wajahatkarim.flippable.rememberFlipController
 import kotlin.random.Random
 
 @Composable
-fun CoinFlipDialogBox() {
-    val history = remember { mutableStateListOf<String>() }
-
-            Box(modifier = Modifier.fillMaxSize()) {
-                CoinFlippable(history)
-                FlipHistory(
-                    history,
-                    Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 0.dp)
+fun CoinFlipDialogBox(history: SnapshotStateList<String>) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Spacer(Modifier.height(150.dp))
+                CoinFlippable(Modifier.align(Alignment.CenterHorizontally), history = history)
+                Text(
+                    text = "Tap to Flip Coin",
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    style = TextStyle(fontSize = 20.sp),
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 15.dp)
+                )
+                FlipCounter(Modifier.align(Alignment.CenterHorizontally), history)
+                Spacer(Modifier.weight(2.0f))
+                FlipHistory(Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 0.dp),
+                    coinFlipHistory = history
                 )
             }
 }
 
 @Composable
-fun CoinFlipDialog(onDismiss: () -> Unit = {}) {
-    val history = remember { mutableStateListOf<String>() }
-    SettingsDialog(
-        content = {
-            Box(modifier = Modifier.fillMaxSize()) {
-                CoinFlippable(history)
-                FlipHistory(
-                    history,
-                    Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 0.dp)
-                )
-            }
-        },
-        onDismiss = onDismiss
-    )
-}
-
-@Composable
-fun CoinFlippable(history: MutableList<String>) {
+fun CoinFlippable(modifier: Modifier = Modifier, history: MutableList<String>, maxHistoryLength: Int = 24) {
     val flipEnabled by remember { mutableStateOf(true) }
     val initialDuration = 300
     var duration by remember { mutableIntStateOf(initialDuration) }
@@ -82,7 +84,7 @@ fun CoinFlippable(history: MutableList<String>) {
     val flipController = rememberFlipController()
 
     fun addToHistory(v: String) {
-        if (history.size > 17) {
+        if (history.size > maxHistoryLength) {
             history.removeAt(0)
         }
         history.add(v)
@@ -90,7 +92,7 @@ fun CoinFlippable(history: MutableList<String>) {
 
     fun decrementFlipCount() {
         flipCount--
-        duration += 90
+        duration += 75
     }
 
     fun resetCount() {
@@ -119,9 +121,11 @@ fun CoinFlippable(history: MutableList<String>) {
         }
     }
 
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
     Flippable(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier.size(screenWidth)
             .padding(bottom = 50.dp, top = 0.dp, start = 30.dp, end = 30.dp),
         flipController = flipController,
         flipDurationMs = duration,
@@ -149,7 +153,83 @@ fun CoinFlippable(history: MutableList<String>) {
 }
 
 @Composable
-fun FlipHistory(coinFlipHistory: MutableList<String>, modifier: Modifier = Modifier) {
+fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
+    Box(
+        modifier = modifier
+            .width(50.dp)
+            .height(30.dp)
+            .clip(RoundedCornerShape(0.dp))
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {_ -> onReset()}
+                )
+            },
+
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize(),
+            color = Color.Black.copy(alpha = 0.35f)
+        ) {
+            Text(
+                text = "Reset",
+                color = Color.Black,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                style = TextStyle(fontSize = 16.sp),
+                modifier = Modifier.padding(top = 2.5.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
+    val hPadding = 10.dp
+    val vPadding = 5.dp
+    val textSize = 20.sp
+
+    val numberOfHeads = history.count { it == "H" }
+    val numberOfTails = history.count { it == "T" }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                withStyle(style = SpanStyle(color = Color.Green, fontWeight = FontWeight.Bold)) {
+                    append("Heads   ")
+                }
+                append("$numberOfHeads")
+            },
+            style = TextStyle(fontSize = textSize),
+            modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
+        )
+        Spacer(modifier.width(10.dp))
+        Text(
+            text = buildAnnotatedString {
+                withStyle(style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
+                    append("Tails   ")
+                }
+                append("$numberOfTails")
+            },
+            style = TextStyle(fontSize = textSize),
+            modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
+        )
+        Spacer(modifier.width(10.dp))
+        ResetButton(onReset = {
+            history.clear()
+        }
+        )
+    }
+}
+
+
+@Composable
+fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<String>) {
     val hPadding = 10.dp
     val vPadding = 5.dp
 
@@ -160,7 +240,7 @@ fun FlipHistory(coinFlipHistory: MutableList<String>, modifier: Modifier = Modif
     ) {
         Text(
             text = "Flip History",
-            color = Color.White, // Set the text color to white or another contrasting color
+            color = Color.Black,
             fontWeight = FontWeight.Bold,
             style = TextStyle(fontSize = 20.sp),
             modifier = Modifier
@@ -173,7 +253,7 @@ fun FlipHistory(coinFlipHistory: MutableList<String>, modifier: Modifier = Modif
                 .fillMaxWidth()
                 .height(35.dp)
                 .clip(RoundedCornerShape(0.dp)),
-            color = Color(0x60, 0x60, 0x60)
+            color = Color.Black.copy(alpha = 0.2f)
         ) {
             Column(
                 modifier = Modifier
@@ -189,6 +269,7 @@ fun FlipHistory(coinFlipHistory: MutableList<String>, modifier: Modifier = Modif
                             }
                         }
                     },
+                    maxLines = 1,
                     fontWeight = FontWeight.Bold,
                     style = TextStyle(fontSize = 16.sp),
                     modifier = Modifier

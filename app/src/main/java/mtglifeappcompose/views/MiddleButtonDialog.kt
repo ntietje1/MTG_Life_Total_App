@@ -1,6 +1,7 @@
 package mtglifeappcompose.views
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -9,8 +10,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,7 +34,8 @@ fun MiddleButtonDialogComposable(
     resetPlayers: () -> Unit,
     setPlayerNum: (Int) -> Unit,
     setStartingLife: (Int) -> Unit,
-    goToPlayerSelect: () -> Unit
+    goToPlayerSelect: () -> Unit,
+    coinFlipHistory: SnapshotStateList<String> = mutableStateListOf<String>()
 ) {
     val showCoinFlipDialog = remember { mutableStateOf(false) }
     val showPlayerNumberDialog = remember { mutableStateOf(false) }
@@ -42,7 +46,7 @@ fun MiddleButtonDialogComposable(
     val dialogContent: @Composable () -> Unit = {
         when {
             showCoinFlipDialog.value -> {
-                CoinFlipDialogContent(onDismiss, showCoinFlipDialog)
+                CoinFlipDialogContent(onDismiss, showCoinFlipDialog, coinFlipHistory)
             }
 
             showPlayerNumberDialog.value -> {
@@ -114,9 +118,9 @@ fun MiddleButtonDialogComposable(
 
 @Composable
 fun CoinFlipDialogContent(
-    onDismiss: () -> Unit, showCoinFlipDialog: MutableState<Boolean>
+    onDismiss: () -> Unit, showCoinFlipDialog: MutableState<Boolean>, history: SnapshotStateList<String>,
 ) {
-    CoinFlipDialogBox()
+    CoinFlipDialogBox(history)
 }
 
 @Composable
@@ -127,14 +131,18 @@ fun PlayerNumberDialogContent(
     resetPlayers: () -> Unit
 ) {
     GridDialogContent(items = listOf({
-        SettingsButton(imageResource = painterResource(R.drawable.one_icon), text = "", onPress = {
+        SettingsButton(imageResource = painterResource(R.drawable.one_icon),
+            color = Color.Black,
+            text = "", onPress = {
             setPlayerNum(1)
             resetPlayers()
             onDismiss()
             showPlayerNumberDialog.value = false
         })
     }, {
-        SettingsButton(imageResource = painterResource(R.drawable.two_icon), text = "", onPress = {
+        SettingsButton(imageResource = painterResource(R.drawable.two_icon),
+            color = Color.Black,
+            text = "", onPress = {
             setPlayerNum(2)
             resetPlayers()
             onDismiss()
@@ -143,6 +151,7 @@ fun PlayerNumberDialogContent(
     }, {
         SettingsButton(
             imageResource = painterResource(R.drawable.three_icon),
+            color = Color.Black,
             text = "",
             onPress = {
                 setPlayerNum(3)
@@ -151,21 +160,27 @@ fun PlayerNumberDialogContent(
                 showPlayerNumberDialog.value = false
             })
     }, {
-        SettingsButton(imageResource = painterResource(R.drawable.four_icon), text = "", onPress = {
+        SettingsButton(imageResource = painterResource(R.drawable.four_icon),
+            color = Color.Black,
+            text = "", onPress = {
             setPlayerNum(4)
             resetPlayers()
             onDismiss()
             showPlayerNumberDialog.value = false
         })
     }, {
-        SettingsButton(imageResource = painterResource(R.drawable.five_icon), text = "", onPress = {
+        SettingsButton(imageResource = painterResource(R.drawable.five_icon),
+            color = Color.Black,
+            text = "", onPress = {
             setPlayerNum(5)
             resetPlayers()
             onDismiss()
             showPlayerNumberDialog.value = false
         })
     }, {
-        SettingsButton(imageResource = painterResource(R.drawable.six_icon), text = "", onPress = {
+        SettingsButton(imageResource = painterResource(R.drawable.six_icon),
+            color = Color.Black,
+            text = "", onPress = {
             setPlayerNum(6)
             resetPlayers()
             onDismiss()
@@ -183,6 +198,7 @@ fun StartingLifeDialogContent(
     GridDialogContent(items = listOf({
         SettingsButton(
             imageResource = painterResource(id = R.drawable.fifty_icon),
+            color = Color.Black,
             text = "",
             onPress = {
                 setStartingLife(50)
@@ -192,6 +208,7 @@ fun StartingLifeDialogContent(
     }, {
         SettingsButton(
             imageResource = painterResource(id = R.drawable.forty_icon),
+            color = Color.Black,
             text = "",
             onPress = {
                 setStartingLife(40)
@@ -201,6 +218,7 @@ fun StartingLifeDialogContent(
     }, {
         SettingsButton(
             imageResource = painterResource(id = R.drawable.thirty_icon),
+            color = Color.Black,
             text = "",
             onPress = {
                 setStartingLife(30)
@@ -210,6 +228,7 @@ fun StartingLifeDialogContent(
     }, {
         SettingsButton(
             imageResource = painterResource(id = R.drawable.twenty_icon),
+            color = Color.Black,
             text = "",
             onPress = {
                 setStartingLife(20)
@@ -225,8 +244,9 @@ fun GridDialogContent(
 ) {
     LazyVerticalGrid(modifier = Modifier
         .wrapContentSize()
-        .padding(vertical = 15.dp / 2),
-        columns = GridCells.Fixed(2),
+        .padding(vertical = 15.dp),
+        contentPadding = PaddingValues(15.dp),
+        columns = GridCells.Fixed(3),
         content = {
             items(items.size) { index ->
                 items[index]()
@@ -261,9 +281,7 @@ fun SettingsDialog(
                         modifier = Modifier.align(Alignment.TopEnd), onDismiss = onDismiss
                     )
                     Box(
-                        Modifier
-                            .padding(75.dp)
-                            .align(Alignment.Center)
+                        Modifier.align(Alignment.Center)
                     ) {
                         content()
                     }
@@ -284,7 +302,7 @@ fun ExitButton(modifier: Modifier = Modifier, onDismiss: () -> Unit) {
         color = Color.Black,
         backgroundColor = Color.Transparent,
         text = "",
-        imageResource = painterResource(id = R.drawable.enter_icon), //TODO: change this icon
+        imageResource = painterResource(id = R.drawable.x_icon),
         onTap = onDismiss
     )
 }
