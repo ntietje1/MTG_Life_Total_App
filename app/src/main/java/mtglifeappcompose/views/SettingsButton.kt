@@ -52,7 +52,7 @@ fun SettingsButton(
     val invisMatrix = ColorMatrix().apply { setToScale(color.red, color.green, color.blue, 0f) }
 
     Box(modifier = modifier
-        .wrapContentSize()
+        .size(size)
         .pointerInput(enabled, visible) {
             detectTapGestures(
                 onPress = {
