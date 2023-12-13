@@ -54,7 +54,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -90,7 +89,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -121,7 +119,6 @@ import mtglifeappcompose.ui.theme.saturateColor
 import mtglifeappcompose.ui.theme.settingsColorMatrix
 import mtglifeappcompose.views.SettingsButton
 import mtglifeappcompose.views.animatedBorderCard
-import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.getDamageToPlayer
 import mtglifeappcompose.views.lifecounter.PlayerButtonStateManager.setDealer
 import yuku.ambilwarna.AmbilWarnaDialog
 import java.io.File
@@ -146,42 +143,10 @@ object PlayerButtonStateManager {
         }
     }
 
-    private var currentDealer: Player? = null
+    var currentDealer: Player? = null
 
     fun setDealer(dealer: Player) {
         currentDealer = dealer
-    }
-
-    fun addDamageToPlayer(receiver: Int, damage: Int) {
-        println("${currentDealer!!.name} dealing damage to: $receiver")
-        currentDealer!!.commanderDamage[receiver - 1] += damage
-    }
-
-    fun getDamageToPlayer(receiver: Int): Int {
-        val dealer = currentDealer ?: return 0
-        println("${dealer.name} has dealt: ${dealer.commanderDamage[receiver - 1]} to $receiver")
-        return dealer.commanderDamage[receiver - 1]
-    }
-}
-
-
-@Preview
-@Composable
-fun ExampleScreen() {
-    Column() {
-        PlayerButton(
-            player = Player.generatePlayer(),
-            initialState = PlayerButtonState.NORMAL
-        )
-        PlayerButton(
-            player = Player.generatePlayer(),
-            initialState = PlayerButtonState.NORMAL,
-        )
-        PlayerButton(
-            player = Player.generatePlayer(),
-            initialState = PlayerButtonState.NORMAL,
-            rotation = 90f
-        )
     }
 }
 
@@ -224,11 +189,22 @@ fun PlayerButton(
         }
     }
 
+    fun addDamageToPlayer(receiver: Int, damage: Int) {
+        println("${PlayerButtonStateManager.currentDealer!!.name} dealing damage to: $receiver")
+        PlayerButtonStateManager.currentDealer!!.commanderDamage[receiver - 1] += damage
+    }
+
+    fun getDamageToPlayer(receiver: Int): Int {
+        val dealer = PlayerButtonStateManager.currentDealer ?: return 0
+        println("${dealer.name} has dealt: ${dealer.commanderDamage[receiver - 1]} to $receiver")
+        return dealer.commanderDamage[receiver - 1]
+    }
+
     fun onIncrementLife() {
         when (state.value) {
             PlayerButtonState.NORMAL -> player.incrementLife(1)
             PlayerButtonState.COMMANDER_RECEIVER -> {
-                PlayerButtonStateManager.addDamageToPlayer(player.playerNum, 1)
+                addDamageToPlayer(player.playerNum, 1)
                 player.incrementLife(-1)
             }
 
@@ -240,7 +216,7 @@ fun PlayerButton(
         when (state.value) {
             PlayerButtonState.NORMAL -> player.incrementLife(-1)
             PlayerButtonState.COMMANDER_RECEIVER -> {
-                PlayerButtonStateManager.addDamageToPlayer(player.playerNum, -1)
+                addDamageToPlayer(player.playerNum, -1)
                 player.incrementLife(1)
             }
 
@@ -522,7 +498,6 @@ fun PlayerButtonStateButtons(
                     onPress = settingsButtonOnClick
                 )
             }
-
         }
     }
 }
@@ -546,7 +521,6 @@ fun PlayerInfo(
     var recentChangeSize = buttonSize.height.value.sp / 17.5f
 
     val wideButton = (largeTextSize.value.dp + recentChangeSize.value.dp) * 2.75f < buttonSize.width
-//    println("player: $playerName is wide button: $wideButton")
     if (wideButton) {
         largeTextSize *= 1.3f
         recentChangeSize *= 1.75f
@@ -568,7 +542,12 @@ fun PlayerInfo(
                 modifier = Modifier.wrapContentSize(unbounded = true),
                 text = (when (state) {
                     PlayerButtonState.NORMAL -> player.life
-                    PlayerButtonState.COMMANDER_RECEIVER -> getDamageToPlayer(player.playerNum)
+                    PlayerButtonState.COMMANDER_RECEIVER -> {
+                        PlayerButtonStateManager.currentDealer?.commanderDamage?.get(
+                            player.playerNum - 1
+                        )
+                    }
+
                     else -> throw Exception("unsupported state")
                 }).toString(),
                 color = player.textColor,

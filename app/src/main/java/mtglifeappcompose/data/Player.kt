@@ -85,7 +85,9 @@ class Player(
         life = startingLife
         recentChange = 0
         monarch = false
-
+        commanderDamage.forEachIndexed { index, _ ->
+            commanderDamage[index] = 0
+        }
     }
 
     companion object {
