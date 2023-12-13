@@ -20,7 +20,7 @@ val Black = Color(0xFF000000)
 val Gold = Color(255, 191, 8)
 
 
-val PlayerColor1 = Color(0xFFF75FA8)
+val PlayerColor1 = Color(0xFFf289e2)
 val PlayerColor2 = Color(0xFFee4c87)
 val PlayerColor3 = Color(0xFFF75F5F)
 val PlayerColor4 = Color(0xFFf78e55)
