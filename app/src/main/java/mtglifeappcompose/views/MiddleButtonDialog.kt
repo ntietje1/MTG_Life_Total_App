@@ -54,9 +54,11 @@ fun MiddleButtonDialogComposable(
                     onDismiss, showPlayerNumberDialog, setPlayerNum, resetPlayers
                 )
             }
-
             showStartingLifeDialog.value -> {
                 StartingLifeDialogContent(onDismiss, showStartingLifeDialog, setStartingLife)
+            }
+            showDiceRollDialog.value -> {
+                DiceRollDialogContent(onDismiss, showDiceRollDialog)
             }
 
             else -> {
@@ -114,6 +116,11 @@ fun MiddleButtonDialogComposable(
             onDismiss()
         }, content = dialogContent
     )
+}
+
+@Composable
+fun DiceRollDialogContent(onDismiss: () -> Unit, showDiceRollDialog: MutableState<Boolean>) {
+    GridDialogContent(items = listOf())
 }
 
 @Composable
@@ -252,7 +259,6 @@ fun GridDialogContent(
                 items[index]()
             }
         }
-
     )
 }
 
@@ -261,7 +267,6 @@ fun GridDialogContent(
 fun SettingsDialog(
     content: @Composable () -> Unit = {}, onDismiss: () -> Unit = {}
 ) {
-
     Dialog(
         onDismissRequest = onDismiss, properties = DialogProperties(
             dismissOnBackPress = true,
