@@ -1,7 +1,6 @@
 package mtglifeappcompose.views
 
 
-import android.util.Log
 import android.view.MotionEvent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -9,15 +8,19 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -32,9 +35,12 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -44,7 +50,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mtglifeappcompose.data.Player
+import mtglifeappcompose.ui.theme.allPlayerColors
 import mtglifeappcompose.views.lifecounter.LifeCounterScreen
+import kotlin.coroutines.coroutineContext
+import kotlin.math.pow
 
 /**
  * enum values that represent the screens in the app
@@ -129,46 +138,58 @@ fun MTGLifeTotalApp(
 @Composable
 fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) {
     Box(Modifier.fillMaxSize()) {
+        val showHelperText = remember { mutableStateOf(true) }
+        PlayerSelectScreen(goToLifeCounter, setPlayerNum, showHelperText)
+        if (showHelperText.value) {
+            Text(
+                text = "Tap to select player",
+                color = Color.Black,
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .rotate(90f)
+            )
 
-//        AndroidView(factory = { context ->
-//            PlayerSelectView(context, null, setPlayerNum, goToLifeCounter)
-//        }, update = { view ->
-//            // Update the view if needed
-//        }, modifier = Modifier.fillMaxSize())
-        PlayerSelectView2(goToLifeCounter, setPlayerNum)
-        SettingsButton(modifier = Modifier
-            .rotate(90f)
-            .align(Alignment.TopEnd),
-            size = 100.dp,
-            backgroundColor = Color.Black,
-            text = "Skip",
-            imageResource = painterResource(id = R.drawable.enter_icon),
-            onTap = {
-                setPlayerNum(4)
-                goToLifeCounter()
-            }) {
-
+            SettingsButton(modifier = Modifier
+                .rotate(90f)
+                .align(Alignment.TopEnd),
+                size = 100.dp,
+                color = Color.Black,
+                backgroundColor = Color.Transparent,
+                text = "Skip",
+                imageResource = painterResource(id = R.drawable.enter_icon),
+                onTap = {
+                    setPlayerNum(4)
+                    goToLifeCounter()
+                }) {}
         }
     }
 }
-//TODO: random color, hollow circle
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun PlayerSelectView2(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) {
+fun PlayerSelectScreen(
+    goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit, showHelperText: MutableState<Boolean>
+) {
     val circles = remember { mutableStateMapOf<Int, Circle>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
     val pulseDelay = 1000L
     val pulseFreq = 800L
-    val showHelperTextDelay = 500L
+    val showHelperTextDelay = 1500L
     val selectionDelay = pulseDelay + (pulseFreq * 3.35f).toLong()
     var selectedId: Int? by remember { mutableStateOf(null) }
 
     val scope = rememberCoroutineScope()
 
+    fun applyRandomColor(circle: Circle) {
+        do {
+            circle.color = allPlayerColors.random()
+        } while (circles.values.any { it.color == circle.color })
+    }
+
     fun allGoToNormal() {
-        if (selectedId != null) {
-            return
-        }
+        if (selectedId != null) return
         for (circle in circles.values) {
             CoroutineScope(scope.coroutineContext).launch {
                 circle.goToNormal()
@@ -177,11 +198,11 @@ fun PlayerSelectView2(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) 
     }
 
     fun disappearCircle(id: Int, duration: Int = 300) {
-        CoroutineScope(scope.coroutineContext).launch {
-            if (circles.containsKey(id)) {
-                val circle = circles[id]!!
-                disappearingCircles.add(circle)
-                circles.remove(id)
+        if (circles.containsKey(id)) {
+            val circle = circles[id]!!
+            disappearingCircles.add(circle)
+            circles.remove(id)
+            CoroutineScope(scope.coroutineContext).launch {
                 circle.deselect(duration = duration, onComplete = {
                     disappearingCircles.remove(circle)
                     allGoToNormal()
@@ -189,6 +210,7 @@ fun PlayerSelectView2(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) 
             }
         }
     }
+
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -201,7 +223,8 @@ fun PlayerSelectView2(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) 
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                     if (circles.size < 6 && selectedId == null) {
                         allGoToNormal()
-                        circles[id] = Circle(Offset(event.getX(id), event.getY(id))).apply {
+                        circles[id] = Circle(x = event.getX(id), y = event.getY(id)).apply {
+                            applyRandomColor(this)
                             CoroutineScope(scope.coroutineContext).launch { popIn() }
                         }
                     }
@@ -210,20 +233,19 @@ fun PlayerSelectView2(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) 
 
                 MotionEvent.ACTION_MOVE -> {
                     for (i in 0 until event.pointerCount) {
-                        val id = event.getPointerId(i)
-                        if (circles.containsKey(event.getPointerId(i))) {
-                            circles[id] = circles[id]!!.copy(Offset(event.getX(i), event.getY(i)))
-                        }
+                        circles[event.getPointerId(i)]?.updatePosition(
+                            event.getX(i), event.getY(i)
+                        )
                     }
                     true
                 }
 
                 MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     CoroutineScope(scope.coroutineContext).launch {
+                        val circle = circles[id]
                         if (circles.size == 1 && selectedId != null) {
                             launch {
-                                setPlayerNum(4)
-                                circles[id]?.growToScreen(goToLifeCounter)
+                                circle?.growToScreen(goToLifeCounter)
                             }
                         } else {
                             disappearCircle(id)
@@ -239,19 +261,27 @@ fun PlayerSelectView2(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) 
         LaunchedEffect(circles.size) {
             val selectionScope = CoroutineScope(coroutineContext)
             val pulseScope = CoroutineScope(coroutineContext)
+            val helperTextScope = CoroutineScope(coroutineContext)
+
+            if (circles.size == 0) {
+                helperTextScope.launch {
+                    delay(showHelperTextDelay)
+                    showHelperText.value = true
+                }
+            } else {
+                showHelperText.value = false
+            }
 
             if (circles.size >= 2) {
                 selectionScope.launch {
                     delay(selectionDelay)
                     selectedId = circles.keys.random()
+                    setPlayerNum(circles.size)
                     for (id in circles.keys) {
-                        launch {
-                            if (selectedId != id) {
-                                disappearCircle(id, duration = 1500)
-                            }
+                        if (selectedId != id) launch {
+                            disappearCircle(id, duration = 1500)
                         }
                     }
-                    Log.i("debug", "SELECTED: $selectedId")
                 }
                 pulseScope.launch {
                     delay(pulseDelay)
@@ -259,7 +289,6 @@ fun PlayerSelectView2(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) 
                         circles.values.forEach { circle ->
                             launch {
                                 circle.pulse()
-                                Log.i("debug", "PULSING: ${circle.posn}")
                             }
                         }
                         delay(pulseFreq)
@@ -272,69 +301,138 @@ fun PlayerSelectView2(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) 
     }
 }
 
-data class Circle(
-    var posn: Offset,
-    var color: Color = Color.Black,
-    var radiusMultiplier: Animatable<Float, AnimationVector1D> = Animatable(0.0f)
+class Circle(
+    x: Float, y: Float, color: Color = Color.Black
 ) {
+
+    private val baseRadius = 130f
+    private val pulsedRadius = 150f
+    private val baseWidth = 25f
+
+    private val animatedRadius: Animatable<Float, AnimationVector1D> = Animatable(0f)
+    private val animatedWidth: Animatable<Float, AnimationVector1D> = Animatable(baseWidth)
+
+    var x by mutableFloatStateOf(x)
+    var y by mutableFloatStateOf(y)
+    var color by mutableStateOf(color)
+    val radius by mutableStateOf(animatedRadius)
+    val width by mutableStateOf(animatedWidth)
+
+
+    private val predictor = CirclePredictor()
+
+    fun updatePosition(x: Float, y: Float) {
+        predictor.addPosition(Offset(x, y))
+        val posn = predictor.getNextPosition()
+        this.y = posn.y
+        this.x = posn.x
+    }
+
     suspend fun popIn() {
-        radiusMultiplier.stop()
-        radiusMultiplier.snapTo(0f)
-        radiusMultiplier.animateTo(
-            targetValue = 1.0f, animationSpec = spring(
+        radius.animateTo(
+            targetValue = baseRadius, animationSpec = spring(
                 dampingRatio = 0.5f, stiffness = 150f
             )
         )
     }
 
     suspend fun goToNormal() {
-        color = Color.Black
-        if (radiusMultiplier.value > 1.0f) {
-            radiusMultiplier.animateTo(
-                targetValue = 1.0f, animationSpec = tween(
+        if (radius.value > baseRadius) {
+            radius.animateTo(
+                targetValue = baseRadius, animationSpec = tween(
                     durationMillis = 150, delayMillis = 0, easing = FastOutSlowInEasing
                 )
             )
         }
-
     }
 
     suspend fun pulse() {
-        color = Color.Red
-        radiusMultiplier.animateTo(
-            targetValue = 1.2f, animationSpec = tween(
-                durationMillis = 500, delayMillis = 0, easing = FastOutLinearInEasing
+        radius.animateTo(
+            targetValue = pulsedRadius, animationSpec = tween(
+                durationMillis = 400, delayMillis = 0, easing = FastOutLinearInEasing
             )
         )
-        radiusMultiplier.animateTo(
-            targetValue = 1.0f, animationSpec = tween(
-                durationMillis = 500, delayMillis = 0, easing = FastOutLinearInEasing
+        radius.animateTo(
+            targetValue = baseRadius, animationSpec = tween(
+                durationMillis = 800, delayMillis = 50, easing = LinearOutSlowInEasing
             )
         )
     }
 
     suspend fun growToScreen(onComplete: () -> Unit = {}) {
-        radiusMultiplier.animateTo(
-            targetValue = 20f, animationSpec = tween(
-                durationMillis = 3000, delayMillis = 0, easing = FastOutSlowInEasing
-            )
-        )
-        onComplete()
+        val duration = 1500
+        val target = 10 * baseRadius
+        CoroutineScope(coroutineContext).launch {
+            launch {
+                width.animateTo(
+                    targetValue = target * 2, animationSpec = tween(
+                        durationMillis = duration * 2, delayMillis = 0, easing = FastOutSlowInEasing
+                    )
+                )
+            }
+            launch {
+                radius.animateTo(
+                    targetValue = target, animationSpec = tween(
+                        durationMillis = duration * 2, delayMillis = 0, easing = FastOutSlowInEasing
+                    )
+                )
+            }
+            launch {
+                delay(duration.toLong())
+                onComplete()
+            }
+        }
     }
 
     suspend fun deselect(duration: Int = 300, onComplete: () -> Unit) {
-        color = Color.Black
-        radiusMultiplier.animateTo(
-            targetValue = 1.2f, animationSpec = tween(
-                durationMillis = duration/2, delayMillis = 0, easing = FastOutSlowInEasing
+        radius.animateTo(
+            targetValue = pulsedRadius, animationSpec = tween(
+                durationMillis = duration / 2, delayMillis = 0, easing = FastOutSlowInEasing
             )
         )
-        radiusMultiplier.animateTo(
-            targetValue = 0.0f, animationSpec = tween(
+        radius.animateTo(
+            targetValue = 0f, animationSpec = tween(
                 durationMillis = duration, delayMillis = 0, easing = FastOutSlowInEasing
             )
         )
         onComplete()
+    }
+}
+
+class CirclePredictor {
+    companion object {
+        private const val HISTORY_SIZE = 10f
+    }
+
+    private val historyX: MutableList<Float> = mutableListOf()
+    private val historyY: MutableList<Float> = mutableListOf()
+
+    fun addPosition(posn: Offset) {
+        historyX.add(posn.x)
+        historyY.add(posn.y)
+
+        if (historyX.size > HISTORY_SIZE) {
+            historyX.removeAt(0)
+            historyY.removeAt(0)
+        }
+    }
+
+    fun getNextPosition(): Offset {
+        val adjX = calculateAdjustment(historyX)
+        val adjY = calculateAdjustment(historyY)
+
+        return Offset(
+            x = historyX.last() + adjX / HISTORY_SIZE.pow(HISTORY_SIZE / 1.9f),
+            y = historyY.last() + adjY / HISTORY_SIZE.pow(HISTORY_SIZE / 1.9f)
+        )
+    }
+
+    private fun calculateAdjustment(history: List<Float>): Float {
+        var adj = 0f
+        for (i in history.indices) {
+            adj += (i + 1f).pow(HISTORY_SIZE - i) * (history.last() - history[i])
+        }
+        return adj
     }
 }
 
@@ -343,18 +441,12 @@ fun DrawCircles(circles: List<Circle>, disappearingCircles: List<Circle>) {
     Box(modifier = Modifier
         .fillMaxSize()
         .drawBehind {
-            for (circle in circles) {
+            for (circle in circles.union(disappearingCircles)) {
                 drawCircle(
                     color = circle.color,
-                    center = circle.posn,
-                    radius = 150f * circle.radiusMultiplier.value
-                )
-            }
-            for (circle in disappearingCircles) {
-                drawCircle(
-                    color = circle.color,
-                    center = circle.posn,
-                    radius = 150f * circle.radiusMultiplier.value
+                    center = Offset(circle.x, circle.y),
+                    style = Stroke(width = circle.width.value),
+                    radius = circle.radius.value
                 )
             }
         })
