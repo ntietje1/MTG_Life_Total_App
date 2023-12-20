@@ -32,7 +32,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -46,15 +45,17 @@ import mtglifeappcompose.composable.lifecounter.bounceClick
 import kotlin.math.roundToInt
 
 @Composable
-fun DiceRollButton(value: Int,
-                   modifier: Modifier = Modifier,
-                   size: Dp = 140.dp,
-                   shape: Shape = RectangleShape,
-                   backgroundColor: Color = Color.Transparent,
-                   imageResource: Painter = painterResource(id = R.drawable.d20_icon),
-                   mainColor: Color = MaterialTheme.colorScheme.onPrimary,
-                   enabled: Boolean = true,
-                   visible: Boolean = true) {
+fun DiceRollButton(
+    value: Int,
+    modifier: Modifier = Modifier,
+    size: Dp = 140.dp,
+    shape: Shape = RectangleShape,
+    backgroundColor: Color = Color.Transparent,
+    imageResource: Painter = painterResource(id = R.drawable.d20_icon),
+    mainColor: Color = MaterialTheme.colorScheme.onPrimary,
+    enabled: Boolean = true,
+    visible: Boolean = true
+) {
 
     var faceValue: Int by remember { mutableIntStateOf(value) }
     val haptic = LocalHapticFeedback.current
@@ -75,36 +76,41 @@ fun DiceRollButton(value: Int,
         }
     }
 
-        SettingsButton(
-            modifier = modifier.bounceClick(amount = 0.04f).shake(shakeController),
-            size = size,
-            shape = shape,
-            backgroundColor = backgroundColor,
-            imageResource = imageResource,
-            text = "D$value",
-            mainColor = mainColor,
-            enabled = enabled,
-            visible = visible,
-            onPress = {
-                roll()
-                shakeController.shake(ShakeConfig(6, translateX = 7.5f, rotate = 0.5f, rotateY = 12.5f))
-                      },
-            overlay = {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Text(
-                        text = faceValue.toString(),
-                        color = MaterialTheme.colorScheme.background,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = size.value.sp / 6,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
-                    )
-                }
-
+    SettingsButton(
+        modifier = modifier
+            .bounceClick(amount = 0.04f)
+            .shake(shakeController),
+        size = size,
+        shape = shape,
+        backgroundColor = backgroundColor,
+        imageResource = imageResource,
+        text = "D$value",
+        mainColor = mainColor,
+        enabled = enabled,
+        visible = visible,
+        onPress = {
+            roll()
+            shakeController.shake(ShakeConfig(6, translateX = 7.5f, rotate = 0.5f, rotateY = 12.5f))
+        },
+        overlay = {
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(
+                    text = faceValue.toString(),
+                    color = MaterialTheme.colorScheme.background,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = size.value.sp / 6,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .fillMaxWidth()
+                        .align(Alignment.Center)
+                )
             }
-        )
+
+        }
+    )
 
 }
 
@@ -148,7 +154,8 @@ fun Modifier.shake(shakeController: ShakeController) = composed {
             shake.animateTo(0f)
         }
 
-        this.rotate(shake.value * shakeConfig.rotate)
+        this
+            .rotate(shake.value * shakeConfig.rotate)
             .graphicsLayer {
                 rotationX = shake.value * shakeConfig.rotateX
                 rotationY = shake.value * shakeConfig.rotateY
