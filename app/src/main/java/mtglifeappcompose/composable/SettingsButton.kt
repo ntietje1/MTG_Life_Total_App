@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -81,7 +80,7 @@ fun SettingsButton(
         .background(backgroundColor)) {
         Column(
             modifier = Modifier
-                .wrapContentSize()
+                .size(size)
                 .align(Alignment.Center),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -106,7 +105,6 @@ fun SettingsButton(
                 color = if (visible) mainColor else Color.Transparent,
                 style = if (visible) TextStyle(fontSize = fontSize) else TextStyle(fontSize = 0.sp)
             )
-
         }
     }
 }

@@ -379,7 +379,8 @@ fun PlayerButton(
                     modifier = Modifier.align(Alignment.Center)
                 )
 
-                PlayerButtonState.SETTINGS -> SettingsMenu(player = player,
+                PlayerButtonState.SETTINGS -> SettingsMenu(
+                    player = player,
                     onColorButtonClick = { /* Handle color button click */ },
                     onChangeNameButtonClick = { /* Handle change name button click */ },
                     onMonarchyButtonClick = { player.toggleMonarch() },
@@ -574,12 +575,11 @@ fun SettingsMenu(
     closeSettingsMenu: () -> Unit,
     buttonSize: DpSize
 ) {
-    val settingsButtonInitialSize = buttonSize.height / 3f
-    val settingsButtonMargin = buttonSize.height / 37.5f
+    val settingsButtonInitialSize = buttonSize.height / 3.75f + buttonSize.width / 24f
     val margin = buttonSize.width / 12f + buttonSize.height / 8f
 
     val wideButton =
-        margin * 2 + (settingsButtonInitialSize + settingsButtonMargin) * 3 < buttonSize.width
+        settingsButtonInitialSize * 3 < buttonSize.width - (buttonSize.width / 6f + buttonSize.height / 4f) * 1.2f
 //    println("player: $player.playerNum is wide button: $wideButton")
     val bottomMargin = if (!wideButton) margin else margin / 6f
     val topMargin = margin / 6f
@@ -599,8 +599,7 @@ fun SettingsMenu(
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(bottom = bottomMargin, top = topMargin),
-                rows = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(settingsButtonMargin)
+                rows = GridCells.Fixed(2)
             ) {
 
                 item {
@@ -779,7 +778,9 @@ fun SettingsMenu(
                         )
                         .background(Color.Black.copy(alpha = 0.15f))
                         .padding(
-                            start = gridMarginSize, end = gridMarginSize, bottom = gridMarginSize
+                            start = gridMarginSize,
+                            end = gridMarginSize,
+                            bottom = gridMarginSize
                         ),
                         rows = GridCells.Fixed(1),
                         state = rememberLazyGridState(),
@@ -881,7 +882,8 @@ fun ChangeNameField(
             .padding(horizontal = nameFieldMargin, vertical = buttonSize.height / 40f),
         verticalArrangement = Arrangement.Center
     ) {
-        TextField(value = newName,
+        TextField(
+            value = newName,
             onValueChange = { newName = it },
             label = {
                 Text(
@@ -912,7 +914,8 @@ fun ChangeNameField(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(buttonSize.height / 40f))
+                .padding(buttonSize.height / 40f)
+        )
 
         Spacer(modifier = Modifier.height(margin / 8f))
 
@@ -1109,7 +1112,8 @@ private fun CustomIncrementButton(
                     onIncrementLife()
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 })
-        )) {
+        )
+    ) {
 
     }
 }
