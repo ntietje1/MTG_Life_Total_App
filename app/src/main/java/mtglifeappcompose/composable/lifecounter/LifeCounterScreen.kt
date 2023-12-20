@@ -1,4 +1,4 @@
-package mtglifeappcompose.views.lifecounter
+package mtglifeappcompose.composable.lifecounter
 
 
 import androidx.compose.animation.core.Animatable
@@ -9,19 +9,16 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -35,19 +32,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.mtglifeappcompose.R
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mtglifeappcompose.composable.SettingsButton
+import mtglifeappcompose.composable.dialog.MiddleButtonDialogComposable
 import mtglifeappcompose.data.Player
-import mtglifeappcompose.views.MiddleButtonDialogComposable
 
 
 //@Preview
@@ -66,7 +62,8 @@ fun LifeCounterScreen(
     resetPlayers: () -> Unit,
     setPlayerNum: (Int) -> Unit,
     setStartingLife: (Int) -> Unit,
-    goToPlayerSelect: () -> Unit
+    goToPlayerSelect: () -> Unit,
+    toggleTheme: () -> Unit
 ) {
     val numPlayers = players.size
 
@@ -142,16 +139,20 @@ fun LifeCounterScreen(
 
     var showDialog by remember { mutableStateOf(false) }
     val showButtons = remember { mutableStateOf(false) }
+    var blurBackground by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showDialog) {
+        if (!showDialog) blurBackground = false
+    }
 
     LaunchedEffect(Unit) {
-//        delay(0)
         showButtons.value = true
     }
     Box(
         Modifier
             .fillMaxSize()
             .then(
-                if (showDialog) {
+                if (blurBackground) {
                     Modifier.blur(radius = 20.dp)
                 } else {
                     Modifier
@@ -211,9 +212,14 @@ fun LifeCounterScreen(
         }
     }
 
+
     val history = remember { mutableStateListOf<String>() }
     if (showDialog) {
-        MiddleButtonDialogComposable(onDismiss = { showDialog = false },
+        MiddleButtonDialogComposable(
+            modifier = Modifier.onGloballyPositioned { _ ->
+                blurBackground = showDialog
+            },
+            onDismiss = { showDialog = false },
             resetPlayers = { resetPlayers() },
             setStartingLife = { setStartingLife(it) },
             setPlayerNum = {
@@ -221,7 +227,10 @@ fun LifeCounterScreen(
                 setPlayerNum(it)
             },
             goToPlayerSelect = { goToPlayerSelect() },
-            coinFlipHistory = history)
+            toggleTheme = { toggleTheme() },
+            coinFlipHistory = history,
+
+            )
 
     }
 }
@@ -327,7 +336,7 @@ fun AnimatedMiddleButton(
 
     angle = if (!animationFinished) animatableAngle.value else infiniteTransition.animateFloat(
         initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 180000, easing = LinearEasing),
+            animation = tween(durationMillis = 180_000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ), label = ""
     ).value
@@ -340,28 +349,16 @@ fun AnimatedMiddleButton(
             scaleX = scale
             scaleY = scale
         }) {
-        MiddleDialogButton(modifier = Modifier.align(Alignment.Center), onMiddleButtonClick = {
-            onMiddleButtonClick()
-        })
-    }
-}
-
-
-@Composable
-fun MiddleDialogButton(modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit) {
-    IconButton(modifier = modifier
-        .size(48.dp)
-        .background(Color.Transparent), onClick = {
-        onMiddleButtonClick()
-    }) {
-        Icon(
+        SettingsButton(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-                .padding(2.dp),
-            imageVector = ImageVector.vectorResource(id = R.drawable.middle_solid_icon),
-            contentDescription = null,
-            tint = Color.White
+                .align(Alignment.Center)
+                .bounceClick(0.1f),
+            size = 48.dp,
+            shape = CircleShape,
+            backgroundColor = MaterialTheme.colorScheme.background,
+            mainColor = MaterialTheme.colorScheme.onPrimary,
+            imageResource = painterResource(id = R.drawable.middle_solid_icon_alt),
+            onPress = onMiddleButtonClick
         )
     }
 }
