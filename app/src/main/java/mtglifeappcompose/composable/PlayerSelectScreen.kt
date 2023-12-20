@@ -1,9 +1,7 @@
-package mtglifeappcompose.views
+package mtglifeappcompose.composable
 
 
 import android.view.MotionEvent
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -14,14 +12,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,99 +38,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.example.mtglifeappcompose.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import mtglifeappcompose.data.Player
 import mtglifeappcompose.ui.theme.allPlayerColors
-import mtglifeappcompose.views.lifecounter.LifeCounterScreen
 import kotlin.coroutines.coroutineContext
 import kotlin.math.pow
-
-/**
- * enum values that represent the screens in the app
- */
-enum class MTGScreen(val title: String) {
-    PlayerSelectScreen("Player Select Screen"), LifeCounterScreen("Life Counter Screen")
-}
-
-@Composable
-fun MTGLifeTotalApp(
-//    viewModel: PlayerViewModel = PlayerViewModel(),
-    navController: NavHostController = rememberNavController()
-) {
-    val numPlayers = remember { mutableIntStateOf(0) }
-
-    fun generatePlayers() {
-        while (Player.currentPlayers.size < Player.MAX_PLAYERS) {
-            Player.generatePlayer()
-        }
-    }
-
-    fun goToLifeCounter() {
-//        while (Player.currentPlayers.size < numPlayers.intValue) {
-//            Player.currentPlayers.add(Player.generatePlayer())
-//        }
-//        while (Player.currentPlayers.size > numPlayers.intValue) {
-//            Player.currentPlayers.removeLast()
-//        }
-        navController.navigate(MTGScreen.LifeCounterScreen.name)
-    }
-
-    fun goToPlayerSelect() {
-        navController.navigate(MTGScreen.PlayerSelectScreen.name)
-    }
-
-    fun resetPlayers() {
-        Player.resetPlayers()
-        goToLifeCounter()
-    }
-
-    fun setPlayerNum(num: Int, allowOverride: Boolean = true) {
-        if (!allowOverride && numPlayers.intValue != 0) return
-        numPlayers.intValue = num
-    }
-
-    fun setStartingLife(life: Int) {
-        Player.startingLife = life
-        resetPlayers()
-    }
-
-    NavHost(
-        navController = navController,
-        startDestination = MTGScreen.PlayerSelectScreen.name,
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None },
-//        modifier = Modifier.consumeWindowInsets(PaddingValues(0.dp))
-    ) {
-        generatePlayers()
-        composable(route = MTGScreen.PlayerSelectScreen.name) {
-            Surface(Modifier.fillMaxSize(), color = Color.Black) {}
-            PlayerSelectScreenWrapper(setPlayerNum = {
-                setPlayerNum(it, allowOverride = false)
-            }, goToLifeCounter = {
-                goToLifeCounter()
-            })
-        }
-        composable(route = MTGScreen.LifeCounterScreen.name) {
-            Surface(Modifier.fillMaxSize(), color = Color.Black) {}
-            LifeCounterScreen(players = remember {
-                Player.currentPlayers.subList(
-                    0, numPlayers.intValue
-                )
-            },
-                resetPlayers = { resetPlayers() },
-                setStartingLife = { setStartingLife(it) },
-                setPlayerNum = { setPlayerNum(it) },
-                goToPlayerSelect = { goToPlayerSelect() })
-        }
-    }
-}
 
 @Composable
 fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -> Unit) {
@@ -143,7 +54,7 @@ fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -
         if (showHelperText.value) {
             Text(
                 text = "Tap to select player",
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
@@ -155,7 +66,7 @@ fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -
                 .rotate(90f)
                 .align(Alignment.TopEnd),
                 size = 100.dp,
-                color = Color.Black,
+                mainColor = MaterialTheme.colorScheme.onPrimary,
                 backgroundColor = Color.Transparent,
                 text = "Skip",
                 imageResource = painterResource(id = R.drawable.enter_icon),
@@ -175,7 +86,7 @@ fun PlayerSelectScreen(
     val circles = remember { mutableStateMapOf<Int, Circle>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
     val pulseDelay = 1000L
-    val pulseFreq = 800L
+    val pulseFreq = 750L
     val showHelperTextDelay = 1500L
     val selectionDelay = pulseDelay + (pulseFreq * 3.35f).toLong()
     var selectedId: Int? by remember { mutableStateOf(null) }
@@ -190,9 +101,11 @@ fun PlayerSelectScreen(
 
     fun allGoToNormal() {
         if (selectedId != null) return
-        for (circle in circles.values) {
+        for (id in circles.keys) {
             CoroutineScope(scope.coroutineContext).launch {
-                circle.goToNormal()
+                if (id != selectedId) {
+                    circles[id]?.goToNormal()
+                }
             }
         }
     }
@@ -205,7 +118,6 @@ fun PlayerSelectScreen(
             CoroutineScope(scope.coroutineContext).launch {
                 circle.deselect(duration = duration, onComplete = {
                     disappearingCircles.remove(circle)
-                    allGoToNormal()
                 })
             }
         }
@@ -214,7 +126,7 @@ fun PlayerSelectScreen(
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(Color.White)
+        .background(MaterialTheme.colorScheme.background)
         .pointerInteropFilter { event ->
             val pointerIndex = event.actionIndex
             val id = event.getPointerId(pointerIndex)
@@ -222,11 +134,13 @@ fun PlayerSelectScreen(
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                     if (circles.size < 6 && selectedId == null) {
-                        allGoToNormal()
-                        circles[id] = Circle(x = event.getX(id), y = event.getY(id)).apply {
+                        circles[id] = Circle(
+                            x = event.getX(pointerIndex), y = event.getY(pointerIndex)
+                        ).apply {
                             applyRandomColor(this)
                             CoroutineScope(scope.coroutineContext).launch { popIn() }
                         }
+                        allGoToNormal()
                     }
                     true
                 }
@@ -280,6 +194,8 @@ fun PlayerSelectScreen(
                     for (id in circles.keys) {
                         if (selectedId != id) launch {
                             disappearCircle(id, duration = 1500)
+                        } else launch {
+                            circles[id]?.pulse()
                         }
                     }
                 }
@@ -299,14 +215,16 @@ fun PlayerSelectScreen(
         }
         DrawCircles(circles.values.toList(), disappearingCircles)
     }
+
+
 }
 
 class Circle(
-    x: Float, y: Float, color: Color = Color.Black
+    x: Float, y: Float, color: Color = Color.Magenta
 ) {
 
     private val baseRadius = 130f
-    private val pulsedRadius = 150f
+    private val pulsedRadius = 155f
     private val baseWidth = 25f
 
     private val animatedRadius: Animatable<Float, AnimationVector1D> = Animatable(0f)
