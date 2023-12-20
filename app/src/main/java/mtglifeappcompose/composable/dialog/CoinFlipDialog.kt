@@ -1,4 +1,4 @@
-package mtglifeappcompose.views
+package mtglifeappcompose.composable.dialog
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,12 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,15 +29,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,31 +50,35 @@ import com.wajahatkarim.flippable.rememberFlipController
 import kotlin.random.Random
 
 @Composable
-fun CoinFlipDialogBox(history: SnapshotStateList<String>) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Spacer(Modifier.height(150.dp))
-                CoinFlippable(Modifier.align(Alignment.CenterHorizontally), history = history)
-                Text(
-                    text = "Tap to Flip Coin",
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                    style = TextStyle(fontSize = 20.sp),
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(bottom = 15.dp)
-                )
-                FlipCounter(Modifier.align(Alignment.CenterHorizontally), history)
-                Spacer(Modifier.weight(2.0f))
-                FlipHistory(Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 0.dp),
-                    coinFlipHistory = history
-                )
-            }
+fun CoinFlipDialogBox(modifier: Modifier = Modifier, history: SnapshotStateList<String>) {
+    Column(modifier = modifier.fillMaxSize()) {
+        Spacer(Modifier.weight(0.5f))
+        CoinFlippable(Modifier.align(Alignment.CenterHorizontally), history = history)
+        Text(
+            text = "Tap to Flip Coin",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontWeight = FontWeight.Bold,
+            style = TextStyle(fontSize = 20.sp),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 15.dp)
+        )
+        FlipCounter(Modifier.align(Alignment.CenterHorizontally), history)
+        Spacer(Modifier.weight(2.0f))
+        FlipHistory(
+            Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 0.dp),
+            coinFlipHistory = history
+        )
+        Spacer(Modifier.weight(0.7f))
+    }
 }
 
 @Composable
-fun CoinFlippable(modifier: Modifier = Modifier, history: MutableList<String>, maxHistoryLength: Int = 24) {
+fun CoinFlippable(
+    modifier: Modifier = Modifier, history: MutableList<String>, maxHistoryLength: Int = 18
+) {
     val flipEnabled by remember { mutableStateOf(true) }
     val initialDuration = 300
     var duration by remember { mutableIntStateOf(initialDuration) }
@@ -82,6 +86,7 @@ fun CoinFlippable(modifier: Modifier = Modifier, history: MutableList<String>, m
     val totalFlips = 2 // + 1
     var flipCount by remember { mutableIntStateOf(totalFlips) }
     val flipController = rememberFlipController()
+    val haptic = LocalHapticFeedback.current
 
     fun addToHistory(v: String) {
         if (history.size > maxHistoryLength) {
@@ -118,15 +123,16 @@ fun CoinFlippable(modifier: Modifier = Modifier, history: MutableList<String>, m
         } else {
             addToHistory(if (currentSide == FlippableState.FRONT) "H" else "T")
             resetCount()
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
 
-    Flippable(
-        modifier = modifier.size(screenWidth)
-            .padding(bottom = 50.dp, top = 0.dp, start = 30.dp, end = 30.dp),
+    Flippable(modifier = modifier
+        .size(screenWidth)
+        .padding(bottom = 50.dp, top = 0.dp, start = 30.dp, end = 30.dp),
         flipController = flipController,
         flipDurationMs = duration,
         flipEnabled = flipEnabled,
@@ -147,8 +153,7 @@ fun CoinFlippable(modifier: Modifier = Modifier, history: MutableList<String>, m
         },
         onFlippedListener = { currentSide ->
             continueFlip(currentSide)
-        }
-    )
+        })
 
 }
 
@@ -160,20 +165,17 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
             .height(30.dp)
             .clip(RoundedCornerShape(0.dp))
             .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = {_ -> onReset()}
-                )
+                detectTapGestures(onTap = { _ -> onReset() })
             },
 
-    ) {
+        ) {
         Surface(
-            modifier = Modifier
-                .fillMaxSize(),
-            color = Color.Black.copy(alpha = 0.35f)
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
         ) {
             Text(
                 text = "Reset",
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 style = TextStyle(fontSize = 16.sp),
@@ -203,7 +205,13 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
                 withStyle(style = SpanStyle(color = Color.Green, fontWeight = FontWeight.Bold)) {
                     append("Heads   ")
                 }
-                append("$numberOfHeads")
+                withStyle(
+                    style = SpanStyle(
+                        color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Normal
+                    )
+                ) {
+                    append("$numberOfHeads")
+                }
             },
             style = TextStyle(fontSize = textSize),
             modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
@@ -214,7 +222,13 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
                 withStyle(style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
                     append("Tails   ")
                 }
-                append("$numberOfTails")
+                withStyle(
+                    style = SpanStyle(
+                        color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Normal
+                    )
+                ) {
+                    append("$numberOfTails")
+                }
             },
             style = TextStyle(fontSize = textSize),
             modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
@@ -222,8 +236,7 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
         Spacer(modifier.width(10.dp))
         ResetButton(onReset = {
             history.clear()
-        }
-        )
+        })
     }
 }
 
@@ -240,7 +253,7 @@ fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<Stri
     ) {
         Text(
             text = "Flip History",
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onPrimary,
             fontWeight = FontWeight.Bold,
             style = TextStyle(fontSize = 20.sp),
             modifier = Modifier
@@ -250,10 +263,11 @@ fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<Stri
 
         Surface(
             modifier = Modifier
-                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally)
+                .fillMaxWidth(0.8f)
                 .height(35.dp)
-                .clip(RoundedCornerShape(0.dp)),
-            color = Color.Black.copy(alpha = 0.2f)
+                .clip(RoundedCornerShape(30.dp)),
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
         ) {
             Column(
                 modifier = Modifier
