@@ -93,7 +93,7 @@ class Player(
     companion object {
         const val MAX_PLAYERS = 6
         var currentPlayers: MutableList<Player> = mutableListOf()
-        var startingLife = 40 //TODO: make this store/load in preferences
+        var startingLife = 40
 
         private fun getRandColor(): Color {
             var color = allPlayerColors.random()
@@ -103,9 +103,9 @@ class Player(
             return color
         }
 
-        fun generatePlayer(): Player {
+        fun generatePlayer(player: Player = Player()): Player {
             val playerColor = getRandColor()
-            val player = Player(color = playerColor)
+            player.color = playerColor
             currentPlayers.add(player)
             player.name = ("P" + player.playerNum)
             return player

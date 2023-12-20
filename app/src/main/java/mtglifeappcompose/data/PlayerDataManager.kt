@@ -17,6 +17,18 @@ class PlayerDataManager(context: Context) {
         }
     }
 
+    fun saveStartingLife(startingLife: Int) {
+        with(sharedPreferences.edit()) {
+            putInt("startingLife", startingLife)
+            apply()
+        }
+        Player.startingLife = startingLife
+    }
+
+    fun loadStartingLife(): Int {
+        return sharedPreferences.getInt("startingLife", 40)
+    }
+
     fun savePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
         deletePlayer(player, playerList)
         playerList.add(player)
