@@ -29,7 +29,8 @@ class Player(
     color: Color = Color.LightGray,
     textColor: Color = Color.White,
     name: String = "Placeholder",
-    monarch: Boolean = false
+    monarch: Boolean = false,
+    shadowEnabled: Boolean = false,
 ) {
     var life: Int by mutableIntStateOf(life)
     var imageUri: Uri? by mutableStateOf(imageUri)
@@ -37,7 +38,7 @@ class Player(
     var textColor: Color by mutableStateOf(textColor)
     var name: String by mutableStateOf(name)
     var monarch: Boolean by mutableStateOf(monarch)
-        private set
+    var shadowEnabled: Boolean by mutableStateOf(shadowEnabled)
     var recentChange: Int by mutableIntStateOf(0)
     val playerNum get() = currentPlayers.indexOf(this) + 1
     val isDead get() = (life <= 0)

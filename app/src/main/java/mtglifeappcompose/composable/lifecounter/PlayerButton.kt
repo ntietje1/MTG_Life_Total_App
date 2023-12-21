@@ -1,5 +1,6 @@
 package mtglifeappcompose.composable.lifecounter
 
+import android.app.AlertDialog
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RoundRectShape
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -98,6 +99,7 @@ import mtglifeappcompose.ui.theme.normalColorMatrix
 import mtglifeappcompose.ui.theme.receiverColorMatrix
 import mtglifeappcompose.ui.theme.saturateColor
 import mtglifeappcompose.ui.theme.settingsColorMatrix
+import mtglifeappcompose.ui.theme.textShadowStyle
 import yuku.ambilwarna.AmbilWarnaDialog
 
 
@@ -204,6 +206,29 @@ fun PlayerButton(
             }
         }
 
+    fun openCameraRoll() {
+        launcher.launch(
+            PickVisualMediaRequest(
+                mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+            )
+        )
+    }
+
+    fun showWarningDialog() {
+        val alertDialog = AlertDialog.Builder(context)
+            .setTitle("Warning")
+            .setMessage("This will open the camera roll. Proceed?")
+            .setPositiveButton("Proceed") { _, _ ->
+                openCameraRoll()
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        alertDialog.show()
+    }
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -287,11 +312,7 @@ fun PlayerButton(
                     onLoadPlayerButtonClick = { /* Handle load player button click */ },
                     onImageButtonClick = {
                         if (player.imageUri == null) {
-                            launcher.launch(
-                                PickVisualMediaRequest(
-                                    mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
-                                )
-                            )
+                            showWarningDialog()
                         } else {
                             player.imageUri = null
                         }
@@ -462,7 +483,9 @@ fun PlayerInfo(
                 }).toString(),
                 color = player.textColor,
                 fontSize = largeTextSize,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                style = textShadowStyle
+
             )
             Spacer(modifier = Modifier.weight(0.1f))
             val recentChangeText =
@@ -476,7 +499,8 @@ fun PlayerInfo(
                     .align(Alignment.CenterVertically),
                 text = recentChangeText,
                 color = player.textColor,
-                fontSize = recentChangeSize
+                fontSize = recentChangeSize,
+                style = textShadowStyle
             )
         }
 
@@ -491,13 +515,16 @@ fun PlayerInfo(
                 text = player.name,
                 color = player.textColor,
                 fontSize = smallTextSize,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                style = textShadowStyle
             )
             Spacer(modifier = Modifier.height(buttonSize.height / 1.65f))
-            Icon(
-                painter = painterResource(iconID),
-                contentDescription = null,
-                tint = player.textColor
+            SettingsButton(
+                size = 24.dp,
+                backgroundColor = Color.Transparent,
+                mainColor = player.textColor,
+                imageResource = painterResource(id = iconID),
+                enabled = false
             )
         }
     }
@@ -622,7 +649,7 @@ fun SettingsMenu(
                     val changeBackgroundText by remember {
                         derivedStateOf {
                             if (player.imageUri != null) {
-                                "Remove Background"
+                                "Undo Background"
                             } else {
                                 "Set Background"
                             }
@@ -1039,7 +1066,8 @@ private fun CustomIncrementButton(
 
 
     Box(
-        modifier = modifier.repeatingClickable(interactionSource = interactionSource,
+        modifier = modifier.repeatingClickable(
+            interactionSource = interactionSource,
             enabled = true,
             onClick = {
                 onIncrementLife()

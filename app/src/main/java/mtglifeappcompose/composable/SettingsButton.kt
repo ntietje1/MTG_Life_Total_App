@@ -1,26 +1,38 @@
 package mtglifeappcompose.composable
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -28,6 +40,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mtglifeappcompose.R
+import mtglifeappcompose.ui.theme.generateShadow
 
 @Composable
 fun SettingsButton(
@@ -40,6 +53,7 @@ fun SettingsButton(
     mainColor: Color = Color.White,
     enabled: Boolean = true,
     visible: Boolean = true,
+    shadowEnabled: Boolean = true,
     hapticEnabled: Boolean = true,
     onPress: () -> Unit = {},
     onTap: () -> Unit = {},
@@ -55,36 +69,37 @@ fun SettingsButton(
             mainColor.red, mainColor.green, mainColor.blue, mainColor.alpha
         )
     }
-    val invisMatrix =
-        ColorMatrix().apply { setToScale(mainColor.red, mainColor.green, mainColor.blue, 0f) }
     val haptic = LocalHapticFeedback.current
+    val shadowTextStyle = MaterialTheme.typography.bodyMedium.copy(
+        shadow = Shadow(
+            color = generateShadow(),
+            offset = Offset(2f, 2f),
+            blurRadius = 4f
+        )
+    )
 
     Box(modifier = modifier
         .size(size)
-        .pointerInput(enabled, visible) {
-            detectTapGestures(onPress = {
-                if (enabled && visible) {
-                    onPress()
-                    if (hapticEnabled) {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
-                }
-            }, onTap = {
-                if (enabled && visible) {
-                    onTap()
-                }
-            }, onLongPress = {
-                if (enabled && visible) {
-                    onLongPress()
-                }
-            }, onDoubleTap = {
-                if (enabled && visible) {
-                    onDoubleTap()
-                }
-            })
-        }
+        .alpha(if (visible) 1f else 0f)
         .clip(shape)
-        .background(backgroundColor)) {
+        .background(backgroundColor)
+        .then(if (enabled && visible) {
+                Modifier.pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = {
+                        onPress()
+                        if (hapticEnabled) {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                    },
+                        onTap = { onTap() },
+                        onLongPress = { onLongPress() },
+                        onDoubleTap = { onDoubleTap() })
+                }
+            } else {
+                Modifier
+            }
+        )) {
         Column(
             modifier = Modifier
                 .size(size)
@@ -97,22 +112,68 @@ fun SettingsButton(
                     .size(imageSize)
                     .padding(top = margin)
             ) {
-                Image(
+                ImageWithShadow(
                     modifier = Modifier.size(imageSize),
                     painter = imageResource,
                     contentDescription = "settings button image",
-                    colorFilter = if (visible) ColorFilter.colorMatrix(matrix) else ColorFilter.colorMatrix(
-                        invisMatrix
-                    )
+                    colorFilter = ColorFilter.colorMatrix(matrix),
+                    shadowColor = generateShadow(),
+                    shadowEnabled = shadowEnabled
                 )
                 overlay()
             }
             Text(
                 text = text,
-                color = if (visible) mainColor else Color.Transparent,
-                style = if (visible) TextStyle(fontSize = fontSize) else TextStyle(fontSize = 0.sp)
+                color = mainColor,
+                fontSize = fontSize,
+                style = if (shadowEnabled) shadowTextStyle else TextStyle(),
             )
         }
     }
 }
+
+@Composable
+fun ImageWithShadow(
+    painter: Painter,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    alignment: Alignment = Alignment.Center,
+    contentScale: ContentScale = ContentScale.Fit,
+    alpha: Float = DefaultAlpha,
+    colorFilter: ColorFilter? = null,
+    shadowEnabled: Boolean = false,
+    shadowColor: Color = Color.Black,
+    shadowOffsetX: Dp = 1.dp,
+    shadowOffsetY: Dp = 1.dp,
+    shadowRadius: Dp = 4.dp,
+    shadowAlpha: Float = 0.7f,
+) {
+    Box(modifier = modifier) {
+        AnimatedVisibility(visible = shadowEnabled) {
+            Image(
+                painter = painter,
+                contentDescription = "Shadow",
+                alignment = alignment,
+                contentScale = contentScale,
+                alpha = shadowAlpha,
+                colorFilter = ColorFilter.tint(shadowColor),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(shadowOffsetX, shadowOffsetY)
+                    .blur(shadowRadius, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+            )
+        }
+
+        Image(
+            painter = painter,
+            contentDescription = contentDescription,
+            alignment = alignment,
+            contentScale = contentScale,
+            alpha = alpha,
+            colorFilter = colorFilter,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
 

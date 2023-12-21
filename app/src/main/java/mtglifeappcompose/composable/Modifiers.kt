@@ -81,29 +81,26 @@ fun Modifier.repeatingClickable(
                 onClick()
             },
         )
-    }.then(
-        Modifier.pointerInput(interactionSource, isEnabled) {
-            coroutineScope {
-                awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
-                    val job = launch {
-                        delay(initialDelayMillis)
-                        var currentDelayMillis = maxDelayMillis
-                        while (isEnabled && down.pressed) {
-                            currentClickListener()
-                            delay(currentDelayMillis)
-                            val nextMillis =
-                                currentDelayMillis - (currentDelayMillis * delayDecayFactor)
-                            currentDelayMillis =
-                                nextMillis.toLong().coerceAtLeast(minDelayMillis)
-                        }
+    }.then(Modifier.pointerInput(interactionSource, isEnabled) {
+        coroutineScope {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                val job = launch {
+                    delay(initialDelayMillis)
+                    var currentDelayMillis = maxDelayMillis
+                    while (isEnabled && down.pressed) {
+                        currentClickListener()
+                        delay(currentDelayMillis)
+                        val nextMillis =
+                            currentDelayMillis - (currentDelayMillis * delayDecayFactor)
+                        currentDelayMillis = nextMillis.toLong().coerceAtLeast(minDelayMillis)
                     }
-                    waitForUpOrCancellation()
-                    job.cancel()
                 }
+                waitForUpOrCancellation()
+                job.cancel()
             }
         }
-    )
+    })
 }
 
 fun Modifier.rotateVertically(rotation: VerticalRotation) = then(object : LayoutModifier {

@@ -68,6 +68,11 @@ fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = fals
     }
 }
 
+fun generateShadow(): Color {
+//    return this.invert().saturateColor(0.0f).brightenColor(0.6f).copy(alpha = 0.7f)
+    return Color.Black.copy(alpha = 0.7f)
+}
+
 fun Color.blendWith(other: Color): Color {
     val alpha = 0.5f
     val blendedRed = (1 - alpha) * this.red + alpha * other.red
