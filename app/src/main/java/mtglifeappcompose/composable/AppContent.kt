@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -77,6 +78,7 @@ fun MTGLifeTotalApp(
     val initialTheme = isSystemInDarkTheme()
     var darkTheme by remember { mutableStateOf(initialTheme) }
 
+
     MTGLifeAppComposeTheme(darkTheme = darkTheme) {
         NavHost(
             navController = navController,
@@ -98,6 +100,11 @@ fun MTGLifeTotalApp(
             }
             composable(route = MTGScreen.LifeCounterScreen.name) {
                 val playerDataManager = PlayerDataManager(LocalContext.current)
+                LaunchedEffect(Unit) {
+                    if (numPlayers.intValue == 0) {
+                        goToPlayerSelect()
+                    }
+                }
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {}
                 LifeCounterScreen(players = remember {
                     Player.currentPlayers.subList(0, numPlayers.intValue)

@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,16 @@ import com.wajahatkarim.flippable.Flippable
 import com.wajahatkarim.flippable.FlippableState
 import com.wajahatkarim.flippable.rememberFlipController
 import kotlin.random.Random
+
+@Composable
+fun CoinFlipDialogContent(
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    showCoinFlipDialog: MutableState<Boolean>,
+    history: SnapshotStateList<String>,
+) {
+    CoinFlipDialogBox(modifier, history)
+}
 
 @Composable
 fun CoinFlipDialogBox(modifier: Modifier = Modifier, history: SnapshotStateList<String>) {
@@ -188,11 +199,11 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
 @Composable
 fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
     val hPadding = 10.dp
-    val vPadding = 5.dp
     val textSize = 20.sp
 
     val numberOfHeads = history.count { it == "H" }
     val numberOfTails = history.count { it == "T" }
+    val haptic = LocalHapticFeedback.current
 
     Row(
         modifier = modifier
@@ -236,6 +247,7 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
         Spacer(modifier.width(10.dp))
         ResetButton(onReset = {
             history.clear()
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         })
     }
 }

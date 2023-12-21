@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,8 +42,33 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mtglifeappcompose.composable.SettingsButton
-import mtglifeappcompose.composable.lifecounter.bounceClick
+import mtglifeappcompose.composable.bounceClick
 import kotlin.math.roundToInt
+
+@Composable
+fun DiceRollDialogContent(
+    modifier: Modifier = Modifier, onDismiss: () -> Unit, showDiceRollDialog: MutableState<Boolean>
+) {
+    GridDialogContent(modifier, items = listOf({
+        DiceRollButton(value = 4, imageResource = painterResource(id = R.drawable.d4_icon))
+    }, {
+        DiceRollButton(value = 6, imageResource = painterResource(id = R.drawable.d6_icon))
+    }, {
+        DiceRollButton(value = 8, imageResource = painterResource(id = R.drawable.d8_icon))
+    }, {
+        DiceRollButton(
+            value = 10, imageResource = painterResource(id = R.drawable.d10_icon)
+        )
+    }, {
+        DiceRollButton(
+            value = 12, imageResource = painterResource(id = R.drawable.d12_icon)
+        )
+    }, {
+        DiceRollButton(
+            value = 20, imageResource = painterResource(id = R.drawable.d20_icon)
+        )
+    }))
+}
 
 @Composable
 fun DiceRollButton(
@@ -76,10 +102,9 @@ fun DiceRollButton(
         }
     }
 
-    SettingsButton(
-        modifier = modifier
-            .bounceClick(amount = 0.04f)
-            .shake(shakeController),
+    SettingsButton(modifier = modifier
+        .bounceClick(amount = 0.04f)
+        .shake(shakeController),
         size = size,
         shape = shape,
         backgroundColor = backgroundColor,
@@ -109,8 +134,7 @@ fun DiceRollButton(
                 )
             }
 
-        }
-    )
+        })
 
 }
 

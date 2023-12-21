@@ -20,7 +20,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +38,7 @@ import com.example.mtglifeappcompose.R
 import mtglifeappcompose.composable.SettingsButton
 
 @Composable
-fun MiddleButtonDialogComposable(
+fun MiddleButtonDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     resetPlayers: () -> Unit,
@@ -46,15 +46,17 @@ fun MiddleButtonDialogComposable(
     setStartingLife: (Int) -> Unit,
     goToPlayerSelect: () -> Unit,
     coinFlipHistory: SnapshotStateList<String> = mutableStateListOf<String>(),
-    toggleTheme: () -> Unit
+    toggleTheme: () -> Unit,
+    counters: ArrayList<MutableIntState> = arrayListOf()
 ) {
     val showCoinFlipDialog = remember { mutableStateOf(false) }
     val showPlayerNumberDialog = remember { mutableStateOf(false) }
     val showStartingLifeDialog = remember { mutableStateOf(false) }
     val showDiceRollDialog = remember { mutableStateOf(false) }
+    val showCounterDialog = remember { mutableStateOf(false) }
     val showDefaultDialog = remember {
         derivedStateOf {
-            !showCoinFlipDialog.value && !showPlayerNumberDialog.value && !showStartingLifeDialog.value && !showDiceRollDialog.value
+            !showCoinFlipDialog.value && !showPlayerNumberDialog.value && !showStartingLifeDialog.value && !showDiceRollDialog.value && !showCounterDialog.value
         }
     }
 
@@ -101,6 +103,12 @@ fun MiddleButtonDialogComposable(
             }
 
             AnimatedVisibility(
+                visible = showCounterDialog.value, enter = enterAnimation, exit = exitAnimation
+            ) {
+                CounterDialogContent(Modifier.fillMaxSize(), counters, onDismiss, showCounterDialog)
+            }
+
+            AnimatedVisibility(
                 visible = showDefaultDialog.value, enter = enterAnimation, exit = exitAnimation
             ) {
                 GridDialogContent(Modifier.fillMaxSize(), items = listOf({
@@ -120,11 +128,32 @@ fun MiddleButtonDialogComposable(
                             onDismiss()
                         })
                 }, {
+                    SettingsButton(imageResource = painterResource(R.drawable.forty_icon),
+                        text = "Starting Life",
+                        mainColor = MaterialTheme.colorScheme.onPrimary,
+                        onPress = {
+                            showStartingLifeDialog.value = true
+                        })
+                }, {
+                    SettingsButton(
+                        imageResource = painterResource(R.drawable.moon_icon),
+                        text = "Toggle Theme",
+                        mainColor = MaterialTheme.colorScheme.onPrimary,
+                        onPress = toggleTheme
+                    )
+                }, {
                     SettingsButton(imageResource = painterResource(id = R.drawable.player_count_icon),
                         text = "Player Number",
                         mainColor = MaterialTheme.colorScheme.onPrimary,
                         onPress = {
                             showPlayerNumberDialog.value = true
+                        })
+                }, {
+                    SettingsButton(imageResource = painterResource(R.drawable.mana_icon),
+                        text = "Counters",
+                        mainColor = MaterialTheme.colorScheme.onPrimary,
+                        onPress = {
+                            showCounterDialog.value = true
                         })
                 }, {
                     SettingsButton(imageResource = painterResource(R.drawable.six_icon),
@@ -140,20 +169,6 @@ fun MiddleButtonDialogComposable(
                         onPress = {
                             showCoinFlipDialog.value = true
                         })
-                }, {
-                    SettingsButton(imageResource = painterResource(R.drawable.forty_icon),
-                        text = "Starting Life",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        onPress = {
-                            showStartingLifeDialog.value = true
-                        })
-                }, {
-                    SettingsButton(
-                        imageResource = painterResource(R.drawable.moon_icon),
-                        text = "Toggle Theme",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        onPress = toggleTheme
-                    )
                 }))
             }
         }
@@ -173,163 +188,13 @@ fun MiddleButtonDialogComposable(
                 showStartingLifeDialog.value = false
             } else if (showDiceRollDialog.value) {
                 showDiceRollDialog.value = false
+            } else if (showCounterDialog.value) {
+                showCounterDialog.value = false
             } else if (showDefaultDialog.value) {
                 onDismiss()
             }
         },
     )
-}
-
-@Composable
-fun DiceRollDialogContent(
-    modifier: Modifier = Modifier, onDismiss: () -> Unit, showDiceRollDialog: MutableState<Boolean>
-) {
-    GridDialogContent(modifier, items = listOf({
-        DiceRollButton(value = 4, imageResource = painterResource(id = R.drawable.d4_icon))
-    }, {
-        DiceRollButton(value = 6, imageResource = painterResource(id = R.drawable.d6_icon))
-    }, {
-        DiceRollButton(value = 8, imageResource = painterResource(id = R.drawable.d8_icon))
-    }, {
-        DiceRollButton(
-            value = 10, imageResource = painterResource(id = R.drawable.d10_icon)
-        )
-    }, {
-        DiceRollButton(
-            value = 12, imageResource = painterResource(id = R.drawable.d12_icon)
-        )
-    }, {
-        DiceRollButton(
-            value = 20, imageResource = painterResource(id = R.drawable.d20_icon)
-        )
-    }))
-}
-
-@Composable
-fun CoinFlipDialogContent(
-    modifier: Modifier = Modifier,
-    onDismiss: () -> Unit,
-    showCoinFlipDialog: MutableState<Boolean>,
-    history: SnapshotStateList<String>,
-) {
-    CoinFlipDialogBox(modifier, history)
-}
-
-@Composable
-fun PlayerNumberDialogContent(
-    modifier: Modifier = Modifier,
-    onDismiss: () -> Unit,
-    showPlayerNumberDialog: MutableState<Boolean>,
-    setPlayerNum: (Int) -> Unit,
-    resetPlayers: () -> Unit
-) {
-    GridDialogContent(modifier, items = listOf({
-        SettingsButton(imageResource = painterResource(R.drawable.one_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setPlayerNum(1)
-                resetPlayers()
-                onDismiss()
-                showPlayerNumberDialog.value = false
-            })
-    }, {
-        SettingsButton(imageResource = painterResource(R.drawable.two_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setPlayerNum(2)
-                resetPlayers()
-                onDismiss()
-                showPlayerNumberDialog.value = false
-            })
-    }, {
-        SettingsButton(imageResource = painterResource(R.drawable.three_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setPlayerNum(3)
-                resetPlayers()
-                onDismiss()
-                showPlayerNumberDialog.value = false
-            })
-    }, {
-        SettingsButton(imageResource = painterResource(R.drawable.four_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setPlayerNum(4)
-                resetPlayers()
-                onDismiss()
-                showPlayerNumberDialog.value = false
-            })
-    }, {
-        SettingsButton(imageResource = painterResource(R.drawable.five_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setPlayerNum(5)
-                resetPlayers()
-                onDismiss()
-                showPlayerNumberDialog.value = false
-            })
-    }, {
-        SettingsButton(imageResource = painterResource(R.drawable.six_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setPlayerNum(6)
-                resetPlayers()
-                onDismiss()
-                showPlayerNumberDialog.value = false
-            })
-    }))
-}
-
-@Composable
-fun StartingLifeDialogContent(
-    modifier: Modifier = Modifier,
-    onDismiss: () -> Unit,
-    showStartingLifeDialog: MutableState<Boolean>,
-    setStartingLife: (Int) -> Unit
-) {
-    GridDialogContent(modifier, items = listOf({
-        SettingsButton(imageResource = painterResource(id = R.drawable.fifty_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setStartingLife(50)
-                onDismiss()
-                showStartingLifeDialog.value = false
-            })
-    }, {
-        SettingsButton(imageResource = painterResource(id = R.drawable.forty_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setStartingLife(40)
-                onDismiss()
-                showStartingLifeDialog.value = false
-            })
-    }, {
-        SettingsButton(imageResource = painterResource(id = R.drawable.thirty_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setStartingLife(30)
-                onDismiss()
-                showStartingLifeDialog.value = false
-            })
-    }, {
-        SettingsButton(imageResource = painterResource(id = R.drawable.twenty_icon),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            text = "",
-            onPress = {
-                setStartingLife(20)
-                onDismiss()
-                showStartingLifeDialog.value = false
-            })
-    }))
 }
 
 @Composable
