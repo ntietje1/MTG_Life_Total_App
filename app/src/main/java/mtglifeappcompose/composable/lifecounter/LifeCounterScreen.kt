@@ -9,12 +9,16 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +38,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -41,20 +48,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.mtglifeappcompose.R
 import kotlinx.coroutines.launch
-import mtglifeappcompose.composable.SettingsButton
-import mtglifeappcompose.composable.dialog.MiddleButtonDialogComposable
+import mtglifeappcompose.composable.dialog.MiddleButtonDialog
 import mtglifeappcompose.data.Player
-
-
-//@Preview
-//@Composable
-//fun ExampleLifeCounterScreen() {
-//    val players = remember { mutableListOf<Player>() }
-//    repeat(4) {
-//        players.add(Player.generatePlayer())
-//    }
-//    LifeCounterScreen(players)
-//}
 
 @Composable
 fun LifeCounterScreen(
@@ -203,7 +198,9 @@ fun LifeCounterScreen(
 
         Column(Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.weight(0 + middleButtonOffset))
-            AnimatedMiddleButton(modifier = Modifier.align(Alignment.CenterHorizontally),
+            AnimatedMiddleButton(modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .size(60.dp),
                 visible = showButtons,
                 onMiddleButtonClick = {
                     showDialog = true
@@ -214,8 +211,16 @@ fun LifeCounterScreen(
 
 
     val history = remember { mutableStateListOf<String>() }
+    val w = remember { mutableIntStateOf(0) }
+    val u = remember { mutableIntStateOf(0) }
+    val b = remember { mutableIntStateOf(0) }
+    val r = remember { mutableIntStateOf(0) }
+    val g = remember { mutableIntStateOf(0) }
+    val c = remember { mutableIntStateOf(0) }
+    val s = remember { mutableIntStateOf(0) }
+    val counters = arrayListOf(w, u, b, r, g, c, s)
     if (showDialog) {
-        MiddleButtonDialogComposable(
+        MiddleButtonDialog(
             modifier = Modifier.onGloballyPositioned { _ ->
                 blurBackground = showDialog
             },
@@ -229,6 +234,7 @@ fun LifeCounterScreen(
             goToPlayerSelect = { goToPlayerSelect() },
             toggleTheme = { toggleTheme() },
             coinFlipHistory = history,
+            counters = counters,
 
             )
 
@@ -281,11 +287,7 @@ fun AnimatedPlayerButton(
         }
     }
 
-    Box(modifier = Modifier.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }
-//            .graphicsLayer {
-//                compositingStrategy = CompositingStrategy.Offscreen
-//            }
-    ) {
+    Box(modifier = Modifier.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }) {
         PlayerButton(
             player = player, width = width, height = height, rotation = rotation
         )
@@ -344,21 +346,25 @@ fun AnimatedMiddleButton(
     scale = animatableScale.value
 
     Box(modifier = modifier
+        .background(color = MaterialTheme.colorScheme.background, shape = CircleShape)
         .rotate(angle)
         .graphicsLayer {
             scaleX = scale
             scaleY = scale
-        }) {
-        SettingsButton(
+        }
+        .pointerInput(Unit) {
+            detectTapGestures(onPress = {
+                onMiddleButtonClick()
+            })
+        }
+    ) {
+        Image(
             modifier = Modifier
-                .align(Alignment.Center)
-                .bounceClick(0.1f),
-            size = 48.dp,
-            shape = CircleShape,
-            backgroundColor = MaterialTheme.colorScheme.background,
-            mainColor = MaterialTheme.colorScheme.onPrimary,
-            imageResource = painterResource(id = R.drawable.middle_solid_icon_alt),
-            onPress = onMiddleButtonClick
+                .fillMaxSize()
+                .align(Alignment.Center),
+            painter = painterResource(id = R.drawable.middle_icon),
+            contentScale = ContentScale.Crop,
+            contentDescription = null
         )
     }
 }
