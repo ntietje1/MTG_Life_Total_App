@@ -19,7 +19,9 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
@@ -38,6 +40,7 @@ fun SettingsButton(
     mainColor: Color = Color.White,
     enabled: Boolean = true,
     visible: Boolean = true,
+    hapticEnabled: Boolean = true,
     onPress: () -> Unit = {},
     onTap: () -> Unit = {},
     onLongPress: () -> Unit = {},
@@ -54,6 +57,7 @@ fun SettingsButton(
     }
     val invisMatrix =
         ColorMatrix().apply { setToScale(mainColor.red, mainColor.green, mainColor.blue, 0f) }
+    val haptic = LocalHapticFeedback.current
 
     Box(modifier = modifier
         .size(size)
@@ -61,6 +65,9 @@ fun SettingsButton(
             detectTapGestures(onPress = {
                 if (enabled && visible) {
                     onPress()
+                    if (hapticEnabled) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
                 }
             }, onTap = {
                 if (enabled && visible) {
