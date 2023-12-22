@@ -219,7 +219,12 @@ fun GridDialogContent(
 
 @Composable
 fun SettingsDialog(
-    content: @Composable () -> Unit = {}, onDismiss: () -> Unit = {}, onBack: () -> Unit = {}
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit = {},
+    onDismiss: () -> Unit = {},
+    onBack: () -> Unit = {},
+    exitButtonEnabled: Boolean = true,
+    backButtonEnabled: Boolean = true
 ) {
     Dialog(
         onDismissRequest = onDismiss, properties = DialogProperties(
@@ -228,22 +233,26 @@ fun SettingsDialog(
         )
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+            modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             Surface(
                 color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
                 shadowElevation = 5.dp,
             ) {
                 Column(Modifier.fillMaxSize()) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        ExitButton(
-                            onDismiss = onDismiss
-                        )
+                    if (exitButtonEnabled) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+
+                            ExitButton(
+                                onDismiss = onDismiss
+                            )
+                        }
+
                     }
                     Box(
                         Modifier.weight(0.1f)
@@ -251,16 +260,18 @@ fun SettingsDialog(
                         content()
                     }
 
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        BackButton(
-                            onBack = onBack
-                        )
+                    if (backButtonEnabled) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
+                            horizontalArrangement = Arrangement.Start
+                        ) {
 
+                            BackButton(
+                                onBack = onBack
+                            )
+                        }
                     }
                 }
             }
