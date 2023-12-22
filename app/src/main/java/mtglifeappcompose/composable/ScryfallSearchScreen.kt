@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.mtglifeappcompose.R
@@ -67,7 +69,8 @@ import mtglifeappcompose.data.ScryfallApiRetriever
 
 @Composable
 fun ScryfallSearchDialog(modifier: Modifier = Modifier, player: Player, onDismiss: () -> Unit) {
-    SettingsDialog(modifier = modifier,
+    SettingsDialog(
+        modifier = modifier,
         backButtonEnabled = false,
         onDismiss = onDismiss,
         content = {
@@ -105,8 +108,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
                 .clip(RoundedCornerShape(10.dp))
 
         ) {
-            TextField(
-                value = query,
+            TextField(value = query,
                 onValueChange = { query = it },
                 label = { Text("Search Scryfall") },
                 singleLine = true,
@@ -243,25 +245,28 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
     val haptic = LocalHapticFeedback.current
 
     if (showLargeImage) {
-        Dialog(
-            onDismissRequest = { showLargeImage = false },
-            content = {
+        Dialog(onDismissRequest = { showLargeImage = false }, properties = DialogProperties(
+            usePlatformDefaultWidth = false
+        ), content = {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        showLargeImage = false
+                    })
+                }) {
                 Image(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(75.dp))
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onTap = {
-                                    showLargeImage = false
-                                }
-                            )
-                        }, painter = rememberAsyncImagePainter(
+                        .clip(CutCornerShape(125.dp))
+                        .fillMaxSize(0.85f)
+                        .align(Alignment.Center), painter = rememberAsyncImagePainter(
                         ImageRequest.Builder(LocalContext.current).data(card.getUris().large)
                             .crossfade(true).build()
                     ), contentDescription = null
                 )
-            })
+            }
+
+        })
     }
 
     Box(
@@ -340,16 +345,13 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
                     Modifier
                         .fillMaxHeight()
                         .weight(1.0f)
-                        .clip(RoundedCornerShape(10.dp))
+                        .clip(CutCornerShape(6.dp))
                         .pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = {
-                                    showLargeImage = true
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                }
-                            )
-                        }
-                ) {
+                            detectTapGestures(onLongPress = {
+                                showLargeImage = true
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            })
+                        }) {
                     Image(
                         modifier = Modifier.fillMaxSize(), painter = rememberAsyncImagePainter(
                             ImageRequest.Builder(LocalContext.current).data(card.getUris().small)
