@@ -2,17 +2,9 @@ package mtglifeappcompose.composable
 
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,7 +83,6 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
     val coroutineScope = rememberCoroutineScope()
     val lastSearchWasError = remember { mutableStateOf(false) }
 
-
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
@@ -100,11 +90,11 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
         println("SEARCHING: $qry")
         if (qry.isBlank()) return
         coroutineScope.launch {
+            searchResults = listOf()
             searchResults =
                 scryfallApiRetriever.parseScryfallResponse(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError.value = searchResults.isEmpty()
         }
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
     Column(modifier) {
@@ -128,6 +118,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
                 ),
                 keyboardActions = KeyboardActions(onSearch = {
                     search(query)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     focusManager.clearFocus()
                 }),
                 colors = TextFieldDefaults.colors(
@@ -191,29 +182,28 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
         ) {
             Text("No cards found :(", color = Color.Red)
         }
-            LazyColumn(
-                Modifier.pointerInput(Unit) {
-                    detectTapGestures(onPress = { focusManager.clearFocus() })
-                }, horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (searchResults.isEmpty()) return@LazyColumn
-                item {
-                    Text(
-                        "${searchResults.size} results",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(vertical = 10.dp)
-                    )
-                }
-                items(searchResults) { card ->
-                    CardPreview(card, onSelect = {
-                        player.imageUri = Uri.parse(card.getUris().artCrop)
-                    }, onPrintings = {
-                        //TODO: this seems like it's not updating?
-                        search(card.printsSearchUri)
-                    })
-                }
+        LazyColumn(
+            Modifier.pointerInput(Unit) {
+                detectTapGestures(onPress = { focusManager.clearFocus() })
+            }, horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (searchResults.isEmpty()) return@LazyColumn
+            item {
+                Text(
+                    "${searchResults.size} results",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
             }
+            items(searchResults) { card ->
+                CardPreview(card, onSelect = {
+                    player.imageUri = Uri.parse(card.getUris().artCrop)
+                }, onPrintings = {
+                    search(card.printsSearchUri)
+                })
+            }
+        }
 
     }
 }
@@ -223,8 +213,8 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
 fun ScryfallButton(modifier: Modifier = Modifier, text: String, onTap: () -> Unit) {
     Box(
         modifier = modifier.pointerInput(Unit) {
-                detectTapGestures(onTap = { _ -> onTap() })
-            },
+            detectTapGestures(onTap = { _ -> onTap() })
+        },
 
         ) {
         Surface(
@@ -256,18 +246,21 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
         Dialog(
             onDismissRequest = { showLargeImage = false },
             content = {
-                    Image(
-                        modifier = Modifier.fillMaxSize(0.85f).pointerInput(Unit) {
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(75.dp))
+                        .pointerInput(Unit) {
                             detectTapGestures(
                                 onTap = {
                                     showLargeImage = false
                                 }
                             )
                         }, painter = rememberAsyncImagePainter(
-                            ImageRequest.Builder(LocalContext.current).data(card.getUris().large)
-                                .crossfade(true).build()
-                        ), contentDescription = null
-                    )
+                        ImageRequest.Builder(LocalContext.current).data(card.getUris().large)
+                            .crossfade(true).build()
+                    ), contentDescription = null
+                )
             })
     }
 
@@ -356,7 +349,7 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
                                 }
                             )
                         }
-                ){
+                ) {
                     Image(
                         modifier = Modifier.fillMaxSize(), painter = rememberAsyncImagePainter(
                             ImageRequest.Builder(LocalContext.current).data(card.getUris().small)
