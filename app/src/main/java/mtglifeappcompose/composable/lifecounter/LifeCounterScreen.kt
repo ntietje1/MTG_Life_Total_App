@@ -134,10 +134,10 @@ fun LifeCounterScreen(
 
     var showDialog by remember { mutableStateOf(false) }
     val showButtons = remember { mutableStateOf(false) }
-    var blurBackground by remember { mutableStateOf(false) }
+    var blurBackground = remember { mutableStateOf(false) }
 
     LaunchedEffect(showDialog) {
-        if (!showDialog) blurBackground = false
+        if (!showDialog) blurBackground.value = false
     }
 
     LaunchedEffect(Unit) {
@@ -147,7 +147,7 @@ fun LifeCounterScreen(
         Modifier
             .fillMaxSize()
             .then(
-                if (blurBackground) {
+                if (blurBackground.value) {
                     Modifier.blur(radius = 20.dp)
                 } else {
                     Modifier
@@ -169,7 +169,8 @@ fun LifeCounterScreen(
                                     player = players[j],
                                     rotation = angleConfigurations[j],
                                     width = buttonSizes[j].width,
-                                    height = buttonSizes[j].height
+                                    height = buttonSizes[j].height,
+                                    blurBackground = blurBackground
                                 )
                             }
                         }
@@ -186,7 +187,8 @@ fun LifeCounterScreen(
                                                 player = players[j],
                                                 rotation = angleConfigurations[j],
                                                 width = buttonSizes[j].width,
-                                                height = buttonSizes[j].height
+                                                height = buttonSizes[j].height,
+                                                blurBackground = blurBackground
                                             )
                                         }
                                     }
@@ -222,7 +224,7 @@ fun LifeCounterScreen(
     if (showDialog) {
         MiddleButtonDialog(
             modifier = Modifier.onGloballyPositioned { _ ->
-                blurBackground = showDialog
+                blurBackground.value = showDialog
             },
             onDismiss = { showDialog = false },
             resetPlayers = { resetPlayers() },
@@ -244,7 +246,12 @@ fun LifeCounterScreen(
 
 @Composable
 fun AnimatedPlayerButton(
-    visible: MutableState<Boolean>, player: Player, rotation: Float, width: Dp, height: Dp
+    visible: MutableState<Boolean>,
+    player: Player,
+    rotation: Float,
+    width: Dp,
+    height: Dp,
+    blurBackground: MutableState<Boolean>
 ) {
     val multiplesAway = 3
     val duration = 3000
@@ -289,7 +296,11 @@ fun AnimatedPlayerButton(
 
     Box(modifier = Modifier.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }) {
         PlayerButton(
-            player = player, width = width, height = height, rotation = rotation
+            player = player,
+            width = width,
+            height = height,
+            rotation = rotation,
+            blurBackground = blurBackground
         )
     }
 }

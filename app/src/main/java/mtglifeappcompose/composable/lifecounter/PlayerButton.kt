@@ -61,6 +61,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -75,6 +76,7 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.mtglifeappcompose.R
+import mtglifeappcompose.composable.ScryfallSearchDialog
 import mtglifeappcompose.composable.SettingsButton
 import mtglifeappcompose.composable.VerticalRotation
 import mtglifeappcompose.composable.animatedBorderCard
@@ -134,7 +136,8 @@ fun PlayerButton(
     initialState: PlayerButtonState = PlayerButtonState.NORMAL,
     width: Dp = 200.dp,
     height: Dp = 150.dp,
-    rotation: Float = 0f
+    rotation: Float = 0f,
+    blurBackground: MutableState<Boolean> = mutableStateOf(false)
 ) {
 
     val state = remember { mutableStateOf(initialState) }
@@ -198,6 +201,8 @@ fun PlayerButton(
 
     val imageManager = ImageManager(context, player)
 
+    var showScryfallSearch by remember { mutableStateOf(false) }
+
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             uri?.let { selectedUri ->
@@ -205,6 +210,7 @@ fun PlayerButton(
                 player.imageUri = copiedUri
             }
         }
+
 
     fun openCameraRoll() {
         launcher.launch(
@@ -228,6 +234,20 @@ fun PlayerButton(
 
         alertDialog.show()
     }
+
+    if (showScryfallSearch) {
+        ScryfallSearchDialog(
+            modifier = Modifier.onGloballyPositioned { _ ->
+                blurBackground.value = true
+            },
+            onDismiss = {
+                showScryfallSearch = false
+                blurBackground.value = false
+            },
+            player = player
+        )
+    }
+
 
     BoxWithConstraints(
         modifier = Modifier
@@ -297,7 +317,8 @@ fun PlayerButton(
                     modifier = Modifier.align(Alignment.Center)
                 )
 
-                PlayerButtonState.SETTINGS -> SettingsMenu(player = player,
+                PlayerButtonState.SETTINGS -> SettingsMenu(
+                    player = player,
                     onColorButtonClick = { /* Handle color button click */ },
                     onChangeNameButtonClick = { /* Handle change name button click */ },
                     onMonarchyButtonClick = { player.toggleMonarch() },
@@ -310,7 +331,7 @@ fun PlayerButton(
                         }
                     },
                     onLoadPlayerButtonClick = { /* Handle load player button click */ },
-                    onImageButtonClick = {
+                    onFromCameraRollButtonClick = {
                         if (player.imageUri == null) {
                             showWarningDialog()
                         } else {
@@ -318,6 +339,7 @@ fun PlayerButton(
                         }
                     },
                     closeSettingsMenu = { state.value = PlayerButtonState.NORMAL },
+                    onScryfallButtonClick = { showScryfallSearch = !showScryfallSearch },
                     buttonSize = DpSize(width, height)
                 )
             }
@@ -531,17 +553,18 @@ fun PlayerInfo(
 }
 
 
-enum class SettingsState { Default, ColorPicker, ChangeName, LoadPlayer }
+enum class SettingsState { Default, ChangeBackground, ColorPicker, ChangeName, LoadPlayer }
 
 @Composable
 fun SettingsMenu(
     player: Player,
-    onColorButtonClick: () -> Unit,
     onChangeNameButtonClick: () -> Unit,
     onMonarchyButtonClick: () -> Unit,
     onSavePlayerButtonClick: () -> Boolean,
     onLoadPlayerButtonClick: () -> Unit,
-    onImageButtonClick: () -> Unit,
+    onColorButtonClick: () -> Unit,
+    onFromCameraRollButtonClick: () -> Unit,
+    onScryfallButtonClick: () -> Unit,
     closeSettingsMenu: () -> Unit,
     buttonSize: DpSize
 ) {
@@ -633,8 +656,30 @@ fun SettingsMenu(
 
                 item {
                     SettingsButton(
+                        imageResource = painterResource(R.drawable.change_background_icon),
+                        text = "Set Background",
+                        onPress = {
+                            state = SettingsState.ChangeBackground
+                        },
+                        size = settingsButtonSize,
+                        mainColor = player.textColor,
+                        backgroundColor = Color.Transparent
+                    )
+                }
+            }
+        }
+
+        SettingsState.ChangeBackground -> {
+            LazyHorizontalGrid(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+                    .padding(bottom = bottomMargin, top = topMargin), rows = GridCells.Fixed(1)
+            ) {
+                item {
+                    SettingsButton(
                         imageResource = painterResource(R.drawable.color_picker_icon),
-                        text = "Set Color",
+                        text = "Solid Color",
                         onPress = {
                             state = SettingsState.ColorPicker
 //                            onColorButtonClick()
@@ -646,20 +691,24 @@ fun SettingsMenu(
                 }
 
                 item {
-                    val changeBackgroundText by remember {
-                        derivedStateOf {
-                            if (player.imageUri != null) {
-                                "Undo Background"
-                            } else {
-                                "Set Background"
-                            }
-                        }
-                    }
                     SettingsButton(
                         imageResource = painterResource(R.drawable.change_background_icon),
-                        text = changeBackgroundText,
+                        text = "Camera Roll",
                         onPress = {
-                            onImageButtonClick()
+                            onFromCameraRollButtonClick()
+                        },
+                        size = settingsButtonSize,
+                        mainColor = player.textColor,
+                        backgroundColor = Color.Transparent
+                    )
+                }
+
+                item {
+                    SettingsButton(
+                        imageResource = painterResource(R.drawable.search_icon),
+                        text = "Scryfall",
+                        onPress = {
+                            onScryfallButtonClick()
                         },
                         size = settingsButtonSize,
                         mainColor = player.textColor,
@@ -755,7 +804,9 @@ fun SettingsMenu(
                         )
                         .background(Color.Black.copy(alpha = 0.15f))
                         .padding(
-                            start = gridMarginSize, end = gridMarginSize, bottom = gridMarginSize
+                            start = gridMarginSize,
+                            end = gridMarginSize,
+                            bottom = gridMarginSize
                         ),
                         rows = GridCells.Fixed(1),
                         state = rememberLazyGridState(),
@@ -860,7 +911,8 @@ fun ChangeNameField(
             .padding(horizontal = nameFieldMargin, vertical = buttonSize.height / 40f),
         verticalArrangement = Arrangement.Center
     ) {
-        TextField(value = newName,
+        TextField(
+            value = newName,
             onValueChange = { newName = it },
             label = {
                 Text(
