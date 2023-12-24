@@ -70,17 +70,15 @@ fun Modifier.repeatingClickable(
     maxDelayMillis: Long = 100,
     minDelayMillis: Long = 50,
     delayDecayFactor: Float = 0.0f,
-    onClick: () -> Unit
+    onPress: () -> Unit
 ): Modifier = composed {
-    val currentClickListener by rememberUpdatedState(onClick)
+    val currentClickListener by rememberUpdatedState(onPress)
     val isEnabled by rememberUpdatedState(enabled)
 
     pointerInput(Unit) {
-        detectTapGestures(
-            onPress = {
-                onClick()
-            },
-        )
+        detectTapGestures(onPress = {
+            onPress()
+        })
     }.then(Modifier.pointerInput(interactionSource, isEnabled) {
         coroutineScope {
             awaitEachGesture {
