@@ -64,6 +64,7 @@ import kotlinx.coroutines.launch
 import mtglifeappcompose.composable.dialog.SettingsDialog
 import mtglifeappcompose.data.Card
 import mtglifeappcompose.data.Player
+import mtglifeappcompose.data.PlayerDataManager
 import mtglifeappcompose.data.ScryfallApiRetriever
 
 
@@ -86,6 +87,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
     val coroutineScope = rememberCoroutineScope()
     val lastSearchWasError = remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
@@ -201,6 +203,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
             items(searchResults) { card ->
                 CardPreview(card, onSelect = {
                     player.imageUri = Uri.parse(card.getUris().artCrop)
+                    PlayerDataManager(context).savePlayer(player)
                 }, onPrintings = {
                     search(card.printsSearchUri)
                 })
