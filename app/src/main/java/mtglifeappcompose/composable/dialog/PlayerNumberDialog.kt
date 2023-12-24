@@ -20,6 +20,7 @@ fun PlayerNumberDialogContent(
         SettingsButton(imageResource = painterResource(R.drawable.one_icon),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             text = "",
+            shadowEnabled = false,
             onPress = {
                 setPlayerNum(1)
                 resetPlayers()
@@ -30,6 +31,7 @@ fun PlayerNumberDialogContent(
         SettingsButton(imageResource = painterResource(R.drawable.two_icon),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             text = "",
+            shadowEnabled = false,
             onPress = {
                 setPlayerNum(2)
                 resetPlayers()
@@ -40,6 +42,7 @@ fun PlayerNumberDialogContent(
         SettingsButton(imageResource = painterResource(R.drawable.three_icon),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             text = "",
+            shadowEnabled = false,
             onPress = {
                 setPlayerNum(3)
                 resetPlayers()
@@ -50,6 +53,7 @@ fun PlayerNumberDialogContent(
         SettingsButton(imageResource = painterResource(R.drawable.four_icon),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             text = "",
+            shadowEnabled = false,
             onPress = {
                 setPlayerNum(4)
                 resetPlayers()
@@ -60,6 +64,7 @@ fun PlayerNumberDialogContent(
         SettingsButton(imageResource = painterResource(R.drawable.five_icon),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             text = "",
+            shadowEnabled = false,
             onPress = {
                 setPlayerNum(5)
                 resetPlayers()

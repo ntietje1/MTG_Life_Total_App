@@ -111,6 +111,7 @@ fun DiceRollButton(
         imageResource = imageResource,
         text = "D$value",
         mainColor = mainColor,
+        shadowEnabled = false,
         enabled = enabled,
         visible = visible,
         onPress = {

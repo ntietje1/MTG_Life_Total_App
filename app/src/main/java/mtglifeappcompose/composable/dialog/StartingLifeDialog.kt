@@ -19,6 +19,7 @@ fun StartingLifeDialogContent(
         SettingsButton(imageResource = painterResource(id = R.drawable.fifty_icon),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             text = "",
+            shadowEnabled = false,
             onPress = {
                 setStartingLife(50)
                 onDismiss()
@@ -28,6 +29,7 @@ fun StartingLifeDialogContent(
         SettingsButton(imageResource = painterResource(id = R.drawable.forty_icon),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             text = "",
+            shadowEnabled = false,
             onPress = {
                 setStartingLife(40)
                 onDismiss()
@@ -37,6 +39,7 @@ fun StartingLifeDialogContent(
         SettingsButton(imageResource = painterResource(id = R.drawable.thirty_icon),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             text = "",
+            shadowEnabled = false,
             onPress = {
                 setStartingLife(30)
                 onDismiss()
@@ -46,6 +49,7 @@ fun StartingLifeDialogContent(
         SettingsButton(imageResource = painterResource(id = R.drawable.twenty_icon),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             text = "",
+            shadowEnabled = false,
             onPress = {
                 setStartingLife(20)
                 onDismiss()
