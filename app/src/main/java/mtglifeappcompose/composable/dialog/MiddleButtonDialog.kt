@@ -115,6 +115,7 @@ fun MiddleButtonDialog(
                     SettingsButton(imageResource = painterResource(id = R.drawable.player_select_icon),
                         text = "Player Select",
                         mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
                         onPress = {
                             goToPlayerSelect()
                             onDismiss()
@@ -123,6 +124,7 @@ fun MiddleButtonDialog(
                     SettingsButton(imageResource = painterResource(id = R.drawable.reset_icon),
                         text = "Reset Game",
                         mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
                         onPress = {
                             resetPlayers()
                             onDismiss()
@@ -131,6 +133,7 @@ fun MiddleButtonDialog(
                     SettingsButton(imageResource = painterResource(R.drawable.forty_icon),
                         text = "Starting Life",
                         mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
                         onPress = {
                             showStartingLifeDialog.value = true
                         })
@@ -139,12 +142,14 @@ fun MiddleButtonDialog(
                         imageResource = painterResource(R.drawable.moon_icon),
                         text = "Toggle Theme",
                         mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
                         onPress = toggleTheme
                     )
                 }, {
                     SettingsButton(imageResource = painterResource(id = R.drawable.player_count_icon),
                         text = "Player Number",
                         mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
                         onPress = {
                             showPlayerNumberDialog.value = true
                         })
@@ -152,6 +157,7 @@ fun MiddleButtonDialog(
                     SettingsButton(imageResource = painterResource(R.drawable.mana_icon),
                         text = "Counters",
                         mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
                         onPress = {
                             showCounterDialog.value = true
                         })
@@ -159,6 +165,7 @@ fun MiddleButtonDialog(
                     SettingsButton(imageResource = painterResource(R.drawable.six_icon),
                         text = "Dice roll",
                         mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
                         onPress = {
                             showDiceRollDialog.value = true
                         })
@@ -166,6 +173,7 @@ fun MiddleButtonDialog(
                     SettingsButton(imageResource = painterResource(R.drawable.coin_icon),
                         text = "Coin Flip",
                         mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
                         onPress = {
                             showCoinFlipDialog.value = true
                         })
@@ -288,6 +296,7 @@ fun BackButton(modifier: Modifier = Modifier, onBack: () -> Unit) {
         mainColor = MaterialTheme.colorScheme.onPrimary,
         backgroundColor = Color.Transparent,
         text = "",
+        shadowEnabled = false,
         imageResource = painterResource(id = R.drawable.enter_icon),
         onTap = onBack
     )
@@ -301,6 +310,7 @@ fun ExitButton(modifier: Modifier = Modifier, onDismiss: () -> Unit) {
         mainColor = MaterialTheme.colorScheme.onPrimary,
         backgroundColor = Color.Transparent,
         text = "",
+        shadowEnabled = false,
         imageResource = painterResource(id = R.drawable.x_icon),
         onTap = onDismiss
     )

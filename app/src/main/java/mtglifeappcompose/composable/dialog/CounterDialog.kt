@@ -133,7 +133,7 @@ fun SingleCounter(
                 .size(60.dp)
                 .repeatingClickable(interactionSource = interactionSource,
                     enabled = true,
-                    onClick = { onDecrement() }),
+                    onPress = { onDecrement() }),
         ) {
             Image(
                 modifier = Modifier
@@ -169,7 +169,7 @@ fun SingleCounter(
                 .size(60.dp)
                 .repeatingClickable(interactionSource = interactionSource,
                     enabled = true,
-                    onClick = { onIncrement() }),
+                    onPress = { onIncrement() }),
         ) {
             Image(
                 modifier = Modifier
