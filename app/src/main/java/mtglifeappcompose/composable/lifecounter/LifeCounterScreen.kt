@@ -202,7 +202,7 @@ fun LifeCounterScreen(
             Spacer(modifier = Modifier.weight(0 + middleButtonOffset))
             AnimatedMiddleButton(modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .size(60.dp),
+                .size(50.dp),
                 visible = showButtons,
                 onMiddleButtonClick = {
                     showDialog = true
@@ -357,7 +357,9 @@ fun AnimatedMiddleButton(
     scale = animatableScale.value
 
     Box(modifier = modifier
-        .background(color = MaterialTheme.colorScheme.background, shape = CircleShape)
+        .background(
+            color = MaterialTheme.colorScheme.background, shape = CircleShape
+        )
         .rotate(angle)
         .graphicsLayer {
             scaleX = scale
@@ -367,8 +369,7 @@ fun AnimatedMiddleButton(
             detectTapGestures(onPress = {
                 onMiddleButtonClick()
             })
-        }
-    ) {
+        }) {
         Image(
             modifier = Modifier
                 .fillMaxSize()
