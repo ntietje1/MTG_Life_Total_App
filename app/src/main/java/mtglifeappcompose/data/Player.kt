@@ -6,10 +6,12 @@ import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import com.example.mtglifeappcompose.R
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -20,6 +22,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
+import mtglifeappcompose.composable.lifecounter.CounterType
 import mtglifeappcompose.ui.theme.allPlayerColors
 
 @Serializable(with = PlayerSerializer::class)
@@ -41,8 +44,14 @@ class Player(
     val playerNum get() = currentPlayers.indexOf(this) + 1
     val isDead get() = (life <= 0)
 
-    val commanderDamage: ArrayList<Int> = arrayListOf<Int>().apply {
+    val commanderDamage = mutableStateListOf<Int>().apply {
         for (i in 0 until MAX_PLAYERS) {
+            add(0)
+        }
+    }
+
+    val counters = mutableStateListOf<Int>().apply {
+        for (i in 0 until CounterType.values().size) {
             add(0)
         }
     }

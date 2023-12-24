@@ -88,7 +88,6 @@ import mtglifeappcompose.composable.SettingsButton
 import mtglifeappcompose.composable.VerticalRotation
 import mtglifeappcompose.composable.animatedBorderCard
 import mtglifeappcompose.composable.bounceClick
-import mtglifeappcompose.composable.lifecounter.PlayerButtonStateManager.setDealer
 import mtglifeappcompose.composable.repeatingClickable
 import mtglifeappcompose.composable.rotateVertically
 import mtglifeappcompose.data.ImageManager
@@ -131,10 +130,6 @@ object PlayerButtonStateManager {
     }
 
     var currentDealer: Player? = null
-
-    fun setDealer(dealer: Player) {
-        currentDealer = dealer
-    }
 }
 
 @Composable
@@ -155,7 +150,7 @@ fun PlayerButton(
     fun commanderButtonOnClick() {
         state.value = when (state.value) {
             PlayerButtonState.NORMAL -> {
-                setDealer(player)
+                PlayerButtonStateManager.currentDealer = player
                 PlayerButtonStateManager.updateAllStates(PlayerButtonState.COMMANDER_RECEIVER)
                 PlayerButtonState.COMMANDER_DEALER
             }
@@ -258,6 +253,16 @@ fun PlayerButton(
         )
     }
 
+//    val navController = rememberNavController()
+//
+//    NavHost(navController = navController, startDestination = "normal") {
+//        composable("normal") {  }
+//        composable("settings") {  }
+//    navController.navigate(route)
+//    navController.popBackStack()
+//
+//    }
+
 
     BoxWithConstraints(
         modifier = Modifier
@@ -272,7 +277,7 @@ fun PlayerButton(
                 }
             )
             .then(
-                if (state.value != PlayerButtonState.COUNTERS && state.value != PlayerButtonState.SETTINGS) {
+                if (state.value == PlayerButtonState.NORMAL || state.value == PlayerButtonState.COMMANDER_RECEIVER) {
                     Modifier.bounceClick()
                 } else {
                     Modifier
@@ -358,6 +363,7 @@ fun PlayerButton(
                             )
 
                         PlayerButtonState.COMMANDER_DEALER -> Text(
+                            modifier = Modifier.align(Alignment.Center),
                             text = "Deal damage with your commander",
                             color = player.textColor,
                             fontSize = 20.sp,
@@ -441,58 +447,144 @@ fun PlayerButton(
     }
 }
 
+private enum class CounterMenuState {
+    DEFAULT, ADD_COUNTER
+}
+
 @Composable
 fun Counters(modifier: Modifier = Modifier, player: Player) {
+    val activeCounters =
+        remember { mutableStateListOf<Int>() } // indexes of counters that are visible
+    var state by remember { mutableStateOf(CounterMenuState.DEFAULT) }
+    val haptic = LocalHapticFeedback.current
+
     BoxWithConstraints(
         modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.2f), shape = RoundedCornerShape(25.dp))
     ) {
-        LazyRow(
-            Modifier
-                .fillMaxSize()
-                .padding(5.dp),
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            item {
-                Counter(
-                    player = player,
-                    value = player.life,
-                    onIncrement = { player.incrementLife(1) },
-                    onDecrement = { player.incrementLife(-1) },
-                    icon = painterResource(id = R.drawable.heart_solid_icon)
-                )
+        val exitButtonSize = maxHeight / 3f
+        when (state) {
+            CounterMenuState.DEFAULT -> {
+                LazyRow(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(5.dp),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    items(activeCounters) { index ->
+                        Counter(
+                            player = player,
+                            icon = painterResource(id = CounterType.values()[index].resId),
+                            value = player.counters[index],
+                            onIncrement = { player.counters[index]++ },
+                            onDecrement = { player.counters[index]-- }
+                        )
+                    }
+                    item {
+                        AddCounter(
+                            player = player,
+                            onTap = {
+                                state = CounterMenuState.ADD_COUNTER
+                            },
+                        )
+                    }
+                }
             }
-            item {
-                Counter(
-                    player = player,
-                    value = player.life,
-                    onIncrement = { player.incrementLife(1) },
-                    onDecrement = { player.incrementLife(-1) },
-                    icon = painterResource(id = R.drawable.heart_solid_icon)
-                )
+
+            CounterMenuState.ADD_COUNTER -> {
+                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    LazyHorizontalGrid(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(5.dp)
+                            .weight(0.5f),
+                        rows = GridCells.Fixed(2),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        items(CounterType.values()) { counterType ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(0.5.dp)
+                                    .background(
+                                        if (counterType.idx in activeCounters) {
+                                            Color.Green.copy(alpha = 0.5f)
+                                        } else {
+                                            Color.Transparent
+                                        }
+                                    )
+                                    .pointerInput(Unit) {
+                                        detectTapGestures {
+                                            if (counterType.idx in activeCounters) {
+                                                activeCounters.remove(counterType.idx)
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            } else {
+                                                activeCounters.add(counterType.idx)
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            }
+                                        }
+                                    }
+                            ) {
+                                Image(
+                                    painter = painterResource(id = counterType.resId),
+                                    contentDescription = counterType.name,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(5.dp)
+                                )
+                            }
+                        }
+                    }
+                    SettingsButton(
+                        modifier = Modifier.padding(5.dp),
+                        size = exitButtonSize,
+                        backgroundColor = Color.Transparent,
+                        mainColor = player.textColor,
+                        imageResource = painterResource(id = R.drawable.enter_icon),
+                        onPress = {
+                            state = CounterMenuState.DEFAULT
+                        }
+                    )
+                }
             }
-            item {
-                Counter(
-                    player = player,
-                    value = player.life,
-                    onIncrement = { player.incrementLife(1) },
-                    onDecrement = { player.incrementLife(-1) },
-                    icon = painterResource(id = R.drawable.heart_solid_icon)
-                )
-            }
-            item {
-                Counter(
-                    player = player,
-                    value = player.life,
-                    onIncrement = { player.incrementLife(1) },
-                    onDecrement = { player.incrementLife(-1) },
-                    icon = painterResource(id = R.drawable.heart_solid_icon)
-                )
-            }
+
         }
     }
+}
 
+@Composable
+fun AddCounter(
+    player: Player,
+    onTap: () -> Unit,
+) {
+    val haptic = LocalHapticFeedback.current
+    BoxWithConstraints(
+        Modifier
+            .fillMaxHeight()
+            .aspectRatio(0.70f)
+            .padding(5.dp)
+            .bounceClick(0.0125f)
+            .background(Color.Black.copy(0.2f), shape = RoundedCornerShape(30.dp))
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    onTap()
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
+            }
+    ) {
+        val iconSize = maxHeight / 2.5f
+        SettingsButton(
+            modifier = Modifier.align(Alignment.Center),
+            size = iconSize,
+            imageResource = painterResource(id = R.drawable.add_icon),
+            backgroundColor = Color.Transparent,
+            mainColor = player.textColor,
+            shadowEnabled = false,
+            enabled = false
+        )
+    }
 }
 
 @Composable
@@ -507,48 +599,41 @@ fun Counter(
     BoxWithConstraints(
         Modifier
             .fillMaxHeight()
-            .aspectRatio(0.80f)
+            .aspectRatio(0.70f)
             .padding(5.dp)
             .bounceClick(0.0125f)
+            .background(Color.Black.copy(0.2f), shape = RoundedCornerShape(30.dp))
+            .clip(RoundedCornerShape(30.dp))
     ) {
         val textSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).sp / 1.5f
         val iconSize = maxHeight / 4f
         val topPadding = maxHeight / 10f
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(30.dp)),
-            color = Color.Black.copy(0.2f),
-            shape = RoundedCornerShape(30.dp)
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.5f)
-                    .background(Color.White.copy(alpha = 0.04f))
-                    .pointerInput(Unit) {
-                        detectTapGestures {
-                            onIncrement()
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-                    })
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(1.0f)
-                    .background(Color.Black.copy(alpha = 0.04f))
-                    .pointerInput(Unit) {
-                        detectTapGestures {
-                            onDecrement()
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-                    })
-            }
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.5f)
+                .background(Color.White.copy(alpha = 0.04f))
+                .pointerInput(Unit) {
+                    detectTapGestures {
+                        onIncrement()
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                })
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(1.0f)
+                .background(Color.Black.copy(alpha = 0.04f))
+                .pointerInput(Unit) {
+                    detectTapGestures {
+                        onDecrement()
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                })
         }
-
 
         Column(
             Modifier.fillMaxSize(),
@@ -564,13 +649,12 @@ fun Counter(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.wrapContentSize()
             )
-            Icon(
+            Image(
                 painter = icon,
-                contentDescription = "Increment",
+                contentDescription = "Counter Icon",
                 modifier = Modifier
                     .size(iconSize)
-                    .padding(bottom = 15.dp),
-                tint = player.textColor
+                    .padding(bottom = 15.dp)
             )
         }
     }
