@@ -30,6 +30,7 @@ class PlayerDataManager(context: Context) {
     }
 
     fun savePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
+        if (player.isDefaultName()) return
         deletePlayer(player, playerList)
         playerList.add(player)
         savePlayers(playerList)
