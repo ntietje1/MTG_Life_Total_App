@@ -30,7 +30,6 @@ class Player(
     textColor: Color = Color.White,
     name: String = "Placeholder",
     monarch: Boolean = false,
-    shadowEnabled: Boolean = false,
 ) {
     var life: Int by mutableIntStateOf(life)
     var imageUri: Uri? by mutableStateOf(imageUri)
@@ -38,7 +37,6 @@ class Player(
     var textColor: Color by mutableStateOf(textColor)
     var name: String by mutableStateOf(name)
     var monarch: Boolean by mutableStateOf(monarch)
-    var shadowEnabled: Boolean by mutableStateOf(shadowEnabled)
     var recentChange: Int by mutableIntStateOf(0)
     val playerNum get() = currentPlayers.indexOf(this) + 1
     val isDead get() = (life <= 0)
@@ -54,6 +52,10 @@ class Player(
         this.color = other.color
         this.textColor = other.textColor
         this.name = other.name
+    }
+
+    fun isDefaultName(): Boolean {
+        return name in arrayOf("P1", "P2", "P3", "P4", "P5", "P6")
     }
 
     fun toggleMonarch() {
