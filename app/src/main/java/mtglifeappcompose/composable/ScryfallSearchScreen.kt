@@ -87,12 +87,10 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
     val coroutineScope = rememberCoroutineScope()
     val lastSearchWasError = remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
     fun search(qry: String) {
-        println("SEARCHING: $qry")
         if (qry.isBlank()) return
         coroutineScope.launch {
             searchResults = listOf()
@@ -203,7 +201,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
             items(searchResults) { card ->
                 CardPreview(card, onSelect = {
                     player.imageUri = Uri.parse(card.getUris().artCrop)
-                    PlayerDataManager(context).savePlayer(player)
+                    PlayerDataManager.savePlayer(player)
                 }, onPrintings = {
                     search(card.printsSearchUri)
                 })
@@ -362,11 +360,7 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
                         ), contentDescription = null
                     )
                 }
-
-
             }
         }
-
     }
-
 }
