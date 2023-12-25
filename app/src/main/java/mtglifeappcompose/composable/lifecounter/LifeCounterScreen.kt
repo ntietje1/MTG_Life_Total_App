@@ -53,7 +53,7 @@ import mtglifeappcompose.data.Player
 
 @Composable
 fun LifeCounterScreen(
-    players: MutableList<Player>,
+    players: List<Player>,
     resetPlayers: () -> Unit,
     setPlayerNum: (Int) -> Unit,
     setStartingLife: (Int) -> Unit,
@@ -134,7 +134,7 @@ fun LifeCounterScreen(
 
     var showDialog by remember { mutableStateOf(false) }
     val showButtons = remember { mutableStateOf(false) }
-    var blurBackground = remember { mutableStateOf(false) }
+    val blurBackground = remember { mutableStateOf(false) }
 
     LaunchedEffect(showDialog) {
         if (!showDialog) blurBackground.value = false
@@ -237,9 +237,7 @@ fun LifeCounterScreen(
             toggleTheme = { toggleTheme() },
             coinFlipHistory = history,
             counters = counters,
-
-            )
-
+        )
     }
 }
 
