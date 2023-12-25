@@ -5,12 +5,12 @@ import android.content.SharedPreferences
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class PlayerDataManager(context: Context) {
+object PlayerDataManager {
 
-    private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("player_data", Context.MODE_PRIVATE)
+    private lateinit var sharedPreferences: SharedPreferences
 
-    init {
+    fun initialize(context: Context) {
+        sharedPreferences = context.getSharedPreferences("player_data", Context.MODE_PRIVATE)
         with(sharedPreferences.edit()) {
             putString("[]", "error")
             apply()
@@ -22,7 +22,6 @@ class PlayerDataManager(context: Context) {
             putInt("startingLife", startingLife)
             apply()
         }
-        Player.startingLife = startingLife
     }
 
     fun loadStartingLife(): Int {
