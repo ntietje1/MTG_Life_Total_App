@@ -11,7 +11,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.example.mtglifeappcompose.R
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -23,14 +22,14 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
 import mtglifeappcompose.composable.lifecounter.CounterType
-import mtglifeappcompose.ui.theme.allPlayerColors
 
 @Serializable(with = PlayerSerializer::class)
 class Player(
-    life: Int = startingLife,
+    life: Int = -1,
     imageUri: Uri? = null,
     color: Color = Color.LightGray,
     textColor: Color = Color.White,
+    playerNum: Int = -1,
     name: String = "Placeholder",
     monarch: Boolean = false,
 ) {
@@ -41,19 +40,36 @@ class Player(
     var name: String by mutableStateOf(name)
     var monarch: Boolean by mutableStateOf(monarch)
     var recentChange: Int by mutableIntStateOf(0)
-    val playerNum get() = currentPlayers.indexOf(this) + 1
+    private var playerNum by mutableIntStateOf(playerNum)
+
     val isDead get() = (life <= 0)
 
-    val commanderDamage = mutableStateListOf<Int>().apply {
+    private val commanderDamage = mutableStateListOf<Int>().apply {
         for (i in 0 until MAX_PLAYERS) {
             add(0)
         }
     }
 
-    val counters = mutableStateListOf<Int>().apply {
+    private val counters = mutableStateListOf<Int>().apply {
         for (i in 0 until CounterType.values().size) {
             add(0)
         }
+    }
+
+    fun getCounterValue(counterType: CounterType): Int {
+        return counters[counterType.ordinal]
+    }
+
+    fun incrementCounterValue(counterType: CounterType, value: Int) {
+        counters[counterType.ordinal] += value
+    }
+
+    fun getCommanderDamage(currentDealer: Player): Int {
+        return currentDealer.commanderDamage[this.playerNum - 1]
+    }
+
+    fun incrementCommanderDamage(currentDealer: Player, value: Int) {
+        this.commanderDamage[currentDealer.playerNum - 1] += value
     }
 
     fun copySettings(other: Player) {
@@ -64,16 +80,7 @@ class Player(
     }
 
     fun isDefaultName(): Boolean {
-        return name in arrayOf("P1", "P2", "P3", "P4", "P5", "P6")
-    }
-
-    fun toggleMonarch() {
-        if (!this.monarch) {
-            for (player in currentPlayers) {
-                player.monarch = false
-            }
-        }
-        this.monarch = !this.monarch
+        return name.matches("P[1-$MAX_PLAYERS]".toRegex())
     }
 
     fun incrementLife(value: Int) {
@@ -93,7 +100,7 @@ class Player(
         handler.postDelayed(resetRecentChangeRunnable, 1500)
     }
 
-    private fun resetPlayer() {
+    fun resetPlayer(startingLife: Int) {
         life = startingLife
         recentChange = 0
         monarch = false
@@ -104,30 +111,6 @@ class Player(
 
     companion object {
         const val MAX_PLAYERS = 6
-        var currentPlayers: MutableList<Player> = mutableListOf()
-        var startingLife = 40
-
-        private fun getRandColor(): Color {
-            var color = allPlayerColors.random()
-            while (currentPlayers.any { it.color == color }) {
-                color = allPlayerColors.random()
-            }
-            return color
-        }
-
-        fun generatePlayer(player: Player = Player()): Player {
-            val playerColor = getRandColor()
-            player.color = playerColor
-            currentPlayers.add(player)
-            player.name = ("P" + player.playerNum)
-            return player
-        }
-
-        fun resetPlayers() {
-            currentPlayers.forEach { player ->
-                player.resetPlayer()
-            }
-        }
     }
 }
 
@@ -165,7 +148,6 @@ object PlayerSerializer : KSerializer<Player> {
                     else -> error("Unexpected index: $index")
                 }
             }
-            println("DESERIALIZED: $name, $imageUri, $color, $textColor")
             Player(
                 name = name,
                 imageUri = if (imageUri == "null") null else Uri.parse(imageUri),
