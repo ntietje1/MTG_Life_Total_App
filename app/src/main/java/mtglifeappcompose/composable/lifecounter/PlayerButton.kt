@@ -47,6 +47,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -54,6 +55,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -112,7 +114,7 @@ import java.lang.Float.min
 
 
 enum class PlayerButtonState {
-    NORMAL, COMMANDER_DEALER, COMMANDER_RECEIVER, SETTINGS, COUNTERS
+    NORMAL, COMMANDER_DEALER, COMMANDER_RECEIVER, SETTINGS
 }
 
 
@@ -146,32 +148,6 @@ fun PlayerButton(
     PlayerButtonStateManager.registerButtonState(state)
 
     val context = LocalContext.current
-
-    fun commanderButtonOnClick() {
-        state.value = when (state.value) {
-            PlayerButtonState.NORMAL -> {
-                PlayerButtonStateManager.currentDealer = player
-                PlayerButtonStateManager.updateAllStates(PlayerButtonState.COMMANDER_RECEIVER)
-                PlayerButtonState.COMMANDER_DEALER
-            }
-
-            PlayerButtonState.COMMANDER_DEALER -> {
-                PlayerButtonStateManager.updateAllStates(PlayerButtonState.NORMAL)
-                PlayerButtonState.NORMAL
-            }
-
-            else -> throw Exception("Invalid state for commanderButtonOnClick")
-        }
-    }
-
-    fun settingsButtonOnClick() {
-        state.value = when (state.value) {
-            PlayerButtonState.NORMAL -> PlayerButtonState.SETTINGS
-            PlayerButtonState.SETTINGS -> PlayerButtonState.NORMAL
-            PlayerButtonState.COUNTERS -> PlayerButtonState.NORMAL
-            else -> throw Exception("Invalid state for settingsButtonOnClick")
-        }
-    }
 
     fun addDamageToPlayer(receiver: Int, damage: Int) {
         println("${PlayerButtonStateManager.currentDealer!!.name} dealing damage to: $receiver")
@@ -207,10 +183,12 @@ fun PlayerButton(
 
     var showScryfallSearch by remember { mutableStateOf(false) }
 
+    val activeCounters = remember { mutableStateListOf<Int>() }
+
     val commanderButtonVisible =
         state.value in listOf(PlayerButtonState.NORMAL, PlayerButtonState.COMMANDER_DEALER)
     val settingsButtonVisible = state.value in listOf(
-        PlayerButtonState.NORMAL, PlayerButtonState.SETTINGS, PlayerButtonState.COUNTERS
+        PlayerButtonState.NORMAL, PlayerButtonState.SETTINGS
     )
 
     val launcher =
@@ -253,16 +231,46 @@ fun PlayerButton(
         )
     }
 
-//    val navController = rememberNavController()
-//
-//    NavHost(navController = navController, startDestination = "normal") {
-//        composable("normal") {  }
-//        composable("settings") {  }
-//    navController.navigate(route)
-//    navController.popBackStack()
-//
-//    }
+    val backStack = remember { mutableStateListOf<() -> Unit>() }
 
+    fun commanderButtonOnClick() {
+        state.value = when (state.value) {
+            PlayerButtonState.NORMAL -> {
+                PlayerButtonStateManager.currentDealer = player
+                PlayerButtonStateManager.updateAllStates(PlayerButtonState.COMMANDER_RECEIVER)
+                PlayerButtonState.COMMANDER_DEALER
+            }
+
+            PlayerButtonState.COMMANDER_DEALER -> {
+                PlayerButtonStateManager.updateAllStates(PlayerButtonState.NORMAL)
+                PlayerButtonState.NORMAL
+            }
+
+            else -> throw Exception("Invalid state for commanderButtonOnClick")
+        }
+    }
+
+    fun settingsButtonOnClick() {
+        when (state.value) {
+            PlayerButtonState.SETTINGS -> {
+                state.value = PlayerButtonState.NORMAL
+                backStack.clear()
+            }
+
+            PlayerButtonState.NORMAL -> {
+                state.value = PlayerButtonState.SETTINGS
+                backStack.add { state.value = PlayerButtonState.NORMAL }
+            }
+
+            else -> throw Exception("Invalid state for settingsButtonOnClick")
+        }
+    }
+
+    LaunchedEffect(state.value) {
+        if (state.value == PlayerButtonState.COMMANDER_RECEIVER) {
+            backStack.clear()
+        }
+    }
 
     BoxWithConstraints(
         modifier = Modifier
@@ -345,13 +353,6 @@ fun PlayerButton(
                     top = smallButtonSize / 4
                 )
 
-            val countersPadding =
-                if (wideButton) Modifier.padding(vertical = smallButtonSize / 4) else Modifier
-                    .padding(
-                        top = smallButtonSize / 4
-                    )
-                    .padding(horizontal = 5.dp)
-
             @Composable
             fun PlayerButtonContent(modifier: Modifier = Modifier) {
                 Box(modifier.fillMaxSize()) {
@@ -373,18 +374,36 @@ fun PlayerButton(
                         PlayerButtonState.SETTINGS -> SettingsMenu(
                             modifier = settingsPadding,
                             player = player,
+                            backStack = backStack,
+                            activeCounters = activeCounters,
                             onMonarchyButtonClick = { player.toggleMonarch() },
                             onFromCameraRollButtonClick = { showWarningDialog() },
                             closeSettingsMenu = { state.value = PlayerButtonState.NORMAL },
-                            onScryfallButtonClick = { showScryfallSearch = !showScryfallSearch },
-                            onCounterButtonClicked = { state.value = PlayerButtonState.COUNTERS }
+                            onScryfallButtonClick = { showScryfallSearch = !showScryfallSearch }
                         )
 
-                        PlayerButtonState.COUNTERS -> {
-                            Counters(modifier = countersPadding, player = player)
-                        }
+                        else -> {}
                     }
                 }
+            }
+
+            @Composable
+            fun BackButton(modifier: Modifier = Modifier) {
+                SettingsButton(
+                    modifier = modifier
+                        .padding(
+                        start = settingsStateMargin,
+                        bottom = settingsStateMargin,
+                            end = settingsStateMargin/2,
+                            top = settingsStateMargin/2
+                    ),
+                    size = smallButtonSize,
+                    backgroundColor = Color.Transparent,
+                    mainColor = player.textColor,
+                    visible = backStack.isNotEmpty(),
+                    imageResource = painterResource(id = R.drawable.back_icon),
+                    onPress =  { backStack.removeLast().invoke() }
+                )
             }
 
             @Composable
@@ -393,7 +412,7 @@ fun PlayerButton(
                     modifier = modifier
                         .padding(
                             start = commanderStateMargin,
-                            bottom = commanderStateMargin
+                            bottom = commanderStateMargin,
                         ),
                     visible = commanderButtonVisible,
                     onPress = { commanderButtonOnClick() },
@@ -401,6 +420,15 @@ fun PlayerButton(
                     color = player.textColor,
                     size = smallButtonSize
                 )
+            }
+
+            @Composable
+            fun BackButtonOrCommanderButton(modifier: Modifier = Modifier) {
+                if (commanderButtonVisible) {
+                    CommanderStateButton(modifier)
+                } else {
+                    BackButton(modifier)
+                }
             }
 
             @Composable
@@ -417,19 +445,18 @@ fun PlayerButton(
             }
 
             if (wideButton) {
-                // WIDE
-                Row(
+                Row( // WIDE
                     Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    CommanderStateButton(Modifier.align(Alignment.Bottom))
+                    BackButtonOrCommanderButton(Modifier.align(Alignment.Bottom))
                     PlayerButtonContent(Modifier.weight(0.5f))
                     SettingsStateButton(Modifier.align(Alignment.Bottom))
                 }
             } else {
-                // TALL
-                Column(Modifier.fillMaxSize()) {
+                Column(Modifier.fillMaxSize() // TALL
+                ) {
                     PlayerButtonContent(Modifier.weight(0.5f))
                     Row(
                         Modifier
@@ -438,7 +465,7 @@ fun PlayerButton(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        CommanderStateButton(Modifier.align(Alignment.Bottom))
+                        BackButtonOrCommanderButton(Modifier.align(Alignment.Bottom))
                         SettingsStateButton(Modifier.align(Alignment.Bottom))
                     }
                 }
@@ -452,9 +479,7 @@ private enum class CounterMenuState {
 }
 
 @Composable
-fun Counters(modifier: Modifier = Modifier, player: Player) {
-    val activeCounters =
-        remember { mutableStateListOf<Int>() } // indexes of counters that are visible
+fun Counters(modifier: Modifier = Modifier, player: Player, activeCounters: SnapshotStateList<Int>,  backStack: SnapshotStateList<() -> Unit>) {
     var state by remember { mutableStateOf(CounterMenuState.DEFAULT) }
     val haptic = LocalHapticFeedback.current
 
@@ -463,7 +488,6 @@ fun Counters(modifier: Modifier = Modifier, player: Player) {
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.2f), shape = RoundedCornerShape(25.dp))
     ) {
-        val exitButtonSize = maxHeight / 3f
         when (state) {
             CounterMenuState.DEFAULT -> {
                 LazyRow(
@@ -486,6 +510,7 @@ fun Counters(modifier: Modifier = Modifier, player: Player) {
                             player = player,
                             onTap = {
                                 state = CounterMenuState.ADD_COUNTER
+                                backStack.add { state = CounterMenuState.DEFAULT }
                             },
                         )
                     }
@@ -497,9 +522,8 @@ fun Counters(modifier: Modifier = Modifier, player: Player) {
                     LazyHorizontalGrid(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(5.dp)
-                            .weight(0.5f),
-                        rows = GridCells.Fixed(2),
+                            .padding(5.dp),
+                        rows = GridCells.Fixed(3),
                         horizontalArrangement = Arrangement.Center,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -507,6 +531,7 @@ fun Counters(modifier: Modifier = Modifier, player: Player) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
+                                    .aspectRatio(1.0f)
                                     .padding(0.5.dp)
                                     .background(
                                         if (counterType.idx in activeCounters) {
@@ -527,26 +552,19 @@ fun Counters(modifier: Modifier = Modifier, player: Player) {
                                         }
                                     }
                             ) {
-                                Image(
-                                    painter = painterResource(id = counterType.resId),
-                                    contentDescription = counterType.name,
+                                SettingsButton(
+                                    imageResource = painterResource(id = counterType.resId),
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(5.dp)
+                                        .padding(5.dp),
+                                    mainColor = player.textColor,
+                                    backgroundColor = Color.Transparent,
+                                    shadowEnabled = true,
+                                    enabled = false
                                 )
                             }
                         }
                     }
-                    SettingsButton(
-                        modifier = Modifier.padding(5.dp),
-                        size = exitButtonSize,
-                        backgroundColor = Color.Transparent,
-                        mainColor = player.textColor,
-                        imageResource = painterResource(id = R.drawable.enter_icon),
-                        onPress = {
-                            state = CounterMenuState.DEFAULT
-                        }
-                    )
                 }
             }
 
@@ -606,7 +624,7 @@ fun Counter(
             .clip(RoundedCornerShape(30.dp))
     ) {
         val textSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).sp / 1.5f
-        val iconSize = maxHeight / 4f
+//        val iconSize = maxHeight / 1f
         val topPadding = maxHeight / 10f
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -647,14 +665,19 @@ fun Counter(
                 fontSize = textSize,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.wrapContentSize()
+                modifier = Modifier.wrapContentSize(),
+                style = textShadowStyle
             )
-            Image(
-                painter = icon,
-                contentDescription = "Counter Icon",
+            SettingsButton(
+                imageResource = icon,
                 modifier = Modifier
-                    .size(iconSize)
-                    .padding(bottom = 15.dp)
+                    .fillMaxSize(0.5f)
+                    .aspectRatio(1.0f)
+                    .padding(bottom = 15.dp),
+                mainColor = player.textColor,
+                backgroundColor = Color.Transparent,
+                shadowEnabled = true,
+                enabled = false
             )
         }
     }
@@ -672,8 +695,6 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
                 .brightenColor(0.6f)
 
             PlayerButtonState.SETTINGS -> player.color.saturateColor(0.6f).brightenColor(0.8f)
-
-            PlayerButtonState.COUNTERS -> player.color.saturateColor(0.6f).brightenColor(0.8f)
 
             else -> throw Exception("unsupported state")
         }
@@ -698,10 +719,6 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
             }
 
             PlayerButtonState.SETTINGS -> {
-                if (player.isDead) deadSettingsColorMatrix else settingsColorMatrix
-            }
-
-            PlayerButtonState.COUNTERS -> {
                 if (player.isDead) deadSettingsColorMatrix else settingsColorMatrix
             }
 
@@ -840,17 +857,18 @@ fun PlayerInfo(
 }
 
 
-enum class SettingsState { Default, ChangeBackground, ColorPicker, ChangeName, LoadPlayer }
+enum class SettingsState { Default, ChangeBackground, ColorPicker, ChangeName, LoadPlayer, Counters }
 
 @Composable
 fun SettingsMenu(
     modifier: Modifier = Modifier,
     player: Player,
+    activeCounters: SnapshotStateList<Int>,
+    backStack: SnapshotStateList<() -> Unit>,
     onMonarchyButtonClick: () -> Unit,
     onFromCameraRollButtonClick: () -> Unit,
     onScryfallButtonClick: () -> Unit,
-    closeSettingsMenu: () -> Unit,
-    onCounterButtonClicked: () -> Unit
+    closeSettingsMenu: () -> Unit
 ) {
     var state by remember { mutableStateOf(SettingsState.Default) }
     val context = LocalContext.current
@@ -862,7 +880,6 @@ fun SettingsMenu(
             maxWidth / 3
         }
         settingsButtonSize = min(115F, settingsButtonSize.value).dp
-        println("settingsButtonSize: $settingsButtonSize")
         val smallPadding = settingsButtonSize / 10f
         val smallTextSize = maxHeight.value.sp / 12f
 
@@ -896,21 +913,27 @@ fun SettingsMenu(
                         FormattedSettingsButton(
                             imageResource = painterResource(R.drawable.download_icon),
                             text = "Load Player"
-                        ) { state = SettingsState.LoadPlayer }
+                        ) { state = SettingsState.LoadPlayer
+                            backStack.add { state = SettingsState.Default }
+                        }
                     }
 
                     item {
                         FormattedSettingsButton(
                             imageResource = painterResource(R.drawable.mana_icon),
                             text = "Player Counters"
-                        ) { onCounterButtonClicked() }
+                        ) { state = SettingsState.Counters
+                            backStack.add { state = SettingsState.Default }
+                        }
                     }
 
                     item {
                         FormattedSettingsButton(
                             imageResource = painterResource(R.drawable.change_background_icon),
                             text = "Set Background"
-                        ) { state = SettingsState.ChangeBackground }
+                        ) { state = SettingsState.ChangeBackground
+                            backStack.add { state = SettingsState.Default }
+                        }
                     }
                     item {
 //                        FormattedSettingsButton(
@@ -927,9 +950,15 @@ fun SettingsMenu(
                         FormattedSettingsButton(
                             imageResource = painterResource(R.drawable.change_name_icon),
                             text = "Change Name"
-                        ) { state = SettingsState.ChangeName }
+                        ) { state = SettingsState.ChangeName
+                            backStack.add { state = SettingsState.Default }
+                        }
                     }
                 }
+            }
+
+            SettingsState.Counters -> {
+                Counters(modifier = modifier.padding(5.dp), player = player, activeCounters = activeCounters, backStack = backStack)
             }
 
             SettingsState.ChangeBackground -> {
@@ -943,7 +972,9 @@ fun SettingsMenu(
                         FormattedSettingsButton(
                             imageResource = painterResource(R.drawable.color_picker_icon),
                             text = "Solid Color"
-                        ) { state = SettingsState.ColorPicker }
+                        ) { state = SettingsState.ColorPicker
+                            backStack.add { state = SettingsState.ChangeBackground }
+                        }
                     }
 
                     item {
