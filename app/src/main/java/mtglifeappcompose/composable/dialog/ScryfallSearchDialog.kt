@@ -1,4 +1,4 @@
-package mtglifeappcompose.composable
+package mtglifeappcompose.composable.dialog
 
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
@@ -61,7 +61,6 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.mtglifeappcompose.R
 import kotlinx.coroutines.launch
-import mtglifeappcompose.composable.dialog.SettingsDialog
 import mtglifeappcompose.data.Card
 import mtglifeappcompose.data.Player
 import mtglifeappcompose.data.PlayerDataManager
