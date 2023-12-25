@@ -351,7 +351,6 @@ fun PlayerButton(
                         else -> throw Exception("Invalid state for commanderButtonOnClick")
                     }
                 }
-
             }
 
             @Composable
@@ -361,7 +360,16 @@ fun PlayerButton(
                 } else if (backStack.isNotEmpty()) {
                     BackButton(modifier)
                 } else {
-                    Spacer(modifier = modifier)
+                    SettingsButton(
+                        modifier = modifier.padding(
+                            start = settingsStateMargin,
+                            bottom = settingsStateMargin,
+                            end = settingsStateMargin / 2,
+                            top = settingsStateMargin / 2
+                        ),
+                        size = smallButtonSize,
+                        visible = false
+                    )
                 }
             }
 
@@ -732,7 +740,7 @@ fun PlayerInfo(
 ) {
     val iconID = when (state) {
         PlayerButtonState.NORMAL -> R.drawable.heart_solid_icon
-        PlayerButtonState.COMMANDER_RECEIVER -> R.drawable.commander_solid_icon_small
+        PlayerButtonState.COMMANDER_RECEIVER -> R.drawable.commander_solid_icon
         else -> R.drawable.transparent
     }
 
