@@ -1193,7 +1193,6 @@ fun ChangeNameField(
 ) {
     var newName by remember { mutableStateOf(player.name) }
     val textColor = player.textColor.invert().copy(alpha = 1.0f)
-    val context = LocalContext.current
     BoxWithConstraints(modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -1261,7 +1260,6 @@ fun ChangeNameField(
 fun MiniPlayerButton(
     currPlayer: Player, player: Player, playerList: MutableList<Player>
 ) {
-    val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(modifier = Modifier
         .fillMaxHeight()
