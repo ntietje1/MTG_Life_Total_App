@@ -366,9 +366,7 @@ fun PlayerButton(
                             bottom = settingsStateMargin,
                             end = settingsStateMargin / 2,
                             top = settingsStateMargin / 2
-                        ),
-                        size = smallButtonSize,
-                        visible = false
+                        ), size = smallButtonSize, visible = false
                     )
                 }
             }
@@ -1310,17 +1308,18 @@ fun MiniPlayerButton(
 
 @Composable
 fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color: Color) {
-    BoxWithConstraints(modifier = modifier
-        .fillMaxHeight()
-        .aspectRatio(1f)
-        .background(color)
-        .pointerInput(Unit) {
-            detectTapGestures(
-                onTap = {
-                    onClick()
-                },
-            )
-        }) {}
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxHeight()
+            .aspectRatio(1f)
+            .background(color)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        onClick()
+                    },
+                )
+            }) {}
 }
 
 @Composable
