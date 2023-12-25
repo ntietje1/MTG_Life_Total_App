@@ -13,17 +13,17 @@ class AppViewModel : ViewModel() {
     private val buttonStates = mutableListOf<MutableState<PlayerButtonState>>()
     var currentDealer: Player? = null
 
-    fun generatePlayers(playerDataManager: PlayerDataManager) {
-        val startingLife = playerDataManager.loadStartingLife()
+    fun generatePlayers() {
+        val startingLife = PlayerDataManager.loadStartingLife()
         while (currentPlayers.size < Player.MAX_PLAYERS) {
             currentPlayers.add(generatePlayer(startingLife))
         }
     }
 
-    fun resetPlayers(playerDataManager: PlayerDataManager) {
-        val startingLife = playerDataManager.loadStartingLife()
-        currentPlayers.forEach { player ->
-            player.resetPlayer(startingLife)
+    fun resetPlayers() {
+        val startingLife = PlayerDataManager.loadStartingLife()
+        currentPlayers.forEach {
+            it.resetPlayer(startingLife)
         }
     }
 
@@ -43,9 +43,7 @@ class AppViewModel : ViewModel() {
 
     fun toggleMonarch(player: Player) {
         if (!player.monarch) {
-            for (p in currentPlayers) {
-                p.monarch = false
-            }
+            currentPlayers.forEach { it.monarch = false }
         }
         player.monarch = !player.monarch
     }
@@ -65,7 +63,7 @@ class AppViewModel : ViewModel() {
 
     fun setStartingLife(playerDataManager: PlayerDataManager, life: Int) {
         playerDataManager.saveStartingLife(life)
-        resetPlayers(playerDataManager)
+        resetPlayers()
     }
 
     fun getActivePlayers(): List<Player> {

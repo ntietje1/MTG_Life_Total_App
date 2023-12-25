@@ -31,10 +31,11 @@ enum class MTGScreen(val title: String) {
 fun MTGLifeTotalApp(
     navController: NavHostController = rememberNavController()
 ) {
-    val viewModel: AppViewModel = viewModel()
 
 //    val initialTheme = isSystemInDarkTheme()
+
     var darkTheme by remember { mutableStateOf(true) }
+    var numPlayers by remember { mutableStateOf(0) }
     PlayerDataManager.initialize(LocalContext.current)
 
     MTGLifeAppComposeTheme(darkTheme = darkTheme) {
@@ -45,18 +46,21 @@ fun MTGLifeTotalApp(
             exitTransition = { ExitTransition.None },
         ) {
             composable(route = MTGScreen.PlayerSelectScreen.name) {
-                viewModel.generatePlayers(PlayerDataManager)
                 PlayerSelectScreenWrapper(
-                    setPlayerNum = { viewModel.setPlayerNum(it, false) },
+                    setPlayerNum = { numPlayers = it },
                     goToLifeCounter = { navController.navigate(MTGScreen.LifeCounterScreen.name) }
                 )
             }
             composable(route = MTGScreen.LifeCounterScreen.name) {
+                val viewModel: AppViewModel = viewModel()
+                viewModel.generatePlayers()
+                viewModel.setPlayerNum(numPlayers, false)
+
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {}
                 LifeCounterScreen(
                     players = remember { viewModel.getActivePlayers() },
                     resetPlayers = {
-                        viewModel.resetPlayers(PlayerDataManager)
+                        viewModel.resetPlayers()
                         navController.navigate(MTGScreen.LifeCounterScreen.name)
                     },
                     setStartingLife = { viewModel.setStartingLife(PlayerDataManager, it) },
