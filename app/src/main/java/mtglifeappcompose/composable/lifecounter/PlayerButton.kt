@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
@@ -85,11 +84,11 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.mtglifeappcompose.R
-import mtglifeappcompose.composable.ScryfallSearchDialog
 import mtglifeappcompose.composable.SettingsButton
 import mtglifeappcompose.composable.VerticalRotation
 import mtglifeappcompose.composable.animatedBorderCard
 import mtglifeappcompose.composable.bounceClick
+import mtglifeappcompose.composable.dialog.ScryfallSearchDialog
 import mtglifeappcompose.composable.repeatingClickable
 import mtglifeappcompose.composable.rotateVertically
 import mtglifeappcompose.data.AppViewModel
@@ -120,10 +119,9 @@ enum class PlayerButtonState {
 
 @Composable
 fun PlayerButton(
+    modifier: Modifier = Modifier,
     player: Player,
     initialState: PlayerButtonState = PlayerButtonState.NORMAL,
-    width: Dp = 200.dp,
-    height: Dp = 150.dp,
     rotation: Float = 0f,
     blurBackground: MutableState<Boolean> = mutableStateOf(false)
 ) {
@@ -174,7 +172,6 @@ fun PlayerButton(
 
     BoxWithConstraints(
         modifier = Modifier
-            .fillMaxSize()
             .wrapContentSize()
             .then(
                 when (rotation) {
@@ -203,225 +200,220 @@ fun PlayerButton(
         }
 
         MonarchyIndicator(
-            modifier = Modifier
-                .width(width)
-                .height(height), monarch = player.monarch
-        )
-
-        BoxWithConstraints(
-            modifier = Modifier
-                .width(width)
-                .height(height)
-                .padding(3.dp)
-                .background(Color.Transparent)
-                .clip(RoundedCornerShape(30.dp)),
-            contentAlignment = Alignment.Center
+            modifier = modifier, monarch = player.monarch
         ) {
-            PlayerButtonBackground(player = player, state = state.value)
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Transparent)
+                    .clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
+            ) {
+                PlayerButtonBackground(player = player, state = state.value)
 
-            LifeChangeButtons(onIncrementLife = {
-                when (state.value) {
-                    PlayerButtonState.NORMAL -> {
-                        player.incrementLife(1)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
-
-                    PlayerButtonState.COMMANDER_RECEIVER -> {
-                        viewModel.currentDealer?.incrementCommanderDamage(player, 1)
-                        player.incrementLife(-1)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
-
-                    else -> {}
-                }
-            }, onDecrementLife = {
-                when (state.value) {
-                    PlayerButtonState.NORMAL -> {
-                        player.incrementLife(-1)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
-
-                    PlayerButtonState.COMMANDER_RECEIVER -> {
-                        viewModel.currentDealer?.incrementCommanderDamage(player, -1)
-                        player.incrementLife(1)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
-
-                    else -> {}
-                }
-            })
-
-            val smallButtonSize = (width / 15f) + (height / 10f)
-            val settingsStateMargin = smallButtonSize / 7f
-            val commanderStateMargin = settingsStateMargin * 1.4f
-
-            val wideButton = maxWidth / maxHeight > 1.4
-
-            val playerInfoPadding =
-                if (wideButton) Modifier.padding(bottom = smallButtonSize / 2) else Modifier.padding(
-                    top = smallButtonSize / 2
-                )
-
-            val settingsPadding =
-                if (wideButton) Modifier.padding(bottom = smallButtonSize / 4) else Modifier.padding(
-                    top = smallButtonSize / 4
-                )
-
-            @Composable
-            fun PlayerButtonContent(modifier: Modifier = Modifier) {
-                Box(modifier.fillMaxSize()) {
+                LifeChangeButtons(onIncrementLife = {
                     when (state.value) {
-                        PlayerButtonState.NORMAL, PlayerButtonState.COMMANDER_RECEIVER -> {
-                            PlayerInfo(
-                                modifier = playerInfoPadding,
-                                player = player,
-                                currentDealer = viewModel.currentDealer,
-                                state = state.value
-                            )
-                        }
-
-                        PlayerButtonState.COMMANDER_DEALER -> {
-                            Text(
-                                modifier = Modifier.align(Alignment.Center),
-                                text = "Deal damage with your commander",
-                                color = player.textColor,
-                                fontSize = 20.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-
-                        PlayerButtonState.SETTINGS -> {
-                            SettingsMenu(modifier = settingsPadding,
-                                player = player,
-                                backStack = backStack,
-                                activeCounters = activeCounters,
-                                onMonarchyButtonClick = { viewModel.toggleMonarch(player) },
-                                onFromCameraRollButtonClick = { showWarningDialog() },
-                                closeSettingsMenu = { state.value = PlayerButtonState.NORMAL },
-                                onScryfallButtonClick = {
-                                    showScryfallSearch = !showScryfallSearch
-                                })
-                        }
-
-                        else -> throw Exception("unsupported state")
-                    }
-                }
-            }
-
-            @Composable
-            fun BackButton(modifier: Modifier = Modifier) {
-                SettingsButton(modifier = modifier.padding(
-                    start = settingsStateMargin,
-                    bottom = settingsStateMargin,
-                    end = settingsStateMargin / 2,
-                    top = settingsStateMargin / 2
-                ),
-                    size = smallButtonSize,
-                    backgroundColor = Color.Transparent,
-                    mainColor = player.textColor,
-                    visible = backStack.isNotEmpty(),
-                    imageResource = painterResource(id = R.drawable.back_icon),
-                    onPress = { backStack.removeLast().invoke() })
-            }
-
-            @Composable
-            fun CommanderStateButton(modifier: Modifier = Modifier) {
-                PlayerStateButton(
-                    modifier = modifier.padding(
-                        start = commanderStateMargin,
-                        bottom = commanderStateMargin,
-                    ),
-                    visible = commanderButtonVisible,
-                    icon = painterResource(id = R.drawable.commander_solid_icon),
-                    color = player.textColor,
-                    size = smallButtonSize
-                ) {
-                    state.value = when (state.value) {
                         PlayerButtonState.NORMAL -> {
-                            viewModel.currentDealer = player
-                            viewModel.updateAllStates(PlayerButtonState.COMMANDER_RECEIVER)
-                            PlayerButtonState.COMMANDER_DEALER
+                            player.incrementLife(1)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
 
-                        PlayerButtonState.COMMANDER_DEALER -> {
-                            viewModel.updateAllStates(PlayerButtonState.NORMAL)
-                            PlayerButtonState.NORMAL
+                        PlayerButtonState.COMMANDER_RECEIVER -> {
+                            viewModel.currentDealer?.incrementCommanderDamage(player, 1)
+                            player.incrementLife(-1)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
 
-                        else -> throw Exception("Invalid state for commanderButtonOnClick")
+                        else -> {}
                     }
-                }
-            }
+                }, onDecrementLife = {
+                    when (state.value) {
+                        PlayerButtonState.NORMAL -> {
+                            player.incrementLife(-1)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
 
-            @Composable
-            fun BackButtonOrCommanderButton(modifier: Modifier = Modifier) {
-                if (commanderButtonVisible) {
-                    CommanderStateButton(modifier)
-                } else if (backStack.isNotEmpty()) {
-                    BackButton(modifier)
-                } else {
-                    SettingsButton(
-                        modifier = modifier.padding(
-                            start = settingsStateMargin,
-                            bottom = settingsStateMargin,
-                            end = settingsStateMargin / 2,
-                            top = settingsStateMargin / 2
-                        ), size = smallButtonSize, visible = false
+                        PlayerButtonState.COMMANDER_RECEIVER -> {
+                            viewModel.currentDealer?.incrementCommanderDamage(player, -1)
+                            player.incrementLife(1)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+
+                        else -> {}
+                    }
+                })
+
+                val smallButtonSize = (maxWidth / 15f) + (maxHeight / 10f)
+                val settingsStateMargin = smallButtonSize / 7f
+                val commanderStateMargin = settingsStateMargin * 1.4f
+
+                val wideButton = maxWidth / maxHeight > 1.4
+
+                val playerInfoPadding =
+                    if (wideButton) Modifier.padding(bottom = smallButtonSize / 2) else Modifier.padding(
+                        top = smallButtonSize / 2
                     )
-                }
-            }
 
-            @Composable
-            fun SettingsStateButton(modifier: Modifier = Modifier) {
-                PlayerStateButton(
-                    modifier = modifier.padding(
-                        end = settingsStateMargin, bottom = settingsStateMargin
-                    ),
-                    visible = settingsButtonVisible,
-                    icon = painterResource(id = R.drawable.settings_icon),
-                    color = player.textColor,
-                    size = smallButtonSize
-                ) {
-                    when (state.value) {
-                        PlayerButtonState.SETTINGS -> {
-                            state.value = PlayerButtonState.NORMAL
-                            backStack.clear()
+                val settingsPadding =
+                    if (wideButton) Modifier.padding(bottom = smallButtonSize / 4) else Modifier.padding(
+                        top = smallButtonSize / 4
+                    )
+
+                @Composable
+                fun PlayerButtonContent(modifier: Modifier = Modifier) {
+                    Box(modifier.fillMaxSize()) {
+                        when (state.value) {
+                            PlayerButtonState.NORMAL, PlayerButtonState.COMMANDER_RECEIVER -> {
+                                PlayerInfo(
+                                    modifier = playerInfoPadding,
+                                    player = player,
+                                    currentDealer = viewModel.currentDealer,
+                                    state = state.value
+                                )
+                            }
+
+                            PlayerButtonState.COMMANDER_DEALER -> {
+                                Text(
+                                    modifier = Modifier.align(Alignment.Center),
+                                    text = "Deal damage with your commander",
+                                    color = player.textColor,
+                                    fontSize = 20.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            PlayerButtonState.SETTINGS -> {
+                                SettingsMenu(modifier = settingsPadding,
+                                    player = player,
+                                    backStack = backStack,
+                                    activeCounters = activeCounters,
+                                    onMonarchyButtonClick = { viewModel.toggleMonarch(player) },
+                                    onFromCameraRollButtonClick = { showWarningDialog() },
+                                    closeSettingsMenu = { state.value = PlayerButtonState.NORMAL },
+                                    onScryfallButtonClick = {
+                                        showScryfallSearch = !showScryfallSearch
+                                    })
+                            }
+
+                            else -> throw Exception("unsupported state")
                         }
-
-                        PlayerButtonState.NORMAL -> {
-                            state.value = PlayerButtonState.SETTINGS
-                            backStack.add { state.value = PlayerButtonState.NORMAL }
-                        }
-
-                        else -> throw Exception("Invalid state for settingsButtonOnClick")
                     }
                 }
-            }
 
-            if (wideButton) {
-                Row( // WIDE
-                    Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    BackButtonOrCommanderButton(Modifier.align(Alignment.Bottom))
-                    PlayerButtonContent(Modifier.weight(0.5f))
-                    SettingsStateButton(Modifier.align(Alignment.Bottom))
+                @Composable
+                fun BackButton(modifier: Modifier = Modifier) {
+                    SettingsButton(modifier = modifier.padding(
+                        start = settingsStateMargin,
+                        bottom = settingsStateMargin,
+                        end = settingsStateMargin / 2,
+                        top = settingsStateMargin / 2
+                    ),
+                        size = smallButtonSize,
+                        backgroundColor = Color.Transparent,
+                        mainColor = player.textColor,
+                        visible = backStack.isNotEmpty(),
+                        imageResource = painterResource(id = R.drawable.back_icon),
+                        onPress = { backStack.removeLast().invoke() })
                 }
-            } else {
-                Column(
-                    Modifier.fillMaxSize() // TALL
-                ) {
-                    PlayerButtonContent(Modifier.weight(0.5f))
-                    Row(
-                        Modifier
-                            .wrapContentHeight()
-                            .fillMaxWidth(),
+
+                @Composable
+                fun CommanderStateButton(modifier: Modifier = Modifier) {
+                    PlayerStateButton(
+                        modifier = modifier.padding(
+                            start = commanderStateMargin,
+                            bottom = commanderStateMargin,
+                        ),
+                        visible = commanderButtonVisible,
+                        icon = painterResource(id = R.drawable.commander_solid_icon),
+                        color = player.textColor,
+                        size = smallButtonSize
+                    ) {
+                        state.value = when (state.value) {
+                            PlayerButtonState.NORMAL -> {
+                                viewModel.currentDealer = player
+                                viewModel.updateAllStates(PlayerButtonState.COMMANDER_RECEIVER)
+                                PlayerButtonState.COMMANDER_DEALER
+                            }
+
+                            PlayerButtonState.COMMANDER_DEALER -> {
+                                viewModel.updateAllStates(PlayerButtonState.NORMAL)
+                                PlayerButtonState.NORMAL
+                            }
+
+                            else -> throw Exception("Invalid state for commanderButtonOnClick")
+                        }
+                    }
+                }
+
+                @Composable
+                fun BackButtonOrCommanderButton(modifier: Modifier = Modifier) {
+                    if (commanderButtonVisible) {
+                        CommanderStateButton(modifier)
+                    } else if (backStack.isNotEmpty()) {
+                        BackButton(modifier)
+                    } else {
+                        SettingsButton(
+                            modifier = modifier.padding(
+                                start = settingsStateMargin,
+                                bottom = settingsStateMargin,
+                                end = settingsStateMargin / 2,
+                                top = settingsStateMargin / 2
+                            ), size = smallButtonSize, visible = false
+                        )
+                    }
+                }
+
+                @Composable
+                fun SettingsStateButton(modifier: Modifier = Modifier) {
+                    PlayerStateButton(
+                        modifier = modifier.padding(
+                            end = settingsStateMargin, bottom = settingsStateMargin
+                        ),
+                        visible = settingsButtonVisible,
+                        icon = painterResource(id = R.drawable.settings_icon),
+                        color = player.textColor,
+                        size = smallButtonSize
+                    ) {
+                        when (state.value) {
+                            PlayerButtonState.SETTINGS -> {
+                                state.value = PlayerButtonState.NORMAL
+                                backStack.clear()
+                            }
+
+                            PlayerButtonState.NORMAL -> {
+                                state.value = PlayerButtonState.SETTINGS
+                                backStack.add { state.value = PlayerButtonState.NORMAL }
+                            }
+
+                            else -> throw Exception("Invalid state for settingsButtonOnClick")
+                        }
+                    }
+                }
+
+                if (wideButton) {
+                    Row( // WIDE
+                        Modifier.fillMaxSize(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         BackButtonOrCommanderButton(Modifier.align(Alignment.Bottom))
+                        PlayerButtonContent(Modifier.weight(0.5f))
                         SettingsStateButton(Modifier.align(Alignment.Bottom))
+                    }
+                } else {
+                    Column(
+                        Modifier.fillMaxSize() // TALL
+                    ) {
+                        PlayerButtonContent(Modifier.weight(0.5f))
+                        Row(
+                            Modifier
+                                .wrapContentHeight()
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            BackButtonOrCommanderButton(Modifier.align(Alignment.Bottom))
+                            SettingsStateButton(Modifier.align(Alignment.Bottom))
+                        }
                     }
                 }
             }
@@ -430,7 +422,10 @@ fun PlayerButton(
 }
 
 @Composable
-fun MonarchyIndicator(modifier: Modifier = Modifier, monarch: Boolean = false) {
+fun MonarchyIndicator(
+    modifier: Modifier = Modifier, monarch: Boolean = false, content: @Composable () -> Unit = {}
+) {
+    val width = 2.dp
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(30.dp))
@@ -439,7 +434,7 @@ fun MonarchyIndicator(modifier: Modifier = Modifier, monarch: Boolean = false) {
                 if (monarch) {
                     Modifier.animatedBorderCard(
                         shape = RoundedCornerShape(30.dp),
-                        borderWidth = 4.dp,
+                        borderWidth = width,
                         gradient = Brush.sweepGradient(
                             listOf(
                                 MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
@@ -451,10 +446,12 @@ fun MonarchyIndicator(modifier: Modifier = Modifier, monarch: Boolean = false) {
                         animationDuration = 10000
                     )
                 } else {
-                    Modifier
+                    Modifier.padding(width)
                 }
             )
-    )
+    ) {
+        content()
+    }
 }
 
 private enum class CounterMenuState {
@@ -1308,18 +1305,17 @@ fun MiniPlayerButton(
 
 @Composable
 fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color: Color) {
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxHeight()
-            .aspectRatio(1f)
-            .background(color)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = {
-                        onClick()
-                    },
-                )
-            }) {}
+    BoxWithConstraints(modifier = modifier
+        .fillMaxHeight()
+        .aspectRatio(1f)
+        .background(color)
+        .pointerInput(Unit) {
+            detectTapGestures(
+                onTap = {
+                    onClick()
+                },
+            )
+        }) {}
 }
 
 @Composable
