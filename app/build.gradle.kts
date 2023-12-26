@@ -4,9 +4,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
-//apply plugin: 'kotlin'
-//apply plugin: 'kotlinx-serialization'
-
 android {
     namespace = "com.example.mtglifeappcompose"
     compileSdk = 34
@@ -64,10 +61,7 @@ android {
 
 dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.5")
-//    implementation("androidx.appcompat:appcompat-resources:1.6.1")
 
-    implementation("com.github.yukuku:ambilwarna:2.0.1")
-//    implementation("io.reactivex.rxjava3:rxjava:3.1.8")
     implementation("com.wajahatkarim:flippable:1.0.6")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
     implementation("io.coil-kt:coil-compose:2.2.2")

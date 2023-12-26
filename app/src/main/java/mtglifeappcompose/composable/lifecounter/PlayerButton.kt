@@ -1,8 +1,6 @@
 package mtglifeappcompose.composable.lifecounter
 
 import android.app.AlertDialog
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.RoundRectShape
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -46,7 +44,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -62,7 +59,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -88,13 +84,14 @@ import mtglifeappcompose.composable.SettingsButton
 import mtglifeappcompose.composable.VerticalRotation
 import mtglifeappcompose.composable.animatedBorderCard
 import mtglifeappcompose.composable.bounceClick
+import mtglifeappcompose.composable.dialog.ColorDialog
 import mtglifeappcompose.composable.dialog.ScryfallSearchDialog
 import mtglifeappcompose.composable.repeatingClickable
 import mtglifeappcompose.composable.rotateVertically
 import mtglifeappcompose.data.AppViewModel
 import mtglifeappcompose.data.ImageManager
 import mtglifeappcompose.data.Player
-import mtglifeappcompose.data.PlayerDataManager
+import mtglifeappcompose.data.SharedPreferencesManager
 import mtglifeappcompose.ui.theme.Gold
 import mtglifeappcompose.ui.theme.allPlayerColors
 import mtglifeappcompose.ui.theme.brightenColor
@@ -109,7 +106,6 @@ import mtglifeappcompose.ui.theme.receiverColorMatrix
 import mtglifeappcompose.ui.theme.saturateColor
 import mtglifeappcompose.ui.theme.settingsColorMatrix
 import mtglifeappcompose.ui.theme.textShadowStyle
-import yuku.ambilwarna.AmbilWarnaDialog
 import java.lang.Float.min
 
 
@@ -122,8 +118,7 @@ fun PlayerButton(
     modifier: Modifier = Modifier,
     player: Player,
     initialState: PlayerButtonState = PlayerButtonState.NORMAL,
-    rotation: Float = 0f,
-    blurBackground: MutableState<Boolean> = mutableStateOf(false)
+    rotation: Float = 0f
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -145,7 +140,7 @@ fun PlayerButton(
             uri?.let { selectedUri ->
                 val copiedUri = imageManager.copyImageToInternalStorage(selectedUri)
                 player.imageUri = copiedUri
-                PlayerDataManager.savePlayer(player)
+                SharedPreferencesManager.savePlayer(player)
             }
         }
 
@@ -191,10 +186,10 @@ fun PlayerButton(
     ) {
         if (showScryfallSearch) {
             ScryfallSearchDialog(modifier = Modifier.onGloballyPositioned { _ ->
-                blurBackground.value = true
+                viewModel.blurBackground.value = true
             }, onDismiss = {
                 showScryfallSearch = false
-                blurBackground.value = false
+                viewModel.blurBackground.value = false
             }, player = player
             )
         }
@@ -472,6 +467,7 @@ fun Counters(
         modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.2f), shape = RoundedCornerShape(25.dp))
+            .clip(RoundedCornerShape(25.dp))
     ) {
         when (state) {
             CounterMenuState.DEFAULT -> {
@@ -505,7 +501,8 @@ fun Counters(
                     LazyHorizontalGrid(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(5.dp),
+                            .padding(5.dp)
+                            .clip(RoundedCornerShape(25.dp)),
                         rows = GridCells.Fixed(3),
                         horizontalArrangement = Arrangement.Center,
                         verticalArrangement = Arrangement.Center
@@ -1065,7 +1062,7 @@ fun SettingsMenu(
                                 ColorPickerButton(
                                     modifier = colorPickerTopPadding, onClick = {
                                         player.color = color
-                                        PlayerDataManager.savePlayer(player)
+                                        SharedPreferencesManager.savePlayer(player)
                                     }, color = color
                                 )
                             }
@@ -1081,7 +1078,7 @@ fun SettingsMenu(
                                 ColorPickerButton(
                                     modifier = colorPickerBottomPadding, onClick = {
                                         player.color = color
-                                        PlayerDataManager.savePlayer(player)
+                                        SharedPreferencesManager.savePlayer(player)
                                     }, color = color
                                 )
                             }
@@ -1115,7 +1112,7 @@ fun SettingsMenu(
                                 ColorPickerButton(
                                     modifier = Modifier.padding(colorPickerPadding), onClick = {
                                         player.textColor = color.value
-                                        PlayerDataManager.savePlayer(player)
+                                        SharedPreferencesManager.savePlayer(player)
                                     }, color = color.value
                                 )
                             }
@@ -1129,7 +1126,7 @@ fun SettingsMenu(
                 val playerList = remember { mutableStateListOf<Player>() }
 
                 DisposableEffect(context) {
-                    playerList.addAll(PlayerDataManager.loadPlayers())
+                    playerList.addAll(SharedPreferencesManager.loadPlayers())
                     onDispose {}
                 }
 
@@ -1196,66 +1193,82 @@ fun ChangeNameField(
 ) {
     var newName by remember { mutableStateOf(player.name) }
     val textColor = player.textColor.invert().copy(alpha = 1.0f)
+    fun onDone() {
+        player.name = newName
+        closeSettingsMenu()
+        SharedPreferencesManager.savePlayer(player)
+    }
     BoxWithConstraints(modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextField(value = newName,
-                onValueChange = { newName = it },
-                label = {
-                    Text(
-                        "New Name", color = player.color, fontSize = 12.sp
-                    )
-                },
-                textStyle = TextStyle(fontSize = 15.sp),
-                singleLine = true,
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = textColor,
-                    unfocusedTextColor = textColor,
-                    focusedContainerColor = player.textColor,
-                    unfocusedContainerColor = player.textColor,
-                    cursorColor = player.color,
-                    unfocusedIndicatorColor = player.textColor,
-                    focusedIndicatorColor = player.color
-                ),
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    autoCorrect = false,
-                    capitalization = KeyboardCapitalization.None,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(onDone = {
-                    player.name = newName
-                    closeSettingsMenu()
-                    PlayerDataManager.savePlayer(player)
-                }),
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .wrapContentHeight()
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 5.dp)
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Button(
-                onClick = {
-                    player.name = newName
-                    closeSettingsMenu()
-                    PlayerDataManager.savePlayer(player)
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = player.textColor, contentColor = player.color
-                ),
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth(0.7f)
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 20.dp)
-
+            Box(
+                modifier = Modifier.wrapContentSize()
             ) {
-                Text("Save Name")
+                TextField(
+                    value = newName,
+                    onValueChange = { newName = it },
+                    label = {
+                        Text(
+                            "New Name", color = player.color, fontSize = 12.sp
+                        )
+                    },
+                    textStyle = TextStyle(fontSize = 15.sp),
+                    singleLine = true,
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = textColor,
+                        unfocusedTextColor = textColor,
+                        focusedContainerColor = player.textColor,
+                        unfocusedContainerColor = player.textColor,
+                        cursorColor = player.color,
+                        unfocusedIndicatorColor = player.textColor,
+                        focusedIndicatorColor = player.color
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        autoCorrect = false,
+                        capitalization = KeyboardCapitalization.None,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { onDone() } ),
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .height(80.dp)
+                        .padding(top = 20.dp)
+                        .padding(horizontal = 5.dp)
+                )
+                SettingsButton(
+                    Modifier.align(Alignment.CenterEnd).padding(top = 20.dp, end = 5.dp),
+                    size = 50.dp,
+                    imageResource = painterResource(id = R.drawable.enter_icon),
+                    shadowEnabled = false,
+                    mainColor = player.color,
+                    backgroundColor = player.textColor,
+                    onPress = { onDone() }
+                )
             }
-        }
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    onClick = {
+                        player.name = newName
+                        closeSettingsMenu()
+                        SharedPreferencesManager.savePlayer(player)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = player.textColor, contentColor = player.color
+                    ),
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .fillMaxWidth(0.7f)
+                        .padding(horizontal = 10.dp)
+                        .padding(bottom = 20.dp)
+
+                ) {
+                    Text("Save Name")
+                }
+            }
+
     }
 }
 
@@ -1273,7 +1286,7 @@ fun MiniPlayerButton(
                 currPlayer.copySettings(player)
             }, onLongPress = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                PlayerDataManager.deletePlayer(player)
+                SharedPreferencesManager.deletePlayer(player)
                 playerList.remove(player)
             })
         }) {
@@ -1320,7 +1333,25 @@ fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color:
 
 @Composable
 fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player) {
-    val context = LocalContext.current
+    val viewModel: AppViewModel = viewModel()
+    var showColorDialog by remember { mutableStateOf(false) }
+
+    if (showColorDialog) {
+        ColorDialog(
+            modifier = Modifier.fillMaxSize(),
+            onDismiss = {
+                showColorDialog = false
+                viewModel.blurBackground.value = false
+                        },
+            initialColor = player.color,
+            setColor = { color ->
+                player.imageUri = null
+                player.color = color
+                SharedPreferencesManager.savePlayer(player)
+            }
+        )
+    }
+
     BoxWithConstraints(
         modifier = modifier
             .fillMaxHeight()
@@ -1328,33 +1359,8 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player) {
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
-                        val initialColor = player.color
-
-                        val colorPickerDialog = AmbilWarnaDialog(context,
-                            initialColor.toArgb(),
-                            object : AmbilWarnaDialog.OnAmbilWarnaListener {
-                                override fun onCancel(dialog: AmbilWarnaDialog?) {
-                                    // User canceled the color picker dialog
-                                }
-
-                                override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
-                                    player.imageUri = null
-                                    player.color = Color(color)
-                                    PlayerDataManager.savePlayer(player)
-                                }
-                            })
-
-                        val corner = 60.dp.value
-                        val corners = FloatArray(8)
-                        for (i in 0..7) corners[i] = corner
-
-                        colorPickerDialog.dialog?.window?.setBackgroundDrawable(ShapeDrawable(
-                            RoundRectShape(corners, null, null)
-                        ).apply {
-                            setTint(Color.DarkGray.toArgb())
-                        })
-
-                        colorPickerDialog.show()
+                        showColorDialog = true
+                        viewModel.blurBackground.value = true
                     },
                 )
             },
