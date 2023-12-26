@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-object PlayerDataManager {
+object SharedPreferencesManager {
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -15,6 +15,39 @@ object PlayerDataManager {
             putString("[]", "error")
             apply()
         }
+    }
+
+    fun loadNumPlayers(): Int {
+        return sharedPreferences.getInt("numPlayers", 4)
+    }
+
+    fun saveNumPlayers(numPlayers: Int) {
+        with(sharedPreferences.edit()) {
+            putInt("numPlayers", numPlayers)
+            apply()
+        }
+    }
+
+    fun save4PlayerLayout(alt4PlayerLayout: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("alt4PlayerLayout", alt4PlayerLayout)
+            apply()
+        }
+    }
+
+    fun load4PlayerLayout(): Boolean {
+        return sharedPreferences.getBoolean("alt4PlayerLayout", false)
+    }
+
+    fun saveTheme(darkTheme: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("darkTheme", darkTheme)
+            apply()
+        }
+    }
+
+    fun loadTheme(): Boolean {
+        return sharedPreferences.getBoolean("darkTheme", true)
     }
 
     fun saveStartingLife(startingLife: Int) {
@@ -38,8 +71,7 @@ object PlayerDataManager {
     fun deletePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
         val iterator = playerList.iterator()
         while (iterator.hasNext()) {
-            val p = iterator.next()
-            if (p.name == player.name) {
+            if (iterator.next().name == player.name) {
                 iterator.remove()
             }
         }
