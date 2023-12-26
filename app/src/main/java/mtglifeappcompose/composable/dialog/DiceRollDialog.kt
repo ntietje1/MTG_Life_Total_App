@@ -11,7 +11,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +46,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun DiceRollDialogContent(
-    modifier: Modifier = Modifier, onDismiss: () -> Unit, showDiceRollDialog: MutableState<Boolean>
+    modifier: Modifier = Modifier, onDismiss: () -> Unit
 ) {
     GridDialogContent(modifier, items = listOf({
         DiceRollButton(value = 4, imageResource = painterResource(id = R.drawable.d4_icon))
@@ -56,17 +55,11 @@ fun DiceRollDialogContent(
     }, {
         DiceRollButton(value = 8, imageResource = painterResource(id = R.drawable.d8_icon))
     }, {
-        DiceRollButton(
-            value = 10, imageResource = painterResource(id = R.drawable.d10_icon)
-        )
+        DiceRollButton(value = 10, imageResource = painterResource(id = R.drawable.d10_icon))
     }, {
-        DiceRollButton(
-            value = 12, imageResource = painterResource(id = R.drawable.d12_icon)
-        )
+        DiceRollButton(value = 12, imageResource = painterResource(id = R.drawable.d12_icon))
     }, {
-        DiceRollButton(
-            value = 20, imageResource = painterResource(id = R.drawable.d20_icon)
-        )
+        DiceRollButton(value = 20, imageResource = painterResource(id = R.drawable.d20_icon))
     }))
 }
 

@@ -15,7 +15,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,10 +34,7 @@ import mtglifeappcompose.composable.repeatingClickable
 
 @Composable
 fun CounterDialogContent(
-    modifier: Modifier = Modifier,
-    counters: ArrayList<MutableIntState>,
-    onDismiss: () -> Unit,
-    showCounterDialog: MutableState<Boolean>
+    modifier: Modifier = Modifier, counters: ArrayList<MutableIntState>, onDismiss: () -> Unit
 ) {
 
     val haptic = LocalHapticFeedback.current
@@ -54,16 +50,11 @@ fun CounterDialogContent(
     )
 
     LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(3.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier, verticalArrangement = Arrangement.spacedBy(3.dp), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             Text(
-                modifier = Modifier.alpha(0.9f),
-                text = "Floating Mana",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 20.sp
+                modifier = Modifier.alpha(0.9f), text = "Floating Mana", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp
             )
         }
 
@@ -77,10 +68,7 @@ fun CounterDialogContent(
             Text(
                 modifier = Modifier
                     .alpha(0.9f)
-                    .padding(top = 2.dp),
-                text = "Storm Count",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 20.sp
+                    .padding(top = 2.dp), text = "Storm Count", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp
             )
         }
 
@@ -104,9 +92,7 @@ fun CounterDialogContent(
 
 @Composable
 fun SingleCounter(
-    modifier: Modifier = Modifier,
-    imageResource: Painter = painterResource(id = R.drawable.placeholder_icon),
-    counter: MutableIntState
+    modifier: Modifier = Modifier, imageResource: Painter = painterResource(id = R.drawable.placeholder_icon), counter: MutableIntState
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -124,24 +110,17 @@ fun SingleCounter(
 
 
     Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Box(
             modifier = Modifier
                 .size(60.dp)
-                .repeatingClickable(interactionSource = interactionSource,
-                    enabled = true,
-                    onPress = { onDecrement() }),
+                .repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onDecrement() }),
         ) {
             Image(
                 modifier = Modifier
                     .fillMaxSize(0.7f)
-                    .align(Alignment.CenterEnd),
-                painter = painterResource(R.drawable.minus_icon),
-                contentScale = ContentScale.Crop,
-                contentDescription = null
+                    .align(Alignment.CenterEnd), painter = painterResource(R.drawable.minus_icon), contentScale = ContentScale.Crop, contentDescription = null
             )
         }
 
@@ -154,12 +133,7 @@ fun SingleCounter(
         Spacer(modifier = Modifier.width(5.dp))
 
         Text(
-            modifier = Modifier.width(50.dp),
-            text = "${counter.value}",
-            textAlign = TextAlign.Justify,
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
+            modifier = Modifier.width(50.dp), text = "${counter.value}", textAlign = TextAlign.Justify, color = MaterialTheme.colorScheme.onPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.width(0.dp))
@@ -167,17 +141,12 @@ fun SingleCounter(
         Box(
             modifier = Modifier
                 .size(60.dp)
-                .repeatingClickable(interactionSource = interactionSource,
-                    enabled = true,
-                    onPress = { onIncrement() }),
+                .repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onIncrement() }),
         ) {
             Image(
                 modifier = Modifier
                     .fillMaxSize(0.7f)
-                    .align(Alignment.CenterStart),
-                painter = painterResource(R.drawable.plus_icon),
-                contentScale = ContentScale.Crop,
-                contentDescription = null
+                    .align(Alignment.CenterStart), painter = painterResource(R.drawable.plus_icon), contentScale = ContentScale.Crop, contentDescription = null
             )
         }
     }

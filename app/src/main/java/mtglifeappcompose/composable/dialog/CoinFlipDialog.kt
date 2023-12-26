@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +53,6 @@ import kotlin.random.Random
 fun CoinFlipDialogContent(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    showCoinFlipDialog: MutableState<Boolean>,
     history: SnapshotStateList<String>,
 ) {
     CoinFlipDialogBox(modifier, history)
@@ -79,8 +77,7 @@ fun CoinFlipDialogBox(modifier: Modifier = Modifier, history: SnapshotStateList<
         FlipHistory(
             Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(bottom = 0.dp),
-            coinFlipHistory = history
+                .padding(bottom = 0.dp), coinFlipHistory = history
         )
         Spacer(Modifier.weight(0.7f))
     }
@@ -123,12 +120,11 @@ fun CoinFlippable(
             }
         }
         if (flipCount > 0) {
-            flipAnimationType =
-                if (flipAnimationType == FlipAnimationType.VERTICAL_ANTI_CLOCKWISE) {
-                    FlipAnimationType.VERTICAL_CLOCKWISE
-                } else {
-                    FlipAnimationType.VERTICAL_ANTI_CLOCKWISE
-                }
+            flipAnimationType = if (flipAnimationType == FlipAnimationType.VERTICAL_ANTI_CLOCKWISE) {
+                FlipAnimationType.VERTICAL_CLOCKWISE
+            } else {
+                FlipAnimationType.VERTICAL_ANTI_CLOCKWISE
+            }
             flipController.flip()
             decrementFlipCount()
         } else {
@@ -150,16 +146,12 @@ fun CoinFlippable(
         flipAnimationType = flipAnimationType,
         frontSide = {
             Image(
-                painter = painterResource(id = R.drawable.heads),
-                contentDescription = "Front Side",
-                modifier = Modifier.fillMaxSize()
+                painter = painterResource(id = R.drawable.heads), contentDescription = "Front Side", modifier = Modifier.fillMaxSize()
             )
         },
         backSide = {
             Image(
-                painter = painterResource(id = R.drawable.tails),
-                contentDescription = "Back Side",
-                modifier = Modifier.fillMaxSize()
+                painter = painterResource(id = R.drawable.tails), contentDescription = "Back Side", modifier = Modifier.fillMaxSize()
             )
         },
         onFlippedListener = { currentSide ->
@@ -181,8 +173,7 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
 
         ) {
         Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
+            modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
         ) {
             Text(
                 text = "Reset",
@@ -208,8 +199,7 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
-        horizontalArrangement = Arrangement.Center
+            .wrapContentHeight(), horizontalArrangement = Arrangement.Center
     ) {
         Text(
             text = buildAnnotatedString {
@@ -223,9 +213,7 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
                 ) {
                     append("$numberOfHeads")
                 }
-            },
-            style = TextStyle(fontSize = textSize),
-            modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
+            }, style = TextStyle(fontSize = textSize), modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
         )
         Spacer(modifier.width(10.dp))
         Text(
@@ -240,9 +228,7 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
                 ) {
                     append("$numberOfTails")
                 }
-            },
-            style = TextStyle(fontSize = textSize),
-            modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
+            }, style = TextStyle(fontSize = textSize), modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
         )
         Spacer(modifier.width(10.dp))
         ResetButton(onReset = {
@@ -278,8 +264,7 @@ fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<Stri
                 .align(Alignment.CenterHorizontally)
                 .fillMaxWidth(0.8f)
                 .height(35.dp)
-                .clip(RoundedCornerShape(30.dp)),
-            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
+                .clip(RoundedCornerShape(30.dp)), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
         ) {
             Column(
                 modifier = Modifier
