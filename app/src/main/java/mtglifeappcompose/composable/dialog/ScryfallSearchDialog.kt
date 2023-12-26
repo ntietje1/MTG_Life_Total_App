@@ -47,6 +47,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -63,19 +64,15 @@ import com.example.mtglifeappcompose.R
 import kotlinx.coroutines.launch
 import mtglifeappcompose.data.Card
 import mtglifeappcompose.data.Player
-import mtglifeappcompose.data.PlayerDataManager
 import mtglifeappcompose.data.ScryfallApiRetriever
+import mtglifeappcompose.data.SharedPreferencesManager
 
 
 @Composable
 fun ScryfallSearchDialog(modifier: Modifier = Modifier, player: Player, onDismiss: () -> Unit) {
-    SettingsDialog(
-        modifier = modifier,
-        backButtonEnabled = false,
-        onDismiss = onDismiss,
-        content = {
-            ScryfallSearchScreen(player = player)
-        })
+    SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss)  {
+        ScryfallSearchScreen(player = player)
+    }
 }
 
 @Composable
@@ -93,8 +90,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
         if (qry.isBlank()) return
         coroutineScope.launch {
             searchResults = listOf()
-            searchResults =
-                scryfallApiRetriever.parseScryfallResponse(scryfallApiRetriever.searchScryfall(qry))
+            searchResults = scryfallApiRetriever.parseScryfallResponse(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError.value = searchResults.isEmpty()
         }
     }
@@ -105,51 +101,38 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
                 .wrapContentSize()
                 .padding(start = 20.dp, end = 20.dp)
                 .clip(RoundedCornerShape(10.dp))
-
         ) {
-            TextField(value = query,
-                onValueChange = { query = it },
-                label = { Text("Search Scryfall") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Search
+            TextField(value = query, onValueChange = { query = it }, label = { Text("Search Scryfall") }, singleLine = true, keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.None, autoCorrect = false, keyboardType = KeyboardType.Text, imeAction = ImeAction.Search
+            ), keyboardActions = KeyboardActions(onSearch = {
+                search(query)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                focusManager.clearFocus()
+            }), colors = TextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                disabledTextColor = MaterialTheme.colorScheme.onPrimary,
+                focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
+                cursorColor = MaterialTheme.colorScheme.onPrimary,
+                selectionColors = TextSelectionColors(
+                    handleColor = MaterialTheme.colorScheme.onPrimary,
+                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                 ),
-                keyboardActions = KeyboardActions(onSearch = {
-                    search(query)
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    focusManager.clearFocus()
-                }),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledTextColor = MaterialTheme.colorScheme.onPrimary,
-                    focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    cursorColor = MaterialTheme.colorScheme.onPrimary,
-                    selectionColors = TextSelectionColors(
-                        handleColor = MaterialTheme.colorScheme.onPrimary,
-                        backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                    ),
-                    focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                    unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                    disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                ),
-                modifier = Modifier
-                    .height(60.dp)
-                    .fillMaxWidth()
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f),
-                        RoundedCornerShape(10.dp)
-                    )
-                    .align(Alignment.CenterStart)
+                focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            ), modifier = Modifier
+                .height(60.dp)
+                .fillMaxWidth()
+                .border(
+                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10.dp)
+                )
+                .align(Alignment.CenterStart)
             )
             Box(
                 Modifier
@@ -159,17 +142,14 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
             ) {
                 IconButton(
                     onClick = {
-                        query = ""
+                        search(query)
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }, modifier = Modifier.size(50.dp)
                 ) {
                     Icon(
-                        painter = rememberAsyncImagePainter(R.drawable.x_icon),
-                        contentDescription = "Clear",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
+                        painter = painterResource(R.drawable.search_icon), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier
                             .fillMaxSize()
-                            .padding(10.dp)
+                            .padding(5.dp)
                     )
                 }
             }
@@ -178,8 +158,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(top = 10.dp),
-            visible = lastSearchWasError.value
+                .padding(top = 10.dp), visible = lastSearchWasError.value
         ) {
             Text("No cards found :(", color = Color.Red)
         }
@@ -191,16 +170,13 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
             if (searchResults.isEmpty()) return@LazyColumn
             item {
                 Text(
-                    "${searchResults.size} results",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 10.dp)
+                    "${searchResults.size} results", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 10.dp)
                 )
             }
             items(searchResults) { card ->
                 CardPreview(card, onSelect = {
                     player.imageUri = Uri.parse(card.getUris().artCrop)
-                    PlayerDataManager.savePlayer(player)
+                    SharedPreferencesManager.savePlayer(player)
                 }, onPrintings = {
                     search(card.printsSearchUri)
                 })
@@ -222,8 +198,7 @@ fun ScryfallButton(modifier: Modifier = Modifier, text: String, onTap: () -> Uni
         Surface(
             modifier = Modifier
                 .wrapContentSize()
-                .clip(RoundedCornerShape(10.dp)),
-            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
+                .clip(RoundedCornerShape(10.dp)), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
         ) {
             Text(
                 text = text,
@@ -260,8 +235,7 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
                         .clip(CutCornerShape(125.dp))
                         .fillMaxSize(0.85f)
                         .align(Alignment.Center), painter = rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalContext.current).data(card.getUris().large)
-                            .crossfade(true).build()
+                        ImageRequest.Builder(LocalContext.current).data(card.getUris().large).crossfade(true).build()
                     ), contentDescription = null
                 )
             }
@@ -278,12 +252,9 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
             modifier = Modifier
                 .fillMaxSize()
                 .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f),
-                    RoundedCornerShape(30.dp)
+                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
                 )
-                .clip(RoundedCornerShape(30.dp)),
-            color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f)
+                .clip(RoundedCornerShape(30.dp)), color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f)
         ) {
             Row(
                 modifier = Modifier
@@ -294,27 +265,16 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(2.0f),
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                    horizontalAlignment = Alignment.Start
+                        .weight(2.0f), verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        card.name,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold
+                        card.name, color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        card.setName,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Light
+                        card.setName, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.sp, fontWeight = FontWeight.Light
                     )
                     Text(
-                        card.artist,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Light
+                        card.artist, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.sp, fontWeight = FontWeight.Light
                     )
                     Text(
                         "© Wizards of the Coast",
@@ -325,20 +285,16 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
                     Row() {
                         ScryfallButton(modifier = Modifier
                             .width(80.dp)
-                            .wrapContentHeight(),
-                            text = "Select",
-                            onTap = {
-                                onSelect()
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            })
+                            .wrapContentHeight(), text = "Select", onTap = {
+                            onSelect()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        })
                         ScryfallButton(modifier = Modifier
                             .width(80.dp)
-                            .wrapContentHeight(),
-                            text = "Printings",
-                            onTap = {
-                                onPrintings()
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            })
+                            .wrapContentHeight(), text = "Printings", onTap = {
+                            onPrintings()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        })
                     }
                 }
                 Box(
@@ -354,8 +310,7 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
                         }) {
                     Image(
                         modifier = Modifier.fillMaxSize(), painter = rememberAsyncImagePainter(
-                            ImageRequest.Builder(LocalContext.current).data(card.getUris().small)
-                                .crossfade(true).build()
+                            ImageRequest.Builder(LocalContext.current).data(card.getUris().small).crossfade(true).build()
                         ), contentDescription = null
                     )
                 }
