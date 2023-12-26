@@ -54,11 +54,7 @@ fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -
         PlayerSelectScreen(goToLifeCounter, setPlayerNum, showHelperText)
         if (showHelperText.value) {
             Text(
-                text = "Tap to select player",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
+                text = "Tap to select player", color = MaterialTheme.colorScheme.onPrimary, fontSize = 40.sp, fontWeight = FontWeight.Bold, modifier = Modifier
                     .align(Alignment.Center)
                     .rotate(90f)
             )
@@ -71,6 +67,7 @@ fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -
                 mainColor = MaterialTheme.colorScheme.onPrimary,
                 backgroundColor = Color.Transparent,
                 text = "Skip",
+                shadowEnabled = false,
                 imageResource = painterResource(id = R.drawable.skip_icon),
                 onTap = {
                     setPlayerNum(4)
@@ -342,8 +339,7 @@ class CirclePredictor {
         val adjY = calculateAdjustment(historyY)
 
         return Offset(
-            x = historyX.last() + adjX / HISTORY_SIZE.pow(HISTORY_SIZE / 1.9f),
-            y = historyY.last() + adjY / HISTORY_SIZE.pow(HISTORY_SIZE / 1.9f)
+            x = historyX.last() + adjX / HISTORY_SIZE.pow(HISTORY_SIZE / 1.9f), y = historyY.last() + adjY / HISTORY_SIZE.pow(HISTORY_SIZE / 1.9f)
         )
     }
 
@@ -363,10 +359,7 @@ fun DrawCircles(circles: List<Circle>, disappearingCircles: List<Circle>) {
         .drawBehind {
             for (circle in circles.union(disappearingCircles)) {
                 drawCircle(
-                    color = circle.color,
-                    center = Offset(circle.x, circle.y),
-                    style = Stroke(width = circle.width.value),
-                    radius = circle.radius.value
+                    color = circle.color, center = Offset(circle.x, circle.y), style = Stroke(width = circle.width.value), radius = circle.radius.value
                 )
             }
         })
