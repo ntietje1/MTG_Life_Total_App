@@ -2,6 +2,7 @@ package mtglifeappcompose.data
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import mtglifeappcompose.composable.lifecounter.PlayerButtonState
@@ -9,19 +10,26 @@ import mtglifeappcompose.ui.theme.allPlayerColors
 
 class AppViewModel : ViewModel() {
     private var currentPlayers: MutableList<Player> = mutableListOf()
-    private val numPlayers = mutableIntStateOf(0)
+    private val numPlayers = mutableIntStateOf(SharedPreferencesManager.loadNumPlayers())
     private val buttonStates = mutableListOf<MutableState<PlayerButtonState>>()
     var currentDealer: Player? = null
+    val alt4PlayerLayout = mutableStateOf(SharedPreferencesManager.load4PlayerLayout())
+    var blurBackground = mutableStateOf(false)
+
+    fun set4PlayerLayout(value: Boolean) {
+        alt4PlayerLayout.value = value
+        SharedPreferencesManager.save4PlayerLayout(alt4PlayerLayout.value)
+    }
 
     fun generatePlayers() {
-        val startingLife = PlayerDataManager.loadStartingLife()
+        val startingLife = SharedPreferencesManager.loadStartingLife()
         while (currentPlayers.size < Player.MAX_PLAYERS) {
             currentPlayers.add(generatePlayer(startingLife))
         }
     }
 
     fun resetPlayers() {
-        val startingLife = PlayerDataManager.loadStartingLife()
+        val startingLife = SharedPreferencesManager.loadStartingLife()
         currentPlayers.forEach {
             it.resetPlayer(startingLife)
         }
@@ -56,12 +64,14 @@ class AppViewModel : ViewModel() {
         buttonStates.forEach { it.value = state }
     }
 
-    fun setPlayerNum(num: Int, allowOverride: Boolean = true) {
-        if (!allowOverride && numPlayers.value != 0) return
-        numPlayers.value = num
+    fun setPlayerNum(num: Int, allowOverride: Boolean = false) {
+        if (allowOverride || (numPlayers.value == 0 && num in 1..Player.MAX_PLAYERS)) {
+            numPlayers.value = num
+            SharedPreferencesManager.saveNumPlayers(num)
+        }
     }
 
-    fun setStartingLife(playerDataManager: PlayerDataManager, life: Int) {
+    fun setStartingLife(playerDataManager: SharedPreferencesManager, life: Int) {
         playerDataManager.saveStartingLife(life)
         resetPlayers()
     }
