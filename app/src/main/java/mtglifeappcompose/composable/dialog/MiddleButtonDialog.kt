@@ -5,6 +5,7 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,13 +19,13 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,10 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.mtglifeappcompose.R
 import mtglifeappcompose.composable.SettingsButton
 
+private enum class MiddleButtonDialogState {
+    Default, CoinFlip, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings
+}
+
 @Composable
 fun MiddleButtonDialog(
     modifier: Modifier = Modifier,
@@ -45,20 +50,13 @@ fun MiddleButtonDialog(
     setPlayerNum: (Int) -> Unit,
     setStartingLife: (Int) -> Unit,
     goToPlayerSelect: () -> Unit,
-    coinFlipHistory: SnapshotStateList<String> = mutableStateListOf<String>(),
+    coinFlipHistory: SnapshotStateList<String> = mutableStateListOf(),
+    set4PlayerLayout: (value: Boolean) -> Unit,
     toggleTheme: () -> Unit,
     counters: ArrayList<MutableIntState> = arrayListOf()
 ) {
-    val showCoinFlipDialog = remember { mutableStateOf(false) }
-    val showPlayerNumberDialog = remember { mutableStateOf(false) }
-    val showStartingLifeDialog = remember { mutableStateOf(false) }
-    val showDiceRollDialog = remember { mutableStateOf(false) }
-    val showCounterDialog = remember { mutableStateOf(false) }
-    val showDefaultDialog = remember {
-        derivedStateOf {
-            !showCoinFlipDialog.value && !showPlayerNumberDialog.value && !showStartingLifeDialog.value && !showDiceRollDialog.value && !showCounterDialog.value
-        }
-    }
+
+    var state by remember { mutableStateOf(MiddleButtonDialogState.Default) }
 
     val enterAnimation =
         slideInHorizontally(TweenSpec(750, easing = LinearOutSlowInEasing)) { (-it * 1.25).toInt() }
@@ -69,47 +67,62 @@ fun MiddleButtonDialog(
             modifier = modifier.fillMaxSize(), // Use fillMaxSize to take up the entire screen
         ) {
             AnimatedVisibility(
-                visible = showCoinFlipDialog.value, enter = enterAnimation, exit = exitAnimation
+                visible = state == MiddleButtonDialogState.CoinFlip, enter = enterAnimation, exit = exitAnimation
             ) {
                 CoinFlipDialogContent(
-                    Modifier.fillMaxSize(), onDismiss, showCoinFlipDialog, coinFlipHistory
+                    Modifier.fillMaxSize(), onDismiss, coinFlipHistory
                 )
             }
 
             AnimatedVisibility(
-                visible = showPlayerNumberDialog.value, enter = enterAnimation, exit = exitAnimation
+                visible = state == MiddleButtonDialogState.PlayerNumber, enter = enterAnimation, exit = exitAnimation
             ) {
                 PlayerNumberDialogContent(
                     Modifier.fillMaxSize(),
                     onDismiss,
-                    showPlayerNumberDialog,
                     setPlayerNum,
-                    resetPlayers
-                )
+                    resetPlayers,
+                ) { state = MiddleButtonDialogState.FourPlayerLayout }
             }
 
             AnimatedVisibility(
-                visible = showStartingLifeDialog.value, enter = enterAnimation, exit = exitAnimation
+                visible = state == MiddleButtonDialogState.FourPlayerLayout, enter = enterAnimation, exit = exitAnimation
+            ) {
+                FourPlayerLayoutContent(
+                    Modifier.fillMaxSize(), onDismiss, setPlayerNum
+                ) {
+                    set4PlayerLayout(it)
+                }
+            }
+
+            AnimatedVisibility(
+                visible = state == MiddleButtonDialogState.StartingLife, enter = enterAnimation, exit = exitAnimation
             ) {
                 StartingLifeDialogContent(
-                    Modifier.fillMaxSize(), onDismiss, showStartingLifeDialog, setStartingLife
+                    Modifier.fillMaxSize(), onDismiss, setStartingLife
                 )
             }
 
             AnimatedVisibility(
-                visible = showDiceRollDialog.value, enter = enterAnimation, exit = exitAnimation
+                visible = state == MiddleButtonDialogState.DiceRoll, enter = enterAnimation, exit = exitAnimation
             ) {
-                DiceRollDialogContent(Modifier.fillMaxSize(), onDismiss, showDiceRollDialog)
+                DiceRollDialogContent(Modifier.fillMaxSize(), onDismiss)
             }
 
             AnimatedVisibility(
-                visible = showCounterDialog.value, enter = enterAnimation, exit = exitAnimation
+                visible = state == MiddleButtonDialogState.Counter, enter = enterAnimation, exit = exitAnimation
             ) {
-                CounterDialogContent(Modifier.fillMaxSize(), counters, onDismiss, showCounterDialog)
+                CounterDialogContent(Modifier.fillMaxSize(), counters, onDismiss)
             }
 
             AnimatedVisibility(
-                visible = showDefaultDialog.value, enter = enterAnimation, exit = exitAnimation
+                visible = state == MiddleButtonDialogState.Settings, enter = enterAnimation, exit = exitAnimation
+            ) {
+                SettingsDialogContent(Modifier.fillMaxSize(), onDismiss)
+            }
+
+            AnimatedVisibility(
+                visible = state == MiddleButtonDialogState.Default, enter = enterAnimation, exit = exitAnimation
             ) {
                 GridDialogContent(Modifier.fillMaxSize(), items = listOf({
                     SettingsButton(imageResource = painterResource(id = R.drawable.player_select_icon),
@@ -135,7 +148,7 @@ fun MiddleButtonDialog(
                         mainColor = MaterialTheme.colorScheme.onPrimary,
                         shadowEnabled = false,
                         onPress = {
-                            showStartingLifeDialog.value = true
+                            state = MiddleButtonDialogState.StartingLife
                         })
                 }, {
                     SettingsButton(
@@ -151,7 +164,7 @@ fun MiddleButtonDialog(
                         mainColor = MaterialTheme.colorScheme.onPrimary,
                         shadowEnabled = false,
                         onPress = {
-                            showPlayerNumberDialog.value = true
+                            state = MiddleButtonDialogState.PlayerNumber
                         })
                 }, {
                     SettingsButton(imageResource = painterResource(R.drawable.mana_icon),
@@ -159,7 +172,7 @@ fun MiddleButtonDialog(
                         mainColor = MaterialTheme.colorScheme.onPrimary,
                         shadowEnabled = false,
                         onPress = {
-                            showCounterDialog.value = true
+                            state = MiddleButtonDialogState.Counter
                         })
                 }, {
                     SettingsButton(imageResource = painterResource(R.drawable.six_icon),
@@ -167,7 +180,7 @@ fun MiddleButtonDialog(
                         mainColor = MaterialTheme.colorScheme.onPrimary,
                         shadowEnabled = false,
                         onPress = {
-                            showDiceRollDialog.value = true
+                            state = MiddleButtonDialogState.DiceRoll
                         })
                 }, {
                     SettingsButton(imageResource = painterResource(R.drawable.coin_icon),
@@ -175,9 +188,20 @@ fun MiddleButtonDialog(
                         mainColor = MaterialTheme.colorScheme.onPrimary,
                         shadowEnabled = false,
                         onPress = {
-                            showCoinFlipDialog.value = true
+                            state = MiddleButtonDialogState.CoinFlip
                         })
-                }))
+                }, {
+                    SettingsButton(
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        imageResource = painterResource(R.drawable.settings_icon),
+                        text = "Settings",
+                        mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
+                        onPress = {
+                            state = MiddleButtonDialogState.Settings
+                        })
+                }
+                ))
             }
         }
     }
@@ -188,20 +212,17 @@ fun MiddleButtonDialog(
         },
         content = dialogContent,
         onBack = {
-            if (showCoinFlipDialog.value) {
-                showCoinFlipDialog.value = false
-            } else if (showPlayerNumberDialog.value) {
-                showPlayerNumberDialog.value = false
-            } else if (showStartingLifeDialog.value) {
-                showStartingLifeDialog.value = false
-            } else if (showDiceRollDialog.value) {
-                showDiceRollDialog.value = false
-            } else if (showCounterDialog.value) {
-                showCounterDialog.value = false
-            } else if (showDefaultDialog.value) {
-                onDismiss()
+            when (state) {
+                MiddleButtonDialogState.Default -> onDismiss()
+                MiddleButtonDialogState.FourPlayerLayout -> {
+                    state = MiddleButtonDialogState.PlayerNumber
+                }
+
+                else -> {
+                    state = MiddleButtonDialogState.Default
+                }
             }
-        },
+        }
     )
 }
 
@@ -228,11 +249,13 @@ fun GridDialogContent(
 @Composable
 fun SettingsDialog(
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit = {},
     onDismiss: () -> Unit = {},
     onBack: () -> Unit = {},
+    onConfirm: () -> Unit = {},
     exitButtonEnabled: Boolean = true,
-    backButtonEnabled: Boolean = true
+    backButtonEnabled: Boolean = true,
+    confirmButtonEnabled: Boolean = false,
+    content: @Composable () -> Unit = {}
 ) {
     Dialog(
         onDismissRequest = onDismiss, properties = DialogProperties(
@@ -241,61 +264,62 @@ fun SettingsDialog(
         )
     ) {
         Box(
-            modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)), contentAlignment = Alignment.Center
         ) {
-            Surface(
-                color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
-                shadowElevation = 5.dp,
-            ) {
-                Column(Modifier.fillMaxSize()) {
-                    if (exitButtonEnabled) {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(100.dp),
-                            horizontalArrangement = Arrangement.End
-                        ) {
 
-                            ExitButton(
-                                onDismiss = onDismiss
-                            )
-                        }
+            Column(Modifier.fillMaxSize()) {
 
-                    }
-                    Box(
-                        Modifier.weight(0.1f)
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        content()
+
+                        ExitButton(
+                            onDismiss = onDismiss,
+                            visible = exitButtonEnabled
+                        )
                     }
 
-                    if (backButtonEnabled) {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(100.dp),
-                            horizontalArrangement = Arrangement.Start
-                        ) {
 
-                            BackButton(
-                                onBack = onBack
-                            )
-                        }
-                    }
+                Box(
+                    Modifier.weight(0.1f)
+                ) {
+                    content()
                 }
+
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        BackButton(
+                            onBack = onBack,
+                            visible = backButtonEnabled
+                        )
+                        ConfirmButton(
+                            onConfirm = onConfirm,
+                            visible = confirmButtonEnabled
+                        )
+                    }
             }
         }
     }
-
 }
 
 @Composable
-fun BackButton(modifier: Modifier = Modifier, onBack: () -> Unit) {
+fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Unit) {
     SettingsButton(
         modifier = modifier.rotate(180f),
         size = 100.dp,
         mainColor = MaterialTheme.colorScheme.onPrimary,
         backgroundColor = Color.Transparent,
         text = "",
+        visible = visible,
         shadowEnabled = false,
         imageResource = painterResource(id = R.drawable.enter_icon),
         onTap = onBack
@@ -303,13 +327,29 @@ fun BackButton(modifier: Modifier = Modifier, onBack: () -> Unit) {
 }
 
 @Composable
-fun ExitButton(modifier: Modifier = Modifier, onDismiss: () -> Unit) {
+fun ConfirmButton(modifier: Modifier = Modifier, visible: Boolean, onConfirm: () -> Unit) {
+    SettingsButton(
+        modifier = modifier.padding(5.dp),
+        size = 100.dp,
+        mainColor = MaterialTheme.colorScheme.onPrimary,
+        backgroundColor = Color.Transparent,
+        text = "",
+        visible = visible,
+        shadowEnabled = false,
+        imageResource = painterResource(id = R.drawable.checkmark),
+        onTap = onConfirm
+    )
+}
+
+@Composable
+fun ExitButton(modifier: Modifier = Modifier, visible: Boolean, onDismiss: () -> Unit) {
     SettingsButton(
         modifier = modifier,
         size = 100.dp,
         mainColor = MaterialTheme.colorScheme.onPrimary,
         backgroundColor = Color.Transparent,
         text = "",
+        visible = visible,
         shadowEnabled = false,
         imageResource = painterResource(id = R.drawable.x_icon),
         onTap = onDismiss
