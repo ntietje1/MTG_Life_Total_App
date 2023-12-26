@@ -14,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,14 +44,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mtglifeappcompose.R
 import kotlinx.coroutines.launch
 import mtglifeappcompose.composable.dialog.MiddleButtonDialog
+import mtglifeappcompose.data.AppViewModel
 import mtglifeappcompose.data.Player
 
 @Composable
@@ -60,156 +62,62 @@ fun LifeCounterScreen(
     setPlayerNum: (Int) -> Unit,
     setStartingLife: (Int) -> Unit,
     goToPlayerSelect: () -> Unit,
+    set4PlayerLayout: (value: Boolean) -> Unit,
     toggleTheme: () -> Unit
 ) {
     val numPlayers = players.size
 
-    val configuration = LocalConfiguration.current
-
-    val screenHeight = configuration.screenHeightDp.dp
-    val screenWidth = configuration.screenWidthDp.dp
-
-    val angleConfigurations: Array<Float> = when (numPlayers) {
-        1 -> arrayOf(90f)
-        2 -> arrayOf(180f, 0f)
-        3 -> arrayOf(90f, 270f, 0f)
-        4 -> arrayOf(90f, 270f, 90f, 270f)
-        5 -> arrayOf(90f, 270f, 90f, 270f, 0f)
-        6 -> arrayOf(90f, 270f, 90f, 270f, 90f, 270f)
-        else -> throw IllegalArgumentException("invalid number of players: $numPlayers")
-    }
-
-    val offset3 = 0.8f
-    val offset5 = 0.265f
-
-    val buttonSizes: Array<DpSize> = when (numPlayers) {
-        1 -> arrayOf(
-            DpSize(screenHeight, screenWidth)
-        )
-
-        2 -> arrayOf(
-            DpSize(screenWidth, screenHeight / 2), DpSize(screenWidth, screenHeight / 2)
-        )
-
-        3 -> arrayOf(
-            DpSize(screenHeight - screenWidth * offset3, screenWidth / 2),
-            DpSize(screenHeight - screenWidth * offset3, screenWidth / 2),
-            DpSize(screenWidth, screenWidth * offset3)
-        )
-
-        4 -> arrayOf(
-            DpSize(screenHeight / 2, screenWidth / 2),
-            DpSize(screenHeight / 2, screenWidth / 2),
-            DpSize(screenHeight / 2, screenWidth / 2),
-            DpSize(screenHeight / 2, screenWidth / 2),
-        )
-
-        5 -> arrayOf(
-            DpSize(screenHeight / 2 - screenWidth * offset5, screenWidth / 2),
-            DpSize(screenHeight / 2 - screenWidth * offset5, screenWidth / 2),
-            DpSize(screenHeight / 2 - screenWidth * offset5, screenWidth / 2),
-            DpSize(screenHeight / 2 - screenWidth * offset5, screenWidth / 2),
-            DpSize(screenWidth, screenWidth * offset5 * 2)
-        )
-
-        6 -> arrayOf(
-            DpSize(screenHeight / 3, screenWidth / 2),
-            DpSize(screenHeight / 3, screenWidth / 2),
-            DpSize(screenHeight / 3, screenWidth / 2),
-            DpSize(screenHeight / 3, screenWidth / 2),
-            DpSize(screenHeight / 3, screenWidth / 2),
-            DpSize(screenHeight / 3, screenWidth / 2),
-        )
-
-        else -> throw IllegalArgumentException("invalid number of players")
-    }
-
-    val middleButtonOffset: Float = when (numPlayers) {
-        1 -> 0.065f
-        2 -> 0.5f
-        3 -> 0.615f
-        4 -> 0.5f
-        5 -> 0.364f
-        6 -> 0.323f
-        else -> throw IllegalArgumentException("invalid number of players")
-    }
+    val viewModel: AppViewModel = viewModel()
 
     var showDialog by remember { mutableStateOf(false) }
     val showButtons = remember { mutableStateOf(false) }
-    val blurBackground = remember { mutableStateOf(false) }
 
     LaunchedEffect(showDialog) {
-        if (!showDialog) blurBackground.value = false
+        if (!showDialog) viewModel.blurBackground.value = false
     }
 
     LaunchedEffect(Unit) {
         showButtons.value = true
     }
-    Box(
+    BoxWithConstraints(
         Modifier
             .fillMaxSize()
             .then(
-                if (blurBackground.value) {
+                if (viewModel.blurBackground.value) {
                     Modifier.blur(radius = 20.dp)
                 } else {
                     Modifier
                 }
             )
     ) {
-        LazyColumn(modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = false,
-            verticalArrangement = Arrangement.Center,
-            content = {
-                val rowRange = (0 until numPlayers step 2) // first player index for each row
-                rowRange.forEach { i ->
-                    val playerRange = (i until minOf(i + 2, numPlayers)) // 1 or 2 players
-                    if (numPlayers == 2) {
-                        playerRange.forEach { j ->
+        val m = LifeCounterMeasurements(
+            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = numPlayers, alt4Layout = viewModel.alt4PlayerLayout.value
+        )
+
+        LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
+            m.rows.forEach { buttonPlacements ->
+                item {
+                    LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
+                        buttonPlacements.forEach {
                             item {
                                 AnimatedPlayerButton(
-                                    visible = showButtons,
-                                    player = players[j],
-                                    rotation = angleConfigurations[j],
-                                    width = buttonSizes[j].width,
-                                    height = buttonSizes[j].height,
-                                    blurBackground = blurBackground
+                                    visible = showButtons, player = players[it.index], rotation = it.angle, width = it.width, height = it.height
                                 )
                             }
                         }
-                    } else {
-                        item {
-                            LazyRow(modifier = Modifier.fillMaxSize(),
-                                userScrollEnabled = false,
-                                horizontalArrangement = Arrangement.Center,
-                                content = {
-                                    playerRange.forEach { j ->
-                                        item {
-                                            AnimatedPlayerButton(
-                                                visible = showButtons,
-                                                player = players[j],
-                                                rotation = angleConfigurations[j],
-                                                width = buttonSizes[j].width,
-                                                height = buttonSizes[j].height,
-                                                blurBackground = blurBackground
-                                            )
-                                        }
-                                    }
-                                })
-                        }
-                    }
+                    })
                 }
-            })
+            }
+        })
 
         Column(Modifier.fillMaxSize()) {
-            Spacer(modifier = Modifier.weight(0 + middleButtonOffset))
+            Spacer(modifier = Modifier.weight(0 + m.middleOffset()))
             AnimatedMiddleButton(modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .size(50.dp),
-                visible = showButtons,
-                onMiddleButtonClick = {
-                    showDialog = true
-                })
-            Spacer(modifier = Modifier.weight(1 - middleButtonOffset))
+                .size(50.dp), visible = showButtons, onMiddleButtonClick = {
+                showDialog = true
+            })
+            Spacer(modifier = Modifier.weight(1 - m.middleOffset()))
         }
     }
 
@@ -223,10 +131,11 @@ fun LifeCounterScreen(
     val c = remember { mutableIntStateOf(0) }
     val s = remember { mutableIntStateOf(0) }
     val counters = arrayListOf(w, u, b, r, g, c, s)
+
     if (showDialog) {
         MiddleButtonDialog(
             modifier = Modifier.onGloballyPositioned { _ ->
-                blurBackground.value = showDialog
+                viewModel.blurBackground.value = showDialog
             },
             onDismiss = { showDialog = false },
             resetPlayers = { resetPlayers() },
@@ -236,6 +145,7 @@ fun LifeCounterScreen(
                 setPlayerNum(it)
             },
             goToPlayerSelect = { goToPlayerSelect() },
+            set4PlayerLayout = { set4PlayerLayout(it) },
             toggleTheme = { toggleTheme() },
             coinFlipHistory = history,
             counters = counters,
@@ -246,12 +156,7 @@ fun LifeCounterScreen(
 
 @Composable
 fun AnimatedPlayerButton(
-    visible: MutableState<Boolean>,
-    player: Player,
-    rotation: Float,
-    width: Dp,
-    height: Dp,
-    blurBackground: MutableState<Boolean>
+    visible: MutableState<Boolean>, player: Player, rotation: Float, width: Dp, height: Dp
 ) {
     val multiplesAway = 3
     val duration = 3000
@@ -281,29 +186,25 @@ fun AnimatedPlayerButton(
     LaunchedEffect(visible.value) {
         launch {
             offsetX.animateTo(
-                targetValue = if (visible.value) 0f else targetOffsetX,
-                animationSpec = tween(durationMillis = duration)
+                targetValue = if (visible.value) 0f else targetOffsetX, animationSpec = tween(durationMillis = duration)
             )
         }
 
         launch {
             offsetY.animateTo(
-                targetValue = if (visible.value) 0f else targetOffsetY,
-                animationSpec = tween(durationMillis = duration)
+                targetValue = if (visible.value) 0f else targetOffsetY, animationSpec = tween(durationMillis = duration)
             )
         }
     }
 
     Box(modifier = Modifier.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }) {
         PlayerButton(
-            modifier = Modifier.width(width).height(height),
-            player = player,
-            rotation = rotation,
-            blurBackground = blurBackground
+            modifier = Modifier
+                .width(width)
+                .height(height), player = player, rotation = rotation
         )
     }
 }
-
 
 @Composable
 fun AnimatedMiddleButton(
@@ -348,8 +249,7 @@ fun AnimatedMiddleButton(
 
     angle = if (!animationFinished) animatableAngle.value else infiniteTransition.animateFloat(
         initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 180_000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+            animation = tween(durationMillis = 180_000, easing = LinearEasing), repeatMode = RepeatMode.Restart
         ), label = ""
     ).value
 
@@ -372,12 +272,7 @@ fun AnimatedMiddleButton(
         Image(
             modifier = Modifier
                 .fillMaxSize()
-                .align(Alignment.Center),
-            painter = painterResource(id = R.drawable.middle_icon),
-            contentScale = ContentScale.Crop,
-            contentDescription = null
+                .align(Alignment.Center), painter = painterResource(id = R.drawable.middle_icon), contentScale = ContentScale.Crop, contentDescription = null
         )
     }
 }
-
-data class DpSize(val width: Dp, val height: Dp)
