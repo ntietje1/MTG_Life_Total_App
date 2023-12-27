@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,6 +36,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -205,37 +207,6 @@ fun PlayerButton(
             ) {
                 PlayerButtonBackground(player = player, state = state.value)
 
-                LifeChangeButtons(onIncrementLife = {
-                    when (state.value) {
-                        PlayerButtonState.NORMAL -> {
-                            player.incrementLife(1)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-
-                        PlayerButtonState.COMMANDER_RECEIVER -> {
-                            viewModel.currentDealer?.incrementCommanderDamage(player, 1)
-                            player.incrementLife(-1)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-
-                        else -> {}
-                    }
-                }, onDecrementLife = {
-                    when (state.value) {
-                        PlayerButtonState.NORMAL -> {
-                            player.incrementLife(-1)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-
-                        PlayerButtonState.COMMANDER_RECEIVER -> {
-                            viewModel.currentDealer?.incrementCommanderDamage(player, -1)
-                            player.incrementLife(1)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-
-                        else -> {}
-                    }
-                })
 
                 val smallButtonSize = (maxWidth / 15f) + (maxHeight / 10f)
                 val settingsStateMargin = smallButtonSize / 7f
@@ -253,27 +224,101 @@ fun PlayerButton(
                         top = smallButtonSize / 4
                     )
 
+                when (state.value) {
+                    PlayerButtonState.NORMAL -> {
+                        LifeChangeButtons(Modifier.fillMaxWidth(),
+                            onIncrementLife = {
+                                player.incrementLife(1)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }, onDecrementLife = {
+                                player.incrementLife(-1)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                        )
+                    }
+
+                    PlayerButtonState.COMMANDER_RECEIVER -> {
+                        Row(Modifier.fillMaxSize()) {
+                            LifeChangeButtons(Modifier.then(if (viewModel.currentDealerIsPartnered()) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()),
+                                onIncrementLife = {
+                                    viewModel.currentDealer?.incrementCommanderDamage(player, 1)
+                                    player.incrementLife(-1)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }, onDecrementLife = {
+                                    viewModel.currentDealer?.incrementCommanderDamage(player, -1)
+                                    player.incrementLife(1)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
+                            )
+                            if (viewModel.currentDealerIsPartnered()) {
+                                LifeChangeButtons(Modifier.fillMaxWidth(),
+                                    onIncrementLife = {
+                                        viewModel.currentDealer?.incrementCommanderDamage(player, 1, true)
+                                        player.incrementLife(-1)
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }, onDecrementLife = {
+                                        viewModel.currentDealer?.incrementCommanderDamage(player, -1, true)
+                                        player.incrementLife(1)
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    else -> {
+                    }
+                }
+
                 @Composable
                 fun PlayerButtonContent(modifier: Modifier = Modifier) {
                     Box(modifier.fillMaxSize()) {
                         when (state.value) {
-                            PlayerButtonState.NORMAL, PlayerButtonState.COMMANDER_RECEIVER -> {
-                                PlayerInfo(
-                                    modifier = playerInfoPadding,
+                            PlayerButtonState.NORMAL -> {
+                                LifeNumber(
+                                    modifier = playerInfoPadding.fillMaxSize(),
+                                    player = player
+                                )
+                            }
+
+                            PlayerButtonState.COMMANDER_RECEIVER -> {
+                                CommanderDamageNumber(
+                                    modifier = playerInfoPadding.fillMaxSize(),
                                     player = player,
                                     currentDealer = viewModel.currentDealer,
-                                    state = state.value
+                                    partnerMode = viewModel.currentDealerIsPartnered()
                                 )
                             }
 
                             PlayerButtonState.COMMANDER_DEALER -> {
-                                Text(
-                                    modifier = Modifier.align(Alignment.Center),
-                                    text = "Deal damage with your commander",
-                                    color = player.textColor,
-                                    fontSize = 20.sp,
-                                    textAlign = TextAlign.Center
-                                )
+                                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                                    Text(
+                                        modifier = Modifier,
+                                        text = "Deal damage with your commander",
+                                        color = player.textColor,
+                                        fontSize = 20.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    SettingsButton(
+                                        modifier = Modifier,
+                                        size = smallButtonSize,
+                                        imageResource = painterResource(id = R.drawable.two_mana_icon),
+                                        backgroundColor = Color.Transparent,
+                                        mainColor = player.textColor,
+                                        onPress = {
+                                            player.partnerMode = !player.partnerMode
+                                        }
+                                    )
+                                    Text(
+                                        modifier = Modifier,
+                                        text = "Toggle Partner Mode",
+                                        color = player.textColor,
+                                        fontSize = 10.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+
                             }
 
                             PlayerButtonState.SETTINGS -> {
@@ -727,25 +772,94 @@ fun PlayerStateButton(
 }
 
 @Composable
-fun PlayerInfo(
-    modifier: Modifier = Modifier, player: Player, currentDealer: Player?, state: PlayerButtonState
+fun CommanderDamageNumber(
+    modifier: Modifier = Modifier, player: Player, currentDealer: Player?, partnerMode: Boolean
 ) {
-    val iconID = when (state) {
-        PlayerButtonState.NORMAL -> R.drawable.heart_solid_icon
-        PlayerButtonState.COMMANDER_RECEIVER -> R.drawable.commander_solid_icon
-        else -> R.drawable.transparent
-    }
+    BoxWithConstraints(modifier = modifier) {
+        val dividerOffset = maxHeight / 12f
 
+        Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+            SingleCommanderDamageNumber(
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .then(if (partnerMode) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()),
+                player = player,
+                currentDealer = currentDealer,
+                partner = false
+            )
+            if (partnerMode) {
+                Divider(
+                    modifier = Modifier
+                        .fillMaxHeight(0.6f)
+                        .width(2.dp)
+                        .offset(y = dividerOffset),
+                    color = player.textColor
+                )
+
+                SingleCommanderDamageNumber(
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .fillMaxWidth(),
+                    player = player,
+                    currentDealer = currentDealer,
+                    partner = true
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SingleCommanderDamageNumber(
+    modifier: Modifier = Modifier,
+    player: Player,
+    currentDealer: Player?,
+    partner: Boolean = false
+) {
+    val iconID = R.drawable.commander_solid_icon
+
+    NumericValue(
+        modifier = modifier,
+        player = player,
+        iconID = iconID,
+        getValue = { p -> p.getCommanderDamage(currentDealer!!, partner).toString() },
+        getRecentChangeText = { "" }
+    )
+}
+
+
+@Composable
+fun LifeNumber(
+    modifier: Modifier = Modifier,
+    player: Player
+) {
+    val iconID = R.drawable.heart_solid_icon
+
+    NumericValue(
+        modifier = modifier,
+        player = player,
+        iconID = iconID,
+        getValue = { p -> p.life.toString() },
+        getRecentChangeText = { if (player.recentChange == 0) "" else if (player.recentChange > 0) "+${player.recentChange}" else "${player.recentChange}" }
+    )
+}
+
+
+@Composable
+fun NumericValue(
+    modifier: Modifier = Modifier,
+    player: Player,
+    iconID: Int,
+    getValue: (Player) -> String,
+    getRecentChangeText: (Player) -> String
+) {
     BoxWithConstraints(
-        modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
         var largeTextSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).sp
         val largeTextPadding = largeTextSize.value.dp / 6f
-        val largeText = (when (state) {
-            PlayerButtonState.NORMAL -> player.life
-            PlayerButtonState.COMMANDER_RECEIVER -> player.getCommanderDamage(currentDealer!!)
-            else -> throw Exception("unsupported state")
-        }).toString()
+        val largeText = getValue(player)
 
         if (largeText.length >= 3) {
             for (i in 0 until largeText.length - 2) {
@@ -756,10 +870,7 @@ fun PlayerInfo(
         val smallTextPadding = min(maxHeight.value / 1.5f, largeTextSize.value * 0.9f).dp
 
         val recentChangeSize = maxHeight.value.sp / 12.5f
-        val recentChangeText =
-            if (player.recentChange == 0 || state == PlayerButtonState.COMMANDER_RECEIVER) ""
-            else if (player.recentChange > 0) "+${player.recentChange}"
-            else "${player.recentChange}"
+        val recentChangeText = getRecentChangeText(player)
 
         val iconSize = maxHeight / 7f
         val iconPadding = (smallTextPadding.value / 1.2f).dp
@@ -815,7 +926,6 @@ fun PlayerInfo(
                 style = textShadowStyle
             )
         }
-
     }
 }
 
@@ -1231,7 +1341,7 @@ fun ChangeNameField(
                         capitalization = KeyboardCapitalization.None,
                         imeAction = ImeAction.Done
                     ),
-                    keyboardActions = KeyboardActions(onDone = { onDone() } ),
+                    keyboardActions = KeyboardActions(onDone = { onDone() }),
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .height(80.dp)
@@ -1239,7 +1349,9 @@ fun ChangeNameField(
                         .padding(horizontal = 5.dp)
                 )
                 SettingsButton(
-                    Modifier.align(Alignment.CenterEnd).padding(top = 20.dp, end = 5.dp),
+                    Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(top = 20.dp, end = 5.dp),
                     size = 50.dp,
                     imageResource = painterResource(id = R.drawable.enter_icon),
                     shadowEnabled = false,
@@ -1248,26 +1360,26 @@ fun ChangeNameField(
                     onPress = { onDone() }
                 )
             }
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(
-                    onClick = {
-                        player.name = newName
-                        closeSettingsMenu()
-                        SharedPreferencesManager.savePlayer(player)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = player.textColor, contentColor = player.color
-                    ),
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .fillMaxWidth(0.7f)
-                        .padding(horizontal = 10.dp)
-                        .padding(bottom = 20.dp)
+            Spacer(modifier = Modifier.height(10.dp))
+            Button(
+                onClick = {
+                    player.name = newName
+                    closeSettingsMenu()
+                    SharedPreferencesManager.savePlayer(player)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = player.textColor, contentColor = player.color
+                ),
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth(0.7f)
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 20.dp)
 
-                ) {
-                    Text("Save Name")
-                }
+            ) {
+                Text("Save Name")
             }
+        }
 
     }
 }
@@ -1342,7 +1454,7 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player) {
             onDismiss = {
                 showColorDialog = false
                 viewModel.blurBackground.value = false
-                        },
+            },
             initialColor = player.color,
             setColor = { color ->
                 player.imageUri = null
@@ -1376,12 +1488,11 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player) {
 
 @Composable
 fun LifeChangeButtons(
+    modifier: Modifier = Modifier,
     onIncrementLife: () -> Unit, onDecrementLife: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-
+    Column(modifier = modifier) {
         CustomIncrementButton(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1397,7 +1508,6 @@ fun LifeChangeButtons(
             onIncrementLife = onDecrementLife,
             interactionSource = interactionSource
         )
-
     }
 }
 

@@ -16,6 +16,10 @@ class AppViewModel : ViewModel() {
     val alt4PlayerLayout = mutableStateOf(SharedPreferencesManager.load4PlayerLayout())
     var blurBackground = mutableStateOf(false)
 
+    fun currentDealerIsPartnered(): Boolean {
+        return currentDealer?.partnerMode ?: false
+    }
+
     fun set4PlayerLayout(value: Boolean) {
         alt4PlayerLayout.value = value
         SharedPreferencesManager.save4PlayerLayout(alt4PlayerLayout.value)
@@ -30,6 +34,7 @@ class AppViewModel : ViewModel() {
 
     fun resetPlayers() {
         val startingLife = SharedPreferencesManager.loadStartingLife()
+        updateAllStates(PlayerButtonState.NORMAL)
         currentPlayers.forEach {
             it.resetPlayer(startingLife)
         }
