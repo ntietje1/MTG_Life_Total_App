@@ -17,9 +17,9 @@ fun SettingsDialogContent(
          * TODO: Implement SettingsDialogContent
          * - Add a SettingsButton for each of the following:
          *  - GENERAL -
-         *  - Icon?
          *  - Rotating middle button
          *  - Self commander damage
+         *  - Fast coin flip
          *  - Disable camera roll
          *  - Disable haptic feedback
          *  - Disable screen timeout
@@ -28,6 +28,7 @@ fun SettingsDialogContent(
          *  - CONTACT -
          *  - Submit Feedback
          *  - Write a Review
+         *  - Buy me a coffee
          *  - About me
          */
 
