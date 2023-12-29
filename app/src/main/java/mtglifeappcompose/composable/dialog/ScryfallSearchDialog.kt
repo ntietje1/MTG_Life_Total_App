@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,36 +65,56 @@ import com.example.mtglifeappcompose.R
 import kotlinx.coroutines.launch
 import mtglifeappcompose.data.Card
 import mtglifeappcompose.data.Player
+import mtglifeappcompose.data.Ruling
 import mtglifeappcompose.data.ScryfallApiRetriever
 import mtglifeappcompose.data.SharedPreferencesManager
 
 
 @Composable
 fun ScryfallSearchDialog(modifier: Modifier = Modifier, player: Player, onDismiss: () -> Unit) {
-    SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss)  {
-        ScryfallSearchScreen(player = player)
+    SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss) {
+        ScryfallDialogContent(player = player)
     }
 }
 
 @Composable
-fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
+fun ScryfallDialogContent(modifier: Modifier = Modifier, player: Player?, selectButtonEnabled: Boolean = true, printingsButtonEnabled: Boolean = true, rulingsButtonEnabled: Boolean = false) {
     var query by remember { mutableStateOf("") }
-    var searchResults by remember { mutableStateOf(listOf<Card>()) }
+    var cardResults by remember { mutableStateOf(listOf<Card>()) }
+    var rulingsResults by remember { mutableStateOf(listOf<Ruling>()) }
     val scryfallApiRetriever = ScryfallApiRetriever()
     val coroutineScope = rememberCoroutineScope()
-    val lastSearchWasError = remember { mutableStateOf(false) }
+    var lastSearchWasError by remember { mutableStateOf(false) }
+    var rulingCard: Card? by remember { mutableStateOf(null) }
+    var _printingsButtonEnabled by remember { mutableStateOf(printingsButtonEnabled) }
 
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
-    fun search(qry: String) {
+    fun clearResults() {
+        cardResults = listOf()
+        rulingsResults = listOf()
+    }
+
+    fun searchCards(qry: String, disablePrintingsButton: Boolean = false) {
         if (qry.isBlank()) return
         coroutineScope.launch {
-            searchResults = listOf()
-            searchResults = scryfallApiRetriever.parseScryfallResponse(scryfallApiRetriever.searchScryfall(qry))
-            lastSearchWasError.value = searchResults.isEmpty()
+            clearResults()
+            cardResults = scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall(qry))
+            lastSearchWasError = cardResults.isEmpty()
+            _printingsButtonEnabled = !disablePrintingsButton
         }
     }
+
+    fun searchRulings(qry: String) {
+        if (qry.isBlank()) return
+        coroutineScope.launch {
+            clearResults()
+            rulingsResults = scryfallApiRetriever.parseScryfallResponse<Ruling>(scryfallApiRetriever.searchScryfall(qry))
+            lastSearchWasError = false
+        }
+    }
+
 
     Column(modifier) {
         Box(
@@ -105,7 +126,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
             TextField(value = query, onValueChange = { query = it }, label = { Text("Search Scryfall") }, singleLine = true, keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.None, autoCorrect = false, keyboardType = KeyboardType.Text, imeAction = ImeAction.Search
             ), keyboardActions = KeyboardActions(onSearch = {
-                search(query)
+                searchCards(query)
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 focusManager.clearFocus()
             }), colors = TextFieldDefaults.colors(
@@ -142,7 +163,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
             ) {
                 IconButton(
                     onClick = {
-                        search(query)
+                        searchCards(query)
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }, modifier = Modifier.size(50.dp)
                 ) {
@@ -158,7 +179,7 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(top = 10.dp), visible = lastSearchWasError.value
+                .padding(top = 10.dp), visible = lastSearchWasError
         ) {
             Text("No cards found :(", color = Color.Red)
         }
@@ -167,22 +188,32 @@ fun ScryfallSearchScreen(modifier: Modifier = Modifier, player: Player) {
                 detectTapGestures(onPress = { focusManager.clearFocus() })
             }, horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (searchResults.isEmpty()) return@LazyColumn
+            if (cardResults.isEmpty() && rulingsResults.isEmpty()) return@LazyColumn
             item {
                 Text(
-                    "${searchResults.size} results", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 10.dp)
+                    "${cardResults.size + rulingsResults.size} results", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 10.dp)
                 )
             }
-            items(searchResults) { card ->
-                CardPreview(card, onSelect = {
-                    player.imageUri = Uri.parse(card.getUris().artCrop)
+            items(cardResults) { card ->
+                CardPreview(card, selectButtonEnabled = selectButtonEnabled, printingsButtonEnabled = _printingsButtonEnabled, rulingsButtonEnabled = rulingsButtonEnabled, onRulings = {
+                    searchRulings(card.rulingsUri ?: "")
+                    rulingCard = card
+                }, onSelect = {
+                    player!!.imageUri = Uri.parse(card.getUris().artCrop)
                     SharedPreferencesManager.savePlayer(player)
                 }, onPrintings = {
-                    search(card.printsSearchUri)
+                    searchCards(card.printsSearchUri, disablePrintingsButton = true)
                 })
             }
+            if (cardResults.isEmpty() && rulingCard != null) {
+                item {
+                    CardDetails(rulingCard!!)
+                }
+            }
+            items(rulingsResults) { ruling ->
+                RulingPreview(ruling)
+            }
         }
-
     }
 }
 
@@ -215,7 +246,87 @@ fun ScryfallButton(modifier: Modifier = Modifier, text: String, onTap: () -> Uni
 }
 
 @Composable
-fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit = {}) {
+fun CardDetails(
+    card: Card
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .border(
+                1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
+            )
+            .clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 5.dp), text = "Oracle Text", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center
+            )
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth(0.4f)
+                    .align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+            )
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                text = card.oracleText ?: "",
+                color = MaterialTheme.colorScheme.onPrimary,
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp
+            )
+        }
+
+
+    }
+}
+
+@Composable
+fun RulingPreview(
+    ruling: Ruling
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .border(
+                1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
+            )
+            .clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 5.dp), text = ruling.publishedAt, color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center
+            )
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth(0.4f)
+                    .align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+            )
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                text = ruling.comment,
+                color = MaterialTheme.colorScheme.onPrimary,
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp
+            )
+        }
+
+    }
+}
+
+
+@Composable
+fun CardPreview(
+    card: Card, onRulings: () -> Unit = {}, onSelect: () -> Unit = {}, onPrintings: () -> Unit = {}, selectButtonEnabled: Boolean, printingsButtonEnabled: Boolean, rulingsButtonEnabled: Boolean
+) {
     var showLargeImage by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
 
@@ -283,18 +394,31 @@ fun CardPreview(card: Card, onSelect: () -> Unit = {}, onPrintings: () -> Unit =
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                     Row() {
-                        ScryfallButton(modifier = Modifier
-                            .width(80.dp)
-                            .wrapContentHeight(), text = "Select", onTap = {
-                            onSelect()
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        })
-                        ScryfallButton(modifier = Modifier
-                            .width(80.dp)
-                            .wrapContentHeight(), text = "Printings", onTap = {
-                            onPrintings()
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        })
+                        if (rulingsButtonEnabled) {
+                            ScryfallButton(modifier = Modifier
+                                .width(80.dp)
+                                .wrapContentHeight(), text = "Rulings", onTap = {
+                                onRulings()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            })
+                        }
+                        if (selectButtonEnabled) {
+                            ScryfallButton(modifier = Modifier
+                                .width(80.dp)
+                                .wrapContentHeight(), text = "Select", onTap = {
+                                onSelect()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            })
+                        }
+                        if (printingsButtonEnabled) {
+                            ScryfallButton(modifier = Modifier
+                                .width(80.dp)
+                                .wrapContentHeight(), text = "Printings", onTap = {
+                                onPrintings()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            })
+                        }
+
                     }
                 }
                 Box(
