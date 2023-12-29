@@ -62,7 +62,10 @@ fun MTGLifeTotalApp(
                 LifeCounterScreen(players = remember { viewModel.getActivePlayers() }, resetPlayers = {
                     viewModel.resetPlayers()
                     navController.navigate(MTGScreen.LifeCounterScreen.name)
-                }, setStartingLife = { viewModel.setStartingLife(SharedPreferencesManager, it) }, setPlayerNum = {
+                }, setStartingLife = {
+                    viewModel.setStartingLife(SharedPreferencesManager, it)
+                    navController.navigate(MTGScreen.LifeCounterScreen.name)
+                }, setPlayerNum = {
                     viewModel.setPlayerNum(it, allowOverride = true)
                 }, goToPlayerSelect = { navController.navigate(MTGScreen.PlayerSelectScreen.name) }, set4PlayerLayout = {
                     viewModel.set4PlayerLayout(it)
