@@ -1,12 +1,18 @@
 package mtglifeappcompose.data
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import mtglifeappcompose.composable.lifecounter.PlayerButtonState
 import mtglifeappcompose.ui.theme.allPlayerColors
+
+enum class DayNightState {
+    NONE, DAY, NIGHT
+}
 
 class AppViewModel : ViewModel() {
     private var currentPlayers: MutableList<Player> = mutableListOf()
@@ -15,6 +21,16 @@ class AppViewModel : ViewModel() {
     var currentDealer: Player? = null
     val alt4PlayerLayout = mutableStateOf(SharedPreferencesManager.load4PlayerLayout())
     var blurBackground = mutableStateOf(false)
+
+    var dayNight by mutableStateOf(DayNightState.NONE)
+
+    fun toggleDayNight() {
+        dayNight = when (dayNight) {
+            DayNightState.NONE -> DayNightState.DAY
+            DayNightState.DAY -> DayNightState.NIGHT
+            DayNightState.NIGHT -> DayNightState.DAY
+        }
+    }
 
     fun currentDealerIsPartnered(): Boolean {
         return currentDealer?.partnerMode ?: false
