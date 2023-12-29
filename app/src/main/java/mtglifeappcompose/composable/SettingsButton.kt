@@ -72,9 +72,7 @@ fun SettingsButton(
     val haptic = LocalHapticFeedback.current
     val shadowTextStyle = MaterialTheme.typography.bodyMedium.copy(
         shadow = Shadow(
-            color = generateShadow(),
-            offset = Offset(2f, 2f),
-            blurRadius = 4f
+            color = generateShadow(), offset = Offset(2f, 2f), blurRadius = 4f
         )
     )
 
@@ -85,26 +83,24 @@ fun SettingsButton(
         .background(backgroundColor)
         .then(if (enabled && visible) {
             Modifier.pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        onPress()
-                        if (hapticEnabled) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-                    },
-                    onTap = { onTap() },
-                    onLongPress = { onLongPress() },
-                    onDoubleTap = { onDoubleTap() })
+                detectTapGestures(onPress = {
+                    onPress()
+                    if (hapticEnabled) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                }, onTap = {
+                    onTap()
+                }, onLongPress = {
+                    onLongPress()
+                }, onDoubleTap = {
+                    onDoubleTap()
+                })
             }
         } else {
             Modifier
-        }
-        )) {
+        })) {
         Column(
-            modifier = Modifier
-                .size(size),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.size(size), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 Modifier
@@ -171,13 +167,7 @@ fun ImageWithShadow(
         }
 
         Image(
-            painter = painter,
-            contentDescription = contentDescription,
-            alignment = alignment,
-            contentScale = contentScale,
-            alpha = alpha,
-            colorFilter = colorFilter,
-            modifier = Modifier.fillMaxSize()
+            painter = painter, contentDescription = contentDescription, alignment = alignment, contentScale = contentScale, alpha = alpha, colorFilter = colorFilter, modifier = Modifier.fillMaxSize()
         )
     }
 }
