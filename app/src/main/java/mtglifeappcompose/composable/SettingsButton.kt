@@ -51,7 +51,7 @@ fun SettingsButton(
     backgroundColor: Color = Color.Transparent,
     imageResource: Painter = painterResource(id = R.drawable.placeholder_icon),
     text: String = "",
-    mainColor: Color = Color.White,
+    mainColor: Color = MaterialTheme.colorScheme.onPrimary,
     enabled: Boolean = true,
     visible: Boolean = true,
     shadowEnabled: Boolean = true,
@@ -62,7 +62,6 @@ fun SettingsButton(
     onDoubleTap: () -> Unit = {},
     overlay: @Composable () -> Unit = {}
 ) {
-
     val matrix = ColorMatrix().apply {
         setToScale(
             mainColor.red, mainColor.green, mainColor.blue, mainColor.alpha

@@ -81,10 +81,7 @@ fun SettingsDialogContent(
                         icon = painterResource(id = R.drawable.placeholder_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Auto KO",
-                        initialState = viewModel.autoKo,
-                        toggle = { viewModel.toggleAutoKo(it) },
-                        icon = painterResource(id = R.drawable.placeholder_icon)
+                        text = "Auto KO", initialState = viewModel.autoKo, toggle = { viewModel.toggleAutoKo(it) }, icon = painterResource(id = R.drawable.placeholder_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Keep Screen On (requires restart)",
@@ -184,7 +181,7 @@ fun SettingsDialogButtonWithToggle(
         SettingsButton(
             modifier = Modifier
                 .padding(horizontal = 7.5.dp)
-                .size(50.dp), shadowEnabled = false, imageResource = icon, mainColor = MaterialTheme.colorScheme.onPrimary, enabled = false
+                .size(50.dp), shadowEnabled = false, imageResource = icon, enabled = false
         )
         Text(
             modifier = Modifier.fillMaxWidth(0.8f), text = text, style = TextStyle(
@@ -234,7 +231,7 @@ fun SettingsDialogButton(
         SettingsButton(
             modifier = Modifier
                 .padding(horizontal = 7.5.dp)
-                .size(50.dp), shadowEnabled = false, imageResource = icon, mainColor = MaterialTheme.colorScheme.onPrimary, enabled = false
+                .size(50.dp), shadowEnabled = false, imageResource = icon, enabled = false
         )
         Text(
             modifier = Modifier, text = text, style = TextStyle(

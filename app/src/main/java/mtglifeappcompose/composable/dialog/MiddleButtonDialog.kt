@@ -152,84 +152,44 @@ fun MiddleButtonDialog(
                 visible = state == MiddleButtonDialogState.Default, enter = enterAnimation, exit = exitAnimation
             ) {
                 GridDialogContent(Modifier.fillMaxSize(), items = listOf({
-                    SettingsButton(buttonModifier,
-                        imageResource = painterResource(id = R.drawable.player_select_icon),
-                        text = "Player Select",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = {
-                            goToPlayerSelect()
-                            onDismiss()
-                        })
+                    SettingsButton(buttonModifier, imageResource = painterResource(id = R.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
+                        goToPlayerSelect()
+                        onDismiss()
+                    })
                 }, {
-                    SettingsButton(buttonModifier,
-                        imageResource = painterResource(id = R.drawable.reset_icon),
-                        text = "Reset Game",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = {
-                            resetPlayers()
-                            onDismiss()
-                        })
+                    SettingsButton(buttonModifier, imageResource = painterResource(id = R.drawable.reset_icon), text = "Reset Game", shadowEnabled = false, onPress = {
+                        resetPlayers()
+                        onDismiss()
+                    })
                 }, {
-                    SettingsButton(buttonModifier,
-                        imageResource = painterResource(R.drawable.forty_icon),
-                        text = "Starting Life",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = {
-                            state = MiddleButtonDialogState.StartingLife
-                            backStack.add { state = MiddleButtonDialogState.Default }
-                        })
+                    SettingsButton(buttonModifier, imageResource = painterResource(R.drawable.forty_icon), text = "Starting Life", shadowEnabled = false, onPress = {
+                        state = MiddleButtonDialogState.StartingLife
+                        backStack.add { state = MiddleButtonDialogState.Default }
+                    })
                 }, {
                     SettingsButton(
-                        buttonModifier,
-                        imageResource = painterResource(R.drawable.moon_icon),
-                        text = "Toggle Theme",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = toggleTheme
+                        buttonModifier, imageResource = painterResource(R.drawable.moon_icon), text = "Toggle Theme", shadowEnabled = false, onPress = toggleTheme
                     )
                 }, {
-                    SettingsButton(buttonModifier,
-                        imageResource = painterResource(id = R.drawable.player_count_icon),
-                        text = "Player Number",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = {
-                            state = MiddleButtonDialogState.PlayerNumber
-                            backStack.add { state = MiddleButtonDialogState.Default }
-                        })
+                    SettingsButton(buttonModifier, imageResource = painterResource(id = R.drawable.player_count_icon), text = "Player Number", shadowEnabled = false, onPress = {
+                        state = MiddleButtonDialogState.PlayerNumber
+                        backStack.add { state = MiddleButtonDialogState.Default }
+                    })
                 }, {
-                    SettingsButton(buttonModifier,
-                        imageResource = painterResource(R.drawable.mana_icon),
-                        text = "Mana & Storm",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = {
-                            state = MiddleButtonDialogState.Counter
-                            backStack.add { state = MiddleButtonDialogState.Default }
-                        })
+                    SettingsButton(buttonModifier, imageResource = painterResource(R.drawable.mana_icon), text = "Mana & Storm", shadowEnabled = false, onPress = {
+                        state = MiddleButtonDialogState.Counter
+                        backStack.add { state = MiddleButtonDialogState.Default }
+                    })
                 }, {
-                    SettingsButton(buttonModifier,
-                        imageResource = painterResource(R.drawable.six_icon),
-                        text = "Dice roll",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = {
-                            state = MiddleButtonDialogState.DiceRoll
-                            backStack.add { state = MiddleButtonDialogState.Default }
-                        })
+                    SettingsButton(buttonModifier, imageResource = painterResource(R.drawable.six_icon), text = "Dice roll", shadowEnabled = false, onPress = {
+                        state = MiddleButtonDialogState.DiceRoll
+                        backStack.add { state = MiddleButtonDialogState.Default }
+                    })
                 }, {
-                    SettingsButton(buttonModifier,
-                        imageResource = painterResource(R.drawable.coin_icon),
-                        text = "Coin Flip",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = {
-                            state = MiddleButtonDialogState.CoinFlip
-                            backStack.add { state = MiddleButtonDialogState.Default }
-                        })
+                    SettingsButton(buttonModifier, imageResource = painterResource(R.drawable.coin_icon), text = "Coin Flip", shadowEnabled = false, onPress = {
+                        state = MiddleButtonDialogState.CoinFlip
+                        backStack.add { state = MiddleButtonDialogState.Default }
+                    })
                 }, {
                     SettingsButton(buttonModifier, imageResource = when (viewModel.dayNight) {
                         DayNightState.DAY -> painterResource(R.drawable.sun_icon)
@@ -239,29 +199,23 @@ fun MiddleButtonDialog(
                         DayNightState.DAY -> "Day/Night"
                         DayNightState.NIGHT -> "Day/Night"
                         DayNightState.NONE -> "Day/Night"
-                    }, mainColor = MaterialTheme.colorScheme.onPrimary, shadowEnabled = false, onPress = {
+                    }, shadowEnabled = false, onPress = {
                         viewModel.toggleDayNight()
                     }, onLongPress = {
                         viewModel.dayNight = DayNightState.NONE
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     })
                 }, {
-                    SettingsButton(buttonModifier,
-                        imageResource = painterResource(R.drawable.search_icon),
-                        text = "Card Search",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = {
+                    SettingsButton(buttonModifier, imageResource = painterResource(R.drawable.search_icon), text = "Card Search",
+
+                        shadowEnabled = false, onPress = {
                             state = MiddleButtonDialogState.Scryfall
                             backStack.add { state = MiddleButtonDialogState.Default }
                         })
                 }, {
-                    SettingsButton(buttonModifier,
-                        imageResource = painterResource(R.drawable.settings_icon_small),
-                        text = "Settings",
-                        mainColor = MaterialTheme.colorScheme.onPrimary,
-                        shadowEnabled = false,
-                        onPress = {
+                    SettingsButton(buttonModifier, imageResource = painterResource(R.drawable.settings_icon_small), text = "Settings",
+
+                        shadowEnabled = false, onPress = {
                             state = MiddleButtonDialogState.Settings
                             backStack.add { state = MiddleButtonDialogState.Default }
                         })
@@ -363,13 +317,8 @@ fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Un
         modifier = modifier
             .rotate(180f)
             .size(100.dp),
-        mainColor = MaterialTheme.colorScheme.onPrimary,
-        backgroundColor = Color.Transparent,
-        text = "",
-        visible = visible,
-        shadowEnabled = false,
-        imageResource = painterResource(id = R.drawable.enter_icon),
-        onTap = onBack
+
+        backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageResource = painterResource(id = R.drawable.enter_icon), onTap = onBack
     )
 }
 
@@ -379,13 +328,8 @@ fun ConfirmButton(modifier: Modifier = Modifier, visible: Boolean, onConfirm: ()
         modifier = modifier
             .padding(5.dp)
             .size(100.dp),
-        mainColor = MaterialTheme.colorScheme.onPrimary,
-        backgroundColor = Color.Transparent,
-        text = "",
-        visible = visible,
-        shadowEnabled = false,
-        imageResource = painterResource(id = R.drawable.checkmark),
-        onTap = onConfirm
+
+        backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageResource = painterResource(id = R.drawable.checkmark), onTap = onConfirm
     )
 }
 
@@ -393,13 +337,8 @@ fun ConfirmButton(modifier: Modifier = Modifier, visible: Boolean, onConfirm: ()
 fun ExitButton(modifier: Modifier = Modifier, visible: Boolean, onDismiss: () -> Unit) {
     SettingsButton(
         modifier = modifier.size(100.dp),
-        mainColor = MaterialTheme.colorScheme.onPrimary,
-        backgroundColor = Color.Transparent,
-        text = "",
-        visible = visible,
-        shadowEnabled = false,
-        imageResource = painterResource(id = R.drawable.x_icon),
-        onTap = onDismiss
+
+        backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageResource = painterResource(id = R.drawable.x_icon), onTap = onDismiss
     )
 }
 

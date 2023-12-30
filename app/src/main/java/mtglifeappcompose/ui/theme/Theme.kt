@@ -48,14 +48,11 @@ fun MTGLifeAppComposeTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-
             val window = (view.context as Activity).window
             val insets = WindowCompat.getInsetsController(window, view)
             window.isStatusBarContrastEnforced = false
             window.statusBarColor = colorScheme.background.toArgb()
             window.navigationBarColor = colorScheme.background.toArgb()
-//            window.statusBarColor = Color.Transparent.toArgb()
-//            window.navigationBarColor = Color.Transparent.toArgb()
             insets.isAppearanceLightStatusBars = !darkTheme
             insets.isAppearanceLightNavigationBars = !darkTheme
         }

@@ -45,17 +45,17 @@ fun StartingLifeDialogContent(
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(maxHeight / 6f))
             GridDialogContent(Modifier.wrapContentSize(), items = listOf({
-                SettingsButton(imageResource = painterResource(id = R.drawable.forty_icon), mainColor = MaterialTheme.colorScheme.onPrimary, text = "", shadowEnabled = false, onPress = {
+                SettingsButton(imageResource = painterResource(id = R.drawable.forty_icon), text = "", shadowEnabled = false, onPress = {
                     setStartingLife(40)
                     onDismiss()
                 })
             }, {
-                SettingsButton(imageResource = painterResource(id = R.drawable.thirty_icon), mainColor = MaterialTheme.colorScheme.onPrimary, text = "", shadowEnabled = false, onPress = {
+                SettingsButton(imageResource = painterResource(id = R.drawable.thirty_icon), text = "", shadowEnabled = false, onPress = {
                     setStartingLife(30)
                     onDismiss()
                 })
             }, {
-                SettingsButton(imageResource = painterResource(id = R.drawable.twenty_icon), mainColor = MaterialTheme.colorScheme.onPrimary, text = "", shadowEnabled = false, onPress = {
+                SettingsButton(imageResource = painterResource(id = R.drawable.twenty_icon), text = "", shadowEnabled = false, onPress = {
                     setStartingLife(20)
                     onDismiss()
                 })
@@ -107,7 +107,6 @@ fun StartingLifeDialogContent(
                         .size(50.dp),
                     imageResource = painterResource(id = R.drawable.enter_icon),
                     shadowEnabled = false,
-                    mainColor = MaterialTheme.colorScheme.onPrimary,
                     onPress = { customSetStartLife() })
             }
         }
