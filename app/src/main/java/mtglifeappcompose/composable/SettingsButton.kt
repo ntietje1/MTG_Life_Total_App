@@ -5,13 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,7 +47,6 @@ import mtglifeappcompose.ui.theme.generateShadow
 @Composable
 fun SettingsButton(
     modifier: Modifier = Modifier,
-    size: Dp = 140.dp,
     shape: Shape = RectangleShape,
     backgroundColor: Color = Color.Transparent,
     imageResource: Painter = painterResource(id = R.drawable.placeholder_icon),
@@ -62,8 +62,7 @@ fun SettingsButton(
     onDoubleTap: () -> Unit = {},
     overlay: @Composable () -> Unit = {}
 ) {
-    val margin = size / 9f
-    val fontSize = margin.value.sp
+
     val matrix = ColorMatrix().apply {
         setToScale(
             mainColor.red, mainColor.green, mainColor.blue, mainColor.alpha
@@ -76,9 +75,9 @@ fun SettingsButton(
         )
     )
 
-    Box(modifier = modifier
-        .size(size)
+    BoxWithConstraints(modifier = modifier
         .alpha(if (visible) 1f else 0f)
+        .aspectRatio(1.0f)
         .clip(shape)
         .background(backgroundColor)
         .then(if (enabled && visible) {
@@ -99,8 +98,9 @@ fun SettingsButton(
         } else {
             Modifier
         })) {
+        val fontSize = (maxWidth / 8f).value.sp
         Column(
-            modifier = Modifier.size(size), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 Modifier
@@ -121,10 +121,11 @@ fun SettingsButton(
                 Text(
                     modifier = Modifier
                         .wrapContentHeight()
-                        .fillMaxWidth(),
+                        .wrapContentWidth(unbounded = true),
                     text = text,
                     color = mainColor,
                     fontSize = fontSize,
+                    maxLines = 1,
                     textAlign = TextAlign.Center,
                     style = if (shadowEnabled) shadowTextStyle else TextStyle(),
                 )
