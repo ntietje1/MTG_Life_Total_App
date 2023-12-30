@@ -44,7 +44,7 @@ class Player(
     private var playerNum by mutableIntStateOf(playerNum)
     var setDead by mutableStateOf(false)
 
-    val isDead get() = (life <= 0 || setDead)
+    val isDead get() = (life <= 0 || setDead || commanderDamage.any { it >= 21 } )
 
     private var commanderDamage = mutableStateListOf<Int>().apply {
         for (i in 0 until MAX_PLAYERS*2) {
@@ -67,13 +67,13 @@ class Player(
     }
 
     fun getCommanderDamage(currentDealer: Player, partner: Boolean = false): Int {
-        val index = (this.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
-        return currentDealer.commanderDamage[index]
+        val index = (currentDealer.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
+        return this.commanderDamage[index]
     }
 
     fun incrementCommanderDamage(currentDealer: Player, value: Int, partner: Boolean = false) {
-        val index = (currentDealer.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
-        this.commanderDamage[index] += value
+        val index = (this.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
+        currentDealer.commanderDamage[index] += value
     }
 
     fun copySettings(other: Player) {
