@@ -21,8 +21,36 @@ class AppViewModel : ViewModel() {
     var currentDealer: Player? = null
     val alt4PlayerLayout = mutableStateOf(SharedPreferencesManager.load4PlayerLayout())
     var blurBackground = mutableStateOf(false)
+    var fastCoinFlip by mutableStateOf(SharedPreferencesManager.loadFastCoinFlip())
+        private set
+    var cameraRollDisabled by mutableStateOf(SharedPreferencesManager.loadCameraRollDisabled())
+        private set
+    var rotatingMiddleButton by mutableStateOf(SharedPreferencesManager.loadRotatingMiddleButton())
+        private set
+    var commanderDamageCausesLifeLoss by mutableStateOf(SharedPreferencesManager.loadCommanderDamageCausesLifeLoss())
+        private set
 
     var dayNight by mutableStateOf(DayNightState.NONE)
+
+    fun toggleCommanderDamageCausesLifeLoss(value: Boolean?) {
+        commanderDamageCausesLifeLoss = value ?: !commanderDamageCausesLifeLoss
+        SharedPreferencesManager.saveCommanderDamageCausesLifeLoss(commanderDamageCausesLifeLoss)
+    }
+
+    fun toggleRotatingMiddleButton(value: Boolean?) {
+        rotatingMiddleButton = value ?: !rotatingMiddleButton
+        SharedPreferencesManager.saveRotatingMiddleButton(rotatingMiddleButton)
+    }
+
+    fun toggleCameraRollEnabled(value: Boolean?) {
+        cameraRollDisabled = value ?: !cameraRollDisabled
+        SharedPreferencesManager.saveCameraRollDisabled(cameraRollDisabled)
+    }
+
+    fun toggleFastCoinFlip(value: Boolean?) {
+        fastCoinFlip = value ?: !fastCoinFlip
+        SharedPreferencesManager.saveFastCoinFlip(fastCoinFlip)
+    }
 
     fun toggleDayNight() {
         dayNight = when (dayNight) {

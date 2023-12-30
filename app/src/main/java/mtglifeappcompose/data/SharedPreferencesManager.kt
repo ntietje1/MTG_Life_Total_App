@@ -17,6 +17,50 @@ object SharedPreferencesManager {
         }
     }
 
+    fun saveCommanderDamageCausesLifeLoss(commanderDamageCausesLifeLoss: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("commanderDamageCausesLifeLoss", commanderDamageCausesLifeLoss)
+            apply()
+        }
+    }
+
+    fun loadCommanderDamageCausesLifeLoss(): Boolean {
+        return sharedPreferences.getBoolean("commanderDamageCausesLifeLoss", true)
+    }
+
+    fun saveRotatingMiddleButton(rotatingMiddleButton: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("rotatingMiddleButton", rotatingMiddleButton)
+            apply()
+        }
+    }
+
+    fun loadRotatingMiddleButton(): Boolean {
+        return sharedPreferences.getBoolean("rotatingMiddleButton", true)
+    }
+
+    fun saveCameraRollDisabled(cameraRollDisabled: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("cameraRollEnabled", cameraRollDisabled)
+            apply()
+        }
+    }
+
+    fun loadCameraRollDisabled(): Boolean {
+        return sharedPreferences.getBoolean("cameraRollDisabled", false)
+    }
+
+    fun saveFastCoinFlip(fastCoinFlip: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("fastCoinFlip", fastCoinFlip)
+            apply()
+        }
+    }
+
+    fun loadFastCoinFlip(): Boolean {
+        return sharedPreferences.getBoolean("fastCoinFlip", false)
+    }
+
     fun loadNumPlayers(): Int {
         return sharedPreferences.getInt("numPlayers", 4)
     }
