@@ -42,8 +42,9 @@ class Player(
     var recentChange: Int by mutableIntStateOf(0)
     var partnerMode: Boolean by mutableStateOf(false)
     private var playerNum by mutableIntStateOf(playerNum)
+    var setDead by mutableStateOf(false)
 
-    val isDead get() = (life <= 0)
+    val isDead get() = (life <= 0 || setDead)
 
     private var commanderDamage = mutableStateListOf<Int>().apply {
         for (i in 0 until MAX_PLAYERS*2) {

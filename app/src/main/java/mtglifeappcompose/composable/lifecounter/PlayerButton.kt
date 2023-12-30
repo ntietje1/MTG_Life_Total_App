@@ -256,24 +256,48 @@ fun PlayerButton(
                 }
 
                 @Composable
+                fun Skull() {
+                    SettingsButton(
+                        modifier = playerInfoPadding.align(Alignment.Center),
+                        size = smallButtonSize * 5,
+                        backgroundColor = Color.Transparent,
+                        mainColor = player.textColor,
+                        imageResource = painterResource(id = R.drawable.skull_icon),
+                        enabled = false
+                    )
+                }
+
+
+                @Composable
                 fun PlayerButtonContent(modifier: Modifier = Modifier) {
                     Box(modifier.fillMaxSize()) {
                         when (state.value) {
                             PlayerButtonState.NORMAL -> {
-                                LifeNumber(
-                                    modifier = playerInfoPadding.fillMaxSize(), player = player
-                                )
+                                if (player.setDead) {
+                                    Skull()
+                                } else {
+                                    LifeNumber(
+                                        modifier = playerInfoPadding.fillMaxSize(), player = player
+                                    )
+                                }
+
                             }
 
                             PlayerButtonState.COMMANDER_RECEIVER -> {
-                                CommanderDamageNumber(
-                                    modifier = playerInfoPadding.fillMaxSize(), player = player, currentDealer = viewModel.currentDealer, partnerMode = viewModel.currentDealerIsPartnered()
-                                )
+                                if (player.setDead) {
+                                    Skull()
+                                } else {
+                                    CommanderDamageNumber(
+                                        modifier = playerInfoPadding.fillMaxSize(), player = player, currentDealer = viewModel.currentDealer, partnerMode = viewModel.currentDealerIsPartnered()
+                                    )
+                                }
+
                             }
 
                             PlayerButtonState.COMMANDER_DEALER -> {
                                 val iconId = if (viewModel.currentDealerIsPartnered()) R.drawable.sword_icon_double else R.drawable.sword_icon
                                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                                    Spacer(modifier = Modifier.height(40.dp))
                                     Text(
                                         modifier = Modifier, text = "Deal damage with your commander", color = player.textColor, fontSize = 20.sp, textAlign = TextAlign.Center
                                     )
@@ -913,14 +937,13 @@ fun SettingsMenu(
                         }
                     }
                     item {
-//                        FormattedSettingsButton(
-//                            imageResource = painterResource(R.drawable.placeholder_icon),
-//                            text = "Placeholder"
-//                        ) {}
-                        SettingsButton(
-                            size = settingsButtonSize,
-                            visible = false,
-                        )
+                        FormattedSettingsButton(
+                            imageResource = painterResource(R.drawable.skull_icon),
+                            text = "Kill Player"
+                        ) {
+                            player.setDead = !player.isDead
+                            closeSettingsMenu()
+                        }
                     }
 
                     item {
