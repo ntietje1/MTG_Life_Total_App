@@ -17,6 +17,17 @@ object SharedPreferencesManager {
         }
     }
 
+    fun saveAutoSkip(autoSkip: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("autoSkip", autoSkip)
+            apply()
+        }
+    }
+
+    fun loadAutoSkip(): Boolean {
+        return sharedPreferences.getBoolean("autoSkip", false)
+    }
+
     fun saveKeepScreenOn(keepScreenOn: Boolean) {
         with(sharedPreferences.edit()) {
             putBoolean("keepScreenOn", keepScreenOn)

@@ -66,7 +66,10 @@ fun SettingsDialogContent(
                         icon = painterResource(id = R.drawable.placeholder_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Fast Coin Flip", initialState = viewModel.fastCoinFlip, toggle = { viewModel.toggleFastCoinFlip(it) }, icon = painterResource(id = R.drawable.placeholder_icon)
+                        text = "Fast Coin Flip",
+                        initialState = viewModel.fastCoinFlip,
+                        toggle = { viewModel.toggleFastCoinFlip(it) },
+                        icon = painterResource(id = R.drawable.placeholder_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Disable Camera Roll",
@@ -81,7 +84,16 @@ fun SettingsDialogContent(
                         icon = painterResource(id = R.drawable.placeholder_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Auto KO", initialState = viewModel.autoKo, toggle = { viewModel.toggleAutoKo(it) }, icon = painterResource(id = R.drawable.placeholder_icon)
+                        text = "Auto KO",
+                        initialState = viewModel.autoKo,
+                        toggle = { viewModel.toggleAutoKo(it) },
+                        icon = painterResource(id = R.drawable.placeholder_icon)
+                    )
+                    SettingsDialogButtonWithToggle(
+                        text = "AutoSkip Player Select",
+                        initialState = viewModel.autoSkip,
+                        toggle = { viewModel.toggleAutoSkip(it) },
+                        icon = painterResource(id = R.drawable.placeholder_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Keep Screen On (requires restart)",

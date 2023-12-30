@@ -19,6 +19,7 @@ class AppViewModel : ViewModel() {
     private val numPlayers = mutableIntStateOf(SharedPreferencesManager.loadNumPlayers())
     private val buttonStates = mutableListOf<MutableState<PlayerButtonState>>()
     var currentDealer: Player? = null
+    var firstPlayerSelect by mutableStateOf(true)
     val alt4PlayerLayout = mutableStateOf(SharedPreferencesManager.load4PlayerLayout())
     var blurBackground = mutableStateOf(false)
     var fastCoinFlip by mutableStateOf(SharedPreferencesManager.loadFastCoinFlip())
@@ -33,8 +34,15 @@ class AppViewModel : ViewModel() {
         private set
     var keepScreenOn by mutableStateOf(SharedPreferencesManager.loadKeepScreenOn())
         private set
+    var autoSkip by mutableStateOf(SharedPreferencesManager.loadAutoSkip())
+        private set
 
     var dayNight by mutableStateOf(DayNightState.NONE)
+
+    fun toggleAutoSkip(value: Boolean?) {
+        autoSkip = value ?: !autoSkip
+        SharedPreferencesManager.saveAutoSkip(autoSkip)
+    }
 
     fun toggleKeepScreenOn(value: Boolean?) {
         keepScreenOn = value ?: !keepScreenOn
