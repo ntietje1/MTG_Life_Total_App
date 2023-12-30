@@ -42,11 +42,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mtglifeappcompose.R
 import com.wajahatkarim.flippable.FlipAnimationType
 import com.wajahatkarim.flippable.Flippable
 import com.wajahatkarim.flippable.FlippableState
 import com.wajahatkarim.flippable.rememberFlipController
+import mtglifeappcompose.data.AppViewModel
 import kotlin.random.Random
 
 @Composable
@@ -87,8 +89,10 @@ fun CoinFlipDialogBox(modifier: Modifier = Modifier, history: SnapshotStateList<
 fun CoinFlippable(
     modifier: Modifier = Modifier, history: MutableList<String>, maxHistoryLength: Int = 18
 ) {
+    val viewModel: AppViewModel = viewModel()
     val flipEnabled by remember { mutableStateOf(true) }
-    val initialDuration = 300
+    val initialDuration = if (viewModel.fastCoinFlip) 150 else 300
+    val additionalDuration = if (viewModel.fastCoinFlip) 35 else 75
     var duration by remember { mutableIntStateOf(initialDuration) }
     var flipAnimationType by remember { mutableStateOf(FlipAnimationType.VERTICAL_ANTI_CLOCKWISE) }
     val totalFlips = 2 // + 1
@@ -105,7 +109,7 @@ fun CoinFlippable(
 
     fun decrementFlipCount() {
         flipCount--
-        duration += 75
+        duration += additionalDuration
     }
 
     fun resetCount() {

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,12 +22,17 @@ fun FourPlayerLayoutContent(
         Column(
             modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SettingsButton(size = buttonSize, imageResource = painterResource(id = R.drawable.default4player_icon), mainColor = MaterialTheme.colorScheme.onPrimary, shadowEnabled = false, onPress = {
-                setPlayerNum(4)
-                set4PlayerDialog(false)
-                onDismiss()
-            })
-            SettingsButton(size = buttonSize,
+            SettingsButton(Modifier.size(buttonSize),
+                imageResource = painterResource(id = R.drawable.default4player_icon),
+                mainColor = MaterialTheme.colorScheme.onPrimary,
+                shadowEnabled = false,
+                onPress = {
+                    setPlayerNum(4)
+                    set4PlayerDialog(false)
+                    onDismiss()
+                })
+            SettingsButton(
+                Modifier.size(buttonSize),
                 imageResource = painterResource(id = R.drawable.alternate4player_icon),
                 mainColor = MaterialTheme.colorScheme.onPrimary,
                 shadowEnabled = false,

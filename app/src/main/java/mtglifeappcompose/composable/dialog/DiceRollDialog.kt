@@ -2,7 +2,7 @@ package mtglifeappcompose.composable.dialog
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -32,9 +32,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mtglifeappcompose.R
 import kotlinx.coroutines.CoroutineScope
@@ -67,7 +65,6 @@ fun DiceRollDialogContent(
 fun DiceRollButton(
     value: Int,
     modifier: Modifier = Modifier,
-    size: Dp = 140.dp,
     shape: Shape = RectangleShape,
     backgroundColor: Color = Color.Transparent,
     imageResource: Painter = painterResource(id = R.drawable.d20_icon),
@@ -98,7 +95,6 @@ fun DiceRollButton(
     SettingsButton(modifier = modifier
         .bounceClick(amount = 0.04f)
         .shake(shakeController),
-        size = size,
         shape = shape,
         backgroundColor = backgroundColor,
         imageResource = imageResource,
@@ -112,14 +108,14 @@ fun DiceRollButton(
             shakeController.shake(ShakeConfig(6, translateX = 7.5f, rotate = 0.5f, rotateY = 12.5f))
         },
         overlay = {
-            Box(
+            BoxWithConstraints(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Text(
                     text = faceValue.toString(),
                     color = MaterialTheme.colorScheme.background,
                     fontWeight = FontWeight.Bold,
-                    fontSize = size.value.sp / 6,
+                    fontSize = maxHeight.value.sp / 6,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .wrapContentHeight()
@@ -127,9 +123,7 @@ fun DiceRollButton(
                         .align(Alignment.Center)
                 )
             }
-
         })
-
 }
 
 @Composable

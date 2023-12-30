@@ -210,6 +210,7 @@ fun AnimatedPlayerButton(
 fun AnimatedMiddleButton(
     modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit, visible: MutableState<Boolean>
 ) {
+    val viewModel: AppViewModel = viewModel()
     var animationFinished by remember { mutableStateOf(false) }
 
     val duration = 3000
@@ -247,7 +248,7 @@ fun AnimatedMiddleButton(
 
     val infiniteTransition = rememberInfiniteTransition(label = "")
 
-    angle = if (!animationFinished) animatableAngle.value else infiniteTransition.animateFloat(
+    angle = if (!animationFinished || !viewModel.rotatingMiddleButton) animatableAngle.value else infiniteTransition.animateFloat(
         initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 180_000, easing = LinearEasing), repeatMode = RepeatMode.Restart
         ), label = ""

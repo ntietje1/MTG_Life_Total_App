@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -69,58 +70,45 @@ fun StartingLifeDialogContent(
                         onDismiss()
                     }
                 }
-                TextField(
-                    value = customLife,
-                    onValueChange = { customLife = it },
-                    label = {
-                        Text(
-                            "Custom Starting Life", color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp
-                        )
-                    },
-                    textStyle = TextStyle(fontSize = 20.sp),
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                        disabledTextColor = MaterialTheme.colorScheme.onPrimary,
-                        focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                        unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                        disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
-                        cursorColor = MaterialTheme.colorScheme.onPrimary,
-                        selectionColors = TextSelectionColors(
-                            handleColor = MaterialTheme.colorScheme.onPrimary,
-                            backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                        ),
-                        focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                        disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
+                TextField(value = customLife, onValueChange = { customLife = it }, label = {
+                    Text(
+                        "Custom Starting Life", color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp
+                    )
+                }, textStyle = TextStyle(fontSize = 20.sp), singleLine = true, colors = TextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledTextColor = MaterialTheme.colorScheme.onPrimary,
+                    focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    cursorColor = MaterialTheme.colorScheme.onPrimary,
+                    selectionColors = TextSelectionColors(
+                        handleColor = MaterialTheme.colorScheme.onPrimary,
+                        backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                     ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number,
-                        autoCorrect = false,
-                        capitalization = KeyboardCapitalization.None,
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { customSetStartLife() }),
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .height(80.dp)
-                        .padding(top = 20.dp)
-                        .padding(horizontal = 5.dp)
+                    focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                    disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ), keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number, autoCorrect = false, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
+                ), keyboardActions = KeyboardActions(onDone = { customSetStartLife() }), modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .height(80.dp)
+                    .padding(top = 20.dp)
+                    .padding(horizontal = 5.dp)
                 )
                 SettingsButton(
                     Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(top = 20.dp, end = 5.dp),
-                    size = 50.dp,
+                        .padding(top = 20.dp, end = 5.dp)
+                        .size(50.dp),
                     imageResource = painterResource(id = R.drawable.enter_icon),
                     shadowEnabled = false,
                     mainColor = MaterialTheme.colorScheme.onPrimary,
-                    onPress = { customSetStartLife() }
-                )
+                    onPress = { customSetStartLife() })
             }
         }
     }

@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -143,17 +144,26 @@ fun PlayerButton(
 
 
     fun showWarningDialog() {
-        val alertDialog = AlertDialog.Builder(context).setTitle("Warning").setMessage("This will open the camera roll. Proceed?").setPositiveButton("Proceed") { _, _ ->
-            launcher.launch(
-                PickVisualMediaRequest(
-                    mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
-                )
-            )
-        }.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.dismiss()
-        }.create()
+        if (viewModel.cameraRollDisabled) {
+            val alertDialog = AlertDialog.Builder(context).setTitle("Info").setMessage("Camera roll access is disabled. Enable in settings.").setPositiveButton("Close") { dialog, _ ->
+                dialog.dismiss()
+            }.create()
 
-        alertDialog.show()
+            alertDialog.show()
+        } else {
+            val alertDialog = AlertDialog.Builder(context).setTitle("Warning").setMessage("This will open the camera roll. Proceed?").setPositiveButton("Proceed") { _, _ ->
+                launcher.launch(
+                    PickVisualMediaRequest(
+                        mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+                    )
+                )
+            }.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }.create()
+
+            alertDialog.show()
+        }
+
     }
 
     LaunchedEffect(state.value) {
@@ -230,21 +240,21 @@ fun PlayerButton(
                         Row(Modifier.fillMaxSize()) {
                             LifeChangeButtons(Modifier.then(if (viewModel.currentDealerIsPartnered()) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()), onIncrementLife = {
                                 viewModel.currentDealer?.incrementCommanderDamage(player, 1)
-                                player.incrementLife(-1)
+                                if (viewModel.commanderDamageCausesLifeLoss) player.incrementLife(-1)
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             }, onDecrementLife = {
                                 viewModel.currentDealer?.incrementCommanderDamage(player, -1)
-                                player.incrementLife(1)
+                                if (viewModel.commanderDamageCausesLifeLoss) player.incrementLife(1)
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
                             if (viewModel.currentDealerIsPartnered()) {
                                 LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
                                     viewModel.currentDealer?.incrementCommanderDamage(player, 1, true)
-                                    player.incrementLife(-1)
+                                    if (viewModel.commanderDamageCausesLifeLoss) player.incrementLife(-1)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 }, onDecrementLife = {
                                     viewModel.currentDealer?.incrementCommanderDamage(player, -1, true)
-                                    player.incrementLife(1)
+                                    if (viewModel.commanderDamageCausesLifeLoss) player.incrementLife(1)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 })
                             }
@@ -258,8 +268,9 @@ fun PlayerButton(
                 @Composable
                 fun Skull() {
                     SettingsButton(
-                        modifier = playerInfoPadding.align(Alignment.Center),
-                        size = smallButtonSize * 5,
+                        modifier = playerInfoPadding
+                            .align(Alignment.Center)
+                            .size(smallButtonSize * 5),
                         backgroundColor = Color.Transparent,
                         mainColor = player.textColor,
                         imageResource = painterResource(id = R.drawable.skull_icon),
@@ -302,8 +313,7 @@ fun PlayerButton(
                                         modifier = Modifier, text = "Deal damage with your commander", color = player.textColor, fontSize = 20.sp, textAlign = TextAlign.Center
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
-                                    SettingsButton(modifier = Modifier,
-                                        size = smallButtonSize,
+                                    SettingsButton(modifier = Modifier.size(smallButtonSize),
                                         imageResource = painterResource(iconId),
                                         backgroundColor = Color.Transparent,
                                         mainColor = player.textColor,
@@ -337,10 +347,11 @@ fun PlayerButton(
 
                 @Composable
                 fun BackButton(modifier: Modifier = Modifier) {
-                    SettingsButton(modifier = modifier.padding(
-                        start = settingsStateMargin, bottom = settingsStateMargin, end = settingsStateMargin / 2, top = settingsStateMargin / 2
-                    ),
-                        size = smallButtonSize,
+                    SettingsButton(modifier = modifier
+                        .size(smallButtonSize)
+                        .padding(
+                            start = settingsStateMargin, bottom = settingsStateMargin, end = settingsStateMargin / 2, top = settingsStateMargin / 2
+                        ),
                         backgroundColor = Color.Transparent,
                         mainColor = player.textColor,
                         visible = backStack.isNotEmpty(),
@@ -381,9 +392,11 @@ fun PlayerButton(
                         BackButton(modifier)
                     } else {
                         SettingsButton(
-                            modifier = modifier.padding(
-                                start = settingsStateMargin, bottom = settingsStateMargin, end = settingsStateMargin / 2, top = settingsStateMargin / 2
-                            ), size = smallButtonSize, visible = false
+                            modifier = modifier
+                                .size(smallButtonSize)
+                                .padding(
+                                    start = settingsStateMargin, bottom = settingsStateMargin, end = settingsStateMargin / 2, top = settingsStateMargin / 2
+                                ), visible = false
                         )
                     }
                 }
@@ -587,8 +600,9 @@ fun AddCounter(
             }) {
         val iconSize = maxHeight / 2.5f
         SettingsButton(
-            modifier = Modifier.align(Alignment.Center),
-            size = iconSize,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(iconSize),
             imageResource = painterResource(id = R.drawable.add_icon),
             backgroundColor = Color.Transparent,
             mainColor = player.textColor,
@@ -727,7 +741,7 @@ fun PlayerStateButton(
     onPress: () -> Unit,
 ) {
     SettingsButton(
-        modifier = modifier, size = size, backgroundColor = Color.Transparent, mainColor = color, imageResource = icon, visible = visible, onPress = onPress
+        modifier = modifier.size(size), backgroundColor = Color.Transparent, mainColor = color, imageResource = icon, visible = visible, onPress = onPress
     )
 }
 
@@ -827,9 +841,9 @@ fun NumericValue(
 
         SettingsButton(
             modifier = Modifier
+                .size(iconSize)
                 .align(Alignment.Center)
                 .offset(y = iconPadding),
-            size = iconSize,
             backgroundColor = Color.Transparent,
             mainColor = player.textColor,
             imageResource = painterResource(id = iconID),
@@ -896,7 +910,7 @@ fun SettingsMenu(
         @Composable
         fun FormattedSettingsButton(imageResource: Painter, text: String, onPress: () -> Unit) {
             SettingsButton(
-                imageResource = imageResource, text = text, onPress = onPress, size = settingsButtonSize, mainColor = player.textColor, backgroundColor = Color.Transparent
+                Modifier.size(settingsButtonSize), imageResource = imageResource, text = text, onPress = onPress, mainColor = player.textColor, backgroundColor = Color.Transparent
             )
         }
 
@@ -938,8 +952,7 @@ fun SettingsMenu(
                     }
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.skull_icon),
-                            text = "Kill Player"
+                            imageResource = painterResource(R.drawable.skull_icon), text = "Kill Player"
                         ) {
                             player.setDead = !player.isDead
                             closeSettingsMenu()
@@ -994,7 +1007,7 @@ fun SettingsMenu(
 //                            text = "Gradient"
 //                        ) {}
                         SettingsButton(
-                            size = settingsButtonSize,
+                            Modifier.size(settingsButtonSize),
                             visible = false,
                         )
                     }
@@ -1245,9 +1258,9 @@ fun ChangeNameField(
                 )
                 SettingsButton(
                     Modifier
+                        .size(50.dp)
                         .align(Alignment.CenterEnd)
                         .padding(top = 20.dp, end = 5.dp),
-                    size = 50.dp,
                     imageResource = painterResource(id = R.drawable.enter_icon),
                     shadowEnabled = false,
                     mainColor = player.color,

@@ -35,10 +35,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,14 +73,21 @@ import mtglifeappcompose.data.SharedPreferencesManager
 
 
 @Composable
-fun ScryfallSearchDialog(modifier: Modifier = Modifier, player: Player, onDismiss: () -> Unit) {
+fun ScryfallSearchDialog(modifier: Modifier = Modifier, player: Player, backStack: SnapshotStateList<() -> Unit> = mutableStateListOf(), onDismiss: () -> Unit) {
     SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss) {
-        ScryfallDialogContent(player = player)
+        ScryfallDialogContent(player = player, backStack = backStack)
     }
 }
 
 @Composable
-fun ScryfallDialogContent(modifier: Modifier = Modifier, player: Player?, selectButtonEnabled: Boolean = true, printingsButtonEnabled: Boolean = true, rulingsButtonEnabled: Boolean = false) {
+fun ScryfallDialogContent(
+    modifier: Modifier = Modifier,
+    player: Player?,
+    backStack: SnapshotStateList<() -> Unit>,
+    selectButtonEnabled: Boolean = true,
+    printingsButtonEnabled: Boolean = true,
+    rulingsButtonEnabled: Boolean = false
+) {
     var query by remember { mutableStateOf("") }
     var cardResults by remember { mutableStateOf(listOf<Card>()) }
     var rulingsResults by remember { mutableStateOf(listOf<Ruling>()) }
@@ -198,11 +207,18 @@ fun ScryfallDialogContent(modifier: Modifier = Modifier, player: Player?, select
                 CardPreview(card, selectButtonEnabled = selectButtonEnabled, printingsButtonEnabled = _printingsButtonEnabled, rulingsButtonEnabled = rulingsButtonEnabled, onRulings = {
                     searchRulings(card.rulingsUri ?: "")
                     rulingCard = card
+                    backStack.add {
+                        searchCards(query)
+                        rulingCard = null
+                    }
                 }, onSelect = {
                     player!!.imageUri = Uri.parse(card.getUris().artCrop)
                     SharedPreferencesManager.savePlayer(player)
                 }, onPrintings = {
                     searchCards(card.printsSearchUri, disablePrintingsButton = true)
+                    backStack.add {
+                        searchCards(query)
+                    }
                 })
             }
             if (cardResults.isEmpty() && rulingCard != null) {

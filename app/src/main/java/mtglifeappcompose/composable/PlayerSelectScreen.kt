@@ -12,6 +12,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -61,8 +62,8 @@ fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -
 
             SettingsButton(modifier = Modifier
                 .rotate(90f)
-                .align(Alignment.TopEnd),
-                size = 100.dp,
+                .align(Alignment.TopEnd)
+                .size(100.dp),
                 shape = RoundedCornerShape(30.dp),
                 mainColor = MaterialTheme.colorScheme.onPrimary,
                 backgroundColor = Color.Transparent,
