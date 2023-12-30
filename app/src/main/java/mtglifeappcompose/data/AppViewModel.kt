@@ -31,8 +31,15 @@ class AppViewModel : ViewModel() {
         private set
     var autoKo by mutableStateOf(SharedPreferencesManager.loadAutoKo())
         private set
+    var keepScreenOn by mutableStateOf(SharedPreferencesManager.loadKeepScreenOn())
+        private set
 
     var dayNight by mutableStateOf(DayNightState.NONE)
+
+    fun toggleKeepScreenOn(value: Boolean?) {
+        keepScreenOn = value ?: !keepScreenOn
+        SharedPreferencesManager.saveKeepScreenOn(keepScreenOn)
+    }
 
     fun toggleAutoKo(value: Boolean?) {
         autoKo = value ?: !autoKo
@@ -60,7 +67,7 @@ class AppViewModel : ViewModel() {
     }
 
     fun toggle4PlayerLayout(value: Boolean?) {
-        alt4PlayerLayout.value = value?: !alt4PlayerLayout.value
+        alt4PlayerLayout.value = value ?: !alt4PlayerLayout.value
         SharedPreferencesManager.save4PlayerLayout(alt4PlayerLayout.value)
     }
 

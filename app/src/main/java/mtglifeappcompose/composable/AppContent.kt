@@ -43,7 +43,9 @@ fun MTGLifeTotalApp(
     var darkTheme by remember { mutableStateOf(SharedPreferencesManager.loadTheme()) }
 
     MTGLifeAppComposeTheme(darkTheme = darkTheme) {
-        KeepScreenOn()
+        if (SharedPreferencesManager.loadKeepScreenOn()) {
+            KeepScreenOn()
+        }
         NavHost(
             navController = navController,
             startDestination = MTGScreen.PlayerSelectScreen.name,

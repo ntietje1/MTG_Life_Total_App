@@ -17,6 +17,17 @@ object SharedPreferencesManager {
         }
     }
 
+    fun saveKeepScreenOn(keepScreenOn: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("keepScreenOn", keepScreenOn)
+            apply()
+        }
+    }
+
+    fun loadKeepScreenOn(): Boolean {
+        return sharedPreferences.getBoolean("keepScreenOn", false)
+    }
+
     fun saveAutoKo(autoKo: Boolean) {
         with(sharedPreferences.edit()) {
             putBoolean("autoKo", autoKo)

@@ -86,6 +86,12 @@ fun SettingsDialogContent(
                         toggle = { viewModel.toggleAutoKo(it) },
                         icon = painterResource(id = R.drawable.placeholder_icon)
                     )
+                    SettingsDialogButtonWithToggle(
+                        text = "Keep Screen On (requires restart)",
+                        initialState = viewModel.keepScreenOn,
+                        toggle = { viewModel.toggleKeepScreenOn(it) },
+                        icon = painterResource(id = R.drawable.placeholder_icon)
+                    )
                 }
             }
             item {
