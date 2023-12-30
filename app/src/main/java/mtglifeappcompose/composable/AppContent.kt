@@ -68,7 +68,7 @@ fun MTGLifeTotalApp(
                 }, setPlayerNum = {
                     viewModel.setPlayerNum(it, allowOverride = true)
                 }, goToPlayerSelect = { navController.navigate(MTGScreen.PlayerSelectScreen.name) }, set4PlayerLayout = {
-                    viewModel.set4PlayerLayout(it)
+                    viewModel.toggle4PlayerLayout(it)
                     navController.navigate(MTGScreen.LifeCounterScreen.name)
                 }, toggleTheme = {
                     darkTheme = !darkTheme

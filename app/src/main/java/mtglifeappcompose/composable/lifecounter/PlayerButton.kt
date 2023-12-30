@@ -270,7 +270,8 @@ fun PlayerButton(
                     SettingsButton(
                         modifier = playerInfoPadding
                             .align(Alignment.Center)
-                            .size(smallButtonSize * 5),
+                            .size(smallButtonSize * 4)
+                            .padding(top = maxHeight/9f),
                         backgroundColor = Color.Transparent,
                         mainColor = player.textColor,
                         imageResource = painterResource(id = R.drawable.skull_icon),
@@ -284,7 +285,7 @@ fun PlayerButton(
                     Box(modifier.fillMaxSize()) {
                         when (state.value) {
                             PlayerButtonState.NORMAL -> {
-                                if (player.setDead) {
+                                if (player.setDead || (viewModel.autoKo && player.isDead)) {
                                     Skull()
                                 } else {
                                     LifeNumber(
@@ -295,7 +296,7 @@ fun PlayerButton(
                             }
 
                             PlayerButtonState.COMMANDER_RECEIVER -> {
-                                if (player.setDead) {
+                                if (player.setDead || (viewModel.autoKo && player.isDead)) {
                                     Skull()
                                 } else {
                                     CommanderDamageNumber(
@@ -321,7 +322,7 @@ fun PlayerButton(
                                             player.partnerMode = !player.partnerMode
                                         })
                                     Text(
-                                        modifier = Modifier, text = "Toggle Partner Mode", color = player.textColor, fontSize = 10.sp, textAlign = TextAlign.Center
+                                        modifier = Modifier.wrapContentSize(unbounded = true), text = "Toggle Partner Mode", color = player.textColor, fontSize = 10.sp, textAlign = TextAlign.Center
                                     )
                                 }
 
@@ -348,9 +349,9 @@ fun PlayerButton(
                 @Composable
                 fun BackButton(modifier: Modifier = Modifier) {
                     SettingsButton(modifier = modifier
-                        .size(smallButtonSize)
+                        .size(smallButtonSize*1.1f)
                         .padding(
-                            start = settingsStateMargin, bottom = settingsStateMargin, end = settingsStateMargin / 2, top = settingsStateMargin / 2
+                            start = settingsStateMargin, bottom = settingsStateMargin
                         ),
                         backgroundColor = Color.Transparent,
                         mainColor = player.textColor,

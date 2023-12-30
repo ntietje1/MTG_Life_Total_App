@@ -17,6 +17,17 @@ object SharedPreferencesManager {
         }
     }
 
+    fun saveAutoKo(autoKo: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("autoKo", autoKo)
+            apply()
+        }
+    }
+
+    fun loadAutoKo(): Boolean {
+        return sharedPreferences.getBoolean("autoKo", false)
+    }
+
     fun saveCommanderDamageCausesLifeLoss(commanderDamageCausesLifeLoss: Boolean) {
         with(sharedPreferences.edit()) {
             putBoolean("commanderDamageCausesLifeLoss", commanderDamageCausesLifeLoss)

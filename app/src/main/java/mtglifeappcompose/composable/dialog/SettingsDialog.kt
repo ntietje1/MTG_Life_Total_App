@@ -80,6 +80,12 @@ fun SettingsDialogContent(
                         toggle = { viewModel.toggleCommanderDamageCausesLifeLoss(it) },
                         icon = painterResource(id = R.drawable.placeholder_icon)
                     )
+                    SettingsDialogButtonWithToggle(
+                        text = "Auto KO",
+                        initialState = viewModel.autoKo,
+                        toggle = { viewModel.toggleAutoKo(it) },
+                        icon = painterResource(id = R.drawable.placeholder_icon)
+                    )
                 }
             }
             item {
@@ -132,22 +138,6 @@ fun SettingsDialogContent(
             }
 
         }
-
-        /**
-         * TODO: Implement SettingsDialogContent
-         * - Add a SettingsButton for each of the following:
-         *  - GENERAL -
-         *  - Rotating middle button
-         *  - Fast coin flip
-         *  - Disable camera roll
-         *
-         *  -
-         *  - CONTACT -
-         *  - Submit Feedback
-         *  - Write a Review
-         *  - Buy me a coffee
-         *  - About me
-         */
     }
 }
 

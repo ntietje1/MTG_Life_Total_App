@@ -29,8 +29,15 @@ class AppViewModel : ViewModel() {
         private set
     var commanderDamageCausesLifeLoss by mutableStateOf(SharedPreferencesManager.loadCommanderDamageCausesLifeLoss())
         private set
+    var autoKo by mutableStateOf(SharedPreferencesManager.loadAutoKo())
+        private set
 
     var dayNight by mutableStateOf(DayNightState.NONE)
+
+    fun toggleAutoKo(value: Boolean?) {
+        autoKo = value ?: !autoKo
+        SharedPreferencesManager.saveAutoKo(autoKo)
+    }
 
     fun toggleCommanderDamageCausesLifeLoss(value: Boolean?) {
         commanderDamageCausesLifeLoss = value ?: !commanderDamageCausesLifeLoss
@@ -52,6 +59,11 @@ class AppViewModel : ViewModel() {
         SharedPreferencesManager.saveFastCoinFlip(fastCoinFlip)
     }
 
+    fun toggle4PlayerLayout(value: Boolean?) {
+        alt4PlayerLayout.value = value?: !alt4PlayerLayout.value
+        SharedPreferencesManager.save4PlayerLayout(alt4PlayerLayout.value)
+    }
+
     fun toggleDayNight() {
         dayNight = when (dayNight) {
             DayNightState.NONE -> DayNightState.DAY
@@ -64,10 +76,6 @@ class AppViewModel : ViewModel() {
         return currentDealer?.partnerMode ?: false
     }
 
-    fun set4PlayerLayout(value: Boolean) {
-        alt4PlayerLayout.value = value
-        SharedPreferencesManager.save4PlayerLayout(alt4PlayerLayout.value)
-    }
 
     fun generatePlayers() {
         val startingLife = SharedPreferencesManager.loadStartingLife()
