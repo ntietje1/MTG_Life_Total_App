@@ -17,6 +17,17 @@ object SharedPreferencesManager {
         }
     }
 
+    fun loadDisableBackButton(): Boolean {
+        return sharedPreferences.getBoolean("disableBackButton", false)
+    }
+
+    fun saveDisableBackButton(disableBackButton: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean("disableBackButton", disableBackButton)
+            apply()
+        }
+    }
+
     fun saveAutoSkip(autoSkip: Boolean) {
         with(sharedPreferences.edit()) {
             putBoolean("autoSkip", autoSkip)
@@ -48,17 +59,6 @@ object SharedPreferencesManager {
 
     fun loadAutoKo(): Boolean {
         return sharedPreferences.getBoolean("autoKo", false)
-    }
-
-    fun saveCommanderDamageCausesLifeLoss(commanderDamageCausesLifeLoss: Boolean) {
-        with(sharedPreferences.edit()) {
-            putBoolean("commanderDamageCausesLifeLoss", commanderDamageCausesLifeLoss)
-            apply()
-        }
-    }
-
-    fun loadCommanderDamageCausesLifeLoss(): Boolean {
-        return sharedPreferences.getBoolean("commanderDamageCausesLifeLoss", true)
     }
 
     fun saveRotatingMiddleButton(rotatingMiddleButton: Boolean) {
