@@ -1,4 +1,5 @@
 package mtglifeappcompose.data
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
@@ -9,7 +10,7 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-class ScryfallApiRetriever() {
+class ScryfallApiRetriever {
 
     val json = Json {
         ignoreUnknownKeys = true
@@ -42,10 +43,12 @@ class ScryfallApiRetriever() {
                 val jsonResponse = json.decodeFromString<CardResponse>(response)
                 jsonResponse.data as List<T>
             }
+
             Ruling::class -> {
                 val jsonResponse = json.decodeFromString<RulingResponse>(response)
                 jsonResponse.data as List<T>
             }
+
             else -> throw IllegalArgumentException("Unsupported type parameter")
         }
     }
@@ -63,9 +66,7 @@ data class CardResponse(
 
 @Serializable
 data class RulingResponse(
-    @SerialName("object") val type: String = "list",
-    @SerialName("has_more") val hasMore: Boolean = false,
-    @SerialName("data") val data: List<Ruling> = listOf()
+    @SerialName("object") val type: String = "list", @SerialName("has_more") val hasMore: Boolean = false, @SerialName("data") val data: List<Ruling> = listOf()
 )
 
 @Serializable
@@ -99,8 +100,7 @@ data class Card(
 
 @Serializable
 data class CardFace(
-    @SerialName("image_uris") val imageUris: ImageUris? = null,
-    @SerialName("artist") val artist: String
+    @SerialName("image_uris") val imageUris: ImageUris? = null, @SerialName("artist") val artist: String
 )
 
 @Serializable
@@ -110,4 +110,4 @@ data class ImageUris(
     @SerialName("large") val large: String,
     @SerialName("art_crop") val artCrop: String,
 
-)
+    )
