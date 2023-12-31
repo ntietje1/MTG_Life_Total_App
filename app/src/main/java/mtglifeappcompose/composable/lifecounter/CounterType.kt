@@ -17,6 +17,8 @@ enum class CounterType(val resId: Int = R.drawable.placeholder_icon) {
     GreenMana(R.drawable.g_icon_alt),
     ColorlessMana(R.drawable.c_icon_alt),
     SnowMana(R.drawable.snow_icon),
+    Chaos(R.drawable.chaos_icon),
+    Planeswalker(R.drawable.planeswalker_icon),
     D20(R.drawable.d20_icon),
     Coin(R.drawable.coin_icon_alt),
     Bolt(R.drawable.lightning_icon),
