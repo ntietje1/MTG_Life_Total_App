@@ -50,7 +50,7 @@ fun CounterDialogContent(
     )
 
     LazyColumn(
-        modifier = modifier, verticalArrangement = Arrangement.spacedBy(3.dp), horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier, verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             Text(

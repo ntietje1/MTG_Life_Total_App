@@ -1,6 +1,7 @@
 package mtglifeappcompose.composable.dialog
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -34,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -75,6 +77,9 @@ import mtglifeappcompose.data.SharedPreferencesManager
 @Composable
 fun ScryfallSearchDialog(modifier: Modifier = Modifier, player: Player, backStack: SnapshotStateList<() -> Unit> = mutableStateListOf(), onDismiss: () -> Unit) {
     SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss) {
+        BackHandler {
+            backStack.removeLast().invoke()
+        }
         ScryfallDialogContent(player = player, backStack = backStack)
     }
 }
@@ -88,7 +93,7 @@ fun ScryfallDialogContent(
     printingsButtonEnabled: Boolean = true,
     rulingsButtonEnabled: Boolean = false
 ) {
-    var query by remember { mutableStateOf("") }
+    var query = remember { mutableStateOf("") }
     var cardResults by remember { mutableStateOf(listOf<Card>()) }
     var rulingsResults by remember { mutableStateOf(listOf<Ruling>()) }
     val scryfallApiRetriever = ScryfallApiRetriever()
@@ -109,6 +114,7 @@ fun ScryfallDialogContent(
         if (qry.isBlank()) return
         coroutineScope.launch {
             clearResults()
+            focusManager.clearFocus()
             cardResults = scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError = cardResults.isEmpty()
             _printingsButtonEnabled = !disablePrintingsButton
@@ -124,66 +130,19 @@ fun ScryfallDialogContent(
         }
     }
 
-
     Column(modifier) {
-        Box(
-            modifier = Modifier
-                .wrapContentSize()
+        ScryfallSearchBar(
+            Modifier
+                .padding(top = 10.dp)
                 .padding(start = 20.dp, end = 20.dp)
-                .clip(RoundedCornerShape(10.dp))
-        ) {
-            TextField(value = query, onValueChange = { query = it }, label = { Text("Search Scryfall") }, singleLine = true, keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.None, autoCorrect = false, keyboardType = KeyboardType.Text, imeAction = ImeAction.Search
-            ), keyboardActions = KeyboardActions(onSearch = {
-                searchCards(query)
+                .clip(RoundedCornerShape(10.dp)), query = query, onSearch = {
+                searchCards(query.value)
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                focusManager.clearFocus()
-            }), colors = TextFieldDefaults.colors(
-                focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                disabledTextColor = MaterialTheme.colorScheme.onPrimary,
-                focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
-                cursorColor = MaterialTheme.colorScheme.onPrimary,
-                selectionColors = TextSelectionColors(
-                    handleColor = MaterialTheme.colorScheme.onPrimary,
-                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                ),
-                focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            ), modifier = Modifier
-                .height(60.dp)
-                .fillMaxWidth()
-                .border(
-                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10.dp)
-                )
-                .align(Alignment.CenterStart)
-            )
-            Box(
-                Modifier
-                    .wrapContentSize()
-                    .padding(end = 10.dp)
-                    .align(Alignment.CenterEnd)
-            ) {
-                IconButton(
-                    onClick = {
-                        searchCards(query)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }, modifier = Modifier.size(50.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.search_icon), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier
-                            .fillMaxSize()
-                            .padding(5.dp)
-                    )
+                backStack.add {
+                    query.value = ""
+                    clearResults()
                 }
-            }
-        }
+            })
 
         AnimatedVisibility(
             modifier = Modifier
@@ -208,7 +167,7 @@ fun ScryfallDialogContent(
                     searchRulings(card.rulingsUri ?: "")
                     rulingCard = card
                     backStack.add {
-                        searchCards(query)
+                        searchCards(query.value)
                         rulingCard = null
                     }
                 }, onSelect = {
@@ -217,7 +176,7 @@ fun ScryfallDialogContent(
                 }, onPrintings = {
                     searchCards(card.printsSearchUri, disablePrintingsButton = true)
                     backStack.add {
-                        searchCards(query)
+                        searchCards(query.value)
                     }
                 })
             }
@@ -228,6 +187,62 @@ fun ScryfallDialogContent(
             }
             items(rulingsResults) { ruling ->
                 RulingPreview(ruling)
+            }
+        }
+    }
+}
+
+@Composable
+fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>, onSearch: () -> Unit) {
+    Box(
+        modifier = modifier.wrapContentSize()
+    ) {
+        TextField(value = query.value, onValueChange = { query.value = it }, label = { Text("Search Scryfall") }, singleLine = true, keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.None, autoCorrect = false, keyboardType = KeyboardType.Text, imeAction = ImeAction.Search
+        ), keyboardActions = KeyboardActions(onSearch = {
+            onSearch()
+        }), colors = TextFieldDefaults.colors(
+            focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+            unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
+            disabledTextColor = MaterialTheme.colorScheme.onPrimary,
+            focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
+            cursorColor = MaterialTheme.colorScheme.onPrimary,
+            selectionColors = TextSelectionColors(
+                handleColor = MaterialTheme.colorScheme.onPrimary,
+                backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+            ),
+            focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
+            unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
+            disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        ), modifier = Modifier
+            .height(60.dp)
+            .fillMaxWidth()
+            .border(
+                1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10.dp)
+            )
+            .align(Alignment.CenterStart)
+        )
+        Box(
+            Modifier
+                .wrapContentSize()
+                .padding(end = 10.dp)
+                .align(Alignment.CenterEnd)
+        ) {
+            IconButton(
+                onClick = {
+                    onSearch()
+                }, modifier = Modifier.size(50.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.search_icon), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier
+                        .fillMaxSize()
+                        .padding(5.dp)
+                )
             }
         }
     }
@@ -295,8 +310,6 @@ fun CardDetails(
                 fontSize = 18.sp
             )
         }
-
-
     }
 }
 
