@@ -78,12 +78,6 @@ fun SettingsDialogContent(
                         icon = painterResource(id = R.drawable.placeholder_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Commander Damage Causes Life Loss",
-                        initialState = viewModel.commanderDamageCausesLifeLoss,
-                        toggle = { viewModel.toggleCommanderDamageCausesLifeLoss(it) },
-                        icon = painterResource(id = R.drawable.placeholder_icon)
-                    )
-                    SettingsDialogButtonWithToggle(
                         text = "Auto KO",
                         initialState = viewModel.autoKo,
                         toggle = { viewModel.toggleAutoKo(it) },
@@ -93,6 +87,12 @@ fun SettingsDialogContent(
                         text = "AutoSkip Player Select",
                         initialState = viewModel.autoSkip,
                         toggle = { viewModel.toggleAutoSkip(it) },
+                        icon = painterResource(id = R.drawable.placeholder_icon)
+                    )
+                    SettingsDialogButtonWithToggle(
+                        text = "Disable Settings Back Button\n(device back button still works)",
+                        initialState = viewModel.disableBackButton,
+                        toggle = { viewModel.toggleDisableBackButton(it) },
                         icon = painterResource(id = R.drawable.placeholder_icon)
                     )
                     SettingsDialogButtonWithToggle(
