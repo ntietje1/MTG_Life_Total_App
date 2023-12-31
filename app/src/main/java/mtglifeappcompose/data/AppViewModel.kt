@@ -3,8 +3,10 @@ package mtglifeappcompose.data
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import mtglifeappcompose.composable.lifecounter.PlayerButtonState
@@ -20,15 +22,16 @@ class AppViewModel : ViewModel() {
     private val buttonStates = mutableListOf<MutableState<PlayerButtonState>>()
     var currentDealer: Player? = null
     var firstPlayerSelect by mutableStateOf(true)
-    val alt4PlayerLayout = mutableStateOf(SharedPreferencesManager.load4PlayerLayout())
     var blurBackground = mutableStateOf(false)
+    var planarDeck = mutableStateListOf<Card>()
+    val planeBackStack = mutableListOf<Card>()
+
+    val alt4PlayerLayout = mutableStateOf(SharedPreferencesManager.load4PlayerLayout())
     var fastCoinFlip by mutableStateOf(SharedPreferencesManager.loadFastCoinFlip())
         private set
     var cameraRollDisabled by mutableStateOf(SharedPreferencesManager.loadCameraRollDisabled())
         private set
     var rotatingMiddleButton by mutableStateOf(SharedPreferencesManager.loadRotatingMiddleButton())
-        private set
-    var commanderDamageCausesLifeLoss by mutableStateOf(SharedPreferencesManager.loadCommanderDamageCausesLifeLoss())
         private set
     var autoKo by mutableStateOf(SharedPreferencesManager.loadAutoKo())
         private set
@@ -36,8 +39,37 @@ class AppViewModel : ViewModel() {
         private set
     var autoSkip by mutableStateOf(SharedPreferencesManager.loadAutoSkip())
         private set
+    var disableBackButton by mutableStateOf(SharedPreferencesManager.loadDisableBackButton())
+        private set
 
     var dayNight by mutableStateOf(DayNightState.NONE)
+
+    fun backPlane() {
+        if (planeBackStack.isNotEmpty()) {
+            val card = planeBackStack.removeLast()
+            planarDeck.remove(card)
+            planarDeck.add(card)
+        }
+    }
+
+    fun planeswalk(): Card? {
+        if (planarDeck.isNotEmpty()) {
+            val card = planarDeck.removeLast()
+            planeBackStack.add(card)
+            planarDeck = (listOf(card).plus(planarDeck)).toMutableStateList() // send to bottom
+            return card
+        }
+        return null
+    }
+
+    fun currentPlane(): Card? {
+        return planarDeck.lastOrNull()
+    }
+
+    fun toggleDisableBackButton(value: Boolean?) {
+        disableBackButton = value ?: !disableBackButton
+        SharedPreferencesManager.saveDisableBackButton(disableBackButton)
+    }
 
     fun toggleAutoSkip(value: Boolean?) {
         autoSkip = value ?: !autoSkip
@@ -52,11 +84,6 @@ class AppViewModel : ViewModel() {
     fun toggleAutoKo(value: Boolean?) {
         autoKo = value ?: !autoKo
         SharedPreferencesManager.saveAutoKo(autoKo)
-    }
-
-    fun toggleCommanderDamageCausesLifeLoss(value: Boolean?) {
-        commanderDamageCausesLifeLoss = value ?: !commanderDamageCausesLifeLoss
-        SharedPreferencesManager.saveCommanderDamageCausesLifeLoss(commanderDamageCausesLifeLoss)
     }
 
     fun toggleRotatingMiddleButton(value: Boolean?) {
