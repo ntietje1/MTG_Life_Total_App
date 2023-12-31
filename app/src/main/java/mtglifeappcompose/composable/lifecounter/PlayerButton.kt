@@ -31,7 +31,6 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -47,7 +46,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -127,6 +125,12 @@ fun PlayerButton(
     var showScryfallSearch by remember { mutableStateOf(false) }
     val activeCounters = remember { mutableStateListOf<CounterType>() }
     val backStack = remember { mutableStateListOf<() -> Unit>() }
+    val scryfallBackStack = remember {
+        mutableStateListOf({
+            showScryfallSearch = false
+            viewModel.blurBackground.value = false
+        })
+    }
     val state = remember { mutableStateOf(initialState) }
     viewModel.registerButtonState(state)
     val commanderButtonVisible = state.value in listOf(PlayerButtonState.NORMAL, PlayerButtonState.COMMANDER_DEALER)
@@ -195,7 +199,7 @@ fun PlayerButton(
             }, onDismiss = {
                 showScryfallSearch = false
                 viewModel.blurBackground.value = false
-            }, player = player
+            }, backStack = scryfallBackStack, player = player
             )
         }
 
@@ -224,44 +228,45 @@ fun PlayerButton(
                 val settingsPadding = if (wideButton) Modifier.padding(bottom = smallButtonSize / 4) else Modifier.padding(
                     top = smallButtonSize / 4
                 )
-
-                when (state.value) {
-                    PlayerButtonState.NORMAL -> {
-                        LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
-                            player.incrementLife(1)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }, onDecrementLife = {
-                            player.incrementLife(-1)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        })
-                    }
-
-                    PlayerButtonState.COMMANDER_RECEIVER -> {
-                        Row(Modifier.fillMaxSize()) {
-                            LifeChangeButtons(Modifier.then(if (viewModel.currentDealerIsPartnered()) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()), onIncrementLife = {
-                                viewModel.currentDealer?.incrementCommanderDamage(player, 1)
-                                if (viewModel.commanderDamageCausesLifeLoss) player.incrementLife(-1)
+                if (!player.setDead) {
+                    when (state.value) {
+                        PlayerButtonState.NORMAL -> {
+                            LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
+                                player.incrementLife(1)
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             }, onDecrementLife = {
-                                viewModel.currentDealer?.incrementCommanderDamage(player, -1)
-                                if (viewModel.commanderDamageCausesLifeLoss) player.incrementLife(1)
+                                player.incrementLife(-1)
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
-                            if (viewModel.currentDealerIsPartnered()) {
-                                LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
-                                    viewModel.currentDealer?.incrementCommanderDamage(player, 1, true)
-                                    if (viewModel.commanderDamageCausesLifeLoss) player.incrementLife(-1)
+                        }
+
+                        PlayerButtonState.COMMANDER_RECEIVER -> {
+                            Row(Modifier.fillMaxSize()) {
+                                LifeChangeButtons(Modifier.then(if (viewModel.currentDealerIsPartnered()) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()), onIncrementLife = {
+                                    viewModel.currentDealer?.incrementCommanderDamage(player, 1)
+                                    player.incrementLife(-1)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 }, onDecrementLife = {
-                                    viewModel.currentDealer?.incrementCommanderDamage(player, -1, true)
-                                    if (viewModel.commanderDamageCausesLifeLoss) player.incrementLife(1)
+                                    viewModel.currentDealer?.incrementCommanderDamage(player, -1)
+                                    player.incrementLife(1)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 })
+                                if (viewModel.currentDealerIsPartnered()) {
+                                    LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
+                                        viewModel.currentDealer?.incrementCommanderDamage(player, 1, true)
+                                        player.incrementLife(-1)
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }, onDecrementLife = {
+                                        viewModel.currentDealer?.incrementCommanderDamage(player, -1, true)
+                                        player.incrementLife(1)
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    })
+                                }
                             }
                         }
-                    }
 
-                    else -> {
+                        else -> {
+                        }
                     }
                 }
 
@@ -271,7 +276,7 @@ fun PlayerButton(
                         modifier = playerInfoPadding
                             .align(Alignment.Center)
                             .size(smallButtonSize * 4)
-                            .padding(top = maxHeight/9f),
+                            .padding(top = maxHeight / 9f),
                         backgroundColor = Color.Transparent,
                         mainColor = player.textColor,
                         imageResource = painterResource(id = R.drawable.skull_icon),
@@ -349,7 +354,7 @@ fun PlayerButton(
                 @Composable
                 fun BackButton(modifier: Modifier = Modifier) {
                     SettingsButton(modifier = modifier
-                        .size(smallButtonSize*1.1f)
+                        .size(smallButtonSize * 1.1f)
                         .padding(
                             start = settingsStateMargin, bottom = settingsStateMargin
                         ),
@@ -882,7 +887,7 @@ fun NumericValue(
 }
 
 
-enum class SettingsState { Default, ChangeBackground, ColorPicker, ChangeName, LoadPlayer, Counters }
+enum class SettingsState { Default, Customize, BackgroundColorPicker, TextColorPicker, ChangeName, LoadPlayer, Counters }
 
 @Composable
 fun SettingsMenu(
@@ -945,9 +950,9 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.change_background_icon), text = "Set Background"
+                            imageResource = painterResource(R.drawable.change_background_icon), text = "Customize"
                         ) {
-                            state = SettingsState.ChangeBackground
+                            state = SettingsState.Customize
                             backStack.add { state = SettingsState.Default }
                         }
                     }
@@ -957,6 +962,7 @@ fun SettingsMenu(
                         ) {
                             player.setDead = !player.isDead
                             closeSettingsMenu()
+                            backStack.clear()
                         }
                     }
 
@@ -977,23 +983,26 @@ fun SettingsMenu(
                 )
             }
 
-            SettingsState.ChangeBackground -> {
+            SettingsState.Customize -> {
                 LazyHorizontalGrid(
                     modifier = Modifier.fillMaxSize(), rows = GridCells.Fixed(2), horizontalArrangement = Arrangement.Center, verticalArrangement = Arrangement.Center
                 ) {
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.color_picker_icon), text = "Solid Color"
+                            imageResource = painterResource(R.drawable.gradient_icon), text = "Solid Color"
                         ) {
-                            state = SettingsState.ColorPicker
-                            backStack.add { state = SettingsState.ChangeBackground }
+                            state = SettingsState.BackgroundColorPicker
+                            backStack.add { state = SettingsState.Customize }
                         }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.x_icon), text = "Reset Background"
-                        ) { player.imageUri = null }
+                            imageResource = painterResource(R.drawable.color_picker_icon), text = "Text Color"
+                        ) {
+                            state = SettingsState.TextColorPicker
+                            backStack.add { state = SettingsState.Customize }
+                        }
                     }
 
                     item {
@@ -1003,154 +1012,46 @@ fun SettingsMenu(
                     }
 
                     item {
-//                        FormattedSettingsButton(
-//                            imageResource = painterResource(R.drawable.gradient_icon),
-//                            text = "Gradient"
-//                        ) {}
-                        SettingsButton(
-                            Modifier.size(settingsButtonSize),
-                            visible = false,
-                        )
+                        FormattedSettingsButton(
+                            imageResource = painterResource(R.drawable.x_icon), text = "Remove Image"
+                        ) { player.imageUri = null }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.search_icon), text = "Scryfall"
+                            imageResource = painterResource(R.drawable.search_icon), text = "Search Image"
                         ) { onScryfallButtonClick() }
                     }
                 }
             }
 
-            SettingsState.ColorPicker -> {
-                val colorList = allPlayerColors
-                val playerColor = remember(player.color) {
-                    derivedStateOf {
-                        player.color
-                    }
+            SettingsState.BackgroundColorPicker -> {
+                ColorPicker(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(bottom = maxHeight / 5f), text = "Choose a Background Color", colorList = mutableListOf<Color>().apply {
+                        add(Color.Black)
+                        add(Color.White)
+                        addAll(allPlayerColors)
+                    }, player = player, initialColor = player.color
+                ) { color ->
+                    player.color = color
+                    SharedPreferencesManager.savePlayer(player)
                 }
-                val modifiedPlayerColor1 = remember(player.color) {
-                    derivedStateOf {
-                        player.color.saturateColor(1.5f).brightenColor(1.35f)
-                    }
-                }
-                val modifiedPlayerColor2 = remember(player.color) {
-                    derivedStateOf {
-                        player.color.brightenColor(0.30f).saturateColor(1.5f)
-                    }
-                }
+            }
 
-                val textColorList = remember {
-                    listOf(
-                        mutableStateOf(Color.White), modifiedPlayerColor1, playerColor, modifiedPlayerColor2, mutableStateOf(Color.Black)
-                    )
-                }
-
-                Column(
-                    Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val colorPickerPadding = smallPadding / 3f
-                    val textPadding = smallPadding / 5f
-                    val containerTopPadding = Modifier
-                        .padding(horizontal = colorPickerPadding * 2)
-                        .padding(top = colorPickerPadding * 2, bottom = colorPickerPadding)
-                    val containerBottomPadding = Modifier
-                        .padding(horizontal = colorPickerPadding * 2)
-                        .padding(bottom = colorPickerPadding * 2, top = colorPickerPadding)
-
-                    val colorPickerTopPadding = Modifier
-                        .padding(horizontal = colorPickerPadding)
-                        .padding(top = colorPickerPadding)
-                    val colorPickerBottomPadding = Modifier
-                        .padding(horizontal = colorPickerPadding)
-                        .padding(bottom = colorPickerPadding)
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .padding(bottom = textPadding, top = smallPadding),
-                        text = "Choose a background color",
-                        color = player.textColor,
-                        fontSize = smallTextSize / 1.25f,
-                        textAlign = TextAlign.Center
-                    )
-                    Column(
-                        Modifier
-                            .wrapContentSize()
-                            .weight(0.5f)
-                            .background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                    ) {
-                        LazyRow(
-                            modifier = containerTopPadding
-                                .wrapContentSize()
-                                .weight(0.5f),
-                            state = rememberLazyListState(),
-                            horizontalArrangement = Arrangement.Center,
-                        ) {
-                            item {
-                                CustomColorPickerButton(
-                                    modifier = colorPickerTopPadding, player = player
-                                )
-                            }
-                            items(colorList.subList(0, colorList.size / 2)) { color ->
-                                ColorPickerButton(
-                                    modifier = colorPickerTopPadding, onClick = {
-                                        player.color = color
-                                        SharedPreferencesManager.savePlayer(player)
-                                    }, color = color
-                                )
-                            }
-                        }
-                        LazyRow(
-                            modifier = containerBottomPadding
-                                .wrapContentSize()
-                                .weight(0.5f),
-                            state = rememberLazyListState(),
-                            horizontalArrangement = Arrangement.Center,
-                        ) {
-                            items(colorList.subList(colorList.size / 2, colorList.size)) { color ->
-                                ColorPickerButton(
-                                    modifier = colorPickerBottomPadding, onClick = {
-                                        player.color = color
-                                        SharedPreferencesManager.savePlayer(player)
-                                    }, color = color
-                                )
-                            }
-                        }
-                    }
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .padding(bottom = textPadding),
-                        text = "Choose a text color",
-                        color = player.textColor,
-                        fontSize = smallTextSize / 1.25f,
-                        textAlign = TextAlign.Center
-                    )
-                    Box(
-                        Modifier
-                            .wrapContentSize()
-                            .weight(0.25f)
-                            .padding(bottom = textPadding)
-                            .background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                    ) {
-                        LazyRow(
-                            modifier = Modifier
-                                .wrapContentSize()
-                                .padding(colorPickerPadding * 2),
-                            state = rememberLazyListState(),
-                            horizontalArrangement = Arrangement.Center,
-                        ) {
-                            items(textColorList) { color ->
-                                ColorPickerButton(
-                                    modifier = Modifier.padding(colorPickerPadding), onClick = {
-                                        player.textColor = color.value
-                                        SharedPreferencesManager.savePlayer(player)
-                                    }, color = color.value
-                                )
-                            }
-                        }
-                    }
+            SettingsState.TextColorPicker -> {
+                ColorPicker(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(bottom = maxHeight / 5f), text = "Choose a Text Color", colorList = mutableListOf<Color>().apply {
+                        add(Color.Black)
+                        add(Color.White)
+                        addAll(allPlayerColors)
+                    }, player = player, initialColor = player.textColor
+                ) { color ->
+                    player.textColor = color
+                    SharedPreferencesManager.savePlayer(player)
                 }
             }
 
@@ -1215,6 +1116,56 @@ fun SettingsMenu(
             }
 
             else -> throw Exception("unsupported state")
+        }
+    }
+}
+
+@Composable
+fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Color>, player: Player, initialColor: Color, onPress: (Color) -> Unit) {
+    BoxWithConstraints(modifier) {
+        val colorPickerPadding = maxWidth / 100f
+        val containerPadding = maxWidth / 50f
+        val textPadding = maxHeight / 25f
+        val smallTextSize = maxHeight.value.sp / 8f
+        Column(
+            Modifier
+                .wrapContentSize()
+                .padding(horizontal = 10.dp), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(bottom = textPadding, top = textPadding * 2),
+                text = text,
+                color = player.textColor,
+                fontSize = smallTextSize / 1.25f,
+                textAlign = TextAlign.Center
+            )
+            LazyHorizontalGrid(modifier = Modifier
+                .fillMaxSize()
+                .weight(0.5f)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.Black.copy(alpha = 0.15f))
+                .padding(containerPadding * 2),
+                rows = GridCells.Fixed(2),
+                state = rememberLazyGridState(),
+                horizontalArrangement = Arrangement.spacedBy(colorPickerPadding),
+                verticalArrangement = Arrangement.spacedBy(colorPickerPadding),
+                content = {
+                    item {
+                        CustomColorPickerButton(modifier = Modifier.padding(colorPickerPadding), player = player, initialColor = initialColor, onComplete = {
+                            onPress(it)
+                        })
+                    }
+                    items(colorList) { color ->
+                        ColorPickerButton(
+                            modifier = Modifier.padding(colorPickerPadding), onClick = {
+                                onPress(color)
+                            }, color = color
+                        )
+                    }
+                })
         }
     }
 }
@@ -1342,7 +1293,7 @@ fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color:
 }
 
 @Composable
-fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player) {
+fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initialColor: Color, onComplete: (Color) -> Unit) {
     val viewModel: AppViewModel = viewModel()
     var showColorDialog by remember { mutableStateOf(false) }
 
@@ -1350,10 +1301,8 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player) {
         ColorDialog(modifier = Modifier.fillMaxSize(), onDismiss = {
             showColorDialog = false
             viewModel.blurBackground.value = false
-        }, initialColor = player.color, setColor = { color ->
-            player.imageUri = null
-            player.color = color
-            SharedPreferencesManager.savePlayer(player)
+        }, initialColor = initialColor, setColor = { color ->
+            onComplete(color)
         })
     }
 
