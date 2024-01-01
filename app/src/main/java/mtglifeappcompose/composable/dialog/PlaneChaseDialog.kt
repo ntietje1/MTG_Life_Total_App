@@ -33,7 +33,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +46,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -58,18 +58,84 @@ import mtglifeappcompose.composable.SettingsButton
 import mtglifeappcompose.data.AppViewModel
 import mtglifeappcompose.data.Card
 import mtglifeappcompose.data.ScryfallApiRetriever
+import mtglifeappcompose.data.SharedPreferencesManager
+
+private enum class PlanarDieResult(val toString: String, val resourceId: Int) {
+    PLANESWALK("Planeswalk", R.drawable.planeswalker_icon),
+    CHAOS("Chaos Ensues", R.drawable.chaos_icon),
+    NO_EFFECT("No Effect", R.drawable.transparent)
+}
 
 @Composable
 fun PlaneChaseDialogContent(modifier: Modifier = Modifier, goToChoosePlanes: () -> Unit) {
     val viewModel: AppViewModel = viewModel()
     var rotated by remember { mutableStateOf(false) }
+    var planarDieResultVisible by remember { mutableStateOf(false) }
+    var planarDieResult by remember { mutableStateOf(PlanarDieResult.NO_EFFECT) }
 
     LaunchedEffect(viewModel.planarDeck) {
         if (viewModel.planarDeck.isNotEmpty()) {
             viewModel.planeBackStack.clear()
             viewModel.planarDeck.shuffle()
+            viewModel.savePlanarDeck()
         }
     }
+
+    if (planarDieResultVisible) {
+        Dialog(onDismissRequest = { planarDieResultVisible = false }, properties = DialogProperties(
+            usePlatformDefaultWidth = false
+        ), content = {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        planarDieResultVisible = false
+                    })
+                }) {
+                Column(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(modifier = Modifier.weight(0.65f))
+                    SettingsButton(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(bottom = 20.dp),
+                        textSizeMultiplier = 0.8f,
+                        imageResource = painterResource(planarDieResult.resourceId),
+                        shadowEnabled = false,
+                        enabled = false
+                    )
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        text = planarDieResult.toString,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        textAlign = TextAlign.Center,
+                        fontSize = 35.sp
+                    )
+                    Spacer(modifier = Modifier.weight(1.0f))
+                }
+            }
+        })
+    }
+
+    fun rollPlanarDie() {
+        when ((1..6).random()) {
+            1 -> {
+                planarDieResult = PlanarDieResult.PLANESWALK
+            }
+            2 -> {
+                planarDieResult = PlanarDieResult.CHAOS
+            }
+            3,4,5,6 -> {
+                planarDieResult = PlanarDieResult.NO_EFFECT
+            }
+        }
+        planarDieResultVisible = true
+    }
+
+
 
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = maxWidth
@@ -79,9 +145,7 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, goToChoosePlanes: () 
         val previewPadding = maxWidth / 20f
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
             PlaneChaseCardPreview(modifier = Modifier
-                .graphicsLayer {
-                    rotationZ = if (rotated) 180f else 0f
-                }
+                .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
                 .fillMaxWidth()
                 .padding(previewPadding), card = viewModel.currentPlane(), allowEnlarge = false)
             Row(
@@ -91,9 +155,6 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, goToChoosePlanes: () 
                     .padding(top = previewPadding * 1.5f)
                     .padding(horizontal = maxWidth / 20f), horizontalArrangement = Arrangement.SpaceAround
             ) {
-                SettingsButton(modifier = buttonModifier, text = "Planar Deck", shadowEnabled = false, imageResource = painterResource(R.drawable.deck_icon), onPress = {
-                    goToChoosePlanes()
-                })
                 SettingsButton(modifier = buttonModifier, text = "Back", shadowEnabled = false, imageResource = painterResource(R.drawable.back_icon_alt), onPress = {
                     viewModel.backPlane()
                 })
@@ -103,7 +164,12 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, goToChoosePlanes: () 
                 SettingsButton(modifier = buttonModifier, text = "Planeswalk", shadowEnabled = false, imageResource = painterResource(R.drawable.planeswalker_icon), onPress = {
                     viewModel.planeswalk()
                 })
-                SettingsButton(modifier = buttonModifier, text = "Planar Die", shadowEnabled = false, imageResource = painterResource(R.drawable.chaos_icon), onPress = {})
+                SettingsButton(modifier = buttonModifier, text = "Planar Die", shadowEnabled = false, imageResource = painterResource(R.drawable.chaos_icon), onPress = {
+                    rollPlanarDie()
+                })
+                SettingsButton(modifier = buttonModifier, text = "Planar Deck", shadowEnabled = false, imageResource = painterResource(R.drawable.deck_icon), onPress = {
+                    goToChoosePlanes()
+                })
             }
             Spacer(Modifier.weight(1.0f))
         }
@@ -112,30 +178,35 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, goToChoosePlanes: () 
 
 @Composable
 fun ChoosePlanesDialogContent(modifier: Modifier = Modifier) {
-    val query = remember { mutableStateOf("") }
-    val allPlanes = remember { mutableStateListOf<Card>() }
-    val ubPlanes = remember { mutableStateListOf<Card>() }
     val viewModel: AppViewModel = viewModel()
-    var ubEnabled by remember { mutableStateOf(true) }
+    val query = remember { mutableStateOf("") }
+    val allPlanes = remember { mutableStateListOf<Card>().apply {
+        addAll(SharedPreferencesManager.loadAllPlanes())
+    } }
+
     var hideUnselected by remember { mutableStateOf(false) }
-    val filteredPlanes by remember { derivedStateOf { allPlanes.filter { card -> (ubEnabled || !ubPlanes.contains(card)) && (viewModel.planarDeck.contains(card) || !hideUnselected) } } }
+    val filteredPlanes by remember { derivedStateOf { allPlanes.filter { card ->  viewModel.planarDeck.contains(card) || !hideUnselected } } }
 
     val scryfallApiRetriever = ScryfallApiRetriever()
     val haptic = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
 
-    fun searchPlanes(qry: String, res: SnapshotStateList<Card>) {
+    fun searchPlanes(qry: String) {
         coroutineScope.launch {
             focusManager.clearFocus()
-            res.clear()
-            res.addAll(scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall(qry)))
+            val newCards = scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall(qry))
+            newCards.forEach { card ->
+                if (card !in allPlanes) {
+                    allPlanes.add(card)
+                }
+            }
+            SharedPreferencesManager.saveAllPlanes(allPlanes)
         }
     }
 
     LaunchedEffect(Unit) {
-        searchPlanes("t:plane", allPlanes)
-        searchPlanes("t:plane is:ub", ubPlanes)
+        searchPlanes("t:plane")
     }
 
     BoxWithConstraints(modifier = modifier) {
@@ -150,7 +221,7 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier) {
                     .padding(top = 10.dp)
                     .padding(start = 20.dp, end = 20.dp)
                     .clip(RoundedCornerShape(10.dp)), query = query, onSearch = {
-                    searchPlanes("t:plane ${query.value}", allPlanes)
+                    searchPlanes("t:plane ${query.value}")
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 })
             Text(
@@ -179,20 +250,19 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier) {
                     .padding(horizontal = maxWidth / 10f), horizontalArrangement = Arrangement.SpaceAround
 
             ) {
-                SettingsButton(modifier = buttonModifier, text = "Select All", shadowEnabled = false, imageResource = painterResource(R.drawable.placeholder_icon), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Select All", shadowEnabled = false, imageResource = painterResource(R.drawable.checkmark), onPress = {
                     viewModel.planarDeck.clear()
                     viewModel.planarDeck.addAll(filteredPlanes)
                 })
-                SettingsButton(modifier = buttonModifier, text = "Unselect All", shadowEnabled = false, imageResource = painterResource(R.drawable.placeholder_icon), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Unselect All", shadowEnabled = false, imageResource = painterResource(R.drawable.x_icon), onPress = {
                     viewModel.planarDeck.clear()
                 })
-                SettingsButton(modifier = buttonModifier, text = "Universes Beyond", shadowEnabled = false, imageResource = painterResource(R.drawable.placeholder_icon), onPress = {
-                    ubEnabled = !ubEnabled
-                    if (!ubEnabled) {
-                        viewModel.planarDeck.removeAll(ubPlanes)
-                    }
-                })
-                SettingsButton(modifier = buttonModifier, text = "Hide Unselected", shadowEnabled = false, imageResource = painterResource(R.drawable.placeholder_icon), onPress = {
+                SettingsButton(
+                    modifier = buttonModifier,
+                    text = if (!hideUnselected) "Hide Unselected" else "Show Unselected",
+                    shadowEnabled = false,
+                    imageResource = if (!hideUnselected) painterResource(R.drawable.invisible_icon) else painterResource(R.drawable.visible_icon),
+                    onPress = {
                     hideUnselected = !hideUnselected
                 })
             }
