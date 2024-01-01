@@ -17,6 +17,32 @@ object SharedPreferencesManager {
         }
     }
 
+    fun loadAllPlanes(): List<Card> {
+        val allPrefString = sharedPreferences.getString("allPlanes", "[]")!!
+        return Json.decodeFromString(allPrefString)
+    }
+
+    fun saveAllPlanes(planes: List<Card>) {
+        val allPrefString = Json.encodeToString(planes)
+        with(sharedPreferences.edit()) {
+            putString("allPlanes", allPrefString)
+            apply()
+        }
+    }
+
+    fun savePlanarDeck(deck: List<Card>) {
+        val allPrefString = Json.encodeToString(deck)
+        with(sharedPreferences.edit()) {
+            putString("planarDeck", allPrefString)
+            apply()
+        }
+    }
+
+    fun loadPlanarDeck(): List<Card> {
+        val allPrefString = sharedPreferences.getString("planarDeck", "[]")!!
+        return Json.decodeFromString(allPrefString)
+    }
+
     fun loadDisableBackButton(): Boolean {
         return sharedPreferences.getBoolean("disableBackButton", false)
     }
