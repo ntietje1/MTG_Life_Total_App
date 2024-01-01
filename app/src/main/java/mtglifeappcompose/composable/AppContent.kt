@@ -26,6 +26,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.Coil
+import coil.ImageLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,6 +35,8 @@ import mtglifeappcompose.composable.lifecounter.LifeCounterScreen
 import mtglifeappcompose.data.AppViewModel
 import mtglifeappcompose.data.SharedPreferencesManager
 import mtglifeappcompose.ui.theme.MTGLifeAppComposeTheme
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 
 
 enum class MTGScreen(val title: String) {
@@ -43,9 +47,11 @@ enum class MTGScreen(val title: String) {
 fun MTGLifeTotalApp(
     navController: NavHostController = rememberNavController()
 ) {
-
-    SharedPreferencesManager.initialize(LocalContext.current)
+    val  context = LocalContext.current
+    SharedPreferencesManager.initialize(context)
     var darkTheme by remember { mutableStateOf(SharedPreferencesManager.loadTheme()) }
+
+    EnableImageCache(10)
 
     MTGLifeAppComposeTheme(darkTheme = darkTheme) {
         if (SharedPreferencesManager.loadKeepScreenOn()) {
@@ -105,6 +111,16 @@ fun MTGLifeTotalApp(
             }
         }
     }
+}
+
+@Composable
+fun EnableImageCache(sizeMB: Int = 10) {
+    val  context = LocalContext.current
+    val cacheSize = sizeMB * 1024 * 1024
+    val cache = Cache(context.cacheDir, cacheSize.toLong())
+    val okHttpClient = OkHttpClient.Builder().cache(cache).build()
+    val imageLoader = ImageLoader.Builder(context).okHttpClient(okHttpClient).build()
+    Coil.setImageLoader(imageLoader)
 }
 
 @Composable
