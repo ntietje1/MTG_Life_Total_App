@@ -61,7 +61,7 @@ fun ColorDialog(
         mutableStateOf(initialColor)
     }
 
-    SettingsDialog(modifier = modifier, onBack = onDismiss, onDismiss = onDismiss, onConfirm = {
+    SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss, onConfirm = {
         setColor(backgroundColor.value)
         onDismiss()
     }, confirmButtonEnabled = true) {
