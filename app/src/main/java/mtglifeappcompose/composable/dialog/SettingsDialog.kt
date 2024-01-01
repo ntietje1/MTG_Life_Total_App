@@ -84,7 +84,7 @@ fun SettingsDialogContent(
                         icon = painterResource(id = R.drawable.placeholder_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "AutoSkip Player Select",
+                        text = "Auto Skip Player Select",
                         initialState = viewModel.autoSkip,
                         toggle = { viewModel.toggleAutoSkip(it) },
                         icon = painterResource(id = R.drawable.placeholder_icon)
@@ -143,7 +143,7 @@ fun SettingsDialogContent(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp, vertical = 2.5.dp),
+                        .padding(start = 10.dp, end = 10.dp, top = 2.5.dp, bottom = 15.dp),
                     text = "Card art & information powered by the Scryfall API",
                     textAlign = TextAlign.Center,
                     style = TextStyle(
