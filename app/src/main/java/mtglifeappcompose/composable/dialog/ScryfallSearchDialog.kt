@@ -93,13 +93,14 @@ fun ScryfallDialogContent(
     printingsButtonEnabled: Boolean = true,
     rulingsButtonEnabled: Boolean = false
 ) {
-    var query = remember { mutableStateOf("") }
+    val query = remember { mutableStateOf("") }
     var cardResults by remember { mutableStateOf(listOf<Card>()) }
     var rulingsResults by remember { mutableStateOf(listOf<Ruling>()) }
     val scryfallApiRetriever = ScryfallApiRetriever()
     val coroutineScope = rememberCoroutineScope()
     var lastSearchWasError by remember { mutableStateOf(false) }
     var rulingCard: Card? by remember { mutableStateOf(null) }
+    var initialBackStackSize by remember { mutableStateOf(backStack.size) }
     var _printingsButtonEnabled by remember { mutableStateOf(printingsButtonEnabled) }
 
     val focusManager = LocalFocusManager.current
@@ -118,6 +119,13 @@ fun ScryfallDialogContent(
             cardResults = scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError = cardResults.isEmpty()
             _printingsButtonEnabled = !disablePrintingsButton
+
+            if (initialBackStackSize == backStack.size) {
+                backStack.add {
+                    query.value = ""
+                    clearResults()
+                }
+            }
         }
     }
 
@@ -127,6 +135,12 @@ fun ScryfallDialogContent(
             clearResults()
             rulingsResults = scryfallApiRetriever.parseScryfallResponse<Ruling>(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError = false
+            if (initialBackStackSize == backStack.size) {
+                backStack.add {
+                    query.value = ""
+                    clearResults()
+                }
+            }
         }
     }
 
@@ -138,10 +152,6 @@ fun ScryfallDialogContent(
                 .clip(RoundedCornerShape(10.dp)), query = query, onSearch = {
                 searchCards(query.value)
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                backStack.add {
-                    query.value = ""
-                    clearResults()
-                }
             })
 
         AnimatedVisibility(
