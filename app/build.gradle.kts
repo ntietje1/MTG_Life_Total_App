@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mtglifeappcompose"
+    namespace = "com.hypeapps.lifelinked"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.mtglifeappcompose"
+        applicationId = "com.hypeapps.lifelinked"
         minSdk = 31
         targetSdk = 34
         versionCode = 1

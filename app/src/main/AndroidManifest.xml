@@ -10,22 +10,19 @@
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
-            android:supportsRtl="true"
-            android:theme="@style/Theme.MTGLifeAppCompose">
+            android:supportsRtl="true">
         <activity
-                android:name="mtglifeappcompose.MainActivity"
+                android:name="lifelinked.MainActivity"
                 android:exported="true"
-                android:theme="@style/Theme.MTGLifeAppCompose"
                 android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <provider
                 android:name="androidx.core.content.FileProvider"
-                android:authorities="mtglifeappcompose.provider"
+                android:authorities="@string/file_provider_authority"
                 android:exported="false"
                 android:grantUriPermissions="true">
             <meta-data
@@ -33,5 +30,4 @@
                     android:resource="@xml/file_paths" />
         </provider>
     </application>
-
 </manifest>
