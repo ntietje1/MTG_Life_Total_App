@@ -1143,14 +1143,13 @@ fun SettingsMenu(
 @Composable
 fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Color>, player: Player, initialColor: Color, onPress: (Color) -> Unit) {
     BoxWithConstraints(modifier) {
-        val colorPickerPadding = maxWidth / 100f
+        val colorPickerPadding = maxWidth / 200f
         val containerPadding = maxWidth / 50f
         val textPadding = maxHeight / 25f
         val smallTextSize = maxHeight.value.sp / 8f
         Column(
             Modifier
-                .wrapContentSize()
-                .padding(horizontal = 10.dp), horizontalAlignment = Alignment.CenterHorizontally
+                .wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 modifier = Modifier
