@@ -23,7 +23,9 @@ class AppViewModel : ViewModel() {
     var currentDealer: Player? = null
     var firstPlayerSelect by mutableStateOf(true)
     var blurBackground = mutableStateOf(false)
-    var planarDeck = mutableStateListOf<Card>()
+    var planarDeck = mutableStateListOf<Card>().apply {
+        addAll(SharedPreferencesManager.loadPlanarDeck())
+    }
     val planeBackStack = mutableListOf<Card>()
 
     val alt4PlayerLayout = mutableStateOf(SharedPreferencesManager.load4PlayerLayout())
@@ -43,6 +45,10 @@ class AppViewModel : ViewModel() {
         private set
 
     var dayNight by mutableStateOf(DayNightState.NONE)
+
+    fun savePlanarDeck() {
+        SharedPreferencesManager.savePlanarDeck(planarDeck)
+    }
 
     fun backPlane() {
         if (planeBackStack.isNotEmpty()) {
