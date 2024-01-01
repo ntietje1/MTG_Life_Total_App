@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">LifeLinked: MTG Life Counter</string>
+    <string name="app_name">LifeLinked</string>
     <string name="file_provider_authority">lifelinked.provider</string>
 </resources>
