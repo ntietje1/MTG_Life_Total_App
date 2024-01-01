@@ -925,12 +925,12 @@ fun SettingsMenu(
                 ) {
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.monarchy_icon), text = "Monarch"
+                            imageResource = painterResource(R.drawable.monarchy_icon), text = "Monarchy"
                         ) { onMonarchyButtonClick() }
                     }
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.download_icon), text = "Load Player"
+                            imageResource = painterResource(R.drawable.download_icon), text = "Load Profile"
                         ) {
                             state = SettingsState.LoadPlayer
                             backStack.add { state = SettingsState.Default }
@@ -939,7 +939,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.mana_icon), text = "Player Counters"
+                            imageResource = painterResource(R.drawable.mana_icon), text = "Counters"
                         ) {
                             state = SettingsState.Counters
                             backStack.add { state = SettingsState.Default }
@@ -956,7 +956,7 @@ fun SettingsMenu(
                     }
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.skull_icon), text = "Kill Player"
+                            imageResource = painterResource(R.drawable.skull_icon), text = "KO Player"
                         ) {
                             player.setDead = !player.isDead
                             closeSettingsMenu()
@@ -1071,7 +1071,7 @@ fun SettingsMenu(
                         modifier = Modifier
                             .wrapContentSize(unbounded = true)
                             .padding(top = smallPadding),
-                        text = "Saved players",
+                        text = "Saved profiles",
                         color = player.textColor,
                         fontSize = smallTextSize,
                         textAlign = TextAlign.Center
@@ -1109,7 +1109,7 @@ fun SettingsMenu(
                                 Text(
                                     modifier = Modifier
                                         .wrapContentSize().padding(horizontal = 20.dp).padding(bottom = 5.dp),
-                                    text = "No saved players found",
+                                    text = "No saved profiles found",
                                     color = player.textColor,
                                     fontSize = smallTextSize*0.7f,
                                     textAlign = TextAlign.Center
