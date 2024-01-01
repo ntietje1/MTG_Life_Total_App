@@ -52,16 +52,7 @@ import lifelinked.data.AppViewModel
 import kotlin.random.Random
 
 @Composable
-fun CoinFlipDialogContent(
-    modifier: Modifier = Modifier,
-    onDismiss: () -> Unit,
-    history: SnapshotStateList<String>,
-) {
-    CoinFlipDialogBox(modifier, history)
-}
-
-@Composable
-fun CoinFlipDialogBox(modifier: Modifier = Modifier, history: SnapshotStateList<String>) {
+fun CoinFlipDialogContent(modifier: Modifier = Modifier, history: SnapshotStateList<String>) {
     Column(modifier = modifier.fillMaxSize()) {
         Spacer(Modifier.weight(0.5f))
         CoinFlippable(Modifier.align(Alignment.CenterHorizontally), history = history)
