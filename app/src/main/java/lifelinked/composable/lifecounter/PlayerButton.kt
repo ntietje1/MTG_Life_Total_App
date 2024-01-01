@@ -1087,23 +1087,45 @@ fun SettingsMenu(
                         textAlign = TextAlign.Center
                     )
 
-                    LazyHorizontalGrid(modifier = Modifier
-                        .fillMaxSize()
-                        .weight(0.5f)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.Black.copy(alpha = 0.15f))
-                        .padding(smallPadding),
-                        rows = GridCells.Fixed(2),
-                        state = rememberLazyGridState(),
-                        horizontalArrangement = Arrangement.spacedBy(smallPadding),
-                        verticalArrangement = Arrangement.spacedBy(smallPadding),
-                        content = {
-                            items(playerList) { p ->
-                                MiniPlayerButton(
-                                    currPlayer = player, player = p, playerList = playerList
+                    Box(Modifier.fillMaxSize().weight(0.5f)) {
+                        LazyHorizontalGrid(modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color.Black.copy(alpha = 0.15f))
+                            .padding(smallPadding),
+                            rows = GridCells.Fixed(2),
+                            state = rememberLazyGridState(),
+                            horizontalArrangement = Arrangement.spacedBy(smallPadding),
+                            verticalArrangement = Arrangement.spacedBy(smallPadding),
+                            content = {
+                                items(playerList) { p ->
+                                    MiniPlayerButton(
+                                        currPlayer = player, player = p, playerList = playerList
+                                    )
+                                }
+                            })
+                        if (playerList.isEmpty()) {
+                            Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    modifier = Modifier
+                                        .wrapContentSize().padding(horizontal = 20.dp).padding(bottom = 5.dp),
+                                    text = "No saved players found",
+                                    color = player.textColor,
+                                    fontSize = smallTextSize*0.7f,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    modifier = Modifier
+                                        .wrapContentSize().padding(horizontal = 20.dp),
+                                    text = "Changes to name/customization will be saved automatically",
+                                    color = player.textColor,
+                                    lineHeight = smallTextSize,
+                                    fontSize = smallTextSize*0.7f,
+                                    textAlign = TextAlign.Center
                                 )
                             }
-                        })
+                        }
+                    }
                 }
             }
 
