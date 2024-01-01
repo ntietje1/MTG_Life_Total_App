@@ -84,7 +84,7 @@ fun MiddleButtonDialog(
             BoxWithConstraints(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.2f))
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f))
                     .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
             ) {
                 content()
@@ -311,7 +311,7 @@ fun SettingsDialog(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.3f)), contentAlignment = Alignment.Center
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)), contentAlignment = Alignment.Center
         ) {
 
             Column(Modifier.fillMaxSize()) {
@@ -319,8 +319,7 @@ fun SettingsDialog(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
-                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f)), horizontalArrangement = Arrangement.End
+                        .wrapContentHeight(), horizontalArrangement = Arrangement.End
                 ) {
 
                     ExitButton(
@@ -339,8 +338,8 @@ fun SettingsDialog(
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .wrapContentHeight()
-                            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f)), horizontalArrangement = Arrangement.SpaceBetween
+                            .wrapContentHeight(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         BackButton(
                             Modifier.size(buttonSize), onBack = onBack, visible = _backButtonEnabled
