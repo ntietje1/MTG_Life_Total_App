@@ -6,6 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
@@ -17,24 +18,28 @@ class ScryfallApiRetriever {
     }
 
     suspend fun searchScryfall(query: String): String = withContext(Dispatchers.IO) {
-        val url = if (!query.startsWith("https://api.scryfall.com/")) {
-            URL("https://api.scryfall.com/cards/search?q=$query")
-        } else {
-            URL(query)
-        }
-        val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "GET"
-        connection.connect()
+        try {
+            val url = if (!query.startsWith("https://api.scryfall.com/")) {
+                URL("https://api.scryfall.com/cards/search?q=$query")
+            } else {
+                URL(query)
+            }
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connect()
 
-        if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                return@withContext "{}"
+            }
+
+            val reader = BufferedReader(InputStreamReader(connection.inputStream))
+            val response = reader.readText()
+            reader.close()
+
+            return@withContext response
+        } catch (e: IOException) {
             return@withContext "{}"
         }
-
-        val reader = BufferedReader(InputStreamReader(connection.inputStream))
-        val response = reader.readText()
-        reader.close()
-
-        return@withContext response
     }
 
     inline fun <reified T> parseScryfallResponse(response: String): List<T> {
