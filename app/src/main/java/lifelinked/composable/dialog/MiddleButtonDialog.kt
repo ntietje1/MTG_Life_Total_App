@@ -99,12 +99,10 @@ fun MiddleButtonDialog(
             modifier = modifier.fillMaxSize(),
         ) {
             val buttonModifier = Modifier.size(maxWidth / 3)
-            AnimatedVisibility(
-                visible = state == MiddleButtonDialogState.CoinFlip, enter = enterAnimation, exit = exitAnimation
+            FormattedAnimatedVisibility(
+                visible = state == MiddleButtonDialogState.CoinFlip
             ) {
-                CoinFlipDialogContent(
-                    Modifier.fillMaxSize(), onDismiss, coinFlipHistory
-                )
+                CoinFlipDialogContent(modifier, coinFlipHistory)
             }
 
             FormattedAnimatedVisibility(
@@ -195,7 +193,7 @@ fun MiddleButtonDialog(
                         onDismiss()
                     })
                 }, {
-                    SettingsButton(buttonModifier, imageResource = painterResource(R.drawable.forty_icon), text = "Starting Life", shadowEnabled = false, onPress = {
+                    SettingsButton(buttonModifier, imageResource = painterResource(R.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
                         state = MiddleButtonDialogState.StartingLife
                         backStack.add { state = MiddleButtonDialogState.Default }
                     })
