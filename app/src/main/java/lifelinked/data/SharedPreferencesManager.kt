@@ -17,6 +17,21 @@ object SharedPreferencesManager {
         }
     }
 
+    fun loadPlayerStates(): List<Player> {
+        val allPrefString = sharedPreferences.getString("playerStates", "[]")!!
+        return Json.decodeFromString(allPrefString)
+    }
+
+    fun savePlayerStates(players: List<Player>) {
+        val allPrefString = Json.encodeToString(players)
+        with(sharedPreferences.edit()) {
+            putString("playerStates", allPrefString)
+            apply()
+        }
+    }
+
+
+
     fun loadAllPlanes(): List<Card> {
         val allPrefString = sharedPreferences.getString("allPlanes", "[]")!!
         return Json.decodeFromString(allPrefString)
@@ -164,29 +179,29 @@ object SharedPreferencesManager {
         return sharedPreferences.getInt("startingLife", 40)
     }
 
-    fun savePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
+    fun savePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
         if (player.isDefaultName()) return
-        deletePlayer(player, playerList)
+        deletePlayerPref(player, playerList)
         playerList.add(player)
-        savePlayers(playerList)
+        savePlayerPrefs(playerList)
     }
 
-    fun deletePlayer(player: Player, playerList: ArrayList<Player> = loadPlayers()) {
+    fun deletePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
         val iterator = playerList.iterator()
         while (iterator.hasNext()) {
             if (iterator.next().name == player.name) {
                 iterator.remove()
             }
         }
-        savePlayers(playerList)
+        savePlayerPrefs(playerList)
     }
 
-    fun loadPlayers(): ArrayList<Player> {
+    fun loadPlayerPrefs(): ArrayList<Player> {
         val allPrefString = sharedPreferences.getString("playerPrefs", "[]")!!
         return Json.decodeFromString(allPrefString)
     }
 
-    private fun savePlayers(players: ArrayList<Player>) {
+    private fun savePlayerPrefs(players: ArrayList<Player>) {
         val allPrefString = Json.encodeToString(players)
         with(sharedPreferences.edit()) {
             putString("playerPrefs", allPrefString)
