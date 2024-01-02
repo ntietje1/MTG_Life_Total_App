@@ -6,13 +6,15 @@ import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.descriptors.element
@@ -26,12 +28,21 @@ import lifelinked.composable.lifecounter.CounterType
 @Serializable(with = PlayerSerializer::class)
 class Player(
     life: Int = -1,
+    recentChange: Int = 0,
     imageUri: Uri? = null,
     color: Color = Color.LightGray,
     textColor: Color = Color.White,
     playerNum: Int = -1,
     name: String = "Placeholder",
     monarch: Boolean = false,
+    commanderDamage: List<Int> = mutableListOf<Int>().apply {
+        repeat(MAX_PLAYERS*2) { add(0) }
+    },
+    counters: List<Int> = mutableListOf<Int>().apply {
+        repeat(CounterType.values().size) { add(0) }
+    },
+    setDead: Boolean = false,
+    partnerMode: Boolean = false
 ) {
     var life: Int by mutableIntStateOf(life)
     var imageUri: Uri? by mutableStateOf(imageUri)
@@ -39,24 +50,17 @@ class Player(
     var textColor: Color by mutableStateOf(textColor)
     var name: String by mutableStateOf(name)
     var monarch: Boolean by mutableStateOf(monarch)
-    var recentChange: Int by mutableIntStateOf(0)
-    var partnerMode: Boolean by mutableStateOf(false)
-    private var playerNum by mutableIntStateOf(playerNum)
-    var setDead by mutableStateOf(false)
+    var recentChange: Int by mutableIntStateOf(recentChange)
+    var partnerMode: Boolean by mutableStateOf(partnerMode)
+    var playerNum by mutableIntStateOf(playerNum)
+    var setDead by mutableStateOf(setDead)
 
     val isDead get() = (life <= 0 || setDead || commanderDamage.any { it >= 21 } )
 
-    private var commanderDamage = mutableStateListOf<Int>().apply {
-        for (i in 0 until MAX_PLAYERS*2) {
-            add(0)
-        }
-    }
+    val commanderDamage = commanderDamage.toMutableStateList()
 
-    private val counters = mutableStateListOf<Int>().apply {
-        for (i in 0 until CounterType.values().size) {
-            add(0)
-        }
-    }
+    val counters = counters.toMutableStateList()
+
 
     fun getCounterValue(counterType: CounterType): Int {
         return counters[counterType.ordinal]
@@ -96,7 +100,7 @@ class Player(
     private val handler: Handler = Handler(Looper.getMainLooper())
 
     private val resetRecentChangeRunnable = Runnable {
-        recentChange = 0
+        this@Player.recentChange = 0
     }
 
     private fun resetRecentChangeRunnable() {
@@ -104,11 +108,13 @@ class Player(
         handler.postDelayed(resetRecentChangeRunnable, 1500)
     }
 
-    fun resetPlayer(startingLife: Int) {
+    fun resetState(startingLife: Int) {
         life = startingLife
         recentChange = 0
         monarch = false
-        commanderDamage = mutableStateListOf<Int>().apply {
+        setDead = false
+        commanderDamage.apply {
+            clear()
             for (i in 0 until MAX_PLAYERS*2) {
                 add(0)
             }
@@ -126,6 +132,14 @@ object PlayerSerializer : KSerializer<Player> {
         element<String>("imageUri")
         element<Int>("color")
         element<Int>("textColor")
+        element<Int>("life")
+        element<Int>("recentChange")
+        element<Int>("playerNum")
+        element<Boolean>("monarch")
+        element<List<Int>>("commanderDamage")
+        element<List<Int>>("counters")
+        element<Boolean>("setDead")
+        element<Boolean>("partnerMode")
     }
 
     override fun serialize(encoder: Encoder, value: Player) {
@@ -134,6 +148,14 @@ object PlayerSerializer : KSerializer<Player> {
             encodeStringElement(descriptor, 1, value.imageUri.toString())
             encodeIntElement(descriptor, 2, value.color.toArgb())
             encodeIntElement(descriptor, 3, value.textColor.toArgb())
+            encodeIntElement(descriptor, 4, value.life)
+            encodeIntElement(descriptor, 5, value.recentChange)
+            encodeIntElement(descriptor, 6, value.playerNum)
+            encodeBooleanElement(descriptor, 7, value.monarch)
+            encodeSerializableElement(descriptor, 8, ListSerializer(Int.serializer()), value.commanderDamage)
+            encodeSerializableElement(descriptor, 9, ListSerializer(Int.serializer()), value.counters)
+            encodeBooleanElement(descriptor, 10, value.setDead)
+            encodeBooleanElement(descriptor, 11, value.partnerMode)
         }
     }
 
@@ -143,6 +165,14 @@ object PlayerSerializer : KSerializer<Player> {
             var imageUri = ""
             var color = 0
             var textColor = 0
+            var life = 0
+            var recentChange = 0
+            var playerNum = 0
+            var monarch = false
+            var commanderDamage = mutableListOf<Int>()
+            var counters = mutableListOf<Int>()
+            var setDead = false
+            var partnerMode = false
 
             while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
@@ -150,15 +180,31 @@ object PlayerSerializer : KSerializer<Player> {
                     1 -> imageUri = decodeStringElement(descriptor, 1)
                     2 -> color = decodeIntElement(descriptor, 2)
                     3 -> textColor = decodeIntElement(descriptor, 3)
+                    4 -> life = decodeIntElement(descriptor, 4)
+                    5 -> recentChange = decodeIntElement(descriptor, 5)
+                    6 -> playerNum = decodeIntElement(descriptor, 6)
+                    7 -> monarch = decodeBooleanElement(descriptor, 7)
+                    8 -> commanderDamage = decodeSerializableElement(descriptor, 8, ListSerializer(Int.serializer())).toMutableList()
+                    9 -> counters = decodeSerializableElement(descriptor, 9, ListSerializer(Int.serializer())).toMutableList()
+                    10 -> setDead = decodeBooleanElement(descriptor, 10)
+                    11 -> partnerMode = decodeBooleanElement(descriptor, 11)
                     CompositeDecoder.DECODE_DONE -> break
                     else -> error("Unexpected index: $index")
                 }
             }
             Player(
-                name = name,
+                life = life,
+                recentChange = recentChange,
                 imageUri = if (imageUri == "null") null else Uri.parse(imageUri),
                 color = Color(color),
-                textColor = Color(textColor)
+                textColor = Color(textColor),
+                playerNum = playerNum,
+                name = name,
+                monarch = monarch,
+                commanderDamage = commanderDamage,
+                counters = counters,
+                setDead = setDead,
+                partnerMode = partnerMode
             )
         }
     }
