@@ -32,12 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -98,7 +98,7 @@ fun MiddleButtonDialog(
         BoxWithConstraints(
             modifier = modifier.fillMaxSize(),
         ) {
-            val buttonModifier = Modifier.size(maxWidth / 3)
+            val buttonModifier = Modifier.size(min(maxWidth / 3, maxHeight / 4)).padding(5.dp)
             FormattedAnimatedVisibility(
                 visible = state == MiddleButtonDialogState.CoinFlip
             ) {
@@ -298,7 +298,7 @@ fun SettingsDialog(
 ) {
     val viewModel: AppViewModel = viewModel()
     val _backButtonEnabled = backButtonEnabled && !viewModel.disableBackButton
-    val buttonSize = 80.dp
+    val buttonSize = 50.dp
     Dialog(
         onDismissRequest = onDismiss, properties = DialogProperties(
             dismissOnBackPress = true,
@@ -354,9 +354,9 @@ fun SettingsDialog(
 @Composable
 fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Unit) {
     SettingsButton(
-        modifier = modifier.rotate(180f),
+        modifier = modifier,
 
-        backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageResource = painterResource(id = R.drawable.enter_icon), onTap = onBack
+        backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageResource = painterResource(id = R.drawable.back_icon_alt), onTap = onBack
     )
 }
 
