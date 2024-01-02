@@ -121,7 +121,7 @@ fun SettingsButton(
                 Text(
                     modifier = Modifier
                         .wrapContentHeight()
-                        .wrapContentWidth(unbounded = true),
+                        .wrapContentWidth(),
                     text = text,
                     color = mainColor,
                     fontSize = fontSize * textSizeMultiplier,
