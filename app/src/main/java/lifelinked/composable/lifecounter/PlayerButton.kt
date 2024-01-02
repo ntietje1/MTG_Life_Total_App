@@ -38,7 +38,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -56,7 +55,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
@@ -93,7 +91,6 @@ import lifelinked.data.AppViewModel
 import lifelinked.data.ImageManager
 import lifelinked.data.Player
 import lifelinked.data.SharedPreferencesManager
-import lifelinked.ui.theme.Gold
 import lifelinked.ui.theme.allPlayerColors
 import lifelinked.ui.theme.brightenColor
 import lifelinked.ui.theme.deadDealerColorMatrix
@@ -142,7 +139,7 @@ fun PlayerButton(
         uri?.let { selectedUri ->
             val copiedUri = imageManager.copyImageToInternalStorage(selectedUri)
             player.imageUri = copiedUri
-            SharedPreferencesManager.savePlayer(player)
+            SharedPreferencesManager.savePlayerPref(player)
         }
     }
 
@@ -464,19 +461,17 @@ fun MonarchyIndicator(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(30.dp))
-            .background(color = MaterialTheme.colorScheme.background)
             .then(
                 if (monarch) {
                     Modifier.animatedBorderCard(
-                        shape = RoundedCornerShape(30.dp), borderWidth = width, gradient = Brush.sweepGradient(
+                        shape = RoundedCornerShape(30.dp), borderWidth = width, colors =
                             listOf(
-                                MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
-                                Gold,
-                                Gold,
-                                Gold,
-                            )
-                        ), animationDuration = 10000
-                    )
+                                Color.Transparent,
+                                Color(255, 191, 8),
+                                Color(255, 191, 8),
+                                Color(255, 191, 8),
+                            ), animationDuration = 10000
+                    ).clip(RoundedCornerShape(30.dp))
                 } else {
                     Modifier.padding(width)
                 }
@@ -899,6 +894,7 @@ fun SettingsMenu(
     closeSettingsMenu: () -> Unit
 ) {
     var state by remember { mutableStateOf(SettingsState.Default) }
+    val viewModel: AppViewModel = viewModel()
     val context = LocalContext.current
 
     BoxWithConstraints(modifier.fillMaxSize()) {
@@ -1020,6 +1016,14 @@ fun SettingsMenu(
                             imageResource = painterResource(R.drawable.search_icon), text = "Search Image"
                         ) { onScryfallButtonClick() }
                     }
+
+                    item {
+                        FormattedSettingsButton(
+                            imageResource = painterResource(R.drawable.reset_icon), text = "Reset"
+                        ) {
+                            viewModel.resetPlayerPrefs(player)
+                        }
+                    }
                 }
             }
 
@@ -1034,7 +1038,7 @@ fun SettingsMenu(
                     }, player = player, initialColor = player.color
                 ) { color ->
                     player.color = color
-                    SharedPreferencesManager.savePlayer(player)
+                    SharedPreferencesManager.savePlayerPref(player)
                 }
             }
 
@@ -1049,7 +1053,7 @@ fun SettingsMenu(
                     }, player = player, initialColor = player.textColor
                 ) { color ->
                     player.textColor = color
-                    SharedPreferencesManager.savePlayer(player)
+                    SharedPreferencesManager.savePlayerPref(player)
                 }
             }
 
@@ -1058,7 +1062,7 @@ fun SettingsMenu(
                 val playerList = remember { mutableStateListOf<Player>() }
 
                 DisposableEffect(context) {
-                    playerList.addAll(SharedPreferencesManager.loadPlayers())
+                    playerList.addAll(SharedPreferencesManager.loadPlayerPrefs())
                     onDispose {}
                 }
 
@@ -1198,7 +1202,7 @@ fun ChangeNameField(
     fun onDone() {
         player.name = newName
         closeSettingsMenu()
-        SharedPreferencesManager.savePlayer(player)
+        SharedPreferencesManager.savePlayerPref(player)
     }
     BoxWithConstraints(modifier.fillMaxSize()) {
         Column(
@@ -1243,7 +1247,7 @@ fun ChangeNameField(
                 onClick = {
                     player.name = newName
                     closeSettingsMenu()
-                    SharedPreferencesManager.savePlayer(player)
+                    SharedPreferencesManager.savePlayerPref(player)
                 }, colors = ButtonDefaults.buttonColors(
                     containerColor = player.textColor, contentColor = player.color
                 ), modifier = Modifier
@@ -1274,7 +1278,7 @@ fun MiniPlayerButton(
                 currPlayer.copySettings(player)
             }, onLongPress = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                SharedPreferencesManager.deletePlayer(player)
+                SharedPreferencesManager.deletePlayerPref(player)
                 playerList.remove(player)
             })
         }) {

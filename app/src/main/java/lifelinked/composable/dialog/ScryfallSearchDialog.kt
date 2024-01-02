@@ -182,7 +182,7 @@ fun ScryfallDialogContent(
                     }
                 }, onSelect = {
                     player!!.imageUri = Uri.parse(card.getUris().artCrop)
-                    SharedPreferencesManager.savePlayer(player)
+                    SharedPreferencesManager.savePlayerPref(player)
                 }, onPrintings = {
                     searchCards(card.printsSearchUri, disablePrintingsButton = true)
                     backStack.add {
