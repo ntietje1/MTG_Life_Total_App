@@ -8,7 +8,6 @@ import java.lang.Float.min
 
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
-val Gold = Color(255, 191, 8)
 
 
 val PlayerColor1 = Color(0xFFf289e2)
