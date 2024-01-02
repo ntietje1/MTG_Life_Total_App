@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -61,9 +62,7 @@ import lifelinked.data.ScryfallApiRetriever
 import lifelinked.data.SharedPreferencesManager
 
 private enum class PlanarDieResult(val toString: String, val resourceId: Int) {
-    PLANESWALK("Planeswalk", R.drawable.planeswalker_icon),
-    CHAOS("Chaos Ensues", R.drawable.chaos_icon),
-    NO_EFFECT("No Effect", R.drawable.transparent)
+    PLANESWALK("Planeswalk", R.drawable.planeswalker_icon), CHAOS("Chaos Ensues", R.drawable.chaos_icon), NO_EFFECT("No Effect", R.drawable.transparent)
 }
 
 @Composable
@@ -142,22 +141,21 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, goToChoosePlanes: () 
 
 
     BoxWithConstraints(modifier = modifier) {
-        val maxWidth = maxWidth
+        val previewPadding = maxWidth / 20f
         val buttonModifier = Modifier
             .size(maxWidth / 6f)
-            .padding(bottom = maxHeight / 15f)
-        val previewPadding = maxWidth / 20f
+            .padding(bottom = maxHeight / 15f, top = 5.dp)
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
             PlaneChaseCardPreview(modifier = Modifier
                 .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
-                .fillMaxWidth()
-                .padding(previewPadding), card = viewModel.currentPlane(), allowEnlarge = false)
+                .fillMaxHeight(0.9f)
+                .padding(bottom = previewPadding),
+                card = viewModel.currentPlane(),
+                allowEnlarge = false)
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(top = previewPadding * 1.5f)
-                    .padding(horizontal = maxWidth / 20f), horizontalArrangement = Arrangement.SpaceAround
+                    .wrapContentHeight(), horizontalArrangement = Arrangement.SpaceAround
             ) {
                 SettingsButton(modifier = buttonModifier, text = "Back", shadowEnabled = false, imageResource = painterResource(R.drawable.back_icon_alt), onPress = {
                     viewModel.backPlane()
@@ -263,8 +261,7 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier) {
                 SettingsButton(modifier = buttonModifier, text = "Unselect All", shadowEnabled = false, imageResource = painterResource(R.drawable.x_icon), onPress = {
                     viewModel.planarDeck.clear()
                 })
-                SettingsButton(
-                    modifier = buttonModifier,
+                SettingsButton(modifier = buttonModifier,
                     text = if (!hideUnselected) "Hide Unselected" else "Show Unselected",
                     shadowEnabled = false,
                     imageResource = if (!hideUnselected) painterResource(R.drawable.invisible_icon) else painterResource(R.drawable.visible_icon),
