@@ -26,12 +26,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getString
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hypeapps.lifelinked.R
 import lifelinked.composable.SettingsButton
@@ -43,6 +46,8 @@ fun SettingsDialogContent(
     modifier: Modifier = Modifier, goToAboutMe: () -> Unit, addGoToSettingsToBackStack: () -> Unit
 ) {
     val viewModel: AppViewModel = viewModel()
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
 
     BoxWithConstraints(modifier) {
         LazyColumn(
@@ -63,34 +68,34 @@ fun SettingsDialogContent(
                         text = "Rotating Middle Button",
                         initialState = viewModel.rotatingMiddleButton,
                         toggle = { viewModel.toggleRotatingMiddleButton(it) },
-                        icon = painterResource(id = R.drawable.placeholder_icon)
+                        icon = painterResource(id = R.drawable.d20_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Fast Coin Flip", initialState = viewModel.fastCoinFlip, toggle = { viewModel.toggleFastCoinFlip(it) }, icon = painterResource(id = R.drawable.placeholder_icon)
+                        text = "Fast Coin Flip", initialState = viewModel.fastCoinFlip, toggle = { viewModel.toggleFastCoinFlip(it) }, icon = painterResource(id = R.drawable.coin_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Disable Camera Roll",
                         initialState = viewModel.cameraRollDisabled,
                         toggle = { viewModel.toggleCameraRollEnabled(it) },
-                        icon = painterResource(id = R.drawable.placeholder_icon)
+                        icon = painterResource(id = R.drawable.invisible_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Auto KO", initialState = viewModel.autoKo, toggle = { viewModel.toggleAutoKo(it) }, icon = painterResource(id = R.drawable.placeholder_icon)
+                        text = "Auto KO", initialState = viewModel.autoKo, toggle = { viewModel.toggleAutoKo(it) }, icon = painterResource(id = R.drawable.skull_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Auto Skip Player Select", initialState = viewModel.autoSkip, toggle = { viewModel.toggleAutoSkip(it) }, icon = painterResource(id = R.drawable.placeholder_icon)
+                        text = "Auto Skip Player Select", initialState = viewModel.autoSkip, toggle = { viewModel.toggleAutoSkip(it) }, icon = painterResource(id = R.drawable.player_select_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Disable Settings Back Button\n(device back button still works)",
+                        text = "Disable App Back Button\n(device back button still works)",
                         initialState = viewModel.disableBackButton,
                         toggle = { viewModel.toggleDisableBackButton(it) },
-                        icon = painterResource(id = R.drawable.placeholder_icon)
+                        icon = painterResource(id = R.drawable.back_icon_alt)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Keep Screen On (requires restart)",
                         initialState = viewModel.keepScreenOn,
                         toggle = { viewModel.toggleKeepScreenOn(it) },
-                        icon = painterResource(id = R.drawable.placeholder_icon)
+                        icon = painterResource(id = R.drawable.sun_icon)
                     )
                 }
             }
@@ -106,18 +111,31 @@ fun SettingsDialogContent(
                         .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
                 ) {
                     SettingsDialogButton(
-                        text = "Submit Feedback", additionalText = "", icon = painterResource(id = R.drawable.placeholder_icon)
+                        text = "Submit Feedback", additionalText = "", icon = painterResource(id = R.drawable.thumbsup_icon)
+                    ) {
+                        val url = "https://forms.gle/2rPor1Dvm2EtAkgo6"
+                        uriHandler.openUri(url)
+                    }
+                    SettingsDialogButton(
+                        text = "Write a Review", additionalText = "", icon = painterResource(id = R.drawable.star_icon_small)
                     )
                     SettingsDialogButton(
-                        text = "Write a Review", additionalText = "", icon = painterResource(id = R.drawable.placeholder_icon)
-                    )
-                    SettingsDialogButton(text = "About Me", additionalText = "", icon = painterResource(id = R.drawable.placeholder_icon), onTap = {
+                        text = "Email", additionalText = "HypePixelSoftware@gmail.com", icon = painterResource(id = R.drawable.email_icon)
+                    ) {
+                        val url = "mailto:hypepixelsoftware@gmail.com"
+                        uriHandler.openUri(url)
+                    }
+                    SettingsDialogButton(text = "About Me", additionalText = "", icon = painterResource(id = R.drawable.change_name_icon)
+                    ) {
                         goToAboutMe()
                         addGoToSettingsToBackStack()
-                    })
+                    }
                     SettingsDialogButton(
-                        text = "Buy me a Coffee", additionalText = "", icon = painterResource(id = R.drawable.placeholder_icon)
-                    )
+                        text = "Buy me a Coffee", additionalText = "", icon = painterResource(id = R.drawable.coffee_icon)
+                    ) {
+                        val url = "https://venmo.com/u/Nicholas-Tietje"
+                        uriHandler.openUri(url)
+                    }
                 }
             }
 
@@ -125,7 +143,7 @@ fun SettingsDialogContent(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 10.dp, end = 10.dp, top = 10.dp), text = "<APP NAME> v1.0.0 by Nicholas Tietje", textAlign = TextAlign.Center, style = TextStyle(
+                        .padding(start = 10.dp, end = 10.dp, top = 10.dp), text = "${getString(context, R.string.app_name)} v1.0.0 by Nicholas Tietje", textAlign = TextAlign.Center, style = TextStyle(
                         fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 )
