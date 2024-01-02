@@ -50,7 +50,6 @@ fun LifeLinkedTheme(
         SideEffect {
             val window = (view.context as Activity).window
             val insets = WindowCompat.getInsetsController(window, view)
-            window.isStatusBarContrastEnforced = false
             window.statusBarColor = colorScheme.background.toArgb()
             window.navigationBarColor = colorScheme.background.toArgb()
             insets.isAppearanceLightStatusBars = !darkTheme
