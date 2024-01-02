@@ -17,11 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.get
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -50,6 +46,7 @@ fun LifeLinkedApp(
     val  context = LocalContext.current
     SharedPreferencesManager.initialize(context)
     var darkTheme by remember { mutableStateOf(SharedPreferencesManager.loadTheme()) }
+    var firstPlayerSelect by remember { mutableStateOf(true) }
 
     EnableImageCache(10)
 
@@ -63,38 +60,38 @@ fun LifeLinkedApp(
             enterTransition = { EnterTransition.None },
             exitTransition = { ExitTransition.None },
         ) {
-            composable(route = MTGScreen.PlayerSelectScreen.name) { backStackEntry ->
-                val viewModel: AppViewModel = backStackEntry.parentViewModel(navController)
+            composable(route = MTGScreen.PlayerSelectScreen.name) {
+                val viewModel: AppViewModel = viewModel()
                 val scope = rememberCoroutineScope()
 
                 LaunchedEffect(Unit) {
-                    if (viewModel.autoSkip && viewModel.firstPlayerSelect) {
+                    if (viewModel.autoSkip && firstPlayerSelect) {
                         CoroutineScope(scope.coroutineContext).launch {
                             //TODO: implement a loading screen??
                             delay(100L)
                             navController.navigate(MTGScreen.LifeCounterScreen.name)
-                            viewModel.firstPlayerSelect = false
+                            firstPlayerSelect = false
                         }
                     }
                 }
-                if (viewModel.autoSkip && viewModel.firstPlayerSelect) {
+                if (viewModel.autoSkip && firstPlayerSelect) {
                     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {}
                 }
                 else {
                     PlayerSelectScreenWrapper(
-                        setPlayerNum = { viewModel.setPlayerNum(it) },
+                        setPlayerNum = { viewModel.setPlayerNum(it, allowOverride = firstPlayerSelect) },
                         goToLifeCounter = { navController.navigate(MTGScreen.LifeCounterScreen.name) })
                 }
             }
-            composable(route = MTGScreen.LifeCounterScreen.name) { backStackEntry ->
+            composable(route = MTGScreen.LifeCounterScreen.name) {
                 BackHandler(enabled = true) {}
-                val viewModel: AppViewModel = backStackEntry.parentViewModel(navController)
+                val viewModel: AppViewModel = viewModel()
                 viewModel.generatePlayers()
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {}
                 LifeCounterScreen(
                     players = remember { viewModel.getActivePlayers() },
                     resetPlayers = {
-                    viewModel.resetPlayers()
+                    viewModel.resetPlayerStates()
                     navController.navigate(MTGScreen.LifeCounterScreen.name)
                 }, setStartingLife = {
                     viewModel.setStartingLife(SharedPreferencesManager, it)
@@ -132,13 +129,4 @@ fun KeepScreenOn() {
             currentView.keepScreenOn = false
         }
     }
-}
-
-@Composable
-inline fun <reified VM : ViewModel> NavBackStackEntry.parentViewModel(
-    navController: NavController
-): VM {
-    val parentId = destination.parent!!.id
-    val parentBackStackEntry = navController.getBackStackEntry(parentId)
-    return ViewModelProvider(parentBackStackEntry).get()
 }
