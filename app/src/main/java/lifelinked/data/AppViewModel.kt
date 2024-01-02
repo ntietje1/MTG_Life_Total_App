@@ -123,13 +123,12 @@ class AppViewModel : ViewModel() {
         return currentDealer?.partnerMode ?: false
     }
 
-
     fun generatePlayers() {
         val startingLife = SharedPreferencesManager.loadStartingLife()
         while (currentPlayers.size < Player.MAX_PLAYERS) {
             currentPlayers.add(generatePlayer(startingLife))
         }
-        SharedPreferencesManager.savePlayerStates(currentPlayers)
+        savePlayerStates()
     }
 
     fun resetPlayerPrefs(player: Player) {
@@ -139,6 +138,10 @@ class AppViewModel : ViewModel() {
             color = getRandColor()
             textColor = Color.White
         }
+    }
+
+    fun savePlayerStates() {
+        SharedPreferencesManager.savePlayerStates(currentPlayers)
     }
 
     fun resetPlayerStates() {
