@@ -17,11 +17,10 @@ enum class DayNightState {
 }
 
 class AppViewModel : ViewModel() {
-    private var currentPlayers: MutableList<Player> = mutableListOf()
+    private var currentPlayers: MutableList<Player> = SharedPreferencesManager.loadPlayerStates().toMutableList()
     private val numPlayers = mutableIntStateOf(SharedPreferencesManager.loadNumPlayers())
     private val buttonStates = mutableListOf<MutableState<PlayerButtonState>>()
     var currentDealer: Player? = null
-    var firstPlayerSelect by mutableStateOf(true)
     var blurBackground = mutableStateOf(false)
     var planarDeck = mutableStateListOf<Card>().apply {
         addAll(SharedPreferencesManager.loadPlanarDeck())
@@ -130,14 +129,25 @@ class AppViewModel : ViewModel() {
         while (currentPlayers.size < Player.MAX_PLAYERS) {
             currentPlayers.add(generatePlayer(startingLife))
         }
+        SharedPreferencesManager.savePlayerStates(currentPlayers)
     }
 
-    fun resetPlayers() {
+    fun resetPlayerPrefs(player: Player) {
+        player.apply {
+            name = "P${playerNum}"
+            imageUri = null
+            color = getRandColor()
+            textColor = Color.White
+        }
+    }
+
+    fun resetPlayerStates() {
         val startingLife = SharedPreferencesManager.loadStartingLife()
         updateAllStates(PlayerButtonState.NORMAL)
         currentPlayers.forEach {
-            it.resetPlayer(startingLife)
+            it.resetState(startingLife)
         }
+        SharedPreferencesManager.savePlayerStates(currentPlayers)
     }
 
     private fun generatePlayer(startingLife: Int): Player {
@@ -155,6 +165,7 @@ class AppViewModel : ViewModel() {
     }
 
     fun toggleMonarch(player: Player) {
+        println("toggle monarch: ${player.name}, currentPlayerSize: ${currentPlayers.size}")
         if (!player.monarch) {
             currentPlayers.forEach { it.monarch = false }
         }
@@ -178,7 +189,7 @@ class AppViewModel : ViewModel() {
 
     fun setStartingLife(playerDataManager: SharedPreferencesManager, life: Int) {
         playerDataManager.saveStartingLife(life)
-        resetPlayers()
+        resetPlayerStates()
     }
 
     fun getActivePlayers(): List<Player> {
