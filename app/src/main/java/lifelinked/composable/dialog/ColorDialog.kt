@@ -9,26 +9,25 @@ import android.graphics.PorterDuff
 import android.graphics.RectF
 import android.graphics.Shader
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
@@ -57,20 +57,13 @@ import android.graphics.Color as AndroidColor
 fun ColorDialog(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, initialColor: Color, setColor: (Color) -> Unit
 ) {
-    val backgroundColor = remember {
-        mutableStateOf(initialColor)
-    }
-
-    SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss, onConfirm = {
-        setColor(backgroundColor.value)
-        onDismiss()
-    }, confirmButtonEnabled = true) {
-        ColorPicker(initialColor = initialColor, setColor = { color -> backgroundColor.value = color })
+    SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss) {
+        ColorPicker(initialColor = initialColor, setColor = setColor, onDismiss = onDismiss)
     }
 }
 
 @Composable
-fun ColorPicker(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {}) {
+fun ColorPicker(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {}, onDismiss: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
     ) {
@@ -83,12 +76,11 @@ fun ColorPicker(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {})
                 Triple(hsv[0], hsv[1], hsv[2])
             )
         }
-        val backgroundColor = remember(hsv.value) {
-            mutableStateOf(Color.hsv(hsv.value.first, hsv.value.second, hsv.value.third))
-        }
 
-        LaunchedEffect(backgroundColor) {
-            setColor(backgroundColor.value)
+        val backgroundColor = remember {
+            derivedStateOf {
+                Color.hsv(hsv.value.first, hsv.value.second, hsv.value.third)
+            }
         }
 
         SatValPanel(hue = hsv.value.first) { sat, value ->
@@ -106,25 +98,40 @@ fun ColorPicker(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {})
         Row(
             modifier = Modifier.wrapContentSize(), horizontalArrangement = Arrangement.Center
         ) {
+            Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                SettingsButton(
+                    modifier = Modifier.size(100.dp),
+                    imageResource = painterResource(R.drawable.x_icon),
+                    shape = RoundedCornerShape(10),
+                    shadowEnabled = false,
+                    backgroundColor = initialColor,
+                    mainColor = if (initialColor.luminance() > 0.5f) Color.Black else Color.White,
+                    textSizeMultiplier = 1.5f,
+                    onTap = {
+                        setColor(initialColor)
+                        onDismiss()
+                    }
+                )
+                Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimary)
+            }
 
-            Box(
-                modifier = Modifier
-                    .size(70.dp)
-                    .background(initialColor)
-            )
-
-            SettingsButton(
-                modifier = Modifier
-                    .size(70.dp)
-                    .padding(15.dp), imageResource = painterResource(R.drawable.enter_icon), shadowEnabled = false, enabled = false
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(70.dp)
-                    .background(backgroundColor.value)
-            )
-
+            Spacer(modifier = Modifier.width(32.dp))
+            Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                SettingsButton(
+                    modifier = Modifier.size(100.dp),
+                    imageResource = painterResource(R.drawable.checkmark),
+                    shape = RoundedCornerShape(10),
+                    shadowEnabled = false,
+                    backgroundColor = backgroundColor.value,
+                    mainColor = if (backgroundColor.value.luminance() > 0.5f) Color.Black else Color.White,
+                    textSizeMultiplier = 1.5f,
+                    onTap = {
+                        setColor(backgroundColor.value)
+                        onDismiss()
+                    }
+                )
+                Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimary)
+            }
         }
 
 
