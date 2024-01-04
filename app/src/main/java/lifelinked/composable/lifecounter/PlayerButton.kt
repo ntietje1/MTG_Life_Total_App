@@ -6,6 +6,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -120,7 +121,6 @@ fun PlayerButton(
     val viewModel: AppViewModel = viewModel()
     val imageManager = ImageManager(context, player)
     var showScryfallSearch by remember { mutableStateOf(false) }
-    val activeCounters = remember { mutableStateListOf<CounterType>() }
     val backStack = remember { mutableStateListOf<() -> Unit>() }
     val scryfallBackStack = remember {
         mutableStateListOf({
@@ -222,8 +222,8 @@ fun PlayerButton(
                     top = smallButtonSize / 2
                 )
 
-                val settingsPadding = if (wideButton) Modifier.padding(bottom = smallButtonSize / 4) else Modifier.padding(
-                    top = smallButtonSize / 4
+                val settingsPadding = if (wideButton) Modifier.padding(bottom = smallButtonSize / 4, top = smallButtonSize / 8) else Modifier.padding(
+                    top = smallButtonSize / 2
                 )
                 if (!player.setDead) {
                     when (state.value) {
@@ -333,7 +333,6 @@ fun PlayerButton(
                                 SettingsMenu(modifier = settingsPadding,
                                     player = player,
                                     backStack = backStack,
-                                    activeCounters = activeCounters,
                                     onMonarchyButtonClick = { viewModel.toggleMonarch(player) },
                                     onFromCameraRollButtonClick = { showWarningDialog() },
                                     closeSettingsMenu = { state.value = PlayerButtonState.NORMAL },
@@ -457,21 +456,34 @@ fun PlayerButton(
 fun MonarchyIndicator(
     modifier: Modifier = Modifier, monarch: Boolean = false, content: @Composable () -> Unit = {}
 ) {
-    val width = 2.dp
+    val width = 2.5.dp
+    val viewModel: AppViewModel = viewModel()
+    val context = LocalContext.current
+    val duration = viewModel.correctAnimationDuration(7500, context)
+    val colors = if (viewModel.getAnimationScale(context) != 0.0f) {
+        listOf(
+            Color.Transparent,
+            Color(255, 191, 8),
+            Color(255, 191, 8),
+            Color(255, 191, 8),
+        )
+    } else {
+        listOf(
+            Color(255, 191, 8),
+            Color(255, 191, 8),
+        )
+    }
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(30.dp))
             .then(
                 if (monarch) {
-                    Modifier.animatedBorderCard(
-                        shape = RoundedCornerShape(30.dp), borderWidth = width, colors =
-                            listOf(
-                                Color.Transparent,
-                                Color(255, 191, 8),
-                                Color(255, 191, 8),
-                                Color(255, 191, 8),
-                            ), animationDuration = 10000
-                    ).clip(RoundedCornerShape(30.dp))
+                    Modifier
+                        .animatedBorderCard(
+                            shape = RoundedCornerShape(30.dp), borderWidth = width, colors = colors, animationDuration = duration
+                        )
+                        .clip(RoundedCornerShape(30.dp))
                 } else {
                     Modifier.padding(width)
                 }
@@ -487,88 +499,106 @@ private enum class CounterMenuState {
 
 @Composable
 fun Counters(
-    modifier: Modifier = Modifier, player: Player, activeCounters: SnapshotStateList<CounterType>, backStack: SnapshotStateList<() -> Unit>
+    modifier: Modifier = Modifier, player: Player, backStack: SnapshotStateList<() -> Unit>
 ) {
     var state by remember { mutableStateOf(CounterMenuState.DEFAULT) }
     val haptic = LocalHapticFeedback.current
-
-    BoxWithConstraints(
-        modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.2f), shape = RoundedCornerShape(25.dp))
-            .clip(RoundedCornerShape(25.dp))
-    ) {
-        when (state) {
-            CounterMenuState.DEFAULT -> {
-                LazyRow(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(5.dp),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    items(activeCounters) { counterType ->
-                        Counter(player = player,
-                            icon = painterResource(id = counterType.resId),
-                            value = player.getCounterValue(counterType),
-                            onIncrement = { player.incrementCounterValue(counterType, 1) },
-                            onDecrement = { player.incrementCounterValue(counterType, -1) })
-                    }
-                    item {
-                        AddCounter(
-                            player = player,
-                            onTap = {
-                                state = CounterMenuState.ADD_COUNTER
-                                backStack.add { state = CounterMenuState.DEFAULT }
-                            },
-                        )
-                    }
-                }
-            }
-
-            CounterMenuState.ADD_COUNTER -> {
-                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    LazyHorizontalGrid(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(5.dp)
-                            .clip(RoundedCornerShape(25.dp)),
-                        rows = GridCells.Fixed(3),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        items(CounterType.values()) { counterType ->
-                            Box(modifier = Modifier
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        val smallPadding = maxHeight / 20f
+        val smallTextSize = maxHeight.value.sp / 12f
+        Column(
+            Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                modifier = Modifier
+                    .wrapContentSize(unbounded = true)
+                    .padding(top = smallPadding, bottom = smallPadding / 2f),
+                text = if (state == CounterMenuState.DEFAULT) "Counters" else "Select Counters",
+                color = player.textColor,
+                fontSize = smallTextSize,
+                textAlign = TextAlign.Center
+            )
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .weight(0.5f)
+                    .background(Color.Black.copy(alpha = 0.2f), shape = RoundedCornerShape(25.dp))
+                    .border(0.5.dp, player.textColor.copy(alpha = 0.9f), RoundedCornerShape(25.dp))
+                    .clip(RoundedCornerShape(25.dp))
+            ) {
+                when (state) {
+                    CounterMenuState.DEFAULT -> {
+                        LazyRow(
+                            Modifier
                                 .fillMaxSize()
-                                .aspectRatio(1.0f)
-                                .padding(0.5.dp)
-                                .background(
-                                    if (counterType in activeCounters) {
-                                        Color.Green.copy(alpha = 0.5f)
-                                    } else {
-                                        Color.Transparent
-                                    }
+                                .padding(5.dp),
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            items(player.activeCounters) { counterType ->
+                                Counter(player = player,
+                                    icon = painterResource(id = counterType.resId),
+                                    value = player.getCounterValue(counterType),
+                                    onIncrement = { player.incrementCounterValue(counterType, 1) },
+                                    onDecrement = { player.incrementCounterValue(counterType, -1) })
+                            }
+                            item {
+                                AddCounter(
+                                    player = player,
+                                    onTap = {
+                                        state = CounterMenuState.ADD_COUNTER
+                                        backStack.add { state = CounterMenuState.DEFAULT }
+                                    },
                                 )
-                                .pointerInput(Unit) {
-                                    detectTapGestures {
-                                        if (counterType in activeCounters) {
-                                            activeCounters.remove(counterType)
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        } else {
-                                            activeCounters.add(counterType)
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        }
-                                    }
-                                }) {
-                                SettingsButton(
-                                    imageResource = painterResource(id = counterType.resId),
-                                    modifier = Modifier
+                            }
+                        }
+                    }
+
+                    CounterMenuState.ADD_COUNTER -> {
+                        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                            LazyHorizontalGrid(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(5.dp)
+                                    .clip(RoundedCornerShape(25.dp)),
+                                rows = GridCells.Fixed(3),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                items(CounterType.values()) { counterType ->
+                                    Box(modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(5.dp),
-                                    mainColor = player.textColor,
-                                    backgroundColor = Color.Transparent,
-                                    shadowEnabled = true,
-                                    enabled = false
-                                )
+                                        .aspectRatio(1.0f)
+                                        .padding(0.5.dp)
+                                        .background(
+                                            if (counterType in player.activeCounters) {
+                                                Color.Green.copy(alpha = 0.5f)
+                                            } else {
+                                                Color.Transparent
+                                            }
+                                        )
+                                        .pointerInput(Unit) {
+                                            detectTapGestures {
+                                                if (counterType in player.activeCounters) {
+                                                    player.activeCounters.remove(counterType)
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                } else {
+                                                    player.activeCounters.add(counterType)
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                }
+                                            }
+                                        }) {
+                                        SettingsButton(
+                                            imageResource = painterResource(id = counterType.resId),
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(5.dp),
+                                            mainColor = player.textColor,
+                                            backgroundColor = Color.Transparent,
+                                            shadowEnabled = true,
+                                            enabled = false
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -590,7 +620,8 @@ fun AddCounter(
             .aspectRatio(0.70f)
             .padding(5.dp)
             .bounceClick(0.0125f)
-            .background(Color.Black.copy(0.2f), shape = RoundedCornerShape(30.dp))
+            .background(Color.Black.copy(0.2f), shape = RoundedCornerShape(20.dp))
+            .border(0.5.dp, player.textColor.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
             .pointerInput(Unit) {
                 detectTapGestures {
                     onTap()
@@ -622,7 +653,8 @@ fun Counter(
             .aspectRatio(0.70f)
             .padding(5.dp)
             .bounceClick(0.0125f)
-            .background(Color.Black.copy(0.2f), shape = RoundedCornerShape(30.dp))
+            .background(Color.Black.copy(0.2f), shape = RoundedCornerShape(20.dp))
+            .border(0.5.dp, player.textColor.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
             .clip(RoundedCornerShape(30.dp))
     ) {
         val textSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).sp / 1.5f
@@ -668,7 +700,7 @@ fun Counter(
             SettingsButton(
                 imageResource = icon,
                 modifier = Modifier
-                    .fillMaxSize(0.5f)
+                    .fillMaxSize(0.35f)
                     .aspectRatio(1.0f)
                     .padding(bottom = 15.dp),
                 mainColor = player.textColor,
@@ -886,7 +918,6 @@ enum class SettingsState { Default, Customize, BackgroundColorPicker, TextColorP
 fun SettingsMenu(
     modifier: Modifier = Modifier,
     player: Player,
-    activeCounters: SnapshotStateList<CounterType>,
     backStack: SnapshotStateList<() -> Unit>,
     onMonarchyButtonClick: () -> Unit,
     onFromCameraRollButtonClick: () -> Unit,
@@ -955,6 +986,7 @@ fun SettingsMenu(
                             imageResource = painterResource(R.drawable.skull_icon), text = "KO Player"
                         ) {
                             player.setDead = !player.isDead
+                            viewModel.toggleMonarch(player, false)
                             closeSettingsMenu()
                             backStack.clear()
                         }
@@ -973,7 +1005,7 @@ fun SettingsMenu(
 
             SettingsState.Counters -> {
                 Counters(
-                    modifier = modifier.padding(5.dp), player = player, activeCounters = activeCounters, backStack = backStack
+                    modifier = modifier.padding(5.dp), player = player, backStack = backStack
                 )
             }
 
@@ -983,7 +1015,7 @@ fun SettingsMenu(
                 ) {
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.gradient_icon), text = "Solid Color"
+                            imageResource = painterResource(R.drawable.color_picker_icon), text = "Solid Color"
                         ) {
                             state = SettingsState.BackgroundColorPicker
                             backStack.add { state = SettingsState.Customize }
@@ -992,7 +1024,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource(R.drawable.color_picker_icon), text = "Text Color"
+                            imageResource = painterResource(R.drawable.text_icon), text = "Text Color"
                         ) {
                             state = SettingsState.TextColorPicker
                             backStack.add { state = SettingsState.Customize }
@@ -1008,7 +1040,10 @@ fun SettingsMenu(
                     item {
                         FormattedSettingsButton(
                             imageResource = painterResource(R.drawable.x_icon), text = "Remove Image"
-                        ) { player.imageUri = null }
+                        ) {
+                            player.imageUri = null
+                            SharedPreferencesManager.savePlayerPref(player)
+                        }
                     }
 
                     item {
@@ -1091,11 +1126,16 @@ fun SettingsMenu(
                         textAlign = TextAlign.Center
                     )
 
-                    Box(Modifier.fillMaxSize().weight(0.5f)) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .weight(0.5f)
+                    ) {
                         LazyHorizontalGrid(modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(20.dp))
                             .background(Color.Black.copy(alpha = 0.15f))
+                            .border(0.5.dp, player.textColor.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
                             .padding(smallPadding),
                             rows = GridCells.Fixed(2),
                             state = rememberLazyGridState(),
@@ -1112,19 +1152,22 @@ fun SettingsMenu(
                             Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     modifier = Modifier
-                                        .wrapContentSize().padding(horizontal = 20.dp).padding(bottom = 5.dp),
+                                        .wrapContentSize()
+                                        .padding(horizontal = 20.dp)
+                                        .padding(bottom = 5.dp),
                                     text = "No saved profiles found",
                                     color = player.textColor,
-                                    fontSize = smallTextSize*0.7f,
+                                    fontSize = smallTextSize * 0.7f,
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     modifier = Modifier
-                                        .wrapContentSize().padding(horizontal = 20.dp),
+                                        .wrapContentSize()
+                                        .padding(horizontal = 20.dp),
                                     text = "Changes to name/customization will be saved automatically",
                                     color = player.textColor,
                                     lineHeight = smallTextSize,
-                                    fontSize = smallTextSize*0.7f,
+                                    fontSize = smallTextSize * 0.7f,
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -1170,6 +1213,7 @@ fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Col
                 .weight(0.5f)
                 .clip(RoundedCornerShape(20.dp))
                 .background(Color.Black.copy(alpha = 0.15f))
+                .border(0.5.dp, player.textColor.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
                 .padding(containerPadding * 2),
                 rows = GridCells.Fixed(2),
                 state = rememberLazyGridState(),
@@ -1177,9 +1221,10 @@ fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Col
                 verticalArrangement = Arrangement.spacedBy(colorPickerPadding),
                 content = {
                     item {
-                        CustomColorPickerButton(modifier = Modifier.padding(colorPickerPadding), player = player, initialColor = initialColor, onComplete = {
-                            onPress(it)
-                        })
+                        CustomColorPickerButton(modifier = Modifier.padding(colorPickerPadding), player = player, initialColor = initialColor,
+                            setColor = { color ->
+                                onPress(color)
+                            })
                     }
                     items(colorList) { color ->
                         ColorPickerButton(
@@ -1316,7 +1361,7 @@ fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color:
 }
 
 @Composable
-fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initialColor: Color, onComplete: (Color) -> Unit) {
+fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initialColor: Color, setColor: (Color) -> Unit) {
     val viewModel: AppViewModel = viewModel()
     var showColorDialog by remember { mutableStateOf(false) }
 
@@ -1325,7 +1370,7 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initi
             showColorDialog = false
             viewModel.blurBackground.value = false
         }, initialColor = initialColor, setColor = { color ->
-            onComplete(color)
+            setColor(color)
         })
     }
 

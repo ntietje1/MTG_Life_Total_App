@@ -1,5 +1,7 @@
 package lifelinked.data
 
+import android.content.Context
+import android.provider.Settings
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,6 +44,22 @@ class AppViewModel : ViewModel() {
         private set
 
     var dayNight by mutableStateOf(DayNightState.NONE)
+
+    fun correctAnimationDuration(duration: Int, context: Context): Int {
+        return try {
+            (duration / getAnimationScale(context)).toInt()
+        } catch (e: Exception) {
+            duration
+        }
+    }
+
+    fun getAnimationScale(context: Context): Float {
+        return Settings.Global.getFloat(
+            context.contentResolver,
+            Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f
+        )
+    }
 
     fun savePlanarDeck() {
         SharedPreferencesManager.savePlanarDeck(planarDeck)

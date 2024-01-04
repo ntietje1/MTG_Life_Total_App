@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -67,11 +68,13 @@ fun MiddleButtonDialog(
     var state by remember { mutableStateOf(MiddleButtonDialogState.Default) }
     val backStack = remember { mutableStateListOf<() -> Unit>(onDismiss) }
     val haptic = LocalHapticFeedback.current
+    val context = LocalContext.current
     val viewModel: AppViewModel = viewModel()
+    val duration = viewModel.correctAnimationDuration(450, context)
 
 
-    val enterAnimation = slideInHorizontally(TweenSpec(750, easing = LinearOutSlowInEasing)) { (-it * 1.25).toInt() }
-    val exitAnimation = slideOutHorizontally(TweenSpec(750, easing = LinearOutSlowInEasing)) { (it * 1.25).toInt() }
+    val enterAnimation = slideInHorizontally(TweenSpec(duration, easing = LinearOutSlowInEasing)) { (-it * 1.25).toInt() }
+    val exitAnimation = slideOutHorizontally(TweenSpec(duration, easing = LinearOutSlowInEasing)) { (it * 1.25).toInt() }
 
     @Composable
     fun FormattedAnimatedVisibility(
@@ -98,7 +101,7 @@ fun MiddleButtonDialog(
         BoxWithConstraints(
             modifier = modifier.fillMaxSize(),
         ) {
-            val buttonModifier = Modifier.size(min(maxWidth / 3, maxHeight / 4)).padding(5.dp)
+            val buttonModifier = Modifier.size(min(maxWidth / 3, maxHeight / 4))
             FormattedAnimatedVisibility(
                 visible = state == MiddleButtonDialogState.CoinFlip
             ) {
@@ -290,58 +293,50 @@ fun SettingsDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
     onBack: () -> Unit = {},
-    onConfirm: () -> Unit = {},
     exitButtonEnabled: Boolean = true,
     backButtonEnabled: Boolean = true,
-    confirmButtonEnabled: Boolean = false,
     content: @Composable () -> Unit = {}
 ) {
-    val viewModel: AppViewModel = viewModel()
-    val _backButtonEnabled = backButtonEnabled && !viewModel.disableBackButton
-    val buttonSize = 50.dp
     Dialog(
         onDismissRequest = onDismiss, properties = DialogProperties(
             dismissOnBackPress = true,
             usePlatformDefaultWidth = false,
         )
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)), contentAlignment = Alignment.Center
         ) {
+            val buttonSize = maxHeight / 15f
 
             Column(Modifier.fillMaxSize()) {
+                if (exitButtonEnabled) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(), horizontalArrangement = Arrangement.End
+                    ) {
 
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight(), horizontalArrangement = Arrangement.End
-                ) {
-
-                    ExitButton(
-                        Modifier.size(buttonSize), onDismiss = onDismiss, visible = exitButtonEnabled
-                    )
+                        ExitButton(
+                            Modifier.size(buttonSize), onDismiss = onDismiss, visible = exitButtonEnabled
+                        )
+                    }
                 }
-
-
                 Box(
                     Modifier.weight(0.1f)
                 ) {
                     content()
                 }
 
-                if (_backButtonEnabled || confirmButtonEnabled) {
+                if (backButtonEnabled) {
                     Row(
                         Modifier
                             .fillMaxWidth()
                             .wrapContentHeight(), horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         BackButton(
-                            Modifier.size(buttonSize), onBack = onBack, visible = _backButtonEnabled
-                        )
-                        ConfirmButton(
-                            Modifier.size(buttonSize), onConfirm = onConfirm, visible = confirmButtonEnabled
+                            Modifier.size(buttonSize), onBack = onBack, visible = backButtonEnabled
                         )
                     }
                 }
@@ -357,15 +352,6 @@ fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Un
         modifier = modifier,
 
         backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageResource = painterResource(id = R.drawable.back_icon_alt), onTap = onBack
-    )
-}
-
-@Composable
-fun ConfirmButton(modifier: Modifier = Modifier, visible: Boolean, onConfirm: () -> Unit) {
-    SettingsButton(
-        modifier = modifier.padding(5.dp),
-
-        backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageResource = painterResource(id = R.drawable.checkmark), onTap = onConfirm
     )
 }
 

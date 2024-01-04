@@ -36,14 +36,28 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hypeapps.lifelinked.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import lifelinked.composable.PlayerSelectScreenValues.deselectDuration
+import lifelinked.composable.PlayerSelectScreenValues.finalDeselectDuration
+import lifelinked.composable.PlayerSelectScreenValues.goToNormalDuration
+import lifelinked.composable.PlayerSelectScreenValues.growToScreenDuration
+import lifelinked.composable.PlayerSelectScreenValues.popInStiffness
+import lifelinked.composable.PlayerSelectScreenValues.pulseDelay
+import lifelinked.composable.PlayerSelectScreenValues.pulseDuration1
+import lifelinked.composable.PlayerSelectScreenValues.pulseDuration2
+import lifelinked.composable.PlayerSelectScreenValues.pulseFreq
+import lifelinked.composable.PlayerSelectScreenValues.selectionDelay
+import lifelinked.composable.PlayerSelectScreenValues.showHelperTextDelay
+import lifelinked.data.AppViewModel
 import lifelinked.ui.theme.allPlayerColors
 import kotlin.coroutines.coroutineContext
 import kotlin.math.pow
@@ -78,6 +92,29 @@ fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -
     }
 }
 
+private object PlayerSelectScreenValues {
+    var animScale = 1.0f
+    const val pulseDelay = 1000L
+    const val pulseFreq = 600L
+    const val showHelperTextDelay = 1500L
+    const val selectionDelay = pulseDelay + (pulseFreq * 3.35f).toLong()
+
+    val deselectDuration
+        get() = (250 / animScale).toInt()
+    val finalDeselectDuration
+        get() = (400 / animScale).toInt()
+    val popInStiffness
+        get() = 750f * (animScale * animScale)
+    val goToNormalDuration
+        get() = (75 / animScale).toInt()
+    val pulseDuration1
+        get() = (250 / animScale).toInt()
+    val pulseDuration2
+        get() = (200 / animScale).toInt()
+    val growToScreenDuration
+        get() = (750 / animScale).toInt()
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PlayerSelectScreen(
@@ -85,13 +122,13 @@ fun PlayerSelectScreen(
 ) {
     val circles = remember { mutableStateMapOf<Int, Circle>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
-    val pulseDelay = 1000L
-    val pulseFreq = 750L
-    val showHelperTextDelay = 1500L
-    val selectionDelay = pulseDelay + (pulseFreq * 3.35f).toLong()
     var selectedId: Int? by remember { mutableStateOf(null) }
 
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val viewModel: AppViewModel = viewModel()
+    val animScale = viewModel.getAnimationScale(context)
+    PlayerSelectScreenValues.animScale = animScale
 
     fun applyRandomColor(circle: Circle) {
         do {
@@ -110,7 +147,7 @@ fun PlayerSelectScreen(
         }
     }
 
-    fun disappearCircle(id: Int, duration: Int = 300) {
+    fun disappearCircle(id: Int, duration: Int) {
         if (circles.containsKey(id)) {
             val circle = circles[id]!!
             disappearingCircles.add(circle)
@@ -162,7 +199,7 @@ fun PlayerSelectScreen(
                                 circle?.growToScreen(goToLifeCounter)
                             }
                         } else {
-                            disappearCircle(id)
+                            disappearCircle(id, deselectDuration)
                         }
                     }
                     true
@@ -193,7 +230,7 @@ fun PlayerSelectScreen(
                     setPlayerNum(circles.size)
                     for (id in circles.keys) {
                         if (selectedId != id) launch {
-                            disappearCircle(id, duration = 1500)
+                            disappearCircle(id, finalDeselectDuration)
                         } else launch {
                             circles[id]?.pulse()
                         }
@@ -210,13 +247,10 @@ fun PlayerSelectScreen(
                         delay(pulseFreq)
                     }
                 }
-
             }
         }
         DrawCircles(circles.values.toList(), disappearingCircles)
     }
-
-
 }
 
 class Circle(
@@ -224,7 +258,7 @@ class Circle(
 ) {
 
     private val baseRadius = 130f
-    private val pulsedRadius = 155f
+    private val pulsedRadius = 150f
     private val baseWidth = 25f
 
     private val animatedRadius: Animatable<Float, AnimationVector1D> = Animatable(0f)
@@ -249,7 +283,7 @@ class Circle(
     suspend fun popIn() {
         radius.animateTo(
             targetValue = baseRadius, animationSpec = spring(
-                dampingRatio = 0.5f, stiffness = 150f
+                dampingRatio = 0.5f, stiffness = popInStiffness
             )
         )
     }
@@ -258,7 +292,7 @@ class Circle(
         if (radius.value > baseRadius) {
             radius.animateTo(
                 targetValue = baseRadius, animationSpec = tween(
-                    durationMillis = 150, delayMillis = 0, easing = FastOutSlowInEasing
+                    durationMillis = goToNormalDuration, delayMillis = 0, easing = FastOutSlowInEasing
                 )
             )
         }
@@ -267,19 +301,23 @@ class Circle(
     suspend fun pulse() {
         radius.animateTo(
             targetValue = pulsedRadius, animationSpec = tween(
-                durationMillis = 400, delayMillis = 0, easing = FastOutLinearInEasing
+                durationMillis = pulseDuration1, delayMillis = 0, easing = LinearOutSlowInEasing
             )
         )
         radius.animateTo(
             targetValue = baseRadius, animationSpec = tween(
-                durationMillis = 800, delayMillis = 50, easing = LinearOutSlowInEasing
+                durationMillis = pulseDuration2, delayMillis = 50, easing = FastOutLinearInEasing
             )
         )
     }
 
     suspend fun growToScreen(onComplete: () -> Unit = {}) {
-        val duration = 1500
+        val duration = growToScreenDuration
         val target = 10 * baseRadius
+        if (duration == Int.MAX_VALUE) {
+            onComplete()
+            return
+        }
         CoroutineScope(coroutineContext).launch {
             launch {
                 width.animateTo(
@@ -296,24 +334,31 @@ class Circle(
                 )
             }
             launch {
-                delay(duration.toLong())
+                delay((duration * 1.1f).toLong())
                 onComplete()
             }
         }
     }
 
-    suspend fun deselect(duration: Int = 300, onComplete: () -> Unit) {
-        radius.animateTo(
-            targetValue = pulsedRadius, animationSpec = tween(
-                durationMillis = duration / 2, delayMillis = 0, easing = FastOutSlowInEasing
-            )
-        )
-        radius.animateTo(
-            targetValue = 0f, animationSpec = tween(
-                durationMillis = duration, delayMillis = 0, easing = FastOutSlowInEasing
-            )
-        )
-        onComplete()
+    suspend fun deselect(duration: Int, onComplete: () -> Unit) {
+        CoroutineScope(coroutineContext).launch {
+            launch {
+                radius.animateTo(
+                    targetValue = pulsedRadius, animationSpec = tween(
+                        durationMillis = duration / 2, delayMillis = 0, easing = FastOutSlowInEasing
+                    )
+                )
+                radius.animateTo(
+                    targetValue = 0f, animationSpec = tween(
+                        durationMillis = duration, delayMillis = 0, easing = FastOutSlowInEasing
+                    )
+                )
+            }
+            launch {
+                delay((duration* 1.25f).toLong())
+                onComplete()
+            }
+        }
     }
 }
 

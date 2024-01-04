@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -158,8 +159,10 @@ fun LifeCounterScreen(
 fun AnimatedPlayerButton(
     visible: MutableState<Boolean>, player: Player, rotation: Float, width: Dp, height: Dp
 ) {
+    val viewModel: AppViewModel = viewModel()
+    val context = LocalContext.current
     val multiplesAway = 3
-    val duration = 3000
+    val duration = viewModel.correctAnimationDuration(2000, context)
     val targetOffsetY = if (visible.value) 0f else {
         when (rotation) {
             0f -> height.value * multiplesAway
@@ -210,10 +213,12 @@ fun AnimatedPlayerButton(
 fun AnimatedMiddleButton(
     modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit, visible: MutableState<Boolean>
 ) {
+    val context = LocalContext.current
     val viewModel: AppViewModel = viewModel()
     var animationFinished by remember { mutableStateOf(false) }
 
-    val duration = 3000
+    val popInDuration = (1500 / viewModel.getAnimationScale(context)).toInt()
+    val rotateDuration = (90_000 / viewModel.getAnimationScale(context)).toInt()
     var angle by remember { mutableFloatStateOf(0f) }
     var scale by remember { mutableFloatStateOf(0f) }
 
@@ -227,9 +232,9 @@ fun AnimatedMiddleButton(
         launch {
             animatableAngle.animateTo(
                 targetValue = if (visible.value) 360f else 0f, animationSpec = if (visible.value) {
-                    tween(durationMillis = duration, easing = LinearOutSlowInEasing)
+                    tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
                 } else {
-                    tween(durationMillis = duration)
+                    tween(durationMillis = popInDuration)
                 }
             )
         }
@@ -237,9 +242,9 @@ fun AnimatedMiddleButton(
         launch {
             animatableScale.animateTo(
                 targetValue = if (visible.value) 1f else 0f, animationSpec = if (visible.value) {
-                    tween(durationMillis = duration, easing = LinearOutSlowInEasing)
+                    tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
                 } else {
-                    tween(durationMillis = duration)
+                    tween(durationMillis = popInDuration)
                 }
             )
             animationFinished = true
@@ -250,7 +255,7 @@ fun AnimatedMiddleButton(
 
     angle = if (!animationFinished || !viewModel.rotatingMiddleButton) animatableAngle.value else infiniteTransition.animateFloat(
         initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 180_000, easing = LinearEasing), repeatMode = RepeatMode.Restart
+            animation = tween(durationMillis = rotateDuration, easing = LinearEasing), repeatMode = RepeatMode.Restart
         ), label = ""
     ).value
 
