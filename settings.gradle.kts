@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MTG Life App Compose"
+rootProject.name = "LifeLinked"
 include(":app")
  
