@@ -58,17 +58,6 @@ object SharedPreferencesManager {
         return Json.decodeFromString(allPrefString)
     }
 
-    fun loadDisableBackButton(): Boolean {
-        return sharedPreferences.getBoolean("disableBackButton", false)
-    }
-
-    fun saveDisableBackButton(disableBackButton: Boolean) {
-        with(sharedPreferences.edit()) {
-            putBoolean("disableBackButton", disableBackButton)
-            apply()
-        }
-    }
-
     fun saveAutoSkip(autoSkip: Boolean) {
         with(sharedPreferences.edit()) {
             putBoolean("autoSkip", autoSkip)

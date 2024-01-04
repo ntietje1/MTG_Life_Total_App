@@ -40,8 +40,6 @@ class AppViewModel : ViewModel() {
         private set
     var autoSkip by mutableStateOf(SharedPreferencesManager.loadAutoSkip())
         private set
-    var disableBackButton by mutableStateOf(SharedPreferencesManager.loadDisableBackButton())
-        private set
 
     var dayNight by mutableStateOf(DayNightState.NONE)
 
@@ -69,11 +67,6 @@ class AppViewModel : ViewModel() {
 
     fun currentPlane(): Card? {
         return planarDeck.lastOrNull()
-    }
-
-    fun toggleDisableBackButton(value: Boolean?) {
-        disableBackButton = value ?: !disableBackButton
-        SharedPreferencesManager.saveDisableBackButton(disableBackButton)
     }
 
     fun toggleAutoSkip(value: Boolean?) {
@@ -167,12 +160,12 @@ class AppViewModel : ViewModel() {
         } while (true)
     }
 
-    fun toggleMonarch(player: Player) {
-        println("toggle monarch: ${player.name}, currentPlayerSize: ${currentPlayers.size}")
-        if (!player.monarch) {
+    fun toggleMonarch(player: Player, value: Boolean? = null) {
+        val targetValue = value ?: !player.monarch
+        if (!targetValue) {
             currentPlayers.forEach { it.monarch = false }
         }
-        player.monarch = !player.monarch
+        player.monarch = targetValue
     }
 
     fun registerButtonState(state: MutableState<PlayerButtonState>) {
