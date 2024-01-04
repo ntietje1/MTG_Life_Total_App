@@ -1,7 +1,9 @@
 package lifelinked.composable.lifecounter
 
 import com.hypeapps.lifelinked.R
+import kotlinx.serialization.Serializable
 
+@Serializable
 enum class CounterType(val resId: Int = R.drawable.placeholder_icon) {
     Poison(R.drawable.poison_icon),
     Experience(R.drawable.experience_icon),
