@@ -13,15 +13,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.getValue
@@ -46,6 +50,7 @@ import com.hypeapps.lifelinked.R
 import lifelinked.composable.SettingsButton
 import lifelinked.data.AppViewModel
 import lifelinked.data.DayNightState
+import lifelinked.ui.theme.scaledSp
 
 private enum class MiddleButtonDialogState {
     Default, CoinFlip, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, AboutMe, PlaneChase, PlanarDeck
@@ -140,13 +145,13 @@ fun MiddleButtonDialog(
             FormattedAnimatedVisibility(
                 visible = state == MiddleButtonDialogState.DiceRoll
             ) {
-                DiceRollDialogContent(Modifier.fillMaxSize(), onDismiss)
+                DiceRollDialogContent(Modifier.fillMaxSize())
             }
 
             FormattedAnimatedVisibility(
                 visible = state == MiddleButtonDialogState.Counter
             ) {
-                CounterDialogContent(Modifier.fillMaxSize(), counters, onDismiss)
+                CounterDialogContent(Modifier.fillMaxSize(), counters)
             }
 
             FormattedAnimatedVisibility(
@@ -178,14 +183,14 @@ fun MiddleButtonDialog(
             FormattedAnimatedVisibility(
                 visible = state == MiddleButtonDialogState.PlanarDeck
             ) {
-                ChoosePlanesDialogContent(Modifier.fillMaxSize())
+                ChoosePlanesDialogContent(Modifier.fillMaxSize(), backStack)
             }
 
 
             FormattedAnimatedVisibility(
                 visible = state == MiddleButtonDialogState.Default
             ) {
-                GridDialogContent(Modifier.fillMaxSize(), items = listOf({
+                GridDialogContent(Modifier.fillMaxSize(), title = "Settings", items = listOf({
                     SettingsButton(buttonModifier, imageResource = painterResource(id = R.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
                         goToPlayerSelect()
                         onDismiss()
@@ -274,17 +279,29 @@ fun MiddleButtonDialog(
 
 @Composable
 fun GridDialogContent(
-    modifier: Modifier = Modifier, items: List<@Composable () -> Unit> = emptyList()
+    modifier: Modifier = Modifier, title: String, items: List<@Composable () -> Unit> = emptyList()
 ) {
     Box(modifier = modifier) {
-        LazyVerticalGrid(modifier = Modifier
-            .padding(horizontal = 10.dp)
-            .align(Alignment.Center)
-            .wrapContentSize(), columns = GridCells.Fixed(3), content = {
-            items(items.size) { index ->
-                items[index]()
-            }
-        })
+        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .wrapContentWidth()
+                    .padding(bottom = 10.dp),
+                text = title,
+                fontSize = 25.scaledSp,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            LazyVerticalGrid(modifier = Modifier
+                .padding(horizontal = 10.dp)
+                .wrapContentSize(), columns = GridCells.Fixed(3), content = {
+                items(items.size) { index ->
+                    items[index]()
+                }
+            })
+            Spacer(modifier = Modifier.height(5.dp))
+        }
+
     }
 }
 

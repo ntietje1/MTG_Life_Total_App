@@ -34,7 +34,7 @@ import lifelinked.ui.theme.scaledSp
 
 @Composable
 fun CounterDialogContent(
-    modifier: Modifier = Modifier, counters: ArrayList<MutableIntState>, onDismiss: () -> Unit
+    modifier: Modifier = Modifier, counters: ArrayList<MutableIntState>
 ) {
 
     val haptic = LocalHapticFeedback.current

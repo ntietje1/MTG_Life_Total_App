@@ -100,7 +100,7 @@ fun ScryfallDialogContent(
     val coroutineScope = rememberCoroutineScope()
     var lastSearchWasError by remember { mutableStateOf(false) }
     var rulingCard: Card? by remember { mutableStateOf(null) }
-    var initialBackStackSize by remember { mutableStateOf(backStack.size) }
+    val initialBackStackSize by remember { mutableStateOf(backStack.size) }
     var _printingsButtonEnabled by remember { mutableStateOf(printingsButtonEnabled) }
 
     val focusManager = LocalFocusManager.current
@@ -159,7 +159,7 @@ fun ScryfallDialogContent(
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 10.dp), visible = lastSearchWasError
         ) {
-            Text("No cards found :(", color = Color.Red, fontSize = 20.scaledSp)
+            Text("No cards found :(", color = Color.Red, fontSize = 15.scaledSp)
         }
         LazyColumn(
             Modifier.pointerInput(Unit) {
@@ -169,7 +169,7 @@ fun ScryfallDialogContent(
             if (cardResults.isEmpty() && rulingsResults.isEmpty()) return@LazyColumn
             item {
                 Text(
-                    "${cardResults.size + rulingsResults.size} results", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 10.dp)
+                    "${cardResults.size + rulingsResults.size} results", color = MaterialTheme.colorScheme.onPrimary,  fontSize = 15.scaledSp, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 10.dp)
                 )
             }
             items(cardResults) { card ->
@@ -207,8 +207,11 @@ fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>
     Box(
         modifier = modifier.wrapContentSize()
     ) {
-        TextField(value = query.value, onValueChange = { query.value = it }, label = { Text("Search Scryfall", fontSize = 20.scaledSp) }, singleLine = true, keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.None, autoCorrect = false, keyboardType = KeyboardType.Text, imeAction = ImeAction.Search
+        TextField(
+            value = query.value, onValueChange = { query.value = it }, label = { Text("Search Scryfall", fontSize = 15.scaledSp) }, singleLine = true,
+            textStyle = TextStyle(fontSize = 15.scaledSp, color = MaterialTheme.colorScheme.onPrimary),
+            keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.None, autoCorrect = false, keyboardType = KeyboardType.Text, imeAction = ImeAction.Search,
         ), keyboardActions = KeyboardActions(onSearch = {
             onSearch()
         }), colors = TextFieldDefaults.colors(
@@ -303,7 +306,8 @@ fun CardDetails(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp), text = "Oracle Text", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center
+                    .padding(horizontal = 10.dp, vertical = 5.dp), text = "Oracle Text", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center,
+                fontSize = 15.scaledSp,
             )
             Divider(
                 modifier = Modifier
@@ -317,7 +321,8 @@ fun CardDetails(
                 text = card.oracleText ?: "",
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center,
-                fontSize = 18.scaledSp
+                fontSize = 15.scaledSp,
+                lineHeight = 15.scaledSp
             )
         }
     }
@@ -340,7 +345,7 @@ fun RulingPreview(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp), text = ruling.publishedAt, color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center
+                    .padding(horizontal = 10.dp, vertical = 5.dp), text = ruling.publishedAt, fontSize = 15.scaledSp, color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center
             )
             Divider(
                 modifier = Modifier
@@ -354,7 +359,8 @@ fun RulingPreview(
                 text = ruling.comment,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center,
-                fontSize = 18.scaledSp
+                fontSize = 15.scaledSp,
+                lineHeight = 15.scaledSp
             )
         }
 
@@ -418,17 +424,18 @@ fun CardPreview(
                         .weight(2.0f), verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        card.name, color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.scaledSp, fontWeight = FontWeight.SemiBold
+                        card.name, color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.scaledSp, lineHeight = 15.scaledSp, fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        card.setName, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.scaledSp, fontWeight = FontWeight.Light
+                        card.setName, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.scaledSp, lineHeight = 13.scaledSp, fontWeight = FontWeight.Light
                     )
                     Text(
-                        card.artist, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.scaledSp, fontWeight = FontWeight.Light
+                        card.artist, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.scaledSp, lineHeight = 15.scaledSp,fontWeight = FontWeight.Light
                     )
                     Text(
                         "© Wizards of the Coast",
                         fontSize = 10.scaledSp,
+                        lineHeight = 10.scaledSp,
                         fontWeight = FontWeight.ExtraLight,
                         color = MaterialTheme.colorScheme.onPrimary,
                     )

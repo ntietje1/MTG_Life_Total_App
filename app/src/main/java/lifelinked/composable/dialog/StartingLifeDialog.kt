@@ -1,7 +1,6 @@
 package lifelinked.composable.dialog
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,11 +39,10 @@ fun StartingLifeDialogContent(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, setStartingLife: (Int) -> Unit
 ) {
     var customLife by remember { mutableStateOf("") }
-    BoxWithConstraints(modifier) {
-        val maxHeight = maxHeight
+    Box(modifier) {
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Spacer(modifier = Modifier.height(maxHeight / 6f))
-            GridDialogContent(Modifier.wrapContentSize(), items = listOf({
+            Spacer(Modifier.weight(1.0f))
+            GridDialogContent(Modifier.wrapContentSize().weight(0.9f), title = "Set starting life total", items = listOf({
                 SettingsButton(imageResource = painterResource(id = R.drawable.forty_icon), text = "", shadowEnabled = false, onPress = {
                     setStartingLife(40)
                     onDismiss()
@@ -109,6 +107,7 @@ fun StartingLifeDialogContent(
                     shadowEnabled = false,
                     onPress = { customSetStartLife() })
             }
+            Spacer(Modifier.weight(1.0f))
         }
     }
 }

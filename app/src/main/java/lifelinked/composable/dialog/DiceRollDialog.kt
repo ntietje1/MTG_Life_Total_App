@@ -44,9 +44,9 @@ import kotlin.math.roundToInt
 
 @Composable
 fun DiceRollDialogContent(
-    modifier: Modifier = Modifier, onDismiss: () -> Unit
+    modifier: Modifier = Modifier
 ) {
-    GridDialogContent(modifier, items = listOf({
+    GridDialogContent(modifier, title = "Tap to roll",items = listOf({
         DiceRollButton(value = 4, imageResource = painterResource(id = R.drawable.d4_icon))
     }, {
         DiceRollButton(value = 6, imageResource = painterResource(id = R.drawable.d6_icon))

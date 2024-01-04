@@ -57,7 +57,7 @@ fun CoinFlipDialogContent(modifier: Modifier = Modifier, history: SnapshotStateL
         Spacer(Modifier.weight(0.5f))
         CoinFlippable(Modifier.align(Alignment.CenterHorizontally), history = history)
         Text(
-            text = "Tap to Flip Coin",
+            text = "Tap to flip",
             color = MaterialTheme.colorScheme.onPrimary,
             fontWeight = FontWeight.Bold,
             style = TextStyle(fontSize = 20.scaledSp),

@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -179,7 +180,8 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, goToChoosePlanes: () 
 }
 
 @Composable
-fun ChoosePlanesDialogContent(modifier: Modifier = Modifier) {
+fun ChoosePlanesDialogContent(modifier: Modifier = Modifier, backStack: SnapshotStateList<() -> Unit>) {
+    val initialBackStackSize by remember { mutableStateOf(backStack.size) }
     val viewModel: AppViewModel = viewModel()
     val query = remember { mutableStateOf("") }
     val allPlanes = remember {
@@ -187,30 +189,42 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier) {
             addAll(SharedPreferencesManager.loadAllPlanes())
         }
     }
+    val searchedPlanes = remember {
+        mutableStateListOf<Card>()
+    }
 
     var hideUnselected by remember { mutableStateOf(false) }
-    val filteredPlanes by remember { derivedStateOf { allPlanes.filter { card -> viewModel.planarDeck.contains(card) || !hideUnselected } } }
+    val filteredPlanes by remember { derivedStateOf {
+        if (searchedPlanes.isNotEmpty()) {
+            searchedPlanes.filter { card -> viewModel.planarDeck.contains(card) || !hideUnselected }
+        } else {
+            allPlanes.filter { card -> viewModel.planarDeck.contains(card) || !hideUnselected }
+        }
+    }
+    }
 
     val scryfallApiRetriever = ScryfallApiRetriever()
     val haptic = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
 
-    fun searchPlanes(qry: String) {
+    fun searchPlanes(qry: String, onResult: (List<Card>) -> Unit) {
         coroutineScope.launch {
             focusManager.clearFocus()
             val newCards = scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall(qry))
-            newCards.forEach { card ->
+            onResult(newCards)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        searchPlanes("t:plane") { result ->
+            result.forEach { card ->
                 if (card !in allPlanes) {
                     allPlanes.add(card)
                 }
             }
             SharedPreferencesManager.saveAllPlanes(allPlanes)
         }
-    }
-
-    LaunchedEffect(Unit) {
-        searchPlanes("t:plane")
     }
 
     BoxWithConstraints(modifier = modifier) {
@@ -225,12 +239,22 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier) {
                     .padding(top = 10.dp)
                     .padding(start = 20.dp, end = 20.dp)
                     .clip(RoundedCornerShape(10.dp)), query = query, onSearch = {
-                    searchPlanes("t:plane ${query.value}")
+                    searchPlanes("t:plane ${query.value}") { result ->
+                        searchedPlanes.clear()
+                        searchedPlanes.addAll(result)
+                        if (initialBackStackSize == backStack.size) {
+                            backStack.add {
+                                query.value = ""
+                                searchedPlanes.clear()
+                            }
+                        }
+                    }
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 })
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "${viewModel.planarDeck.size}/${filteredPlanes.size} Planes Selected",
+                text = "${viewModel.planarDeck.size}/${filteredPlanes.size} Planes Selected (${allPlanes.size - filteredPlanes.size} Hidden)",
+                fontSize = 15.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )
