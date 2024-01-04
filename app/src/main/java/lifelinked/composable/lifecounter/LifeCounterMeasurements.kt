@@ -12,7 +12,7 @@ class LifeCounterMeasurements(maxWidth: Dp, maxHeight: Dp, numPlayers: Int, alt4
         2 -> 0.5f
         3 -> 0.615f
         4 -> if (alt4Layout) {
-            0.26f
+            0.264f
         } else {
             0.5f
         }
