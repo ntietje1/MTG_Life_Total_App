@@ -1065,7 +1065,8 @@ fun SettingsMenu(
             SettingsState.BackgroundColorPicker -> {
                 ColorPicker(
                     Modifier
-                        .fillMaxSize()
+                        .wrapContentSize()
+                        .align(Alignment.Center)
                         .padding(bottom = maxHeight / 5f), text = "Choose a Background Color", colorList = mutableListOf<Color>().apply {
                         add(Color.Black)
                         add(Color.White)
@@ -1080,7 +1081,8 @@ fun SettingsMenu(
             SettingsState.TextColorPicker -> {
                 ColorPicker(
                     Modifier
-                        .fillMaxSize()
+                        .wrapContentSize()
+                        .align(Alignment.Center)
                         .padding(bottom = maxHeight / 5f), text = "Choose a Text Color", colorList = mutableListOf<Color>().apply {
                         add(Color.Black)
                         add(Color.White)
@@ -1200,8 +1202,7 @@ fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Col
         ) {
             Text(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
+                    .wrapContentSize()
                     .padding(bottom = textPadding, top = textPadding * 2),
                 text = text,
                 color = player.textColor,
@@ -1209,7 +1210,7 @@ fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Col
                 textAlign = TextAlign.Center
             )
             LazyHorizontalGrid(modifier = Modifier
-                .fillMaxSize()
+                .wrapContentSize()
                 .weight(0.5f)
                 .clip(RoundedCornerShape(20.dp))
                 .background(Color.Black.copy(alpha = 0.15f))
