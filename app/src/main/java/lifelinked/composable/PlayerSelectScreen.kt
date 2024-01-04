@@ -85,7 +85,6 @@ fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -
                 shadowEnabled = false,
                 imageResource = painterResource(id = R.drawable.skip_icon),
                 onTap = {
-                    setPlayerNum(4)
                     goToLifeCounter()
                 }) {}
         }
