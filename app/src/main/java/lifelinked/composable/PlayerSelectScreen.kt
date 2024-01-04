@@ -59,6 +59,7 @@ import lifelinked.composable.PlayerSelectScreenValues.selectionDelay
 import lifelinked.composable.PlayerSelectScreenValues.showHelperTextDelay
 import lifelinked.data.AppViewModel
 import lifelinked.ui.theme.allPlayerColors
+import lifelinked.ui.theme.scaledSp
 import kotlin.coroutines.coroutineContext
 import kotlin.math.pow
 
@@ -69,7 +70,7 @@ fun PlayerSelectScreenWrapper(goToLifeCounter: () -> Unit, setPlayerNum: (Int) -
         PlayerSelectScreen(goToLifeCounter, setPlayerNum, showHelperText)
         if (showHelperText.value) {
             Text(
-                text = "Tap to select player", color = MaterialTheme.colorScheme.onPrimary, fontSize = 40.sp, fontWeight = FontWeight.Bold, modifier = Modifier
+                text = "Tap to select player", color = MaterialTheme.colorScheme.onPrimary, fontSize = 40.scaledSp, fontWeight = FontWeight.Bold, modifier = Modifier
                     .align(Alignment.Center)
                     .rotate(90f)
             )

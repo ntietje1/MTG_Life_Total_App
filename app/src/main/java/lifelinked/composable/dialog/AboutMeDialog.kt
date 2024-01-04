@@ -27,8 +27,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.hypeapps.lifelinked.R
+import lifelinked.ui.theme.scaledSp
 
 @Preview
 @Composable
@@ -104,7 +104,7 @@ fun AboutMeDialogBody(
                 modifier = Modifier.padding(bottom = 10.dp, top = 5.dp),
                 text = "Nick Tietje",
                 style = TextStyle(
-                    fontSize = 16.sp,
+                    fontSize = 16.scaledSp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
@@ -113,7 +113,7 @@ fun AboutMeDialogBody(
                 modifier = Modifier.padding(bottom = 5.dp),
                 text = "Nick is an undergraduate studying computer science and chemical engineering at Northeastern University. He splits his time between reading, app development, and biking.",
                 style = TextStyle(
-                    fontSize = 16.sp,
+                    fontSize = 16.scaledSp,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             )

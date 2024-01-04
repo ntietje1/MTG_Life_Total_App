@@ -41,7 +41,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hypeapps.lifelinked.R
 import com.wajahatkarim.flippable.FlipAnimationType
@@ -49,6 +48,7 @@ import com.wajahatkarim.flippable.Flippable
 import com.wajahatkarim.flippable.FlippableState
 import com.wajahatkarim.flippable.rememberFlipController
 import lifelinked.data.AppViewModel
+import lifelinked.ui.theme.scaledSp
 import kotlin.random.Random
 
 @Composable
@@ -60,7 +60,7 @@ fun CoinFlipDialogContent(modifier: Modifier = Modifier, history: SnapshotStateL
             text = "Tap to Flip Coin",
             color = MaterialTheme.colorScheme.onPrimary,
             fontWeight = FontWeight.Bold,
-            style = TextStyle(fontSize = 20.sp),
+            style = TextStyle(fontSize = 20.scaledSp),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(bottom = 15.dp)
@@ -175,7 +175,7 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                style = TextStyle(fontSize = 16.sp),
+                style = TextStyle(fontSize = 16.scaledSp),
                 modifier = Modifier.padding(top = 2.5.dp)
             )
         }
@@ -185,7 +185,7 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
 @Composable
 fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
     val hPadding = 10.dp
-    val textSize = 20.sp
+    val textSize = 20.scaledSp
 
     val numberOfHeads = history.count { it == "H" }
     val numberOfTails = history.count { it == "T" }
@@ -248,7 +248,7 @@ fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<Stri
             text = "Flip History",
             color = MaterialTheme.colorScheme.onPrimary,
             fontWeight = FontWeight.Bold,
-            style = TextStyle(fontSize = 20.sp),
+            style = TextStyle(fontSize = 20.scaledSp),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(vertical = vPadding)
@@ -277,7 +277,7 @@ fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<Stri
                     },
                     maxLines = 1,
                     fontWeight = FontWeight.Bold,
-                    style = TextStyle(fontSize = 16.sp),
+                    style = TextStyle(fontSize = 16.scaledSp),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(vertical = 0.dp, horizontal = hPadding)

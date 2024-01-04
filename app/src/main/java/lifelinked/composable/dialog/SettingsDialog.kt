@@ -33,13 +33,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.getString
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hypeapps.lifelinked.R
 import lifelinked.composable.SettingsButton
 import lifelinked.data.AppViewModel
 import lifelinked.ui.theme.blendWith
+import lifelinked.ui.theme.scaledSp
 
 @Composable
 fun SettingsDialogContent(
@@ -144,7 +144,7 @@ fun SettingsDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 10.dp, end = 10.dp, top = 10.dp), text = "${getString(context, R.string.app_name)} v1.0.0 by Nicholas Tietje", textAlign = TextAlign.Center, style = TextStyle(
-                        fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                        fontSize = 14.scaledSp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 )
             }
@@ -156,7 +156,7 @@ fun SettingsDialogContent(
                     text = "Card art & information powered by the Scryfall API",
                     textAlign = TextAlign.Center,
                     style = TextStyle(
-                        fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                        fontSize = 14.scaledSp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                 )
             }
@@ -178,7 +178,7 @@ fun SettingsDialogHeader(
     ) {
         Text(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp), text = text, style = TextStyle(
-                fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimary
+                fontSize = 14.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
         )
     }
@@ -206,7 +206,7 @@ fun SettingsDialogButtonWithToggle(
         )
         Text(
             modifier = Modifier.fillMaxWidth(0.8f), text = text, style = TextStyle(
-                fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimary
+                fontSize = 16.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
         )
         Spacer(modifier = Modifier.weight(1f))
@@ -256,13 +256,13 @@ fun SettingsDialogButton(
         )
         Text(
             modifier = Modifier, text = text, style = TextStyle(
-                fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimary
+                fontSize = 16.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
         )
         Spacer(modifier = Modifier.weight(1f))
         Text(
             modifier = Modifier.padding(end = 30.dp), text = additionalText, style = TextStyle(
-                fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                fontSize = 16.scaledSp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
             )
         )
     }

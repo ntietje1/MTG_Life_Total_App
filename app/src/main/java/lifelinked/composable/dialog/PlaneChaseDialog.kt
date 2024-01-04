@@ -47,7 +47,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -60,6 +59,7 @@ import lifelinked.data.AppViewModel
 import lifelinked.data.Card
 import lifelinked.data.ScryfallApiRetriever
 import lifelinked.data.SharedPreferencesManager
+import lifelinked.ui.theme.scaledSp
 
 private enum class PlanarDieResult(val toString: String, val resourceId: Int) {
     PLANESWALK("Planeswalk", R.drawable.planeswalker_icon), CHAOS("Chaos Ensues", R.drawable.chaos_icon), NO_EFFECT("No Effect", R.drawable.x_icon)
@@ -113,7 +113,7 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, goToChoosePlanes: () 
                         text = planarDieResult.toString,
                         color = MaterialTheme.colorScheme.onPrimary,
                         textAlign = TextAlign.Center,
-                        fontSize = 35.sp
+                        fontSize = 35.scaledSp
                     )
                     Spacer(modifier = Modifier.weight(1.0f))
                 }

@@ -74,7 +74,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -103,6 +102,7 @@ import lifelinked.ui.theme.invert
 import lifelinked.ui.theme.normalColorMatrix
 import lifelinked.ui.theme.receiverColorMatrix
 import lifelinked.ui.theme.saturateColor
+import lifelinked.ui.theme.scaledSp
 import lifelinked.ui.theme.settingsColorMatrix
 import lifelinked.ui.theme.textShadowStyle
 import java.lang.Float.min
@@ -312,7 +312,7 @@ fun PlayerButton(
                                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                                     Spacer(modifier = Modifier.height(40.dp))
                                     Text(
-                                        modifier = Modifier, text = "Deal damage with your commander", color = player.textColor, fontSize = 20.sp, textAlign = TextAlign.Center
+                                        modifier = Modifier, text = "Deal damage with your commander", color = player.textColor, fontSize = 20.scaledSp, lineHeight = 20.scaledSp, textAlign = TextAlign.Center
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
                                     SettingsButton(modifier = Modifier.size(smallButtonSize),
@@ -323,7 +323,7 @@ fun PlayerButton(
                                             player.partnerMode = !player.partnerMode
                                         })
                                     Text(
-                                        modifier = Modifier.wrapContentSize(unbounded = true), text = "Toggle Partner Mode", color = player.textColor, fontSize = 10.sp, textAlign = TextAlign.Center
+                                        modifier = Modifier.wrapContentSize(unbounded = true), text = "Toggle Partner Mode", color = player.textColor, fontSize = 10.scaledSp, textAlign = TextAlign.Center
                                     )
                                 }
 
@@ -505,7 +505,7 @@ fun Counters(
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(modifier.fillMaxSize()) {
         val smallPadding = maxHeight / 20f
-        val smallTextSize = maxHeight.value.sp / 12f
+        val smallTextSize = maxHeight.value.scaledSp / 12f
         Column(
             Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -657,7 +657,7 @@ fun Counter(
             .border(0.5.dp, player.textColor.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
             .clip(RoundedCornerShape(30.dp))
     ) {
-        val textSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).sp / 1.5f
+        val textSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).scaledSp / 1.5f
         val topPadding = maxHeight / 10f
         Column(
             modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
@@ -841,8 +841,8 @@ fun NumericValue(
     BoxWithConstraints(
         modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
-        var largeTextSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).sp
-        val largeTextPadding = largeTextSize.value.dp / 6f
+        var largeTextSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30)
+        val largeTextPadding = (largeTextSize / 6f).dp
         val largeText = getValue(player)
 
         if (largeText.length >= 3) {
@@ -850,64 +850,67 @@ fun NumericValue(
                 largeTextSize /= 1.15f
             }
         }
-        val smallTextSize = (maxHeight.value / 14f + 4).sp
-        val smallTextPadding = min(maxHeight.value / 1.5f, largeTextSize.value * 0.9f).dp
+        val smallTextSize = maxHeight.value / 14f + 4
 
-        val recentChangeSize = maxHeight.value.sp / 12.5f
+        val recentChangeSize = (maxHeight/ 12.5f).value
         val recentChangeText = getRecentChangeText(player)
 
         val iconSize = maxHeight / 7f
-        val iconPadding = (smallTextPadding.value / 1.2f).dp
 
-        Text(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(bottom = smallTextPadding),
-            text = player.name,
-            color = player.textColor,
-            fontSize = smallTextSize,
-            textAlign = TextAlign.Center,
-            style = textShadowStyle
-        )
-
-        SettingsButton(
-            modifier = Modifier
-                .size(iconSize)
-                .align(Alignment.Center)
-                .offset(y = iconPadding),
-            backgroundColor = Color.Transparent,
-            mainColor = player.textColor,
-            imageResource = painterResource(id = iconID),
-            enabled = false
-        )
-
-        Row(
-            modifier = Modifier
-                .wrapContentSize(unbounded = true)
-                .padding(top = largeTextPadding), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
+        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Text(
-                modifier = Modifier.wrapContentHeight(unbounded = true),
-                text = largeText,
+                modifier = Modifier
+                    .padding(top = 5.dp)
+                    .offset(y = (largeTextSize/ 32f).dp),
+                text = player.name,
                 color = player.textColor,
-                fontSize = largeTextSize,
-                fontWeight = FontWeight.Bold,
+                fontSize = smallTextSize.scaledSp,
                 textAlign = TextAlign.Center,
                 style = textShadowStyle
             )
-            Spacer(modifier = Modifier.weight(0.2f))
-            Text(
+            Row(
                 modifier = Modifier
-                    .weight(0.8f)
-                    .padding(start = 20.dp)
-                    .wrapContentSize(unbounded = true),
-                text = recentChangeText,
-                color = player.textColor,
-                fontSize = recentChangeSize,
-                style = textShadowStyle
+                    .wrapContentSize(unbounded = true)
+                    .offset(y = (-largeTextSize/7f).dp)
+                    .padding(top = largeTextPadding), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    modifier = Modifier
+                        .wrapContentHeight(unbounded = true),
+                    text = largeText,
+                    color = player.textColor,
+                    fontSize = largeTextSize.scaledSp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    style = textShadowStyle
+                )
+                Spacer(modifier = Modifier.weight(0.2f))
+                Text(
+                    modifier = Modifier
+                        .weight(0.8f)
+                        .padding(start = 20.dp)
+                        .wrapContentSize(unbounded = true),
+                    text = recentChangeText,
+                    color = player.textColor,
+                    fontSize = recentChangeSize.scaledSp,
+                    style = textShadowStyle
+                )
+            }
+            SettingsButton(
+                modifier = Modifier
+                    .size(iconSize),
+                backgroundColor = Color.Transparent,
+                mainColor = player.textColor,
+                imageResource = painterResource(id = iconID),
+                enabled = false
             )
         }
+
+
+
+
+
     }
 }
 
@@ -936,7 +939,7 @@ fun SettingsMenu(
         }
         settingsButtonSize = min(115F, settingsButtonSize.value).dp
         val smallPadding = settingsButtonSize / 10f
-        val smallTextSize = maxHeight.value.sp / 12f
+        val smallTextSize = maxHeight.value.scaledSp / 12f
 
         @Composable
         fun FormattedSettingsButton(imageResource: Painter, text: String, onPress: () -> Unit) {
@@ -1195,7 +1198,7 @@ fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Col
         val colorPickerPadding = maxWidth / 200f
         val containerPadding = maxWidth / 50f
         val textPadding = maxHeight / 25f
-        val smallTextSize = maxHeight.value.sp / 8f
+        val smallTextSize = maxHeight.value.scaledSp / 8f
         Column(
             Modifier
                 .wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally
@@ -1259,9 +1262,9 @@ fun ChangeNameField(
             ) {
                 TextField(value = newName, onValueChange = { newName = it }, label = {
                     Text(
-                        "New Name", color = player.color, fontSize = 12.sp
+                        "New Name", color = player.color, fontSize = 12.scaledSp
                     )
-                }, textStyle = TextStyle(fontSize = 15.sp), singleLine = true, colors = TextFieldDefaults.colors(
+                }, textStyle = TextStyle(fontSize = 15.scaledSp), singleLine = true, colors = TextFieldDefaults.colors(
                     focusedTextColor = textColor,
                     unfocusedTextColor = textColor,
                     focusedContainerColor = player.textColor,
@@ -1339,7 +1342,7 @@ fun MiniPlayerButton(
             )
         }
         Text(
-            text = player.name, color = player.textColor, fontSize = maxHeight.value.sp / 2f, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.align(Alignment.Center)
+            text = player.name, color = player.textColor, fontSize = maxHeight.value.scaledSp / 2f, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.align(Alignment.Center)
         )
     }
 

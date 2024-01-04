@@ -60,7 +60,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
@@ -72,6 +71,7 @@ import lifelinked.data.Player
 import lifelinked.data.Ruling
 import lifelinked.data.ScryfallApiRetriever
 import lifelinked.data.SharedPreferencesManager
+import lifelinked.ui.theme.scaledSp
 
 
 @Composable
@@ -159,7 +159,7 @@ fun ScryfallDialogContent(
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 10.dp), visible = lastSearchWasError
         ) {
-            Text("No cards found :(", color = Color.Red)
+            Text("No cards found :(", color = Color.Red, fontSize = 20.scaledSp)
         }
         LazyColumn(
             Modifier.pointerInput(Unit) {
@@ -207,7 +207,7 @@ fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>
     Box(
         modifier = modifier.wrapContentSize()
     ) {
-        TextField(value = query.value, onValueChange = { query.value = it }, label = { Text("Search Scryfall") }, singleLine = true, keyboardOptions = KeyboardOptions(
+        TextField(value = query.value, onValueChange = { query.value = it }, label = { Text("Search Scryfall", fontSize = 20.scaledSp) }, singleLine = true, keyboardOptions = KeyboardOptions(
             capitalization = KeyboardCapitalization.None, autoCorrect = false, keyboardType = KeyboardType.Text, imeAction = ImeAction.Search
         ), keyboardActions = KeyboardActions(onSearch = {
             onSearch()
@@ -277,7 +277,7 @@ fun ScryfallButton(modifier: Modifier = Modifier, text: String, onTap: () -> Uni
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
-                style = TextStyle(fontSize = 13.sp),
+                style = TextStyle(fontSize = 13.scaledSp),
                 modifier = Modifier
                     .padding(horizontal = 10.dp, vertical = 5.dp)
                     .align(Alignment.Center)
@@ -317,7 +317,7 @@ fun CardDetails(
                 text = card.oracleText ?: "",
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center,
-                fontSize = 18.sp
+                fontSize = 18.scaledSp
             )
         }
     }
@@ -354,7 +354,7 @@ fun RulingPreview(
                 text = ruling.comment,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center,
-                fontSize = 18.sp
+                fontSize = 18.scaledSp
             )
         }
 
@@ -418,17 +418,17 @@ fun CardPreview(
                         .weight(2.0f), verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        card.name, color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold
+                        card.name, color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.scaledSp, fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        card.setName, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.sp, fontWeight = FontWeight.Light
+                        card.setName, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.scaledSp, fontWeight = FontWeight.Light
                     )
                     Text(
-                        card.artist, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.sp, fontWeight = FontWeight.Light
+                        card.artist, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.scaledSp, fontWeight = FontWeight.Light
                     )
                     Text(
                         "© Wizards of the Coast",
-                        fontSize = 10.sp,
+                        fontSize = 10.scaledSp,
                         fontWeight = FontWeight.ExtraLight,
                         color = MaterialTheme.colorScheme.onPrimary,
                     )

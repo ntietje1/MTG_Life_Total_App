@@ -27,9 +27,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.hypeapps.lifelinked.R
 import lifelinked.composable.repeatingClickable
+import lifelinked.ui.theme.scaledSp
 
 
 @Composable
@@ -54,7 +54,7 @@ fun CounterDialogContent(
     ) {
         item {
             Text(
-                modifier = Modifier.alpha(0.9f), text = "Floating Mana", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp
+                modifier = Modifier.alpha(0.9f), text = "Floating Mana", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.scaledSp
             )
         }
 
@@ -68,7 +68,7 @@ fun CounterDialogContent(
             Text(
                 modifier = Modifier
                     .alpha(0.9f)
-                    .padding(top = 2.dp), text = "Storm Count", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.sp
+                    .padding(top = 2.dp), text = "Storm Count", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.scaledSp
             )
         }
 
@@ -133,7 +133,7 @@ fun SingleCounter(
         Spacer(modifier = Modifier.width(5.dp))
 
         Text(
-            modifier = Modifier.width(50.dp), text = "${counter.value}", textAlign = TextAlign.Justify, color = MaterialTheme.colorScheme.onPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold
+            modifier = Modifier.width(50.dp), text = "${counter.value}", textAlign = TextAlign.Justify, color = MaterialTheme.colorScheme.onPrimary, fontSize = 28.scaledSp, fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.width(0.dp))

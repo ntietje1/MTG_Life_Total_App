@@ -40,9 +40,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.hypeapps.lifelinked.R
 import lifelinked.ui.theme.generateShadow
+import lifelinked.ui.theme.scaledSp
 
 @Composable
 fun SettingsButton(
@@ -98,7 +98,7 @@ fun SettingsButton(
         } else {
             Modifier
         })) {
-        val fontSize = (maxWidth / 8f).value.sp
+        val fontSize = (maxWidth / 8f).value.scaledSp
         Column(
             modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {

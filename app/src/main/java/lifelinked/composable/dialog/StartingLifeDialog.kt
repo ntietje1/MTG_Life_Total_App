@@ -31,9 +31,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.hypeapps.lifelinked.R
 import lifelinked.composable.SettingsButton
+import lifelinked.ui.theme.scaledSp
 
 @Composable
 fun StartingLifeDialogContent(
@@ -72,9 +72,9 @@ fun StartingLifeDialogContent(
                 }
                 TextField(value = customLife, onValueChange = { customLife = it }, label = {
                     Text(
-                        "Custom Starting Life", color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp
+                        "Custom Starting Life", color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.scaledSp
                     )
-                }, textStyle = TextStyle(fontSize = 20.sp), singleLine = true, colors = TextFieldDefaults.colors(
+                }, textStyle = TextStyle(fontSize = 20.scaledSp), singleLine = true, colors = TextFieldDefaults.colors(
                     focusedTextColor = MaterialTheme.colorScheme.onPrimary,
                     unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
                     disabledTextColor = MaterialTheme.colorScheme.onPrimary,

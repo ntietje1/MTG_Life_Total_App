@@ -33,13 +33,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.sp
 import com.hypeapps.lifelinked.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.composable.SettingsButton
 import lifelinked.composable.bounceClick
+import lifelinked.ui.theme.scaledSp
 import kotlin.math.roundToInt
 
 @Composable
@@ -115,7 +115,7 @@ fun DiceRollButton(
                     text = faceValue.toString(),
                     color = MaterialTheme.colorScheme.background,
                     fontWeight = FontWeight.Bold,
-                    fontSize = maxHeight.value.sp / 6,
+                    fontSize = maxHeight.value.scaledSp / 6,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .wrapContentHeight()
