@@ -86,12 +86,6 @@ fun SettingsDialogContent(
                         text = "Auto Skip Player Select", initialState = viewModel.autoSkip, toggle = { viewModel.toggleAutoSkip(it) }, icon = painterResource(id = R.drawable.player_select_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Disable App Back Button\n(device back button still works)",
-                        initialState = viewModel.disableBackButton,
-                        toggle = { viewModel.toggleDisableBackButton(it) },
-                        icon = painterResource(id = R.drawable.back_icon_alt)
-                    )
-                    SettingsDialogButtonWithToggle(
                         text = "Keep Screen On (requires restart)",
                         initialState = viewModel.keepScreenOn,
                         toggle = { viewModel.toggleKeepScreenOn(it) },
@@ -134,6 +128,12 @@ fun SettingsDialogContent(
                         text = "Buy me a Coffee", additionalText = "", icon = painterResource(id = R.drawable.coffee_icon)
                     ) {
                         val url = "https://venmo.com/u/Nicholas-Tietje"
+                        uriHandler.openUri(url)
+                    }
+                    SettingsDialogButton(
+                        text = "Privacy Policy", additionalText = "", icon = painterResource(id = R.drawable.visible_icon)
+                    ) {
+                        val url = "https://sites.google.com/view/lifelinked-privacy-policy/"
                         uriHandler.openUri(url)
                     }
                 }
