@@ -62,7 +62,7 @@ import lifelinked.data.ScryfallApiRetriever
 import lifelinked.data.SharedPreferencesManager
 
 private enum class PlanarDieResult(val toString: String, val resourceId: Int) {
-    PLANESWALK("Planeswalk", R.drawable.planeswalker_icon), CHAOS("Chaos Ensues", R.drawable.chaos_icon), NO_EFFECT("No Effect", R.drawable.transparent)
+    PLANESWALK("Planeswalk", R.drawable.planeswalker_icon), CHAOS("Chaos Ensues", R.drawable.chaos_icon), NO_EFFECT("No Effect", R.drawable.x_icon)
 }
 
 @Composable
