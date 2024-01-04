@@ -41,6 +41,7 @@ class Player(
     counters: List<Int> = mutableListOf<Int>().apply {
         repeat(CounterType.values().size) { add(0) }
     },
+    activeCounters: List<CounterType> = mutableListOf(),
     setDead: Boolean = false,
     partnerMode: Boolean = false
 ) {
@@ -58,8 +59,8 @@ class Player(
     val isDead get() = (life <= 0 || setDead || commanderDamage.any { it >= 21 } )
 
     val commanderDamage = commanderDamage.toMutableStateList()
-
     val counters = counters.toMutableStateList()
+    val activeCounters = activeCounters.toMutableStateList()
 
 
     fun getCounterValue(counterType: CounterType): Int {
@@ -119,6 +120,13 @@ class Player(
                 add(0)
             }
         }
+        counters.apply {
+            clear()
+            for (i in 0 until CounterType.values().size) {
+                add(0)
+            }
+        }
+        activeCounters.clear()
     }
 
     companion object {
@@ -140,6 +148,7 @@ object PlayerSerializer : KSerializer<Player> {
         element<List<Int>>("counters")
         element<Boolean>("setDead")
         element<Boolean>("partnerMode")
+        element<List<CounterType>>("activeCounters")
     }
 
     override fun serialize(encoder: Encoder, value: Player) {
@@ -156,6 +165,7 @@ object PlayerSerializer : KSerializer<Player> {
             encodeSerializableElement(descriptor, 9, ListSerializer(Int.serializer()), value.counters)
             encodeBooleanElement(descriptor, 10, value.setDead)
             encodeBooleanElement(descriptor, 11, value.partnerMode)
+            encodeSerializableElement(descriptor, 12, ListSerializer(CounterType.serializer()), value.activeCounters)
         }
     }
 
@@ -173,6 +183,7 @@ object PlayerSerializer : KSerializer<Player> {
             var counters = mutableListOf<Int>()
             var setDead = false
             var partnerMode = false
+            var activeCounters = mutableListOf<CounterType>()
 
             while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
@@ -188,6 +199,7 @@ object PlayerSerializer : KSerializer<Player> {
                     9 -> counters = decodeSerializableElement(descriptor, 9, ListSerializer(Int.serializer())).toMutableList()
                     10 -> setDead = decodeBooleanElement(descriptor, 10)
                     11 -> partnerMode = decodeBooleanElement(descriptor, 11)
+                    12 -> activeCounters = decodeSerializableElement(descriptor, 12, ListSerializer(CounterType.serializer())).toMutableList()
                     CompositeDecoder.DECODE_DONE -> break
                     else -> error("Unexpected index: $index")
                 }
@@ -204,7 +216,8 @@ object PlayerSerializer : KSerializer<Player> {
                 commanderDamage = commanderDamage,
                 counters = counters,
                 setDead = setDead,
-                partnerMode = partnerMode
+                partnerMode = partnerMode,
+                activeCounters = activeCounters
             )
         }
     }
