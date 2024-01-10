@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">LifeLinked</string>
+    <string name="file_provider_authority">lifelinked.multiplatform.provider</string>
+</resources>
