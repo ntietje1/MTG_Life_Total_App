@@ -24,7 +24,7 @@ The UI is crafted to be minimal yet intuitive, providing a clear picture of the 
 - **Ktor:** Integration with 3rd part APIs over http such as the Scryfall API.
 - **Kotlinx Serialization:** Efficient serialization/deserialization of Json.
 - **Decompose:** Cross-platform compatable app navigation.
-- **Gradle Version Catalog:** Tracks versions across the multi-module app structure.
+- **Gradle with Version Catalog:** Tracks versions across the multi-module app structure.
 
 ## Customization Options
 
