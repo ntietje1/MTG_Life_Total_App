@@ -1,3 +1,14 @@
+![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/ntietje1/MTG_Life_Total_App)
+![Static Badge](https://img.shields.io/badge/License-Apache_2.0-orange)
+![Static Badge](https://img.shields.io/badge/Kotlin-1.9.21-blue)
+![Static Badge](https://img.shields.io/badge/Gradle-8.2.1-blue)
+![Static Badge](https://img.shields.io/badge/Ktor-2.3.7-blue)
+![Static Badge](https://img.shields.io/badge/Compose-1.5.4-blue)
+![Static Badge](https://img.shields.io/badge/Decompose-2.2.2-blue)
+![Static Badge](https://img.shields.io/badge/MinSdk-24-yellow)
+![Static Badge](https://img.shields.io/badge/TargetSdk-34-yellow)
+
+
 # LifeLinked: A MTG Life Tracking App
 
 This Kotlin-based app is designed to simplify your Magic: The Gathering gaming experience by efficiently tracking life totals, commander damage, and offering a range of additional features for smoother gameplay.
