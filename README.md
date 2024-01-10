@@ -1,14 +1,37 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# MTG Life Tracking App
 
-* `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - `commonMain` is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    `iosMain` would be the right folder for such calls.
+This Kotlin-based app is designed to simplify your Magic: The Gathering gaming experience by efficiently tracking life totals, commander damage, and offering a range of additional features for a smoother gameplay.
 
-* `/iosApp` contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform, 
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+## Features
 
+- **Life Total Tracking:** Keep track of life totals for 1-6 players.
+- **Commander Damage:** Easily update and monitor commander damage during gameplay.
+- **Personalization Settings:** Customize the app according to your preferences, with the ability to save and load per-player settings.
+- **Custom Image Uploading:** Take your personalization even further by uploading an image to use as your player background.
+- **Utility Functions:** Includes coin flipping, dice rolling, first player selection, and tracking the monarchy.
+  
+## User Interface
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+The UI is crafted to be minimal yet intuitive, providing a clear picture of the gamestate from a glance without overwhelming elements.
+
+## Technologies Used
+
+- **Jetpack Compose:** Leveraging the Jetpack Compose framework for efficient and performant UI creation.
+- **Future Compatibility:** Plans to incorporate Compose Multiplatform to enable iOS compatibility.
+
+## Customization Options
+
+Experience the flexibility of various theme options and individual player customization settings that can be saved and loaded across different gaming sessions.
+
+## Future Development
+
+- **Compose Multiplatform Migration:** Working towards compatibility across multiple platforms, including iOS.
+- **Continuous Improvement:** Regular updates and addition of new features to enhance user experience.
+
+## Contributing
+
+While direct contributions are not accepted, suggestions for new features are welcomed and considered for future updates.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
