@@ -49,17 +49,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import composable.lifecounter.LifeCounterComponent
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
-import io.ktor.http.Url
-import kotlinx.coroutines.launch
 import data.ScryfallApiRetriever
 import data.SettingsManager
 import data.SettingsManager.savePlanarDeck
 import data.serializable.Card
-import theme.scaledSp
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
+import io.ktor.http.Url
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import theme.scaledSp
 
 /**
  * The possible outcomes of a planar die roll
@@ -208,14 +208,14 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier, planarDeck: Snapsho
     }
 
     var hideUnselected by remember { mutableStateOf(false) }
-    val filteredPlanes by remember { derivedStateOf {
+    val filteredPlanes by derivedStateOf {
         if (searchedPlanes.isNotEmpty()) {
             searchedPlanes.filter { card -> planarDeck.contains(card) || !hideUnselected }
         } else {
             allPlanes.filter { card -> planarDeck.contains(card) || !hideUnselected }
         }
     }
-    }
+
 
     val scryfallApiRetriever = ScryfallApiRetriever()
     val haptic = LocalHapticFeedback.current
@@ -277,16 +277,17 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier, planarDeck: Snapsho
                     .fillMaxSize()
                     .padding(bottom = maxWidth / 15f)
                     .weight(0.5f)
-                    .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)), columns = GridCells.Fixed(2)
+                    .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
+                columns = GridCells.Fixed(2),
             ) {
-                items(filteredPlanes) { card ->
+                items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
                     PlaneChaseCardPreview(
                         modifier = Modifier.width(maxWidth / 2),
                         card = card,
-                        addToPlanarDeck = { planarDeck.add(it) },
-                        removeFromPlanarDeck = { planarDeck.remove(it) },
+                        addToPlanarDeck = { planarDeck.add(card) },
+                        removeFromPlanarDeck = { planarDeck.remove(card) },
                         allowSelection = true,
-                        selected ={ planarDeck.contains(card) }
+                        selected = { planarDeck.contains(card) }
                     )
                 }
             }
