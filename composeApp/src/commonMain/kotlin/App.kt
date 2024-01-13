@@ -22,7 +22,7 @@ fun LifeLinkedApp(
     EnableImageCache(10)
 
     LifeLinkedTheme(darkTheme = darkTheme) {
-        UpdateSystemBarsColors(darkTheme)
+        updateSystemBarsColors(darkTheme)
         val childSlot by root.childSlot.subscribeAsState()
         when (val instance = childSlot.child?.instance) {
             is RootComponent.Child.PlayerSelectScreen -> PlayerSelectScreen(
