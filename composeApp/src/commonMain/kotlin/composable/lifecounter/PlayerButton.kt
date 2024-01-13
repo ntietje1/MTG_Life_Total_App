@@ -4,6 +4,7 @@ package composable.lifecounter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -72,19 +74,18 @@ import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import composable.AsyncImage
 import composable.dialog.ColorDialog
 import composable.dialog.ScryfallSearchDialog
+import composable.dialog.SettingsButton
 import composable.dialog.WarningDialog
 import composable.modifier.VerticalRotation
 import composable.modifier.animatedBorderCard
 import composable.modifier.bounceClick
 import composable.modifier.repeatingClickable
 import composable.modifier.rotateVertically
-import data.ImageStorage
 import data.Player
 import data.SettingsManager
 import data.SettingsManager.cameraRollDisabled
-import kotlinx.coroutines.launch
-import composable.dialog.SettingsButton
 import data.initImageManager
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import theme.allPlayerColors
@@ -1035,7 +1036,7 @@ fun NumericValue(
         }
         val smallTextSize = maxHeight.value / 14f + 4
 
-        val recentChangeSize = (maxHeight / 12.5f).value
+        val recentChangeSize = (maxHeight / 7f).value
         val recentChangeText = getRecentChangeText(player)
 
         val iconSize = maxHeight / 7f
@@ -1668,18 +1669,15 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initi
 fun LifeChangeButtons(
     modifier: Modifier = Modifier, onIncrementLife: () -> Unit, onDecrementLife: () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     Column(modifier = modifier) {
         CustomIncrementButton(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(0.5f),
             onIncrementLife = onIncrementLife,
-            interactionSource = interactionSource
         )
 
         CustomIncrementButton(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(1.0f),
             onIncrementLife = onDecrementLife,
-            interactionSource = interactionSource
         )
     }
 }
@@ -1688,19 +1686,21 @@ fun LifeChangeButtons(
  * Custom increment button composable
  * @param modifier Modifier to apply to the layout
  * @param onIncrementLife The callback for when the button is pressed
- * @param interactionSource The interaction source for the button
  */
 @Composable
 private fun CustomIncrementButton(
-    modifier: Modifier = Modifier, onIncrementLife: () -> Unit = {}, interactionSource: MutableInteractionSource
+    modifier: Modifier = Modifier, onIncrementLife: () -> Unit = {}
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Box(
-        modifier = modifier.repeatingClickable(
+        modifier = modifier.indication(
+            interactionSource = interactionSource,
+            indication = rememberRipple(color = Color.Black)
+        ).repeatingClickable(
             interactionSource = interactionSource,
             enabled = true,
             onPress = onIncrementLife
         )
     )
-
 }
 
