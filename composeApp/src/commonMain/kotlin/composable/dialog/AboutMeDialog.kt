@@ -24,9 +24,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import theme.scaledSp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import theme.scaledSp
 
 /**
  * A dialog that displays information about the me, the creator of the app :^)
@@ -103,7 +103,7 @@ fun AboutMeDialogBody(
             )
             Text(
                 modifier = Modifier.padding(bottom = 5.dp),
-                text = "Nick is an undergraduate studying computer science and chemical engineering at Northeastern University. He splits his time between reading, app development, and biking.",
+                text = "Nick is an undergraduate studying computer science and chemical engineering at Northeastern University. He splits his time between reading, biking, developing his side projects, and gaming.",
                 style = TextStyle(
                     fontSize = 16.scaledSp,
                     color = MaterialTheme.colorScheme.onPrimary
