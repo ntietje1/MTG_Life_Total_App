@@ -85,6 +85,7 @@ import data.Player
 import data.SettingsManager
 import data.SettingsManager.cameraRollDisabled
 import data.initImageManager
+import getAnimationCorrectionFactor
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -549,7 +550,7 @@ fun MonarchyIndicator(
     modifier: Modifier = Modifier, monarch: Boolean = false, content: @Composable () -> Unit = {}
 ) {
     val width = 2.5.dp
-//    val duration = viewModel.correctAnimationDuration(7500, context)
+    val duration = (7500 / getAnimationCorrectionFactor()).toInt()
 //    val colors = if (viewModel.getAnimationScale(context) != 0.0f) {
 //        listOf(
 //            Color.Transparent,
@@ -563,7 +564,7 @@ fun MonarchyIndicator(
 //            Color(255, 191, 8),
 //        )
 //    }
-    val duration = 7500
+//    val duration = 7500
     val colors = listOf(
         Color.Transparent,
         Color(
