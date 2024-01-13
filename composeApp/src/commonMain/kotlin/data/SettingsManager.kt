@@ -39,13 +39,6 @@ object SettingsManager {
         set(value) = settings.putBoolean("keepScreenOn", value)
 
     /**
-     * Setting for whether or not to rotate the middle button
-     */
-    var rotatingMiddleButton: Boolean
-        get() = settings.getBoolean("rotatingMiddleButton", true)
-        set(value) = settings.putBoolean("rotatingMiddleButton", value)
-
-    /**
      * Setting for whether or not allow camera roll access in-game
      */
     var cameraRollDisabled: Boolean
