@@ -34,6 +34,7 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.decompose)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -44,7 +45,8 @@ kotlin {
             @OptIn(ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
             implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.okhttp)
+//            implementation("com.squareup.okhttp3:okhttp:4.12.0")
+            implementation("org.slf4j:slf4j-simple:2.0.11") // needed because some other dependency was causing error during bundle generating
             implementation(libs.kotlinx.datetime)
             implementation(libs.kamel.image)
             implementation(libs.decompose)

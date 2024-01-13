@@ -50,7 +50,7 @@ class LifeCounterComponent(
     private val scope = CoroutineScope(Dispatchers.IO)
 
     suspend fun delayedSave() {
-        delay(1000 * 30)
+        delay(1000 * 10)
         savePlayerStates()
         scope.launch {
             delayedSave()
@@ -158,7 +158,7 @@ class LifeCounterComponent(
      */
     fun toggleMonarch(player: Player, value: Boolean? = null) {
         val targetValue = value ?: !player.monarch
-        if (!targetValue) {
+        if (targetValue) {
             allPlayers.forEach { it.monarch = false }
         }
         player.monarch = targetValue
