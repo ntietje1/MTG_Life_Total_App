@@ -54,6 +54,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import composable.dialog.SettingsButton
+import getAnimationCorrectionFactor
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import theme.allPlayerColors
@@ -71,6 +72,7 @@ import kotlin.native.concurrent.ThreadLocal
 fun PlayerSelectScreen(component: PlayerSelectComponent) {
     Box(Modifier.fillMaxSize()) {
         val showHelperText = remember { mutableStateOf(true) }
+        PlayerSelectScreenValues.animScale = getAnimationCorrectionFactor()
         PlayerSelectScreenBase(component, showHelperText)
         if (showHelperText.value) {
             Text(
@@ -115,9 +117,9 @@ private object PlayerSelectScreenValues {
     val goToNormalDuration
         get() = (75 / animScale).toInt()
     val pulseDuration1
-        get() = (250 / animScale).toInt()
-    val pulseDuration2
         get() = (200 / animScale).toInt()
+    val pulseDuration2
+        get() = (150 / animScale).toInt()
     val growToScreenDuration
         get() = (750 / animScale).toInt()
 }
@@ -362,7 +364,7 @@ private class Circle(
                 )
             }
             launch {
-                delay((duration * 1.1f).toLong())
+                delay((duration*0.9f).toLong())
                 onComplete()
             }
         }

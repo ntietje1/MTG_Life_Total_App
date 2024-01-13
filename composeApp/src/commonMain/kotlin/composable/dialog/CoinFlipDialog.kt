@@ -44,10 +44,11 @@ import composable.flippable.FlipAnimationType
 import composable.flippable.Flippable
 import composable.flippable.FlippableState
 import composable.flippable.rememberFlipController
-import data.SettingsManager
-import theme.scaledSp
+import data.SettingsManager.fastCoinFlip
+import getAnimationCorrectionFactor
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import theme.scaledSp
 import kotlin.random.Random
 
 /**
@@ -92,8 +93,14 @@ fun CoinFlippable(
     modifier: Modifier = Modifier, history: MutableList<String>, maxHistoryLength: Int = 18
 ) {
     val flipEnabled by remember { mutableStateOf(true) }
-    val initialDuration = if (SettingsManager.fastCoinFlip) 150 else 300
-    val additionalDuration = if (SettingsManager.fastCoinFlip) 35 else 75
+    var initialDuration = 150
+    var additionalDuration = 35
+    if (fastCoinFlip) {
+        initialDuration = 85
+        additionalDuration = 25
+    }
+    initialDuration = (initialDuration / getAnimationCorrectionFactor()).toInt()
+    additionalDuration = (additionalDuration / getAnimationCorrectionFactor()).toInt()
     var duration by remember { mutableIntStateOf(initialDuration) }
     var flipAnimationType by remember { mutableStateOf(FlipAnimationType.VERTICAL_ANTI_CLOCKWISE) }
     val totalFlips = 2 // + 1
@@ -173,7 +180,7 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
         modifier = modifier
             .width(50.dp)
             .height(30.dp)
-            .clip(RoundedCornerShape(0.dp))
+            .clip(RoundedCornerShape(5.dp))
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { _ -> onReset() })
             },

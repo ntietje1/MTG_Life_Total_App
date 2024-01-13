@@ -45,6 +45,7 @@ kotlin {
             implementation(compose.components.resources)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.kamel.image)
             implementation(libs.decompose)
             implementation(libs.decompose.extensions.compose.jetbrains)

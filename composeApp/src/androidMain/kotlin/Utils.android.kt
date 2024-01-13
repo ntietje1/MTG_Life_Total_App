@@ -1,4 +1,5 @@
 import android.app.Activity
+import android.provider.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -7,7 +8,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 @Composable
-actual fun UpdateSystemBarsColors(isDarkTheme: Boolean) {
+actual fun updateSystemBarsColors(isDarkTheme: Boolean) {
     val view = LocalView.current
     val backgroundColor = MaterialTheme.colorScheme.background.toArgb()
     if (!view.isInEditMode) {
@@ -22,4 +23,10 @@ actual fun UpdateSystemBarsColors(isDarkTheme: Boolean) {
     }
 }
 
-actual fun currentTimeMillis(): Long = System.currentTimeMillis()
+@Composable
+actual fun getAnimationCorrectionFactor(): Float {
+    val context = LocalView.current.context
+    return Settings.Global.getFloat(
+        context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f
+    )
+}

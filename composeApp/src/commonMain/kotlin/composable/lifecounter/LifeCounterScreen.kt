@@ -2,12 +2,7 @@ package composable.lifecounter
 
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -45,13 +40,13 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import composable.dialog.MiddleButtonDialog
 import data.Player
-import data.SettingsManager
 import data.SettingsManager.alt4PlayerLayout
 import data.SettingsManager.numPlayers
+import getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import composable.dialog.MiddleButtonDialog
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 
@@ -141,8 +136,7 @@ fun AnimatedPlayerButton(
     visible: MutableState<Boolean>, player: Player, rotation: Float, width: Dp, height: Dp, component: LifeCounterComponent
 ) {
     val multiplesAway = 3
-//    val duration = viewModel.correctAnimationDuration(2000, context)
-    val duration = 2000
+    val duration = (1250 / getAnimationCorrectionFactor()).toInt()
     val targetOffsetY = if (visible.value) 0f else {
         when (rotation) {
             0f -> height.value * multiplesAway
@@ -203,10 +197,7 @@ fun AnimatedMiddleButton(
 ) {
     var animationFinished by remember { mutableStateOf(false) }
 
-//    val popInDuration = (1500 / viewModel.getAnimationScale(context)).toInt()
-//    val rotateDuration = (90_000 / viewModel.getAnimationScale(context)).toInt()
-    val popInDuration = 2250
-    val rotateDuration = 90_000
+    val popInDuration = (1100 / getAnimationCorrectionFactor()).toInt()
     var angle by remember { mutableFloatStateOf(0f) }
     var scale by remember { mutableFloatStateOf(0f) }
 
@@ -238,15 +229,8 @@ fun AnimatedMiddleButton(
         }
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "")
-
-    angle = if (!animationFinished || !SettingsManager.rotatingMiddleButton) animatableAngle.value else infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = rotateDuration, easing = LinearEasing), repeatMode = RepeatMode.Restart
-        ), label = ""
-    ).value
-
     scale = animatableScale.value
+    angle = animatableAngle.value
 
     Box(modifier = modifier.background(
         color = MaterialTheme.colorScheme.background, shape = CircleShape

@@ -15,7 +15,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.IntOffset
-import currentTimeMillis
+import kotlinx.datetime.Clock
 import kotlin.math.roundToInt
 
 @Composable
@@ -42,7 +42,7 @@ data class ShakeConfig(
     val scaleY: Float = 0f,
     val translateX: Float = 0f,
     val translateY: Float = 0f,
-    val trigger: Long = currentTimeMillis(),
+    val trigger: Long = Clock.System.now().toEpochMilliseconds()
 )
 
 fun Modifier.shake(shakeController: ShakeController) = composed {

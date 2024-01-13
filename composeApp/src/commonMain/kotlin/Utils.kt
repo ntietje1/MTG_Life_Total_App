@@ -1,6 +1,7 @@
 import androidx.compose.runtime.Composable
 
-expect fun currentTimeMillis(): Long
+@Composable
+expect fun updateSystemBarsColors(isDarkTheme: Boolean)
 
 @Composable
-expect fun UpdateSystemBarsColors(isDarkTheme: Boolean)
+expect fun getAnimationCorrectionFactor(): Float
