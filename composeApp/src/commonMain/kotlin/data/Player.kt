@@ -27,6 +27,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
 import composable.lifecounter.CounterType
+import data.SettingsManager.autoKo
 
 /**
  * Represents a player in the game
@@ -75,12 +76,16 @@ class Player(
     var playerNum by mutableIntStateOf(playerNum)
     var setDead by mutableStateOf(setDead)
 
-    val isDead get() = (life <= 0 || setDead || commanderDamage.any { it >= 21 } )
+    val isDead get() = (autoKo && (life <= 0  || commanderDamage.any { it >= 21 }) || setDead)
 
     val commanderDamage = commanderDamage.toMutableStateList()
     val counters = counters.toMutableStateList()
     val activeCounters = activeCounters.toMutableStateList()
     private var scope = CoroutineScope(Dispatchers.IO)
+
+    init {
+        resetRecentChange()
+    }
 
     /**
      * Gets the value of a specific counter
