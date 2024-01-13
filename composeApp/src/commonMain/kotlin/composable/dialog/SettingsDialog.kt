@@ -34,10 +34,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.SettingsManager
-import theme.blendWith
-import theme.scaledSp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import theme.blendWith
+import theme.scaledSp
 
 /**
  * A dialog that allows the user to set global settings and view contact information
@@ -67,12 +67,6 @@ fun SettingsDialogContent(
                         .wrapContentSize()
                         .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
                 ) {
-                    SettingsDialogButtonWithToggle(
-                        text = "Rotating Middle Button",
-                        initialState = SettingsManager.rotatingMiddleButton,
-                        toggle = { SettingsManager.rotatingMiddleButton = it },
-                        icon = painterResource("d20_icon.xml")
-                    )
                     SettingsDialogButtonWithToggle(
                         text = "Fast Coin Flip",
                         initialState = SettingsManager.fastCoinFlip,
@@ -143,13 +137,13 @@ fun SettingsDialogContent(
                     SettingsDialogButton(
                         text = "Buy me a Coffee", additionalText = "", icon = painterResource("coffee_icon.xml")
                     ) {
-                        val url = "https://venmo.com/u/Nicholas-Tietje"
+                        val url = "https://www.buymeacoffee.com/hypepixel"
                         uriHandler.openUri(url)
                     }
                     SettingsDialogButton(
                         text = "Privacy Policy", additionalText = "", icon = painterResource("visible_icon.xml")
                     ) {
-                        val url = "https://sites.google.com/view/lifelinked-privacy-policy/"
+                        val url = "https://sites.google.com/view/lifelinked/privacy-policy"
                         uriHandler.openUri(url)
                     }
                 }
