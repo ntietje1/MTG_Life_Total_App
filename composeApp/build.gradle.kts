@@ -29,7 +29,6 @@ kotlin {
     }
     
     sourceSets {
-        
         androidMain.dependencies {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
@@ -54,6 +53,9 @@ kotlin {
             implementation(libs.mpfilepicker)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
+        }
+        iosMain.dependencies {
+            commonMain
         }
     }
 }
