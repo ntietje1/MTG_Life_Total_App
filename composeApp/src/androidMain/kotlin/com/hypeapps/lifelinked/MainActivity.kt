@@ -12,6 +12,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.retainedComponent
 import LifeLinkedApp
+import androidx.compose.runtime.DisposableEffect
 import data.SettingsManager
 
 
@@ -23,15 +24,22 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        val activity: ComponentActivity = this
         setContent {
             window.decorView.setBackgroundColor(if (isSystemInDarkTheme()) Color.BLACK else Color.WHITE)
-            if (SettingsManager.keepScreenOn) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            }
             val root = retainedComponent {
                 RootComponent(it)
             }
+
             LifeLinkedApp(root)
+
+            val flag =WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+            DisposableEffect(activity) {
+                activity.window.addFlags(flag)
+                onDispose {
+                    activity.window.clearFlags(flag)
+                }
+            }
         }
     }
 }
