@@ -80,7 +80,7 @@ class LifeCounterComponent(
     var planarDeck = mutableStateListOf<Card>().apply {
         addAll(SettingsManager.loadPlanarDeck())
     }
-    val planeBackStack = mutableListOf<Card>()
+    val planarBackStack = mutableStateListOf<Card>()
 
     init {
         generatePlayers()
@@ -192,8 +192,8 @@ class LifeCounterComponent(
      * Goes back a plane
      */
     fun backPlane() {
-        if (planeBackStack.isNotEmpty()) {
-            val card = planeBackStack.removeLast()
+        if (planarBackStack.isNotEmpty()) {
+            val card = planarBackStack.removeLast()
             planarDeck.remove(card)
             planarDeck.add(card)
         }
@@ -206,7 +206,7 @@ class LifeCounterComponent(
     fun planeswalk(): Card? {
         if (planarDeck.isNotEmpty()) {
             val card = planarDeck.removeLast()
-            planeBackStack.add(card)
+            planarBackStack.add(card)
             planarDeck = (listOf(card).plus(planarDeck)).toMutableStateList() // send to bottom
             return card
         }
