@@ -1,6 +1,8 @@
 package composable.dialog
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -69,6 +71,7 @@ import data.ScryfallApiRetriever
 import data.SettingsManager
 import data.serializable.Card
 import data.serializable.Ruling
+import kotlinx.coroutines.delay
 import theme.scaledSp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -300,16 +303,29 @@ fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>
  */
 @Composable
 fun ScryfallButton(modifier: Modifier = Modifier, text: String, onTap: () -> Unit) {
+    val originalColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
+    val pressedColor = Color.Green.copy(alpha = 0.5f)
+    var color by remember { mutableStateOf(originalColor) }
+    val coroutineScope = rememberCoroutineScope()
+    val animatedColor by animateColorAsState(targetValue = color, animationSpec = tween(durationMillis = 500), finishedListener = {
+        coroutineScope.launch {
+            delay(1500)
+            color = originalColor
+        }
+    })
     Box(
         modifier = modifier.pointerInput(Unit) {
-            detectTapGestures(onTap = { _ -> onTap() })
+            detectTapGestures{ _ ->
+                color = pressedColor
+                onTap()
+            }
         },
 
         ) {
         Surface(
             modifier = Modifier
                 .wrapContentSize()
-                .clip(RoundedCornerShape(10.dp)), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
+                .clip(RoundedCornerShape(10.dp)), color = animatedColor
         ) {
             Text(
                 text = text,
