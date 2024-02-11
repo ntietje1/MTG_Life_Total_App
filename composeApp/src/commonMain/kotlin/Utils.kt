@@ -5,3 +5,5 @@ expect fun updateSystemBarsColors(isDarkTheme: Boolean)
 
 @Composable
 expect fun getAnimationCorrectionFactor(): Float
+
+expect fun legacyMonarchyIndicator(): Boolean

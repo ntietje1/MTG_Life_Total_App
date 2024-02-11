@@ -10,3 +10,7 @@ actual fun updateSystemBarsColors(isDarkTheme: Boolean) {
 actual fun getAnimationCorrectionFactor(): Float {
     return 1f
 }
+
+actual fun legacyMonarchyIndicator(): Boolean {
+    return false
+}

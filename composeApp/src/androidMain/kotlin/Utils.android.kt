@@ -1,4 +1,5 @@
 import android.app.Activity
+import android.os.Build
 import android.provider.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -29,4 +30,8 @@ actual fun getAnimationCorrectionFactor(): Float {
     return Settings.Global.getFloat(
         context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f
     )
+}
+
+actual fun legacyMonarchyIndicator(): Boolean {
+    return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 }
