@@ -37,6 +37,7 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import composable.modifier.routePointerChangesTo
 import composable.playerselect.PlayerSelectScreenValues.deselectDuration
@@ -79,7 +80,9 @@ fun PlayerSelectScreen(component: PlayerSelectComponent) {
                 text = "Tap to select player",
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 40.scaledSp,
+                lineHeight = 50.scaledSp,
                 fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.Center).rotate(90f)
             )
 
