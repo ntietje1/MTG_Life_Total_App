@@ -1,12 +1,14 @@
 package composable.modifier
 
 
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +24,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import legacyMonarchyIndicator
 import kotlin.math.max
 
 /**
@@ -39,12 +42,12 @@ fun Modifier.animatedBorderCard(
     animationDuration: Int = 10000
 ): Modifier = composed {
     val infiniteTransition = rememberInfiniteTransition(label = "Infinite Color Animation")
-//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (!legacyMonarchyIndicator()) {
         val degrees by infiniteTransition.animateFloat(
             initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
                 animation = tween(durationMillis = animationDuration, easing = LinearEasing),
                 repeatMode = RepeatMode.Restart
-            ), label = "Infinite Colors"
+            ), label = "Infinite Rotating Colors"
         )
         val gradient = Brush.sweepGradient(colors)
 
@@ -64,29 +67,29 @@ fun Modifier.animatedBorderCard(
                         }
                     }
                     .clip(shape)))
-//    } else {
-//        val minScale = 1.0f
-//        val maxScale= 0.1f
-//        val scale by infiniteTransition.animateFloat(
-//            initialValue = minScale,
-//            targetValue = maxScale,
-//            animationSpec = infiniteRepeatable(
-//                animation = tween(animationDuration/8, easing = FastOutLinearInEasing),
-//                repeatMode = RepeatMode.Reverse
-//            ), label = ""
-//        )
-//        this.then(
-//            Modifier
-//                .clip(shape)
-//                .then(Modifier
-//                    .fillMaxWidth()
-//                    .padding(borderWidth)
-//                    .border(
-//                        width = borderWidth*scale,
-//                        brush = Brush.radialGradient(colors),
-//                        shape = shape)
-//                    .clip(shape)))
-//    }
+    } else {
+        val minScale = 1.25f
+        val maxScale= 0.0f
+        val scale by infiniteTransition.animateFloat(
+            initialValue = minScale,
+            targetValue = maxScale,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = animationDuration/8, delayMillis = animationDuration/32, easing = FastOutLinearInEasing),
+                repeatMode = RepeatMode.Reverse
+            ), label = "Infinite Pulsing Colors"
+        )
+        this.then(
+            Modifier
+                .clip(shape)
+                .then(Modifier
+                    .fillMaxWidth()
+                    .padding(borderWidth)
+                    .border(
+                        width = borderWidth*scale,
+                        brush = Brush.radialGradient(colors),
+                        shape = shape)
+                    .clip(shape)))
+    }
 }
 
 
