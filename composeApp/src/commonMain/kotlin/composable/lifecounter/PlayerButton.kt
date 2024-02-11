@@ -96,6 +96,7 @@ import theme.deadNormalColorMatrix
 import theme.deadReceiverColorMatrix
 import theme.deadSettingsColorMatrix
 import theme.dealerColorMatrix
+import theme.ghostify
 import theme.invert
 import theme.normalColorMatrix
 import theme.receiverColorMatrix
@@ -790,7 +791,7 @@ fun Counter(
             0.5.dp,
             player.textColor.copy(alpha = 0.9f),
             RoundedCornerShape(20.dp)
-        ).clip(RoundedCornerShape(30.dp))
+        ).clip(RoundedCornerShape(20.dp))
     ) {
         val textSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).scaledSp / 1.5f
         val topPadding = maxHeight / 10f
@@ -854,11 +855,11 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
 
             PlayerButtonState.COMMANDER_DEALER -> player.color.saturateColor(0.5f).brightenColor(0.6f)
 
-            PlayerButtonState.SETTINGS -> player.color.saturateColor(0.6f).brightenColor(0.8f)
+            PlayerButtonState.SETTINGS -> player.color.saturateColor(0.9f).brightenColor(0.9f)
             else -> throw Exception("unsupported state")
         }
         if (player.isDead) {
-            c = c.saturateColor(0.4f).brightenColor(1.1f)
+            c = c.ghostify()
         }
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -1231,7 +1232,7 @@ fun SettingsMenu(
                     item {
                         FormattedSettingsButton(
                             imageResource = painterResource("color_picker_icon.xml"),
-                            text = "Solid Color"
+                            text = "Background Color"
                         ) {
                             state = SettingsState.BackgroundColorPicker
                             backStack.add { state = SettingsState.Customize }
@@ -1251,17 +1252,17 @@ fun SettingsMenu(
                     item {
                         FormattedSettingsButton(
                             imageResource = painterResource("change_background_icon.xml"),
-                            text = "Camera Roll"
+                            text = "Upload Image"
                         ) { onFromCameraRollButtonClick() }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("x_icon.xml"),
-                            text = "Remove Image"
+                            imageResource = painterResource("transparent.xml"),
+                            text = ""
                         ) {
-                            player.imageUri = null
-                            SettingsManager.savePlayerPref(player)
+//                            player.imageUri = null
+//                            SettingsManager.savePlayerPref(player)
                         }
                     }
 
@@ -1294,6 +1295,7 @@ fun SettingsMenu(
                     player = player,
                     initialColor = player.color,
                     setBlurBackground = { setBlurBackground(it) }) { color ->
+                    player.imageUri = null
                     player.color = color
                     SettingsManager.savePlayerPref(player)
                 }
