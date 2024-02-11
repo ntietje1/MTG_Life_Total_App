@@ -51,7 +51,6 @@ import androidx.compose.ui.window.DialogProperties
 import composable.lifecounter.LifeCounterComponent
 import data.ScryfallApiRetriever
 import data.SettingsManager
-import data.SettingsManager.savePlanarDeck
 import data.serializable.Card
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -83,13 +82,13 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, component: LifeCounte
     var planarDieResultVisible by remember { mutableStateOf(false) }
     var planarDieResult by remember { mutableStateOf(PlanarDieResult.NO_EFFECT) }
 
-    LaunchedEffect(component.planarDeck) {
-        if (component.planarDeck.isNotEmpty()) {
-            component.planeBackStack.clear()
-            component.planarDeck.shuffle()
-            savePlanarDeck(component.planarDeck)
-        }
-    }
+//    LaunchedEffect(component.planarDeck) {
+//        if (component.planarDeck.isNotEmpty()) {
+//            component.planeBackStack.clear()
+//            component.planarDeck.shuffle()
+//            savePlanarDeck(component.planarDeck)
+//        }
+//    }
 
     if (planarDieResultVisible) {
         Dialog(onDismissRequest = { planarDieResultVisible = false }, properties = DialogProperties(
@@ -188,26 +187,31 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, component: LifeCounte
 }
 
 /**
- * A dialog that allows the user to choose which planes are in the planar deck
- * @param modifier the modifier for this composable
- * @param planarDeck the list of planes in the planar deck
- * @param backStack the back stack of the dialog
+ * The available actions for the choose planes dialog
+ * @param planarDeck the planar deck
+ * @param backStack the back stack
+ * @param planarBackStack the planar back stack
  */
-@OptIn(ExperimentalResourceApi::class)
-@Composable
-fun ChoosePlanesDialogContent(modifier: Modifier = Modifier, planarDeck: SnapshotStateList<Card>, backStack: SnapshotStateList<() -> Unit>) {
-    val initialBackStackSize by remember { mutableStateOf(backStack.size) }
-    val query = remember { mutableStateOf("") }
-    val allPlanes = remember {
-        mutableStateListOf<Card>().apply {
-            addAll(SettingsManager.loadAllPlanes())
-        }
-    }
-    val searchedPlanes = remember {
-        mutableStateListOf<Card>()
-    }
+class ChoosePlanesActions(
+    private val planarDeck: SnapshotStateList<Card>,
+    private val backStack: SnapshotStateList<() -> Unit>,
+    private val planarBackStack: SnapshotStateList<Card>
+) {
+    private val initialBackStackSize = backStack.size
 
-    var hideUnselected by remember { mutableStateOf(false) }
+    private val allPlanes = mutableStateListOf<Card>().apply {
+        addAll(SettingsManager.loadAllPlanes())
+    }
+    private val searchedPlanes = mutableStateListOf<Card>()
+    private val scryfallApiRetriever = ScryfallApiRetriever()
+
+    var hideUnselected by mutableStateOf(false)
+
+    /**
+     * The planes that are currently visible
+     * Shows searched planes if a search is active, otherwise shows all planes
+     * Hides unselected planes if hideUnselected is true
+     */
     val filteredPlanes by derivedStateOf {
         if (searchedPlanes.isNotEmpty()) {
             searchedPlanes.filter { card -> planarDeck.contains(card) || !hideUnselected }
@@ -216,29 +220,123 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier, planarDeck: Snapsho
         }
     }
 
+    /**
+     * Updates the list of all planes
+     * @param cards the cards to update allPlanes with
+     */
+    fun updateAllPlanes(cards: List<Card>) {
+        cards.forEach { card ->
+            if (card !in allPlanes) {
+                allPlanes.add(card)
+            }
+        }
+        SettingsManager.saveAllPlanes(allPlanes)
+    }
 
-    val scryfallApiRetriever = ScryfallApiRetriever()
+    var query = mutableStateOf("")
+
+    /**
+     * Searches for the current query
+     * @param qry the query to search for
+     * @return The cards that match the query
+     */
+    suspend fun search(qry: String = query.value): List<Card> {
+        return scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall("t:plane $qry"))
+    }
+
+    /**
+     * Updates searchedPlanes and adds a back stack entry if necessary
+     * @param cards the cards to update searchedPlanes with
+     */
+    fun onSearchResult(cards: List<Card>) {
+        searchedPlanes.clear()
+        searchedPlanes.addAll(cards)
+        if (initialBackStackSize == backStack.size) {
+            backStack.add {
+                query.value = ""
+                searchedPlanes.clear()
+            }
+        }
+    }
+
+    /**
+     * Is the given card in the planar deck?
+     * @param card the card to check
+     * @return Whether the card is in the planar deck
+     */
+    fun isInPlanarDeck(card: Card): Boolean {
+        return planarDeck.contains(card)
+    }
+
+    val selectedText: String
+        get() = "${planarDeck.size}/${filteredPlanes.size} Planes Selected (${allPlanes.size - filteredPlanes.size} Hidden)"
+
+    /**
+     * Selects the given card
+     * @param card the card to select
+     */
+    fun select(card: Card) {
+        planarDeck.add(card)
+        planarBackStack.clear()
+    }
+
+    /**
+     * Unselects the given card
+     * @param card the card to unselect
+     */
+    fun unselect(card: Card) {
+        planarDeck.remove(card)
+        planarBackStack.clear()
+    }
+
+    /**
+     * Selects all planes
+     */
+    fun selectAll() {
+        planarDeck.clear()
+        planarDeck.addAll(filteredPlanes)
+    }
+
+    /**
+     * Unselects all planes
+     */
+    fun unselectAll() {
+        planarDeck.clear()
+    }
+
+    /**
+     * Toggles whether unselected planes are hidden
+     */
+    fun toggleHideUnselected() {
+        hideUnselected = !hideUnselected
+    }
+}
+
+/**
+ * A dialog that allows the user to choose which planes are in the planar deck
+ * @param modifier the modifier for this composable
+ * @param actions the available methods for this dialog
+ */
+@OptIn(ExperimentalResourceApi::class)
+@Composable
+fun ChoosePlanesDialogContent(
+    modifier: Modifier = Modifier,
+    actions: ChoosePlanesActions
+) {
     val haptic = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
 
-    fun searchPlanes(qry: String, onResult: (List<Card>) -> Unit) {
+    fun searchPlanes(onResult: (List<Card>) -> Unit) {
         coroutineScope.launch {
             focusManager.clearFocus()
-            val newCards = scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall(qry))
+            val newCards = actions.search()
             onResult(newCards)
         }
     }
 
     LaunchedEffect(Unit) {
-        searchPlanes("t:plane") { result ->
-            result.forEach { card ->
-                if (card !in allPlanes) {
-                    allPlanes.add(card)
-                }
-            }
-            SettingsManager.saveAllPlanes(allPlanes)
-        }
+        searchPlanes { actions.updateAllPlanes(it) }
     }
 
     BoxWithConstraints(modifier = modifier) {
@@ -252,22 +350,13 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier, planarDeck: Snapsho
                 Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp, end = 20.dp)
-                    .clip(RoundedCornerShape(10.dp)), query = query, onSearch = {
-                    searchPlanes("t:plane ${query.value}") { result ->
-                        searchedPlanes.clear()
-                        searchedPlanes.addAll(result)
-                        if (initialBackStackSize == backStack.size) {
-                            backStack.add {
-                                query.value = ""
-                                searchedPlanes.clear()
-                            }
-                        }
-                    }
+                    .clip(RoundedCornerShape(10.dp)), query = actions.query, onSearch = {
+                    searchPlanes { actions.onSearchResult(it) }
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 })
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "${planarDeck.size}/${filteredPlanes.size} Planes Selected (${allPlanes.size - filteredPlanes.size} Hidden)",
+                text = actions.selectedText,
                 fontSize = 15.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
@@ -280,14 +369,14 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier, planarDeck: Snapsho
                     .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
                 columns = GridCells.Fixed(2),
             ) {
-                items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
+                items(actions.filteredPlanes, key = { card -> card.hashCode() }) { card ->
                     PlaneChaseCardPreview(
                         modifier = Modifier.width(maxWidth / 2),
                         card = card,
-                        addToPlanarDeck = { planarDeck.add(card) },
-                        removeFromPlanarDeck = { planarDeck.remove(card) },
+                        addToPlanarDeck = { actions.select(card) },
+                        removeFromPlanarDeck = { actions.unselect(card) },
                         allowSelection = true,
-                        selected = { planarDeck.contains(card) }
+                        selected = { actions.isInPlanarDeck(card) }
                     )
                 }
             }
@@ -299,18 +388,17 @@ fun ChoosePlanesDialogContent(modifier: Modifier = Modifier, planarDeck: Snapsho
 
             ) {
                 SettingsButton(modifier = buttonModifier, text = "Select All", shadowEnabled = false, imageResource = painterResource("checkmark.xml"), onPress = {
-                    planarDeck.clear()
-                    planarDeck.addAll(filteredPlanes)
+                    actions.selectAll()
                 })
                 SettingsButton(modifier = buttonModifier, text = "Unselect All", shadowEnabled = false, imageResource = painterResource("x_icon.xml"), onPress = {
-                    planarDeck.clear()
+                    actions.unselectAll()
                 })
                 SettingsButton(modifier = buttonModifier,
-                    text = if (!hideUnselected) "Hide Unselected" else "Show Unselected",
+                    text = if (!actions.hideUnselected) "Hide Unselected" else "Show Unselected",
                     shadowEnabled = false,
-                    imageResource = if (!hideUnselected) painterResource("invisible_icon.xml") else painterResource("visible_icon.xml"),
+                    imageResource = if (!actions.hideUnselected) painterResource("invisible_icon.xml") else painterResource("visible_icon.xml"),
                     onPress = {
-                        hideUnselected = !hideUnselected
+                        actions.toggleHideUnselected()
                     })
             }
         }
