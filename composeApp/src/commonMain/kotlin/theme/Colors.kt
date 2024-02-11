@@ -47,6 +47,10 @@ val deadDealerColorMatrix = ColorMatrix().generateColorMatrix(0.6f, 0.4f, true)
 
 val deadSettingsColorMatrix = ColorMatrix().generateColorMatrix(0.8f, 0.6f, true)
 
+fun Color.ghostify(): Color {
+    return this.copy().blendWith(Color.Gray)
+}
+
 /**
  * Generates a color matrix that can be used to adjust the saturation and luminosity of a color
  * @param sat the saturation multiplier
@@ -56,8 +60,8 @@ val deadSettingsColorMatrix = ColorMatrix().generateColorMatrix(0.8f, 0.6f, true
  */
 fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = false): ColorMatrix {
     val s = if (dead) sat * 0.2f else sat
-    val l = if (dead) lum * 1.2f else lum
-    val a = if (dead) 0.7f else 1.0f
+    val l = if (dead) lum * 1.05f else lum
+    val a = 1.0f
     return this.apply {
         timesAssign(ColorMatrix().apply { setToSaturation(s) })
         timesAssign(ColorMatrix().apply { setToScale(l, l, l, a) })
