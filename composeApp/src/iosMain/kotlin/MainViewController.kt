@@ -1,10 +1,6 @@
 import androidx.compose.ui.window.ComposeUIViewController
-import androidx.compose.ui.window.ComposeUIViewController
-import platform.UIKit.UIViewController
+import platform.UIKit.*
 
-fun MainViewController() = ComposeUIViewController { App() }
-
-//fun MainViewController(): UIViewController =
-//    ComposeUIViewController {
-//        ImageViewerIos()
-//    }
+fun rootViewController(root: RootComponent): UIViewController = ComposeUIViewController {
+    LifeLinkedApp(root)
+}
