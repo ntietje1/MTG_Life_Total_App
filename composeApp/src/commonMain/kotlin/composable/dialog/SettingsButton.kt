@@ -118,7 +118,7 @@ fun SettingsButton(
         } else {
             Modifier
         })) {
-        val fontSize = (maxWidth / 8f).value.scaledSp
+        val fontSize = (maxWidth / 9f).value.scaledSp
         Column(
             modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
