@@ -233,10 +233,10 @@ fun MiddleButtonDialog(
             FormattedAnimatedVisibility(
                 visible = state == MiddleButtonDialogState.PlanarDeck
             ) {
+                val choosePlanesActions = remember { ChoosePlanesActions(planarDeck = component.planarDeck, backStack = backStack, planarBackStack = component.planarBackStack) }
                 ChoosePlanesDialogContent(
                     modifier = Modifier.fillMaxSize(),
-                    planarDeck = component.planarDeck,
-                    backStack = backStack
+                    actions = choosePlanesActions
                 )
             }
 
