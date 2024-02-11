@@ -85,12 +85,11 @@ fun CoinFlipDialogContent(modifier: Modifier = Modifier, history: SnapshotStateL
  * A button that visually flips a coin
  * @param modifier the modifier for this composable
  * @param history the list of coin flips
- * @param maxHistoryLength the maximum length of the history
  */
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun CoinFlippable(
-    modifier: Modifier = Modifier, history: MutableList<String>, maxHistoryLength: Int = 18
+    modifier: Modifier = Modifier, history: MutableList<String>
 ) {
     val flipEnabled by remember { mutableStateOf(true) }
     var initialDuration = 150
@@ -109,9 +108,6 @@ fun CoinFlippable(
     val haptic = LocalHapticFeedback.current
 
     fun addToHistory(v: String) {
-        if (history.size > maxHistoryLength) {
-            history.removeAt(0)
-        }
         history.add(v)
     }
 
@@ -261,9 +257,10 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
  * A list of the history of coin flips
  * @param modifier the modifier for this composable
  * @param coinFlipHistory the list of coin flips
+ * @param maxHistoryLength the maximum number of flips to display
  */
 @Composable
-fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<String>) {
+fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<String>, maxHistoryLength: Int = 18) {
     val hPadding = 10.dp
     val vPadding = 5.dp
 
@@ -297,7 +294,7 @@ fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<Stri
 
                 Text(
                     text = buildAnnotatedString {
-                        coinFlipHistory.forEach { result ->
+                        coinFlipHistory.takeLast(maxHistoryLength).forEach { result ->
                             withStyle(style = SpanStyle(color = if (result == "H") Color.Green else Color.Red)) {
                                 append("$result ")
                             }
