@@ -1,9 +1,19 @@
 package composable.dialog
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +32,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import composable.modifier.ShakeConfig
 import composable.modifier.bounceClick
 import composable.modifier.rememberShakeController
@@ -42,19 +53,49 @@ import theme.scaledSp
 fun DiceRollDialogContent(
     modifier: Modifier = Modifier
 ) {
-    GridDialogContent(modifier, title = "Tap to roll", items = listOf({
-        DiceRollButton(value = 4, imageResource = painterResource("d4_icon.xml"))
-    }, {
-        DiceRollButton(value = 6, imageResource = painterResource("d6_icon.xml"))
-    }, {
-        DiceRollButton(value = 8, imageResource = painterResource("d8_icon.xml"))
-    }, {
-        DiceRollButton(value = 10, imageResource = painterResource("d10_icon.xml"))
-    }, {
-        DiceRollButton(value = 12, imageResource = painterResource("d12_icon.xml"))
-    }, {
-        DiceRollButton(value = 20, imageResource = painterResource("d20_icon.xml"))
-    }))
+    var lastResult by remember { mutableIntStateOf(0) }
+    Column(modifier = modifier, verticalArrangement = Arrangement.Center) {
+        Spacer(modifier = Modifier.weight(0.2f))
+        GridDialogContent(modifier = Modifier.weight(0.8f), title = "Tap to roll", items = listOf({
+            DiceRollButton(value = 4, imageResource = painterResource("d4_icon.xml"), resultCallBack = { lastResult = it })
+        }, {
+            DiceRollButton(value = 6, imageResource = painterResource("d6_icon.xml"), resultCallBack = { lastResult = it })
+        }, {
+            DiceRollButton(value = 8, imageResource = painterResource("d8_icon.xml"), resultCallBack = { lastResult = it })
+        }, {
+            DiceRollButton(value = 10, imageResource = painterResource("d10_icon.xml"), resultCallBack = { lastResult = it })
+        }, {
+            DiceRollButton(value = 12, imageResource = painterResource("d12_icon.xml"), resultCallBack = { lastResult = it })
+        }, {
+            DiceRollButton(value = 20, imageResource = painterResource("d20_icon.xml"), resultCallBack = { lastResult = it })
+        }))
+        Text(
+            text = "Last result",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = 20.scaledSp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.weight(0.01f))
+        Box(modifier = Modifier
+            .size(150.dp)
+            .align(Alignment.CenterHorizontally)
+            .background(MaterialTheme.colorScheme.onPrimary.copy(alpha= 0.1f), RoundedCornerShape(20.dp))
+            .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+        ) {
+            //TODO: make this a copy of the dice roll button
+            Text(
+                modifier = Modifier.align(Alignment.Center).wrapContentSize(),
+                text = lastResult.toString(),
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 50.scaledSp,
+                lineHeight = 50.scaledSp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+        }
+        Spacer(modifier = Modifier.weight(0.2f))
+    }
 }
 
 /**
@@ -78,7 +119,8 @@ fun DiceRollButton(
     imageResource: Painter = painterResource("d20_icon.xml"),
     mainColor: Color = MaterialTheme.colorScheme.onPrimary,
     enabled: Boolean = true,
-    visible: Boolean = true
+    visible: Boolean = true,
+    resultCallBack: (Int) -> Unit = {}
 ) {
 
     var faceValue: Int by remember { mutableIntStateOf(value) }
@@ -97,6 +139,7 @@ fun DiceRollButton(
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 delay(60)
             }
+            resultCallBack(faceValue)
         }
     }
 
