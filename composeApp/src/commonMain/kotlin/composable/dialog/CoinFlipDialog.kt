@@ -52,6 +52,20 @@ import theme.scaledSp
 import kotlin.random.Random
 
 /**
+ * TODO:
+ * - add krarks thumb toggle, with hold down function to change to number
+ *  - modify flipping behavior when krark thumb is toggled
+ * - "flip till lose" button
+ * - popup to show results
+ *        single flip: "WIN by X heads, Y tails in Z flips" HT
+ *        flip till lose: "X wins by flipping Y heads, Z tails in M flips" HH | HT | TH | TT
+ *
+ * - "set winning side" button
+ * -
+ */
+
+
+/**
  * A dialog that allows the user to flip a coin and view the history of flips
  * @param modifier the modifier for this composable
  * @param history the list of coin flips
