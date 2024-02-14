@@ -103,7 +103,7 @@ fun AboutMeDialogBody(
             )
             Text(
                 modifier = Modifier.padding(bottom = 5.dp),
-                text = "Nick is an undergraduate studying computer science and chemical engineering at Northeastern University. He splits his time between reading, biking, developing his side projects, and gaming.",
+                text = "Nick is an undergraduate studying computer science and chemical engineering at Northeastern University and is pursuing a career in software development. He splits his time between reading, biking, and gaming.",
                 style = TextStyle(
                     fontSize = 16.scaledSp,
                     color = MaterialTheme.colorScheme.onPrimary
