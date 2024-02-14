@@ -1164,11 +1164,11 @@ fun SettingsMenu(
                     }
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("download_icon.xml"),
-                            text = "Load Profile"
+                            imageResource = painterResource("transparent.xml"),
+                            text = ""
                         ) {
-                            state = SettingsState.LoadPlayer
-                            backStack.add { state = SettingsState.Default }
+//                            state = SettingsState.LoadPlayer
+//                            backStack.add { state = SettingsState.Default }
                         }
                     }
 
@@ -1258,9 +1258,11 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("transparent.xml"),
-                            text = ""
+                            imageResource = painterResource("download_icon.xml"),
+                            text = "Load Profile"
                         ) {
+                            state = SettingsState.LoadPlayer
+                            backStack.add { state = SettingsState.Customize }
 //                            player.imageUri = null
 //                            SettingsManager.savePlayerPref(player)
                         }
