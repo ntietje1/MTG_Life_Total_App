@@ -75,6 +75,7 @@ fun MiddleButtonDialog(
     val haptic = LocalHapticFeedback.current
 //    val duration = viewModel.correctAnimationDuration(450, context)
     val duration = 450
+    var showResetDialog by remember { mutableStateOf(false) }
 
 
     val enterAnimation = slideInHorizontally(
@@ -266,8 +267,9 @@ fun MiddleButtonDialog(
                                 text = "Reset Game",
                                 shadowEnabled = false,
                                 onPress = {
-                                    component.resetPlayerStates()
-                                    onDismiss()
+                                    showResetDialog = true
+//                                    component.resetPlayerStates()
+//                                    onDismiss()
                                 })
                         },
                         {
@@ -390,6 +392,27 @@ fun MiddleButtonDialog(
                 )
             }
         }
+    }
+
+    if (showResetDialog) {
+        WarningDialog(
+            onDismiss = { showResetDialog = false },
+            title = "Reset Game",
+            message = "Would you like to reset the game state or game state + player customizations?",
+            optionOneMessage = "Game State",
+            optionTwoMessage = "Game State + Customizations",
+            onOptionOne = {
+                component.resetPlayerStates()
+                showResetDialog = false
+                onDismiss()
+            },
+            onOptionTwo = {
+                component.resetCustomizations()
+                component.resetPlayerStates()
+                showResetDialog = false
+                onDismiss()
+            },
+        )
     }
 
     SettingsDialog(
