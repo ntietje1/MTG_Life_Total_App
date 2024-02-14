@@ -96,6 +96,15 @@ class LifeCounterComponent(
     }
 
     /**
+     * Resets all player prefs
+     */
+    fun resetCustomizations() {
+        allPlayers.forEach {
+            resetPlayerPrefs(it)
+        }
+    }
+
+    /**
      * Resets the player prefs for a given player
      * @param player The player to reset
      */
