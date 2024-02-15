@@ -151,6 +151,7 @@ fun PlayerButton(
     val scope = rememberCoroutineScope()
     var showFilePicker by remember { mutableStateOf(false) }
     var showCameraWarning by remember { mutableStateOf(false) }
+    var showResetPrefsDialog by remember { mutableStateOf(false) }
 
     val fileType = listOf("jpg", "png")
     FilePicker(show = showFilePicker, fileExtensions = fileType) { file ->
@@ -164,6 +165,24 @@ fun PlayerButton(
                 SettingsManager.savePlayerPref(player)
             }
         }
+    }
+
+    if (showResetPrefsDialog) {
+        WarningDialog(
+            title = "Reset Preferences",
+            message = "Are you sure you want to reset all preferences for this player?",
+            optionOneEnabled = true,
+            optionTwoEnabled = true,
+            optionOneMessage = "Reset",
+            optionTwoMessage = "Cancel",
+            onOptionOne = {
+                component.resetPlayerPrefs(player)
+                showResetPrefsDialog = false
+            },
+            onDismiss = {
+                showResetPrefsDialog = false
+            }
+        )
     }
 
     if (showCameraWarning) {
@@ -408,7 +427,10 @@ fun PlayerButton(
                                     onScryfallButtonClick = {
                                         showScryfallSearch = !showScryfallSearch
                                     },
-                                    onResetPrefsClick = { component.resetPlayerPrefs(player) },
+                                    onResetPrefsClick = {
+                                        showResetPrefsDialog = true
+//                                        component.resetPlayerPrefs(player)
+                                                        },
                                     setBlurBackground = { component.blurBackground.value = it },
                                 )
                             }
@@ -855,7 +877,7 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
 
             PlayerButtonState.COMMANDER_DEALER -> player.color.saturateColor(0.5f).brightenColor(0.6f)
 
-            PlayerButtonState.SETTINGS -> player.color.saturateColor(0.9f).brightenColor(0.9f)
+            PlayerButtonState.SETTINGS -> player.color
             else -> throw Exception("unsupported state")
         }
         if (player.isDead) {
