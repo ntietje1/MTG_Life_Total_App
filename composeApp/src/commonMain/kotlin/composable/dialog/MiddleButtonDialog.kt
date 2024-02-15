@@ -43,6 +43,7 @@ import androidx.compose.ui.window.DialogProperties
 import composable.lifecounter.LifeCounterComponent
 import data.SettingsManager
 import data.SettingsManager.startingLife
+import getAnimationCorrectionFactor
 import theme.scaledSp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -73,10 +74,8 @@ fun MiddleButtonDialog(
     var state by remember { mutableStateOf(MiddleButtonDialogState.Default) }
     val backStack = remember { mutableStateListOf(onDismiss) }
     val haptic = LocalHapticFeedback.current
-//    val duration = viewModel.correctAnimationDuration(450, context)
-    val duration = 450
+    val duration = (450 / getAnimationCorrectionFactor()).toInt()
     var showResetDialog by remember { mutableStateOf(false) }
-
 
     val enterAnimation = slideInHorizontally(
         TweenSpec(
@@ -268,8 +267,6 @@ fun MiddleButtonDialog(
                                 shadowEnabled = false,
                                 onPress = {
                                     showResetDialog = true
-//                                    component.resetPlayerStates()
-//                                    onDismiss()
                                 })
                         },
                         {
@@ -398,9 +395,9 @@ fun MiddleButtonDialog(
         WarningDialog(
             onDismiss = { showResetDialog = false },
             title = "Reset Game",
-            message = "Would you like to reset the game state or game state + player customizations?",
-            optionOneMessage = "Game State",
-            optionTwoMessage = "Game State + Customizations",
+            message = "Would you like to start a new game with the same players, or reset all customizations as well?",
+            optionOneMessage = "New game, same players",
+            optionTwoMessage = "New game, different players",
             onOptionOne = {
                 component.resetPlayerStates()
                 showResetDialog = false
