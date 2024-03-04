@@ -27,14 +27,6 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export(libs.decompose)
-//            export("com.arkivanov.essenty:lifecycle:<essenty_version>")
-
-//            // Optional, only if you need state preservation on Darwin (Apple) targets
-//            export("com.arkivanov.essenty:state-keeper:<essenty_version>")
-//
-//            // Optional, only if you need state preservation on Darwin (Apple) targets
-//            export("com.arkivanov.parcelize.darwin:runtime:<parcelize_darwin_version>")
         }
     }
     
@@ -64,9 +56,9 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
         }
-        iosMain.dependencies {
-            commonMain
-        }
+//        iosMain.dependencies {
+//            commonMain
+//        }
     }
 }
 
@@ -82,7 +74,7 @@ android {
         applicationId = "com.hypeapps.lifelinked"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode =4
+        versionCode = 4
         versionName = "1.3"
     }
     packaging {
