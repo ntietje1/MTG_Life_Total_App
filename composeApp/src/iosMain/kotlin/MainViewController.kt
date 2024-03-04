@@ -4,7 +4,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 //import navigation.RootComponent
 
-fun rootViewController(): UIViewController = ComposeUIViewController {
+fun MainViewController(): UIViewController = ComposeUIViewController {
     val root = remember {
         RootComponent(DefaultComponentContext(LifecycleRegistry()))
     }
