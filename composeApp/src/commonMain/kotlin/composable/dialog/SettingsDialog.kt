@@ -97,6 +97,11 @@ fun SettingsDialogContent(
                         toggle = { SettingsManager.keepScreenOn = it },
                         icon = painterResource("sun_icon.xml")
                     )
+//                    SettingsDialogButton(
+//                        text = "View Tutorial Again", additionalText = "", icon = painterResource("reset_icon.xml")
+//                    ) {
+////                        SettingsManager.tutorialCompleted = false
+//                    }
                 }
             }
             item {
