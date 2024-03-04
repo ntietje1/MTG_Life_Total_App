@@ -16,6 +16,8 @@ kotlin {
             }
         }
     }
+
+
     
     listOf(
         iosX64(),
@@ -25,6 +27,14 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            export(libs.decompose)
+//            export("com.arkivanov.essenty:lifecycle:<essenty_version>")
+
+//            // Optional, only if you need state preservation on Darwin (Apple) targets
+//            export("com.arkivanov.essenty:state-keeper:<essenty_version>")
+//
+//            // Optional, only if you need state preservation on Darwin (Apple) targets
+//            export("com.arkivanov.parcelize.darwin:runtime:<parcelize_darwin_version>")
         }
     }
     
