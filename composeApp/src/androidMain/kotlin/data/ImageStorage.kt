@@ -45,7 +45,7 @@ actual class ImageStorage {
     }
 
     /**
-     * Saves an image to the platform-specific storage
+     * Saves an image to the platform-specific app storage
      * @param bytes The image data to save
      * @param name The name of the image
      * @param extension The extension of the image
@@ -60,16 +60,6 @@ actual class ImageStorage {
             FileProvider.getUriForFile(
                 context, ContextCompat.getString(context, R.string.file_provider_authority), File(context.filesDir, fileName)
             ).toString()
-        }
-    }
-
-    /**
-     * Deletes an image from the platform-specific storage
-     * @param fileName The name of the image to delete
-     */
-    actual suspend fun deleteImage(fileName: String) {
-        withContext(context = Dispatchers.IO) {
-            context.deleteFile(fileName)
         }
     }
 
@@ -97,7 +87,7 @@ actual class ImageStorage {
     }
 
     /**
-     * Retrieves an image from the platform-specific storage
+     * Converts a ByteArray to bitmap
      * @param bytes The image data to convert
      * @param reqWidth The width of the image (in pixels)
      * @param reqHeight The height of the image (in pixels)

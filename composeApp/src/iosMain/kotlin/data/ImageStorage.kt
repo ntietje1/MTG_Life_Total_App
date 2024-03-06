@@ -2,6 +2,8 @@ package data
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
+import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +25,7 @@ import platform.Foundation.writeToFile
  */
 @Composable
 actual fun initImageManager(): ImageStorage {
-    throw NotImplementedError()
+    return ImageStorage()
 }
 
 /**
@@ -31,57 +33,43 @@ actual fun initImageManager(): ImageStorage {
  */
 actual class ImageStorage {
 
-    private val fileManager = NSFileManager.defaultManager
-    private val documentDirectory = NSSearchPathForDirectoriesInDomains(
-        directory = NSDocumentDirectory,
-        domainMask = NSUserDomainMask,
-        expandTilde = true
-    ).first() as NSString
-
+    /**
+     * Saves an image to the platform-specific app storage
+     * @param bytes The image data to save
+     * @param name The name of the image
+     * @param extension The extension of the image
+     * @return The path to the saved image
+     */
     actual suspend fun saveImage(bytes: ByteArray, name: String, extension: String): String {
-        return withContext(Dispatchers.Default) {
-            val fileName = name + NSUUID.UUID().UUIDString + ".jpg"
-            val fullPath = documentDirectory.stringByAppendingPathComponent(fileName)
-
-            val data = bytes.usePinned {
-                NSData.create(
-                    bytes = it.addressOf(0),
-                    length = bytes.size.toULong()
-                )
-            }
-
-            data.writeToFile(
-                path = fullPath,
-                atomically = true
-            )
-            fullPath
-        }
-    }
-
-//    actual suspend fun getImage(fileName: String): ByteArray? {
-//        return withContext(Dispatchers.Default) {
-//            memScoped {
-//                NSData.dataWithContentsOfFile(fileName)?.let { bytes ->
-//                    val array = ByteArray(bytes.length.toInt())
-//                    bytes.getBytes(array.refTo(0).getPointer(this), bytes.length)
-//                    return@withContext array
-//                }
-//            }
-//            return@withContext null
-//        }
-//    }
-
-    actual suspend fun deleteImage(fileName: String) {
-        withContext(Dispatchers.Default) {
-            fileManager.removeItemAtPath(fileName, null)
-        }
-    }
-
-    actual suspend fun imageBitmapFromBytes(bytes: ByteArray, reqWidth: Int, reqHeight: Int): ImageBitmap {
         throw NotImplementedError()
     }
 
+    /**
+     * Retrieves an image from the platform-specific storage
+     * @param uri The uri of the image to retrieve
+     * @return The image as a ByteArray
+     */
     actual suspend fun getByteArrayFromLocalUri(uri: String): ByteArray {
+        throw NotImplementedError()
+    }
+
+    /**
+     * Retrieves an image over http
+     * @param url The url to retrieve the image from
+     * @return The image as a ByteArray
+     */
+    actual suspend fun getByteArrayFromHttp(url: String): ByteArray {
+        throw NotImplementedError()
+    }
+
+    /**
+     * Converts a ByteArray to bitmap
+     * @param bytes The image data to convert
+     * @param reqWidth The width of the image (in pixels)
+     * @param reqHeight The height of the image (in pixels)
+     * @return The image as an ImageBitmap
+     */
+    actual suspend fun imageBitmapFromBytes(bytes: ByteArray, reqWidth: Int, reqHeight: Int): ImageBitmap {
         throw NotImplementedError()
     }
 

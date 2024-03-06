@@ -24,13 +24,7 @@ expect class ImageStorage private constructor() {
     suspend fun saveImage(bytes: ByteArray, name: String, extension: String): String
 
     /**
-     * Deletes an image from the platform-specific storage
-     * @param fileName The name of the image to delete
-     */
-    suspend fun deleteImage(fileName: String)
-
-    /**
-     * Retrieves an image from the platform-specific storage
+     * Converts a ByteArray to bitmap
      * @param bytes The image data to convert
      * @param reqWidth The width of the image (in pixels)
      * @param reqHeight The height of the image (in pixels)
