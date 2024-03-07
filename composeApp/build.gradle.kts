@@ -46,15 +46,15 @@ kotlin {
             @OptIn(ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
             implementation(libs.ktor.client.core)
-//            implementation("com.squareup.okhttp3:okhttp:4.12.0")
             implementation("org.slf4j:slf4j-simple:2.0.11") // needed because some other dependency was causing error during bundle generating
             implementation(libs.kotlinx.datetime)
-            implementation(libs.kamel.image)
             implementation(libs.decompose)
             implementation(libs.decompose.extensions.compose.jetbrains)
             implementation(libs.mpfilepicker)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
         }
 //        iosMain.dependencies {
 //            commonMain

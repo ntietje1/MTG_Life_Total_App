@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,13 +47,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import coil3.compose.AsyncImage
 import composable.lifecounter.LifeCounterComponent
 import data.ScryfallApiRetriever
 import data.SettingsManager
 import data.serializable.Card
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
-import io.ktor.http.Url
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -440,14 +437,13 @@ fun PlaneChaseCardPreview(
                         showLargeImage = false
                     })
                 }) {
-                KamelImage(
+                AsyncImage(
+                    model = card!!.getUris().large,
                     modifier = Modifier
                         .clip(CutCornerShape(125.dp))
                         .fillMaxSize(0.85f)
                         .align(Alignment.Center),
-                    onLoading = { progress -> CircularProgressIndicator(progress, color = MaterialTheme.colorScheme.onPrimary) },
-                    resource = asyncPainterResource(Url(card!!.getUris().large)),
-                    contentDescription = null
+                    contentDescription = ""
                 )
             }
 
@@ -485,7 +481,7 @@ fun PlaneChaseCardPreview(
                         }
                     )
             ) {
-                KamelImage(
+                AsyncImage(
                     modifier = Modifier
                         .fillMaxSize()
                         .then(
@@ -499,9 +495,9 @@ fun PlaneChaseCardPreview(
                                     .clip(CutCornerShape(clipSize + 0.5f.dp))
                             }
                         ),
-                    onLoading = { progress -> CircularProgressIndicator(progress, color = MaterialTheme.colorScheme.onPrimary) },
-                    resource = asyncPainterResource(Url(card.getUris().normal)),
-                    contentDescription = null
+                    model = card.getUris().normal,
+                    contentDescription = ""
+
                 )
             }
 

@@ -70,8 +70,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.darkrockstudios.libraries.mpfilepicker.FilePicker
-import composable.AsyncImage
 import composable.dialog.ColorDialog
 import composable.dialog.ScryfallSearchDialog
 import composable.dialog.SettingsButton
@@ -157,10 +157,8 @@ fun PlayerButton(
     FilePicker(show = showFilePicker, fileExtensions = fileType) { file ->
         showFilePicker = false
         if (file != null) {
-            val fileExtension = if (file.path.endsWith(".jpg")) "jpg" else "png"
             scope.launch {
-                val imageBytes = imageManager.getByteArrayFromLocalUri(file.path)
-                val copiedUri = imageManager.saveImage(bytes = imageBytes, name = player.name, extension = fileExtension)
+                val copiedUri = imageManager.copyImageToLocalStorage(file.path, player.name)
                 player.imageUri = copiedUri
                 SettingsManager.savePlayerPref(player)
             }
@@ -908,7 +906,7 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
             else -> throw Exception("unsupported state")
         }
         AsyncImage(
-            uri = player.imageUri!!,
+            model = player.imageUri!!,
             contentDescription = "Player uploaded image",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
@@ -1608,7 +1606,7 @@ fun MiniPlayerButton(
             ) {}
         } else {
             AsyncImage(
-                uri = player.imageUri!!,
+                model = player.imageUri!!,
                 contentDescription = "Player uploaded image",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,

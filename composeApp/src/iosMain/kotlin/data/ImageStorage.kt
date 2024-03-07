@@ -1,23 +1,7 @@
 package data
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.ImageBitmap
-import kotlinx.cinterop.BetaInteropApi
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import platform.Foundation.NSData
-import platform.Foundation.NSDocumentDirectory
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSSearchPathForDirectoriesInDomains
-import platform.Foundation.NSString
-import platform.Foundation.NSUUID
-import platform.Foundation.NSUserDomainMask
-import platform.Foundation.create
-import platform.Foundation.stringByAppendingPathComponent
-import platform.Foundation.writeToFile
 
 /**
  * Initializes the ImageStorage class with platform-specific implementations
@@ -34,43 +18,25 @@ actual fun initImageManager(): ImageStorage {
 actual class ImageStorage {
 
     /**
-     * Saves an image to the platform-specific app storage
-     * @param bytes The image data to save
-     * @param name The name of the image
-     * @param extension The extension of the image
-     * @return The path to the saved image
+     * @param uri the path to the temporarily available image
+     * @param fileName the name to use for the file
+     * @param extension the file extension of the image
+     * @return the path to the image in the app's local storage
      */
-    actual suspend fun saveImage(bytes: ByteArray, name: String, extension: String): String {
-        throw NotImplementedError()
-    }
+    actual suspend fun copyImageToLocalStorage(uri: String, fileName: String): String = withContext(Dispatchers.Default) {
+        val fileManager = NSFileManager.defaultManager()
+        val directoryPath = fileManager.URLsForDirectory(NSDocumentDirectory, NSUserDomainMask).first() as NSURL
+        val newFilePath = directoryPath.URLByAppendingPathComponent(fileName).absoluteString
 
-    /**
-     * Retrieves an image from the platform-specific storage
-     * @param uri The uri of the image to retrieve
-     * @return The image as a ByteArray
-     */
-    actual suspend fun getByteArrayFromLocalUri(uri: String): ByteArray {
-        throw NotImplementedError()
-    }
+        val originalFileUrl = NSURL(string = uri)
+        val newFileUrl = NSURL(string = newFilePath)
 
-    /**
-     * Retrieves an image over http
-     * @param url The url to retrieve the image from
-     * @return The image as a ByteArray
-     */
-    actual suspend fun getByteArrayFromHttp(url: String): ByteArray {
-        throw NotImplementedError()
-    }
+        originalFileUrl?.let { originalUrl ->
+            newFileUrl?.let { destinationUrl ->
+                fileManager.copyItemAtURL(originalUrl, destinationUrl, null)
+            }
+        }
 
-    /**
-     * Converts a ByteArray to bitmap
-     * @param bytes The image data to convert
-     * @param reqWidth The width of the image (in pixels)
-     * @param reqHeight The height of the image (in pixels)
-     * @return The image as an ImageBitmap
-     */
-    actual suspend fun imageBitmapFromBytes(bytes: ByteArray, reqWidth: Int, reqHeight: Int): ImageBitmap {
-        throw NotImplementedError()
+        newFilePath
     }
-
 }
