@@ -5,8 +5,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import composable.playerselect.PlayerSelectScreen
-import io.kamel.core.config.KamelConfig
-import io.kamel.core.config.httpFetcher
 import composable.lifecounter.LifeCounterScreen
 import data.SettingsManager
 import theme.LifeLinkedTheme
@@ -19,7 +17,6 @@ fun LifeLinkedApp(
     root: RootComponent,
 ) {
     var darkTheme by remember { mutableStateOf(SettingsManager.darkTheme) }
-    EnableImageCache(10)
 
     LifeLinkedTheme(darkTheme = darkTheme) {
         updateSystemBarsColors(darkTheme)
@@ -40,18 +37,6 @@ fun LifeLinkedApp(
 
             else -> {
             }
-        }
-    }
-}
-
-/**
- * Enables temporary image caching
- */
-@Composable
-fun EnableImageCache(sizeMB: Int = 10) {
-    KamelConfig {
-        httpFetcher {
-            httpCache(sizeMB * 1024 * 1024L)
         }
     }
 }
