@@ -34,7 +34,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.decompose)
+//            implementation(libs.decompose)
             implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
@@ -56,9 +56,9 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
         }
-//        iosMain.dependencies {
-//            commonMain
-//        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
     }
 }
 
