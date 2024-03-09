@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
 
             LifeLinkedApp(root)
 
-            val flag =WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+            val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
             DisposableEffect(activity) {
                 activity.window.addFlags(flag)
                 onDispose {
