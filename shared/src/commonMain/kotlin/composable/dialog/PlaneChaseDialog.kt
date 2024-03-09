@@ -79,14 +79,6 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, component: LifeCounte
     var planarDieResultVisible by remember { mutableStateOf(false) }
     var planarDieResult by remember { mutableStateOf(PlanarDieResult.NO_EFFECT) }
 
-//    LaunchedEffect(component.planarDeck) {
-//        if (component.planarDeck.isNotEmpty()) {
-//            component.planeBackStack.clear()
-//            component.planarDeck.shuffle()
-//            savePlanarDeck(component.planarDeck)
-//        }
-//    }
-
     if (planarDieResultVisible) {
         Dialog(onDismissRequest = { planarDieResultVisible = false }, properties = DialogProperties(
             usePlatformDefaultWidth = false
@@ -326,14 +318,16 @@ fun ChoosePlanesDialogContent(
 
     fun searchPlanes(onResult: (List<Card>) -> Unit) {
         coroutineScope.launch {
-            focusManager.clearFocus()
             val newCards = actions.search()
             onResult(newCards)
         }
     }
 
     LaunchedEffect(Unit) {
-        searchPlanes { actions.updateAllPlanes(it) }
+        searchPlanes {
+            actions.updateAllPlanes(it)
+            focusManager.clearFocus()
+        }
     }
 
     BoxWithConstraints(modifier = modifier) {
@@ -372,6 +366,7 @@ fun ChoosePlanesDialogContent(
                         card = card,
                         addToPlanarDeck = { actions.select(card) },
                         removeFromPlanarDeck = { actions.unselect(card) },
+                        onPress = focusManager::clearFocus,
                         allowSelection = true,
                         selected = { actions.isInPlanarDeck(card) }
                     )
@@ -409,6 +404,7 @@ fun ChoosePlanesDialogContent(
  * @param allowSelection whether the card can be selected
  * @param addToPlanarDeck the action to perform when the card is selected
  * @param removeFromPlanarDeck the action to perform when the card is unselected
+ * @param onPress the action to perform when the card is pressed
  * @param allowEnlarge whether the card can be enlarged to preview the full image
  * @param selected callback to check whether the card is selected
  */
@@ -420,6 +416,7 @@ fun PlaneChaseCardPreview(
     allowSelection: Boolean = false,
     addToPlanarDeck: (Card) -> Unit = {},
     removeFromPlanarDeck: (Card) -> Unit = {},
+    onPress: () -> Unit = {},
     allowEnlarge: Boolean = true,
     selected: () -> Boolean = { false }
 ) {
@@ -457,17 +454,21 @@ fun PlaneChaseCardPreview(
                 detectTapGestures(onLongPress = {
                     showLargeImage = true
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                }, onTap = {
-                    if (allowSelection) {
-                        if (!selected.invoke()) {
-                            addToPlanarDeck(card)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        } else {
-                            removeFromPlanarDeck(card)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                },
+                    onPress = {
+                        onPress()
+                    },
+                    onTap = {
+                        if (allowSelection) {
+                            if (!selected.invoke()) {
+                                addToPlanarDeck(card)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            } else {
+                                removeFromPlanarDeck(card)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
                         }
-                    }
-                })
+                    })
             }) {
             val clipSize = maxWidth / 20f
             Box(
