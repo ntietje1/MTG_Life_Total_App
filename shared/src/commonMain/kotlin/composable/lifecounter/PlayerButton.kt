@@ -1069,7 +1069,7 @@ fun NumericValue(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                modifier = Modifier.padding(top = 5.dp).offset(y = (largeTextSize / 32f).dp),
+                modifier = Modifier.padding(top = 5.dp).offset(y = (largeTextSize / 24f).dp),
                 text = player.name,
                 color = player.textColor,
                 fontSize = smallTextSize.scaledSp,
@@ -1077,7 +1077,7 @@ fun NumericValue(
                 style = textShadowStyle
             )
             Row(
-                modifier = Modifier.wrapContentSize(unbounded = true).offset(y = (-largeTextSize / 7f).dp).padding(top = largeTextPadding),
+                modifier = Modifier.wrapContentSize(unbounded = true).offset(y = (-largeTextSize / 12f).dp).padding(top = largeTextPadding),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
