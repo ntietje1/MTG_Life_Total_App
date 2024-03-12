@@ -39,6 +39,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import composable.dialog.SettingsButton
 import composable.modifier.routePointerChangesTo
 import composable.playerselect.PlayerSelectScreenValues.deselectDuration
 import composable.playerselect.PlayerSelectScreenValues.finalDeselectDuration
@@ -51,11 +52,10 @@ import composable.playerselect.PlayerSelectScreenValues.pulseDuration2
 import composable.playerselect.PlayerSelectScreenValues.pulseFreq
 import composable.playerselect.PlayerSelectScreenValues.selectionDelay
 import composable.playerselect.PlayerSelectScreenValues.showHelperTextDelay
+import getAnimationCorrectionFactor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import composable.dialog.SettingsButton
-import getAnimationCorrectionFactor
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import theme.allPlayerColors
@@ -184,6 +184,7 @@ fun PlayerSelectScreenBase(
      * Called when a pointer goes down
      */
     fun onDown(event: PointerInputChange) {
+        println("onDown @" + event.position.x + ", " + event.position.y)
         if (circles.size < 6 && selectedId == null) {
             circles[event.id] = Circle(
                 x = event.position.x, y = event.position.y
