@@ -56,6 +56,7 @@ import getAnimationCorrectionFactor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import theme.allPlayerColors
@@ -137,7 +138,7 @@ fun PlayerSelectScreenBase(
     component: PlayerSelectComponent, showHelperText: MutableState<Boolean>
 ) {
     val circles = remember { mutableStateMapOf<PointerId, Circle>() }
-    val lastKnownPositions = remember { mutableMapOf<PointerId, Offset>() }
+    val lastMoved = remember { mutableMapOf<PointerId, Long>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
     var selectedId: PointerId? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
@@ -192,6 +193,7 @@ fun PlayerSelectScreenBase(
                 applyRandomColor(this)
                 CoroutineScope(scope.coroutineContext).launch { popIn() }
             }
+            lastMoved[event.id] = Clock.System.now().toEpochMilliseconds()
             allGoToNormal()
         }
     }
@@ -201,6 +203,7 @@ fun PlayerSelectScreenBase(
      */
     fun onMove(event: PointerInputChange) {
         circles[event.id]?.updatePosition(event.position.x, event.position.y)
+        lastMoved[event.id] = Clock.System.now().toEpochMilliseconds()
     }
 
     /**
@@ -227,16 +230,13 @@ fun PlayerSelectScreenBase(
         scope.launch {
             while (true) {
                 circles.entries.forEach { (id, circle) ->
-                    val lastKnownPosition = lastKnownPositions[id]
-                    if (lastKnownPosition != null && lastKnownPosition == Offset(circle.x, circle.y)) {
+                    val lastKnownPosition = lastMoved[id]
+                    if (lastKnownPosition != null && lastKnownPosition + 500L < Clock.System.now().toEpochMilliseconds()) {
                         // The circle hasn't moved since the last check, so it could be 'bugged'
                         disappearCircle(id, deselectDuration/2)
-                    } else {
-                        // Update the last known position
-                        lastKnownPositions[id] = Offset(circle.x, circle.y)
                     }
                 }
-                delay(500L)
+                delay(10L)
             }
         }
     }
