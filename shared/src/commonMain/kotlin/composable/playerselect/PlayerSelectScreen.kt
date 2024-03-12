@@ -137,11 +137,9 @@ fun PlayerSelectScreenBase(
     component: PlayerSelectComponent, showHelperText: MutableState<Boolean>
 ) {
     val circles = remember { mutableStateMapOf<PointerId, Circle>() }
-    val movementIndex = remember { mutableMapOf<PointerId, Int>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
     var selectedId: PointerId? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
-    val activeTouches = remember { mutableStateListOf<PointerId>() }
 
     /**
      * Applies a random default color to the circle that is not already used
@@ -169,7 +167,7 @@ fun PlayerSelectScreenBase(
     /**
      * Makes a circle disappear
      */
-    fun disappearCircle(id: PointerId, duration: Int) {
+    fun disappearCircle(id: PointerId, duration: Int = deselectDuration) {
         if (circles.containsKey(id)) {
             val circle = circles[id]!!
             disappearingCircles.add(circle)
@@ -193,7 +191,6 @@ fun PlayerSelectScreenBase(
                 applyRandomColor(this)
                 CoroutineScope(scope.coroutineContext).launch { popIn() }
             }
-            movementIndex[event.id] = 0
             allGoToNormal()
         }
     }
@@ -203,8 +200,6 @@ fun PlayerSelectScreenBase(
      */
     fun onMove(event: PointerInputChange) {
         circles[event.id]?.updatePosition(event.position.x, event.position.y)
-        movementIndex[event.id] = event.previousPosition.let { movementIndex[event.id]?.plus(1) } ?: 0
-        println("Movement index: ${movementIndex[event.id]}")
     }
 
     /**
@@ -214,28 +209,22 @@ fun PlayerSelectScreenBase(
         CoroutineScope(scope.coroutineContext).launch {
             val circle = circles[event.id]
             if (circles.size == 1 && selectedId != null) {
-//                println("Going to life counter screen")
                 launch {
                     circle?.growToScreen {
                         component.goToLifeCounterScreen()
                     }
                 }
             } else {
-//                println("Removed Circle @ position: x=${circle?.x}, y=${circle?.y}")
-                disappearCircle(event.id, deselectDuration)
+                disappearCircle(event.id)
             }
         }
-    }
-
-    LaunchedEffect(activeTouches) {
-        println("Active touches: $activeTouches")
     }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
         routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
             for (id in circles.keys) {
                 if (!it.contains(id)) {
-                    circles.remove(id)
+                    disappearCircle(id)
                 }
             }
         })
