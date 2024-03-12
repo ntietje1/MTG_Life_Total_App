@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,10 +49,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
-
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -62,16 +61,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
-import kotlinx.coroutines.launch
 import data.Player
 import data.ScryfallApiRetriever
 import data.SettingsManager
 import data.serializable.Card
 import data.serializable.Ruling
 import kotlinx.coroutines.delay
-import theme.scaledSp
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import theme.scaledSp
 
 /**
  * A dialog that allows the user to search for cards on Scryfall
@@ -127,6 +126,8 @@ fun ScryfallDialogContent(
     val initialBackStackSize by remember { mutableStateOf(backStack.size) }
     var _printingsButtonEnabled by remember { mutableStateOf(printingsButtonEnabled) }
 
+    var isSearchInProgress by remember { mutableStateOf(false) }
+
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
@@ -140,9 +141,11 @@ fun ScryfallDialogContent(
         coroutineScope.launch {
             clearResults()
             focusManager.clearFocus()
+            isSearchInProgress = true
             cardResults = scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError = cardResults.isEmpty()
             _printingsButtonEnabled = !disablePrintingsButton
+            isSearchInProgress = false
 
             if (initialBackStackSize == backStack.size) {
                 backStack.add {
@@ -169,19 +172,13 @@ fun ScryfallDialogContent(
     }
 
     Column(modifier) {
-        ScryfallSearchBar(
-            Modifier
-                .padding(top = 10.dp)
-                .padding(start = 20.dp, end = 20.dp)
-                .clip(RoundedCornerShape(10.dp)), query = query, onSearch = {
-                searchCards(query.value)
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            })
+        ScryfallSearchBar(Modifier.padding(top = 10.dp).padding(start = 20.dp, end = 20.dp).clip(RoundedCornerShape(10.dp)), query = query, searchInProgress = isSearchInProgress) {
+            searchCards(query.value)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
 
         AnimatedVisibility(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(top = 10.dp), visible = lastSearchWasError
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp), visible = lastSearchWasError
         ) {
             Text("No cards found :(", color = Color.Red, fontSize = 15.scaledSp)
         }
@@ -193,7 +190,11 @@ fun ScryfallDialogContent(
             if (cardResults.isEmpty() && rulingsResults.isEmpty()) return@LazyColumn
             item {
                 Text(
-                    "${cardResults.size + rulingsResults.size} results", color = MaterialTheme.colorScheme.onPrimary,  fontSize = 15.scaledSp, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 10.dp)
+                    "${cardResults.size + rulingsResults.size} results",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 15.scaledSp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(vertical = 10.dp)
                 )
             }
             items(cardResults) { card ->
@@ -234,59 +235,62 @@ fun ScryfallDialogContent(
  */
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>, onSearch: () -> Unit) {
+fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>, searchInProgress: Boolean = false, onSearch: () -> Unit) {
     Box(
         modifier = modifier.wrapContentSize()
     ) {
-        TextField(
-            value = query.value, onValueChange = { query.value = it }, label = { Text("Search Scryfall", fontSize = 15.scaledSp) }, singleLine = true,
+        TextField(value = query.value,
+            onValueChange = { query.value = it },
+            label = { Text("Search Scryfall", fontSize = 15.scaledSp) },
+            singleLine = true,
             textStyle = TextStyle(fontSize = 15.scaledSp, color = MaterialTheme.colorScheme.onPrimary),
             keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.None, autoCorrect = false, keyboardType = KeyboardType.Text, imeAction = ImeAction.Search,
-        ), keyboardActions = KeyboardActions(onSearch = {
-            onSearch()
-        }), colors = TextFieldDefaults.colors(
-            focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-            unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
-            disabledTextColor = MaterialTheme.colorScheme.onPrimary,
-            focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-            disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
-            cursorColor = MaterialTheme.colorScheme.onPrimary,
-            selectionColors = TextSelectionColors(
-                handleColor = MaterialTheme.colorScheme.onPrimary,
-                backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                capitalization = KeyboardCapitalization.None, autoCorrect = false, keyboardType = KeyboardType.Text, imeAction = ImeAction.Search,
             ),
-            focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
-            unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
-            disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent
-        ), modifier = Modifier
-            .height(60.dp)
-            .fillMaxWidth()
-            .border(
-                1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10.dp)
-            )
-            .align(Alignment.CenterStart)
+            keyboardActions = KeyboardActions(onSearch = {
+                onSearch()
+            }),
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                disabledTextColor = MaterialTheme.colorScheme.onPrimary,
+                focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
+                cursorColor = MaterialTheme.colorScheme.onPrimary,
+                selectionColors = TextSelectionColors(
+                    handleColor = MaterialTheme.colorScheme.onPrimary,
+                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                ),
+                focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
+                unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
+                disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.1f),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            ),
+            modifier = Modifier.height(60.dp).fillMaxWidth().border(
+                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10.dp)
+                ).align(Alignment.CenterStart)
         )
         Box(
-            Modifier
-                .wrapContentSize()
-                .padding(end = 10.dp)
-                .align(Alignment.CenterEnd)
+            Modifier.wrapContentSize().padding(end = 10.dp).align(Alignment.CenterEnd)
         ) {
             IconButton(
                 onClick = {
                     onSearch()
                 }, modifier = Modifier.size(50.dp)
             ) {
-                Icon(
-                    painter = painterResource("search_icon.xml"), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier
-                        .fillMaxSize()
-                        .padding(5.dp)
-                )
+                if (searchInProgress) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.fillMaxSize().padding(5.dp), color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource("search_icon.xml"), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.fillMaxSize().padding(5.dp)
+                    )
+                }
+
             }
         }
     }
@@ -312,7 +316,7 @@ fun ScryfallButton(modifier: Modifier = Modifier, text: String, onTap: () -> Uni
     })
     Box(
         modifier = modifier.pointerInput(Unit) {
-            detectTapGestures{ _ ->
+            detectTapGestures { _ ->
                 color = pressedColor
                 onTap()
             }
@@ -320,9 +324,7 @@ fun ScryfallButton(modifier: Modifier = Modifier, text: String, onTap: () -> Uni
 
         ) {
         Surface(
-            modifier = Modifier
-                .wrapContentSize()
-                .clip(RoundedCornerShape(10.dp)), color = animatedColor
+            modifier = Modifier.wrapContentSize().clip(RoundedCornerShape(10.dp)), color = animatedColor
         ) {
             Text(
                 text = text,
@@ -330,9 +332,7 @@ fun ScryfallButton(modifier: Modifier = Modifier, text: String, onTap: () -> Uni
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
                 style = TextStyle(fontSize = 13.scaledSp),
-                modifier = Modifier
-                    .padding(horizontal = 10.dp, vertical = 5.dp)
-                    .align(Alignment.Center)
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp).align(Alignment.Center)
             )
         }
     }
@@ -347,30 +347,21 @@ fun CardDetails(
     card: Card
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 5.dp)
-            .border(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp).border(
                 1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
-            )
-            .clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
+            ).clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
     ) {
         Column(Modifier.fillMaxWidth()) {
             Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp), text = "Oracle Text", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+                text = "Oracle Text", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center,
                 fontSize = 15.scaledSp,
             )
             Divider(
-                modifier = Modifier
-                    .fillMaxWidth(0.4f)
-                    .align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+                modifier = Modifier.fillMaxWidth(0.4f).align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
             )
             Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
                 text = card.oracleText ?: "",
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center,
@@ -390,29 +381,23 @@ fun RulingPreview(
     ruling: Ruling
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 5.dp)
-            .border(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp).border(
                 1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
-            )
-            .clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
+            ).clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
     ) {
         Column(Modifier.fillMaxWidth()) {
             Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp), text = ruling.publishedAt, fontSize = 15.scaledSp, color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+                text = ruling.publishedAt,
+                fontSize = 15.scaledSp,
+                color = MaterialTheme.colorScheme.onPrimary,
+                textAlign = TextAlign.Center
             )
             Divider(
-                modifier = Modifier
-                    .fillMaxWidth(0.4f)
-                    .align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+                modifier = Modifier.fillMaxWidth(0.4f).align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
             )
             Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
                 text = ruling.comment,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center,
@@ -444,20 +429,13 @@ fun CardPreview(
         Dialog(onDismissRequest = { showLargeImage = false }, properties = DialogProperties(
             usePlatformDefaultWidth = false
         ), content = {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
+            Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         showLargeImage = false
                     })
                 }) {
                 AsyncImage(
-                    model = card.getUris().large,
-                    modifier = Modifier
-                        .clip(CutCornerShape(125.dp))
-                        .fillMaxSize(0.85f)
-                        .align(Alignment.Center),
-                    contentDescription = ""
+                    model = card.getUris().large, modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = ""
                 )
             }
 
@@ -465,28 +443,18 @@ fun CardPreview(
     }
 
     Box(
-        modifier = Modifier
-            .wrapContentSize()
-            .padding(horizontal = 10.dp, vertical = 5.dp)
+        modifier = Modifier.wrapContentSize().padding(horizontal = 10.dp, vertical = 5.dp)
     ) {
         Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .border(
+            modifier = Modifier.fillMaxSize().border(
                     1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
-                )
-                .clip(RoundedCornerShape(30.dp)), color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f)
+                ).clip(RoundedCornerShape(30.dp)), color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f)
         ) {
             Row(
-                modifier = Modifier
-                    .padding(vertical = 10.dp, horizontal = 15.dp)
-                    .height(150.dp)
-                    .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.padding(vertical = 10.dp, horizontal = 15.dp).height(150.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(2.0f), verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.Start
+                    modifier = Modifier.fillMaxHeight().weight(2.0f), verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.Start
                 ) {
                     Text(
                         card.name, color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.scaledSp, lineHeight = 15.scaledSp, fontWeight = FontWeight.SemiBold
@@ -495,7 +463,7 @@ fun CardPreview(
                         card.setName, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.scaledSp, lineHeight = 13.scaledSp, fontWeight = FontWeight.Light
                     )
                     Text(
-                        card.artist, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.scaledSp, lineHeight = 15.scaledSp,fontWeight = FontWeight.Light
+                        card.artist, color = MaterialTheme.colorScheme.onPrimary, fontSize = 13.scaledSp, lineHeight = 15.scaledSp, fontWeight = FontWeight.Light
                     )
                     Text(
                         "© Wizards of the Coast",
@@ -506,25 +474,19 @@ fun CardPreview(
                     )
                     Row() {
                         if (rulingsButtonEnabled) {
-                            ScryfallButton(modifier = Modifier
-                                .width(80.dp)
-                                .wrapContentHeight(), text = "Rulings", onTap = {
+                            ScryfallButton(modifier = Modifier.width(80.dp).wrapContentHeight(), text = "Rulings", onTap = {
                                 onRulings()
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
                         }
                         if (selectButtonEnabled) {
-                            ScryfallButton(modifier = Modifier
-                                .width(80.dp)
-                                .wrapContentHeight(), text = "Select", onTap = {
+                            ScryfallButton(modifier = Modifier.width(80.dp).wrapContentHeight(), text = "Select", onTap = {
                                 onSelect()
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
                         }
                         if (printingsButtonEnabled) {
-                            ScryfallButton(modifier = Modifier
-                                .width(80.dp)
-                                .wrapContentHeight(), text = "Printings", onTap = {
+                            ScryfallButton(modifier = Modifier.width(80.dp).wrapContentHeight(), text = "Printings", onTap = {
                                 onPrintings()
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
@@ -532,21 +494,14 @@ fun CardPreview(
 
                     }
                 }
-                Box(
-                    Modifier
-                        .fillMaxHeight()
-                        .weight(1.0f)
-                        .clip(CutCornerShape(6.dp))
-                        .pointerInput(Unit) {
-                            detectTapGestures(onLongPress = {
-                                showLargeImage = true
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            })
-                        }) {
+                Box(Modifier.fillMaxHeight().weight(1.0f).clip(CutCornerShape(6.dp)).pointerInput(Unit) {
+                        detectTapGestures(onLongPress = {
+                            showLargeImage = true
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        })
+                    }) {
                     AsyncImage(
-                        model = card.getUris().large,
-                        modifier = Modifier.fillMaxSize(),
-                        contentDescription = ""
+                        model = card.getUris().large, modifier = Modifier.fillMaxSize(), contentDescription = ""
                     )
                 }
             }
