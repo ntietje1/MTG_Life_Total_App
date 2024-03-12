@@ -141,6 +141,17 @@ fun PlayerSelectScreenBase(
     var selectedId: PointerId? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(circles) {
+        scope.launch {
+            while (true) {
+                circles.values.forEach { circle ->
+                    println("Circle at position: x=${circle.x}, y=${circle.y}")
+                }
+                delay(1000L) // delay for 1 second
+            }
+        }
+    }
+
     /**
      * Applies a random default color to the circle that is not already used
      */
@@ -184,7 +195,6 @@ fun PlayerSelectScreenBase(
      * Called when a pointer goes down
      */
     fun onDown(event: PointerInputChange) {
-        println("onDown @" + event.position.x + ", " + event.position.y)
         if (circles.size < 6 && selectedId == null) {
             circles[event.id] = Circle(
                 x = event.position.x, y = event.position.y
