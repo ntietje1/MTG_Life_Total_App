@@ -56,7 +56,6 @@ import getAnimationCorrectionFactor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import theme.allPlayerColors
@@ -138,11 +137,11 @@ fun PlayerSelectScreenBase(
     component: PlayerSelectComponent, showHelperText: MutableState<Boolean>
 ) {
     val circles = remember { mutableStateMapOf<PointerId, Circle>() }
-    val lastMoved = remember { mutableMapOf<PointerId, Long>() }
+    val movementIndex = remember { mutableMapOf<PointerId, Int>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
     var selectedId: PointerId? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
-    var activeTouches by remember { mutableStateOf(0) }
+    val activeTouches = remember { mutableStateListOf<PointerId>() }
 
     /**
      * Applies a random default color to the circle that is not already used
@@ -194,7 +193,7 @@ fun PlayerSelectScreenBase(
                 applyRandomColor(this)
                 CoroutineScope(scope.coroutineContext).launch { popIn() }
             }
-            lastMoved[event.id] = Clock.System.now().toEpochMilliseconds()
+            movementIndex[event.id] = 0
             allGoToNormal()
         }
     }
@@ -204,7 +203,8 @@ fun PlayerSelectScreenBase(
      */
     fun onMove(event: PointerInputChange) {
         circles[event.id]?.updatePosition(event.position.x, event.position.y)
-        lastMoved[event.id] = Clock.System.now().toEpochMilliseconds()
+        movementIndex[event.id] = event.previousPosition.let { movementIndex[event.id]?.plus(1) } ?: 0
+        println("Movement index: ${movementIndex[event.id]}")
     }
 
     /**
@@ -227,24 +227,18 @@ fun PlayerSelectScreenBase(
         }
     }
 
-    LaunchedEffect(Unit) {
-        scope.launch {
-            while (true) {
-//                circles.entries.forEach { (id, circle) ->
-//                    val lastKnownPosition = lastMoved[id]
-//                    if (lastKnownPosition != null && lastKnownPosition + 500L < Clock.System.now().toEpochMilliseconds()) {
-//                        // The circle hasn't moved since the last check, so it could be 'bugged'
-//                        disappearCircle(id, deselectDuration/2)
-//                    }
-//                }
-                println("Active touches: $activeTouches")
-                delay(100L)
-            }
-        }
+    LaunchedEffect(activeTouches) {
+        println("Active touches: $activeTouches")
     }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
-        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, { activeTouches = it })
+        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
+            for (id in circles.keys) {
+                if (!it.contains(id)) {
+                    circles.remove(id)
+                }
+            }
+        })
     }) {
         LaunchedEffect(circles.size) {
             val selectionScope = CoroutineScope(coroutineContext)
@@ -390,7 +384,7 @@ private class Circle(
                 )
             }
             launch {
-                delay((duration*0.9f).toLong())
+                delay((duration * 0.9f).toLong())
                 onComplete()
             }
         }
