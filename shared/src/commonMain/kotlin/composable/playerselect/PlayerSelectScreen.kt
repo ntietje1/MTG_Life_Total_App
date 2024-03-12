@@ -237,7 +237,10 @@ fun PlayerSelectScreenBase(
     }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(Unit) {
-        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) })
+        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = {
+            onUp(it)
+            circles.remove(it.id)
+        })
     }) {
         LaunchedEffect(circles.size) {
             val selectionScope = CoroutineScope(coroutineContext)
