@@ -22,7 +22,7 @@ suspend fun PointerInputScope.routePointerChangesTo(
             val event = awaitPointerEvent()
             event.changes.forEach { pointerInputChange ->
                 when (event.type) {
-                    PointerEventType.Press -> {
+                    PointerEventType.Press, PointerEventType.Enter -> {
                         if (pointerInputChange.id !in activePointers) {
                             activePointers.add(pointerInputChange.id)
                             onDown(pointerInputChange)
@@ -30,7 +30,7 @@ suspend fun PointerInputScope.routePointerChangesTo(
                     }
 
                     PointerEventType.Move -> onMove(pointerInputChange)
-                    PointerEventType.Release -> {
+                    PointerEventType.Release, PointerEventType.Exit -> {
                         if (pointerInputChange.id in activePointers && pointerInputChange.previousPressed && !pointerInputChange.pressed) {
                             activePointers.remove(pointerInputChange.id)
                             onUp(pointerInputChange)
