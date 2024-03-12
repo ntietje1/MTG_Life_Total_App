@@ -29,11 +29,17 @@ class ScryfallApiRetriever {
     suspend fun searchScryfall(query: String): String = withContext(Dispatchers.IO) {
         try {
             val client = HttpClient()
-            val url = if (!query.startsWith("https://api.scryfall.com/")) {
-                "https://api.scryfall.com/cards/search?q=$query"
+            val q = if (query.isEmpty()) {
+                "\" \""
             } else {
-                query
+                "\"$query\""
             }
+            val url = if (!query.startsWith("https://api.scryfall.com/")) {
+                "https://api.scryfall.com/cards/search?q=$q"
+            } else {
+                q
+            }
+            println("URL: $url")
 
             val response = client.get(url)
             return@withContext response.body<String>()
@@ -50,6 +56,7 @@ class ScryfallApiRetriever {
      * @return A list of the given type
      */
     inline fun <reified T> parseScryfallResponse(response: String): List<T> {
+        println("Response: $response")
         return when (T::class) {
             Card::class -> {
                 val jsonResponse = json.decodeFromString<CardResponse>(response)

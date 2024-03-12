@@ -137,7 +137,6 @@ fun ScryfallDialogContent(
     }
 
     fun searchCards(qry: String, disablePrintingsButton: Boolean = false) {
-        if (qry.isBlank()) return
         coroutineScope.launch {
             clearResults()
             focusManager.clearFocus()
@@ -157,7 +156,6 @@ fun ScryfallDialogContent(
     }
 
     fun searchRulings(qry: String) {
-        if (qry.isBlank()) return
         coroutineScope.launch {
             clearResults()
             rulingsResults = scryfallApiRetriever.parseScryfallResponse<Ruling>(scryfallApiRetriever.searchScryfall(qry))
