@@ -142,6 +142,7 @@ fun PlayerSelectScreenBase(
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
     var selectedId: PointerId? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
+    var activeTouches by remember { mutableStateOf(0) }
 
     /**
      * Applies a random default color to the circle that is not already used
@@ -213,14 +214,14 @@ fun PlayerSelectScreenBase(
         CoroutineScope(scope.coroutineContext).launch {
             val circle = circles[event.id]
             if (circles.size == 1 && selectedId != null) {
-                println("Going to life counter screen")
+//                println("Going to life counter screen")
                 launch {
                     circle?.growToScreen {
                         component.goToLifeCounterScreen()
                     }
                 }
             } else {
-                println("Removed Circle @ position: x=${circle?.x}, y=${circle?.y}")
+//                println("Removed Circle @ position: x=${circle?.x}, y=${circle?.y}")
                 disappearCircle(event.id, deselectDuration)
             }
         }
@@ -229,20 +230,21 @@ fun PlayerSelectScreenBase(
     LaunchedEffect(Unit) {
         scope.launch {
             while (true) {
-                circles.entries.forEach { (id, circle) ->
-                    val lastKnownPosition = lastMoved[id]
-                    if (lastKnownPosition != null && lastKnownPosition + 500L < Clock.System.now().toEpochMilliseconds()) {
-                        // The circle hasn't moved since the last check, so it could be 'bugged'
-                        disappearCircle(id, deselectDuration/2)
-                    }
-                }
-                delay(10L)
+//                circles.entries.forEach { (id, circle) ->
+//                    val lastKnownPosition = lastMoved[id]
+//                    if (lastKnownPosition != null && lastKnownPosition + 500L < Clock.System.now().toEpochMilliseconds()) {
+//                        // The circle hasn't moved since the last check, so it could be 'bugged'
+//                        disappearCircle(id, deselectDuration/2)
+//                    }
+//                }
+                println("Active touches: $activeTouches")
+                delay(100L)
             }
         }
     }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
-        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) })
+        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, { activeTouches = it })
     }) {
         LaunchedEffect(circles.size) {
             val selectionScope = CoroutineScope(coroutineContext)
