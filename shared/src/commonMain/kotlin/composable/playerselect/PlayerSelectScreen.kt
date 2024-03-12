@@ -137,23 +137,10 @@ fun PlayerSelectScreenBase(
     component: PlayerSelectComponent, showHelperText: MutableState<Boolean>
 ) {
     val circles = remember { mutableStateMapOf<PointerId, Circle>() }
+    val lastKnownPositions = remember { mutableMapOf<PointerId, Offset>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
     var selectedId: PointerId? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
-
-    LaunchedEffect(circles) {
-        scope.launch {
-            while (true) {
-                circles.values.forEach { circle ->
-                    println("Circle at position: x=${circle.x}, y=${circle.y}")
-                }
-                if (circles.size == 0) {
-                    println("No circles")
-                }
-                delay(1000L) // delay for 1 second
-            }
-        }
-    }
 
     /**
      * Applies a random default color to the circle that is not already used
@@ -236,11 +223,26 @@ fun PlayerSelectScreenBase(
         }
     }
 
+    LaunchedEffect(Unit) {
+        scope.launch {
+            while (true) {
+                circles.entries.forEach { (id, circle) ->
+                    val lastKnownPosition = lastKnownPositions[id]
+                    if (lastKnownPosition != null && lastKnownPosition == Offset(circle.x, circle.y)) {
+                        // The circle hasn't moved since the last check, so it could be 'bugged'
+                        disappearCircle(id, deselectDuration/2)
+                    } else {
+                        // Update the last known position
+                        lastKnownPositions[id] = Offset(circle.x, circle.y)
+                    }
+                }
+                delay(500L)
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(Unit) {
-        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = {
-            onUp(it)
-            circles.remove(it.id)
-        })
+        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) })
     }) {
         LaunchedEffect(circles.size) {
             val selectionScope = CoroutineScope(coroutineContext)
