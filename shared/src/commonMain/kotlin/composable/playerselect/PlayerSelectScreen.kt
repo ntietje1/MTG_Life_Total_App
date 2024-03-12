@@ -147,6 +147,9 @@ fun PlayerSelectScreenBase(
                 circles.values.forEach { circle ->
                     println("Circle at position: x=${circle.x}, y=${circle.y}")
                 }
+                if (circles.size == 0) {
+                    println("No circles")
+                }
                 delay(1000L) // delay for 1 second
             }
         }
@@ -220,12 +223,14 @@ fun PlayerSelectScreenBase(
         CoroutineScope(scope.coroutineContext).launch {
             val circle = circles[event.id]
             if (circles.size == 1 && selectedId != null) {
+                println("Going to life counter screen")
                 launch {
                     circle?.growToScreen {
                         component.goToLifeCounterScreen()
                     }
                 }
             } else {
+                println("Removed Circle @ position: x=${circle?.x}, y=${circle?.y}")
                 disappearCircle(event.id, deselectDuration)
             }
         }
