@@ -29,6 +29,19 @@ This Kotlin-based app is designed to simplify your Magic: The Gathering gaming e
 
 The UI is crafted to be minimal yet intuitive, providing a clear picture of the gamestate from a glance without overwhelming elements.
 
+<p align="middle">
+  <img src="/./images/phone_screenshot_style.png" width="200" />
+  <img src="/./images/phone_screenshot_track.png" width="200" /> 
+  <img src="/./images/phone_screenshot_features.png" width="200" />
+  <img src="/./images/phone_screenshot_search.png" width="200" />
+</p>
+<p align="middle">
+  <img src="/./images/phone_screenshot_planechase.png" width="200" />
+  <img src="/./images/phone_screenshot_commander.png" width="200" />
+  <img src="/./images/phone_screenshot_coin.png" width="200" /> 
+  <img src="/./images/phone_screenshot_storm.png" width="200" />
+</p>
+
 ## Technologies Used
 
 - **Compose Multiplatform:** Leveraging the Jetpack Compose framework for efficient and performant UI creation that can be shared across platforms.
