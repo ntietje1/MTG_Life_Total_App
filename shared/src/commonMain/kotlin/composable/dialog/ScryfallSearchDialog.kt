@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import data.Player
 import data.ScryfallApiRetriever
 import data.SettingsManager
@@ -432,8 +433,9 @@ fun CardPreview(
                         showLargeImage = false
                     })
                 }) {
-                AsyncImage(
-                    model = card.getUris().large, modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = ""
+                SubcomposeAsyncImage(
+                    model = card.getUris().large, modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = "",
+                    loading = { CircularProgressIndicator(modifier = Modifier.align(Alignment.Center)) }
                 )
             }
 
