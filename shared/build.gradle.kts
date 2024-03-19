@@ -1,3 +1,4 @@
+import dev.icerock.gradle.MRVisibility
 import org.jetbrains.compose.ExperimentalComposeLibrary
 
 plugins {
@@ -5,6 +6,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.kotlinSerialization)
+    id("dev.icerock.mobile.multiplatform-resources")
 }
 
 kotlin {
@@ -27,6 +29,8 @@ kotlin {
             binaryOption("bundleId", "shared")
             baseName = "shared"
             isStatic = true
+            export("dev.icerock.moko:resources:0.23.0")
+            export("dev.icerock.moko:graphics:0.9.0")
         }
     }
     
@@ -38,6 +42,8 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
+            api("dev.icerock.moko:resources:0.23.0")
+            api("dev.icerock.moko:resources-compose:0.23.0")
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -96,3 +102,11 @@ android {
     }
 }
 
+// from moko
+multiplatformResources {
+    multiplatformResourcesPackage = "com.hypeapps.lifelinked"
+    multiplatformResourcesClassName = "MR"
+    multiplatformResourcesVisibility = MRVisibility.Internal // optional, default Public
+    iosBaseLocalizationRegion = "en" // optional, default "en"
+    multiplatformResourcesSourceSet = "commonMain"  // optional, default "commonMain"
+}

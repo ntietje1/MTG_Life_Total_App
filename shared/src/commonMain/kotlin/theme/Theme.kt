@@ -41,6 +41,7 @@ fun LifeLinkedTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+//    val fontFamily: FontFamily = fontFamilyResource(MR.fonts.)
 
     MaterialTheme(
         colorScheme = colorScheme, typography = Typography, content = content
