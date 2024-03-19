@@ -11,6 +11,9 @@
 		F21BA9172B9BDB050048A025 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F21BA9162B9BDB050048A025 /* ContentView.swift */; };
 		F21BA9192B9BDB070048A025 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F21BA9182B9BDB070048A025 /* Assets.xcassets */; };
 		F21BA91D2B9BDB070048A025 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F21BA91C2B9BDB070048A025 /* Preview Assets.xcassets */; };
+		F2AEF2612BA92DE3008F2729 /* roboto_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F2AEF25E2BA92DE3008F2729 /* roboto_regular.ttf */; };
+		F2AEF2622BA92DE3008F2729 /* roboto_bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F2AEF25F2BA92DE3008F2729 /* roboto_bold.ttf */; };
+		F2AEF2632BA92DE3008F2729 /* roboto_medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F2AEF2602BA92DE3008F2729 /* roboto_medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +23,10 @@
 		F21BA9182B9BDB070048A025 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F21BA91A2B9BDB070048A025 /* LifeLinkedIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LifeLinkedIOS.entitlements; sourceTree = "<group>"; };
 		F21BA91C2B9BDB070048A025 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		F21BA9242B9C1E670048A025 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F2AEF25E2BA92DE3008F2729 /* roboto_regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = roboto_regular.ttf; path = ../../shared/src/androidMain/res/font/roboto_regular.ttf; sourceTree = "<group>"; };
+		F2AEF25F2BA92DE3008F2729 /* roboto_bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = roboto_bold.ttf; path = ../../shared/src/androidMain/res/font/roboto_bold.ttf; sourceTree = "<group>"; };
+		F2AEF2602BA92DE3008F2729 /* roboto_medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = roboto_medium.ttf; path = ../../shared/src/androidMain/res/font/roboto_medium.ttf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +59,10 @@
 		F21BA9132B9BDB050048A025 /* LifeLinkedIOS */ = {
 			isa = PBXGroup;
 			children = (
+				F2AEF25F2BA92DE3008F2729 /* roboto_bold.ttf */,
+				F2AEF2602BA92DE3008F2729 /* roboto_medium.ttf */,
+				F2AEF25E2BA92DE3008F2729 /* roboto_regular.ttf */,
+				F21BA9242B9C1E670048A025 /* Info.plist */,
 				F21BA9142B9BDB050048A025 /* LifeLinkedIOSApp.swift */,
 				F21BA9162B9BDB050048A025 /* ContentView.swift */,
 				F21BA9182B9BDB070048A025 /* Assets.xcassets */,
@@ -128,8 +139,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F2AEF2622BA92DE3008F2729 /* roboto_bold.ttf in Resources */,
 				F21BA91D2B9BDB070048A025 /* Preview Assets.xcassets in Resources */,
+				F2AEF2612BA92DE3008F2729 /* roboto_regular.ttf in Resources */,
 				F21BA9192B9BDB070048A025 /* Assets.xcassets in Resources */,
+				F2AEF2632BA92DE3008F2729 /* roboto_medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -297,17 +311,21 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LifeLinkedIOS/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.3;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
@@ -337,17 +355,21 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LifeLinkedIOS/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.3;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
