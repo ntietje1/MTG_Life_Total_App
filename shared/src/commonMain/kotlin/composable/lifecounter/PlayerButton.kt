@@ -89,6 +89,7 @@ import getAnimationCorrectionFactor
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import robotoBoldFontFamily
 import theme.allPlayerColors
 import theme.brightenColor
 import theme.deadDealerColorMatrix
@@ -844,6 +845,7 @@ fun Counter(
                 text = value.toString(),
                 color = player.textColor,
                 fontSize = textSize,
+                fontFamily = robotoBoldFontFamily,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.wrapContentSize(),

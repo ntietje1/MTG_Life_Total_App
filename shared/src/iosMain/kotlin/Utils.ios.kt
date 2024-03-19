@@ -26,3 +26,7 @@ private fun loadCustomFont(name: String, fontStyle: FontStyle): Typeface {
 actual val robotoFontFamily: FontFamily = FontFamily(
     Typeface(loadCustomFont("roboto", FontStyle.NORMAL))
 )
+
+actual val robotoBoldFontFamily: FontFamily = FontFamily(
+    Typeface(loadCustomFont("roboto_bold", FontStyle.NORMAL))
+)
