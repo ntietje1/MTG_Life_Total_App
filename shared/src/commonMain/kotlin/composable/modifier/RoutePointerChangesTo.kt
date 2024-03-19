@@ -14,15 +14,16 @@ import androidx.compose.ui.input.pointer.PointerInputScope
  * @return The modifier
  */
 suspend fun PointerInputScope.routePointerChangesTo(
-    onDown: (PointerInputChange) -> Unit = {}, onMove: (PointerInputChange) -> Unit = {}, onUp: (PointerInputChange) -> Unit = {}
+    onDown: (PointerInputChange) -> Unit = {}, onMove: (PointerInputChange) -> Unit = {}, onUp: (PointerInputChange) -> Unit = {}, countCallback: (List<PointerId>) -> Unit = {}
 ) {
     val activePointers = mutableSetOf<PointerId>()
     awaitEachGesture {
         do {
             val event = awaitPointerEvent()
+            countCallback(event.changes.map { it.id })
             event.changes.forEach { pointerInputChange ->
                 when (event.type) {
-                    PointerEventType.Press -> {
+                    PointerEventType.Press, PointerEventType.Enter -> {
                         if (pointerInputChange.id !in activePointers) {
                             activePointers.add(pointerInputChange.id)
                             onDown(pointerInputChange)
@@ -30,7 +31,7 @@ suspend fun PointerInputScope.routePointerChangesTo(
                     }
 
                     PointerEventType.Move -> onMove(pointerInputChange)
-                    PointerEventType.Release -> {
+                    PointerEventType.Release, PointerEventType.Exit -> {
                         if (pointerInputChange.id in activePointers && pointerInputChange.previousPressed && !pointerInputChange.pressed) {
                             activePointers.remove(pointerInputChange.id)
                             onUp(pointerInputChange)

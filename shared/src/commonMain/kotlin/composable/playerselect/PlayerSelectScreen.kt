@@ -39,6 +39,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import composable.dialog.SettingsButton
 import composable.modifier.routePointerChangesTo
 import composable.playerselect.PlayerSelectScreenValues.deselectDuration
 import composable.playerselect.PlayerSelectScreenValues.finalDeselectDuration
@@ -51,11 +52,10 @@ import composable.playerselect.PlayerSelectScreenValues.pulseDuration2
 import composable.playerselect.PlayerSelectScreenValues.pulseFreq
 import composable.playerselect.PlayerSelectScreenValues.selectionDelay
 import composable.playerselect.PlayerSelectScreenValues.showHelperTextDelay
+import getAnimationCorrectionFactor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import composable.dialog.SettingsButton
-import getAnimationCorrectionFactor
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import theme.allPlayerColors
@@ -167,7 +167,7 @@ fun PlayerSelectScreenBase(
     /**
      * Makes a circle disappear
      */
-    fun disappearCircle(id: PointerId, duration: Int) {
+    fun disappearCircle(id: PointerId, duration: Int = deselectDuration) {
         if (circles.containsKey(id)) {
             val circle = circles[id]!!
             disappearingCircles.add(circle)
@@ -215,13 +215,19 @@ fun PlayerSelectScreenBase(
                     }
                 }
             } else {
-                disappearCircle(event.id, deselectDuration)
+                disappearCircle(event.id)
             }
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(Unit) {
-        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) })
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
+        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
+            for (id in circles.keys) {
+                if (!it.contains(id)) {
+                    disappearCircle(id)
+                }
+            }
+        })
     }) {
         LaunchedEffect(circles.size) {
             val selectionScope = CoroutineScope(coroutineContext)
@@ -367,7 +373,7 @@ private class Circle(
                 )
             }
             launch {
-                delay((duration*0.9f).toLong())
+                delay((duration * 0.9f).toLong())
                 onComplete()
             }
         }

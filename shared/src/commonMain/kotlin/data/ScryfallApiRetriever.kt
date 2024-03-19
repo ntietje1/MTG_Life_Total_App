@@ -6,14 +6,10 @@ import data.serializable.Ruling
 import data.serializable.RulingResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /**
@@ -31,20 +27,24 @@ class ScryfallApiRetriever {
      * @return The response from the Scryfall API
      */
     suspend fun searchScryfall(query: String): String = withContext(Dispatchers.IO) {
-        val client = HttpClient()
-        val url = if (!query.startsWith("https://api.scryfall.com/")) {
-            "https://api.scryfall.com/cards/search?q=$query"
-        } else {
-            query
-        }
-
-        val response = client.get(url)
-
         try {
+            val client = HttpClient()
+            val q = if (query.isEmpty()) {
+                "\" \""
+            } else {
+                "\"$query\""
+            }
+            val url = if (!query.startsWith("https://api.scryfall.com/")) {
+                "https://api.scryfall.com/cards/search?q=$q"
+            } else {
+                q
+            }
+            println("URL: $url")
+
+            val response = client.get(url)
             return@withContext response.body<String>()
-        } catch (e: ClientRequestException) {
-            return@withContext "{}"
-        } catch (e: ServerResponseException) {
+
+        } catch (e: Exception) {
             return@withContext "{}"
         }
     }
@@ -56,6 +56,7 @@ class ScryfallApiRetriever {
      * @return A list of the given type
      */
     inline fun <reified T> parseScryfallResponse(response: String): List<T> {
+        println("Response: $response")
         return when (T::class) {
             Card::class -> {
                 val jsonResponse = json.decodeFromString<CardResponse>(response)

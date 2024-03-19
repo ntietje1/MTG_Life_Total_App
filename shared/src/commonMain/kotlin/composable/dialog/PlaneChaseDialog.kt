@@ -83,32 +83,24 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, component: LifeCounte
         Dialog(onDismissRequest = { planarDieResultVisible = false }, properties = DialogProperties(
             usePlatformDefaultWidth = false
         ), content = {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
+            Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         planarDieResultVisible = false
                     })
                 }) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.weight(0.65f))
                     SettingsButton(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(bottom = 20.dp),
+                        modifier = Modifier.size(100.dp).padding(bottom = 20.dp),
                         textSizeMultiplier = 0.8f,
                         imageResource = painterResource(planarDieResult.resourceId),
                         shadowEnabled = false,
                         enabled = false
                     )
                     Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
+                        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
                         text = planarDieResult.toString,
                         color = MaterialTheme.colorScheme.onPrimary,
                         textAlign = TextAlign.Center,
@@ -139,20 +131,13 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, component: LifeCounte
 
     BoxWithConstraints(modifier = modifier) {
         val previewPadding = maxWidth / 20f
-        val buttonModifier = Modifier
-            .size(maxWidth / 6f)
-            .padding(bottom = maxHeight / 15f, top = 5.dp)
+        val buttonModifier = Modifier.size(maxWidth / 6f).padding(bottom = maxHeight / 15f, top = 5.dp)
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
-            PlaneChaseCardPreview(modifier = Modifier
-                .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
-                .fillMaxHeight(0.9f)
-                .padding(bottom = previewPadding),
+            PlaneChaseCardPreview(modifier = Modifier.graphicsLayer { rotationZ = if (rotated) 180f else 0f }.fillMaxHeight(0.9f).padding(bottom = previewPadding),
                 card = component.currentPlane(),
                 allowEnlarge = false)
             Row(
-                Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(), horizontalArrangement = Arrangement.SpaceAround
+                Modifier.fillMaxWidth().wrapContentHeight(), horizontalArrangement = Arrangement.SpaceAround
             ) {
                 SettingsButton(modifier = buttonModifier, text = "Previous", shadowEnabled = false, imageResource = painterResource("back_icon_alt.xml"), onPress = {
                     component.backPlane()
@@ -182,9 +167,7 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, component: LifeCounte
  * @param planarBackStack the planar back stack
  */
 class ChoosePlanesActions(
-    private val planarDeck: SnapshotStateList<Card>,
-    private val backStack: SnapshotStateList<() -> Unit>,
-    private val planarBackStack: SnapshotStateList<Card>
+    private val planarDeck: SnapshotStateList<Card>, private val backStack: SnapshotStateList<() -> Unit>, private val planarBackStack: SnapshotStateList<Card>
 ) {
     private val initialBackStackSize = backStack.size
 
@@ -309,17 +292,19 @@ class ChoosePlanesActions(
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ChoosePlanesDialogContent(
-    modifier: Modifier = Modifier,
-    actions: ChoosePlanesActions
+    modifier: Modifier = Modifier, actions: ChoosePlanesActions
 ) {
     val haptic = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
+    var searchInProgress by remember { mutableStateOf(false) }
 
     fun searchPlanes(onResult: (List<Card>) -> Unit) {
+        searchInProgress = true
         coroutineScope.launch {
             val newCards = actions.search()
             onResult(newCards)
+            searchInProgress = false
         }
     }
 
@@ -333,50 +318,35 @@ fun ChoosePlanesDialogContent(
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = maxWidth
         val maxHeight = maxHeight
-        val buttonModifier = Modifier
-            .size(maxWidth / 6f)
-            .padding(bottom = maxHeight / 20f)
+        val buttonModifier = Modifier.size(maxWidth / 6f).padding(bottom = maxHeight / 20f)
         Column(Modifier.fillMaxSize()) {
             ScryfallSearchBar(
-                Modifier
-                    .padding(top = 10.dp)
-                    .padding(start = 20.dp, end = 20.dp)
-                    .clip(RoundedCornerShape(10.dp)), query = actions.query, onSearch = {
-                    searchPlanes { actions.onSearchResult(it) }
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                })
+                Modifier.padding(top = 10.dp).padding(start = 20.dp, end = 20.dp).clip(RoundedCornerShape(10.dp)),
+                query = actions.query,
+                searchInProgress = searchInProgress,
+            ) {
+                searchPlanes { actions.onSearchResult(it) }
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
             Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = actions.selectedText,
-                fontSize = 15.scaledSp,
-                color = MaterialTheme.colorScheme.onPrimary,
-                textAlign = TextAlign.Center
+                modifier = Modifier.fillMaxWidth(), text = actions.selectedText, fontSize = 15.scaledSp, color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center
             )
             LazyVerticalGrid(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = maxWidth / 15f)
-                    .weight(0.5f)
-                    .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
+                modifier = Modifier.fillMaxSize().padding(bottom = maxWidth / 15f).weight(0.5f).border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
                 columns = GridCells.Fixed(2),
             ) {
                 items(actions.filteredPlanes, key = { card -> card.hashCode() }) { card ->
-                    PlaneChaseCardPreview(
-                        modifier = Modifier.width(maxWidth / 2),
+                    PlaneChaseCardPreview(modifier = Modifier.width(maxWidth / 2),
                         card = card,
                         addToPlanarDeck = { actions.select(card) },
                         removeFromPlanarDeck = { actions.unselect(card) },
                         onPress = focusManager::clearFocus,
                         allowSelection = true,
-                        selected = { actions.isInPlanarDeck(card) }
-                    )
+                        selected = { actions.isInPlanarDeck(card) })
                 }
             }
             Row(
-                Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(horizontal = maxWidth / 10f), horizontalArrangement = Arrangement.SpaceAround
+                Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = maxWidth / 10f), horizontalArrangement = Arrangement.SpaceAround
 
             ) {
                 SettingsButton(modifier = buttonModifier, text = "Select All", shadowEnabled = false, imageResource = painterResource("checkmark.xml"), onPress = {
@@ -427,20 +397,13 @@ fun PlaneChaseCardPreview(
         Dialog(onDismissRequest = { showLargeImage = false }, properties = DialogProperties(
             usePlatformDefaultWidth = false
         ), content = {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
+            Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         showLargeImage = false
                     })
                 }) {
                 AsyncImage(
-                    model = card!!.getUris().large,
-                    modifier = Modifier
-                        .clip(CutCornerShape(125.dp))
-                        .fillMaxSize(0.85f)
-                        .align(Alignment.Center),
-                    contentDescription = ""
+                    model = card!!.getUris().large, modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = ""
                 )
             }
 
@@ -448,33 +411,27 @@ fun PlaneChaseCardPreview(
     }
 
     if (card != null) {
-        BoxWithConstraints(modifier = modifier
-            .aspectRatio(5 / 7f)
-            .pointerInput(Unit) {
+        BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).pointerInput(Unit) {
                 detectTapGestures(onLongPress = {
                     showLargeImage = true
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
-                    onPress = {
-                        onPress()
-                    },
-                    onTap = {
-                        if (allowSelection) {
-                            if (!selected.invoke()) {
-                                addToPlanarDeck(card)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            } else {
-                                removeFromPlanarDeck(card)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            }
+                }, onPress = {
+                    onPress()
+                }, onTap = {
+                    if (allowSelection) {
+                        if (!selected.invoke()) {
+                            addToPlanarDeck(card)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        } else {
+                            removeFromPlanarDeck(card)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
-                    })
+                    }
+                })
             }) {
             val clipSize = maxWidth / 20f
             Box(
-                Modifier
-                    .fillMaxSize()
-                    .then(
+                Modifier.fillMaxSize().then(
                         if (selected.invoke() && allowSelection) {
                             Modifier.background(Color.Green.copy(alpha = 0.2f))
                         } else {
@@ -483,38 +440,25 @@ fun PlaneChaseCardPreview(
                     )
             ) {
                 AsyncImage(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(
+                    modifier = Modifier.fillMaxSize().then(
                             if (selected.invoke() && allowSelection) {
-                                Modifier
-                                    .padding(10.dp)
-                                    .clip(CutCornerShape(clipSize + 5.dp))
+                                Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
                             } else {
-                                Modifier
-                                    .padding(1.dp)
-                                    .clip(CutCornerShape(clipSize + 0.5f.dp))
+                                Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
                             }
-                        ),
-                    model = card.getUris().normal,
-                    contentDescription = ""
+                        ), model = card.getUris().normal, contentDescription = ""
 
                 )
             }
 
         }
     } else {
-        BoxWithConstraints(modifier = modifier
-            .aspectRatio(5 / 7f)
-            .background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f), CutCornerShape(10.dp))
-            .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f), CutCornerShape(10.dp))
-            .pointerInput(Unit) {}) {
+        BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f), CutCornerShape(10.dp))
+            .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f), CutCornerShape(10.dp)).pointerInput(Unit) {}) {
             val iconPadding = maxWidth / 4f
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                 SettingsButton(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(iconPadding),
+                    modifier = Modifier.fillMaxSize().padding(iconPadding),
                     text = "No Planes Selected",
                     textSizeMultiplier = 0.8f,
                     imageResource = painterResource("question_icon.xml"),

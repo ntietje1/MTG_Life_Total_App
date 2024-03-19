@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -59,7 +60,7 @@ fun Modifier.repeatingClickable(
                     val job = launch {
                         delay(initialDelayMillis)
                         var currentDelayMillis = maxDelayMillis
-                        while (isEnabled && down.pressed) {
+                        while (isEnabled && down.pressed && !down.isOutOfBounds(size, extendedTouchPadding)) {
                             currentClickListener()
                             delay(currentDelayMillis)
                             val nextMillis =
