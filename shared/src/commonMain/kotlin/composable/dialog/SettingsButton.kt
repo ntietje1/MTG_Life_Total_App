@@ -39,10 +39,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import theme.generateShadow
-import theme.scaledSp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import robotoBoldFontFamily
+import theme.generateShadow
+import theme.scaledSp
 
 /**
  * A generic button composable with icon and text
@@ -145,6 +146,8 @@ fun SettingsButton(
                     text = text,
                     color = mainColor,
                     fontSize = fontSize * textSizeMultiplier,
+                    fontFamily = robotoBoldFontFamily,
+//                    fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     textAlign = TextAlign.Center,
                     style = if (shadowEnabled) shadowTextStyle else TextStyle(),
