@@ -1073,6 +1073,7 @@ fun NumericValue(
                 text = player.name,
                 color = player.textColor,
                 fontSize = smallTextSize.scaledSp,
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 style = textShadowStyle
             )

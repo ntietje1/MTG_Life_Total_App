@@ -87,8 +87,8 @@ val Float.scaledSp: TextUnit
  * Text style with shadow effect
  */
 val textShadowStyle = TextStyle(
-    fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Normal
+    fontFamily = robotoFontFamily,
+//    fontWeight = FontWeight.Normal
 ).copy(
     shadow = Shadow(
         color = generateShadow(),
