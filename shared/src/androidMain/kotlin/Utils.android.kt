@@ -41,11 +41,11 @@ actual fun legacyMonarchyIndicator(): Boolean {
 }
 
 actual val robotoFontFamily: FontFamily = FontFamily(
-    Font(R.font.roboto_regular, FontWeight.Normal),
-    Font(R.font.roboto_medium, FontWeight.Medium),
-    Font(R.font.roboto_bold, FontWeight.Bold)
+    Font(R.font.regular_roboto, FontWeight.Normal),
+    Font(R.font.medium_roboto, FontWeight.Medium),
+    Font(R.font.bold_roboto, FontWeight.Bold)
 )
 
 actual val robotoBoldFontFamily: FontFamily = FontFamily(
-    Font(R.font.roboto_bold, FontWeight.Bold)
+    Font(R.font.bold_roboto, FontWeight.Bold)
 )
