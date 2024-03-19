@@ -40,7 +40,7 @@ actual fun legacyMonarchyIndicator(): Boolean {
     return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 }
 
-actual fun robotoFontFamily(): FontFamily = FontFamily(
+actual val robotoFontFamily: FontFamily = FontFamily(
     Font(R.font.roboto_regular, FontWeight.Normal),
 //    Font(R.font.roboto_medium, FontWeight.Medium),
 //    Font(R.font.roboto_bold, FontWeight.Bold)

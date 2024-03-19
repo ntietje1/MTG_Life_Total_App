@@ -9,4 +9,4 @@ expect fun getAnimationCorrectionFactor(): Float
 
 expect fun legacyMonarchyIndicator(): Boolean
 
-expect fun robotoFontFamily(): FontFamily
+expect val robotoFontFamily: FontFamily
