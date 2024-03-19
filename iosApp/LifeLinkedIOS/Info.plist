@@ -8,9 +8,9 @@
 	<false/>
 	<key>UIAppFonts</key>
 	<array>
-		<string>roboto_regular.ttf</string>
-		<string>roboto_bold.ttf</string>
-		<string>roboto_medium.ttf</string>
+		<string>regular_roboto.ttf</string>
+		<string>bold_roboto.ttf</string>
+		<string>medium_roboto.ttf</string>
 	</array>
 </dict>
 </plist>
