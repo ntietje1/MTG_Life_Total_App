@@ -11,12 +11,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
+expect fun robotoFontFamily(): FontFamily
+
 /**
  * Typography for the application
  */
 val Typography = Typography(
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = robotoFontFamily(),
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
@@ -39,8 +41,6 @@ val Typography = Typography(
     )
     */
 )
-
-expect val robotoFontFamily: FontFamily
 
 /**
  * Scaled Sp that ignores system font scaling
