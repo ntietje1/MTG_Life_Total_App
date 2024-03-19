@@ -16,9 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import theme.scaledSp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import theme.scaledSp
 
 /**
  * A dialog that allows the user to set the number of players
@@ -91,7 +91,7 @@ fun FourPlayerLayoutContent(
                 modifier = Modifier
                     .wrapContentHeight()
                     .wrapContentWidth()
-                    .padding(bottom = 10.dp, top = 30.dp),
+                    .padding(top = 30.dp),
                 text = "Select a 4 player layout",
                 fontSize = 25.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary
@@ -106,7 +106,7 @@ fun FourPlayerLayoutContent(
                 setAlt4PlayerLayout(true)
                 onDismiss()
             })
-            Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.height(30.dp))
         }
     }
 }

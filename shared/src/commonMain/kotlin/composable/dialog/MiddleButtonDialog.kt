@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -44,9 +43,9 @@ import composable.lifecounter.LifeCounterComponent
 import data.SettingsManager
 import data.SettingsManager.startingLife
 import getAnimationCorrectionFactor
-import theme.scaledSp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import theme.scaledSp
 
 /**
  * The possible states of the middle button dialog
@@ -438,15 +437,16 @@ fun GridDialogContent(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.weight(0.05f))
             Text(
                 modifier = Modifier
                     .wrapContentHeight()
-                    .wrapContentWidth()
-                    .padding(bottom = 10.dp),
+                    .wrapContentWidth(),
                 text = title,
                 fontSize = 25.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary
             )
+            Spacer(modifier = Modifier.weight(0.025f))
             LazyVerticalGrid(modifier = Modifier
                 .padding(horizontal = 10.dp)
                 .wrapContentSize(),
@@ -456,7 +456,7 @@ fun GridDialogContent(
                         items[index]()
                     }
                 })
-            Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.weight(0.075f))
         }
     }
 }
@@ -511,7 +511,7 @@ fun SettingsDialog(
                     }
                 }
                 Box(
-                    Modifier.weight(0.1f)
+                    Modifier.weight(0.1f).padding(5.dp)
                 ) {
                     content()
                 }

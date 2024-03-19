@@ -9,9 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -83,7 +84,7 @@ fun DiceRollDialogContent(
         size = pressedSize
     }
     Column(modifier = modifier, verticalArrangement = Arrangement.Center) {
-        Spacer(modifier = Modifier.weight(0.2f))
+        Spacer(modifier = Modifier.weight(0.1f))
         GridDialogContent(modifier = Modifier.weight(0.8f), title = "Tap to roll", items = listOf({
             DiceRollButton(value = 4, imageResource = painterResource("d4_icon.xml"), resultCallBack = { setLastResult(it, 4) })
         }, {
@@ -97,12 +98,13 @@ fun DiceRollDialogContent(
         }, {
             DiceRollButton(value = 20, imageResource = painterResource("d20_icon.xml"), resultCallBack = { setLastResult(it, 20) })
         }))
+
         Text(
             text = "Last result", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.scaledSp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.weight(0.01f))
+        Spacer(modifier = Modifier.height(5.dp))
         Box(
-            modifier = Modifier.size(150.dp).align(Alignment.CenterHorizontally).background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+            modifier = Modifier.weight(0.35f).aspectRatio(1.0f).align(Alignment.CenterHorizontally).background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
                 .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
         ) {
             SettingsButton(modifier = Modifier.fillMaxSize().bounceClick(amount = 0.02f).graphicsLayer(scaleX = animatedSize, scaleY = animatedSize).then(
@@ -145,7 +147,7 @@ fun DiceRollDialogContent(
 //                )
 //            }
         }
-        Spacer(modifier = Modifier.weight(0.2f))
+        Spacer(modifier = Modifier.weight(0.05f))
     }
 }
 
