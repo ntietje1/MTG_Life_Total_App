@@ -10,8 +10,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-
-expect fun robotoFontFamily(): FontFamily
+import robotoFontFamily
 
 /**
  * Typography for the application
