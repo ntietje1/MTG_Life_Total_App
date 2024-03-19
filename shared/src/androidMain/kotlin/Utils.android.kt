@@ -39,13 +39,3 @@ actual fun getAnimationCorrectionFactor(): Float {
 actual fun legacyMonarchyIndicator(): Boolean {
     return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 }
-
-actual val robotoFontFamily: FontFamily = FontFamily(
-    Font(R.font.regular_roboto, FontWeight.Normal),
-    Font(R.font.medium_roboto, FontWeight.Medium),
-    Font(R.font.bold_roboto, FontWeight.Bold)
-)
-
-actual val robotoBoldFontFamily: FontFamily = FontFamily(
-    Font(R.font.bold_roboto, FontWeight.Bold)
-)

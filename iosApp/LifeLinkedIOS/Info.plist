@@ -6,11 +6,5 @@
 	<string></string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>regular_roboto.ttf</string>
-		<string>bold_roboto.ttf</string>
-		<string>medium_roboto.ttf</string>
-	</array>
 </dict>
 </plist>

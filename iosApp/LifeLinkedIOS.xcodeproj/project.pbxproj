@@ -11,9 +11,6 @@
 		F21BA9172B9BDB050048A025 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F21BA9162B9BDB050048A025 /* ContentView.swift */; };
 		F21BA9192B9BDB070048A025 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F21BA9182B9BDB070048A025 /* Assets.xcassets */; };
 		F21BA91D2B9BDB070048A025 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F21BA91C2B9BDB070048A025 /* Preview Assets.xcassets */; };
-		F267EDEE2BA9831500671ED2 /* bold_roboto.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F267EDEB2BA9831400671ED2 /* bold_roboto.ttf */; };
-		F267EDEF2BA9831500671ED2 /* regular_roboto.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F267EDEC2BA9831400671ED2 /* regular_roboto.ttf */; };
-		F267EDF02BA9831500671ED2 /* medium_roboto.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F267EDED2BA9831500671ED2 /* medium_roboto.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,9 +21,6 @@
 		F21BA91A2B9BDB070048A025 /* LifeLinkedIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LifeLinkedIOS.entitlements; sourceTree = "<group>"; };
 		F21BA91C2B9BDB070048A025 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		F21BA9242B9C1E670048A025 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		F267EDEB2BA9831400671ED2 /* bold_roboto.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = bold_roboto.ttf; path = ../../shared/src/androidMain/res/font/bold_roboto.ttf; sourceTree = "<group>"; };
-		F267EDEC2BA9831400671ED2 /* regular_roboto.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = regular_roboto.ttf; path = ../../shared/src/androidMain/res/font/regular_roboto.ttf; sourceTree = "<group>"; };
-		F267EDED2BA9831500671ED2 /* medium_roboto.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = medium_roboto.ttf; path = ../../shared/src/androidMain/res/font/medium_roboto.ttf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,9 +54,6 @@
 			isa = PBXGroup;
 			children = (
 				F21BA9242B9C1E670048A025 /* Info.plist */,
-				F267EDEB2BA9831400671ED2 /* bold_roboto.ttf */,
-				F267EDED2BA9831500671ED2 /* medium_roboto.ttf */,
-				F267EDEC2BA9831400671ED2 /* regular_roboto.ttf */,
 				F21BA9142B9BDB050048A025 /* LifeLinkedIOSApp.swift */,
 				F21BA9162B9BDB050048A025 /* ContentView.swift */,
 				F21BA9182B9BDB070048A025 /* Assets.xcassets */,
@@ -139,10 +130,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F267EDEF2BA9831500671ED2 /* regular_roboto.ttf in Resources */,
-				F267EDEE2BA9831500671ED2 /* bold_roboto.ttf in Resources */,
 				F21BA91D2B9BDB070048A025 /* Preview Assets.xcassets in Resources */,
-				F267EDF02BA9831500671ED2 /* medium_roboto.ttf in Resources */,
 				F21BA9192B9BDB070048A025 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

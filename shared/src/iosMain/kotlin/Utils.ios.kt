@@ -18,15 +18,3 @@ actual fun getAnimationCorrectionFactor(): Float {
 actual fun legacyMonarchyIndicator(): Boolean {
     return false
 }
-
-private fun loadCustomFont(name: String, fontStyle: FontStyle): Typeface {
-    return Typeface.makeFromName(name, fontStyle)
-}
-
-actual val robotoFontFamily: FontFamily = FontFamily(
-    Typeface(loadCustomFont("regular", FontStyle.NORMAL))
-)
-
-actual val robotoBoldFontFamily: FontFamily = FontFamily(
-    Typeface(loadCustomFont("bold", FontStyle.NORMAL))
-)
