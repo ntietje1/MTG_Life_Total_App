@@ -36,13 +36,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import theme.generateShadow
-import theme.scaledSp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import theme.generateShadow
+import theme.scaledSp
 
 /**
  * A generic button composable with icon and text
@@ -145,6 +146,7 @@ fun SettingsButton(
                     text = text,
                     color = mainColor,
                     fontSize = fontSize * textSizeMultiplier,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     textAlign = TextAlign.Center,
                     style = if (shadowEnabled) shadowTextStyle else TextStyle(),
