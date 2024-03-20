@@ -1,4 +1,3 @@
-import dev.icerock.gradle.MRVisibility
 import org.jetbrains.compose.ExperimentalComposeLibrary
 
 plugins {
@@ -17,8 +16,6 @@ kotlin {
             }
         }
     }
-
-
     
     listOf(
         iosX64(),
@@ -40,10 +37,11 @@ kotlin {
             implementation(libs.androidx.activity.compose)
 //            implementation(libs.decompose)
             implementation(libs.ktor.client.okhttp)
+
         }
         commonMain.dependencies {
-            api("dev.icerock.moko:resources:0.23.0")
-            api("dev.icerock.moko:resources-compose:0.23.0")
+            implementation("dev.icerock.moko:resources:0.23.0")
+            implementation("dev.icerock.moko:resources-compose:0.23.0")
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -75,6 +73,7 @@ android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
     sourceSets["main"].resources.srcDirs("src/commonMain/resources")
+    sourceSets["main"].java.srcDirs("build/generated/moko/androidMain/src")
 
     defaultConfig {
         applicationId = "com.hypeapps.lifelinked"
@@ -104,9 +103,12 @@ android {
 
 // from moko
 multiplatformResources {
+//    resourcesPackage = "com.hypeapps.lifelinked"
+//    resourcesClassName = "SharedRes"
     multiplatformResourcesPackage = "com.hypeapps.lifelinked"
-    multiplatformResourcesClassName = "MR"
-    multiplatformResourcesVisibility = MRVisibility.Internal // optional, default Public
-    iosBaseLocalizationRegion = "en" // optional, default "en"
-    multiplatformResourcesSourceSet = "commonMain"  // optional, default "commonMain"
+//    multiplatformResourcesPackage = "com.hypeapps.lifelinked"
+    multiplatformResourcesClassName = "SharedRes"
+//    multiplatformResourcesVisibility = MRVisibility.Internal // optional, default Public
+//    iosBaseLocalizationRegion = "en" // optional, default "en"
+//    multiplatformResourcesSourceSet = "commonMain"  // optional, default "commonMain"
 }
