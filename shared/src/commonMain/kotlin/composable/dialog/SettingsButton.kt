@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -40,8 +40,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.placeholder_icon
+import org.jetbrains.compose.resources.vectorResource
 import theme.generateShadow
 import theme.scaledSp
 
@@ -50,7 +51,7 @@ import theme.scaledSp
  * @param modifier the modifier for this composable
  * @param shape the shape of the button
  * @param backgroundColor the background color of the button
- * @param imageResource the image resource of the button
+ * @param imageVector the vector image of the button
  * @param text the text of the button
  * @param textSizeMultiplier the multiplier for the text size
  * @param mainColor the color of the text
@@ -64,13 +65,12 @@ import theme.scaledSp
  * @param onDoubleTap the action to perform when the button is double tapped
  * @param overlay the overlay to draw on top of the button
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun SettingsButton(
     modifier: Modifier = Modifier,
     shape: Shape = RectangleShape,
     backgroundColor: Color = Color.Transparent,
-    imageResource: Painter = painterResource("placeholder_icon.xml"),
+    imageVector: ImageVector = vectorResource(Res.drawable.placeholder_icon),
     text: String = "",
     textSizeMultiplier: Float = 1f,
     mainColor: Color = MaterialTheme.colorScheme.onPrimary,
@@ -130,7 +130,7 @@ fun SettingsButton(
             ) {
                 ImageWithShadow(
                     modifier = Modifier.fillMaxSize(),
-                    painter = imageResource,
+                    imageVector = imageVector,
                     contentDescription = "settings button image",
                     colorFilter = ColorFilter.colorMatrix(matrix),
                     shadowColor = generateShadow(),
@@ -159,7 +159,7 @@ fun SettingsButton(
 
 @Composable
 fun ImageWithShadow(
-    painter: Painter,
+    imageVector: ImageVector,
     contentDescription: String?,
     modifier: Modifier = Modifier,
     alignment: Alignment = Alignment.Center,
@@ -176,7 +176,7 @@ fun ImageWithShadow(
     Box(modifier = modifier.padding(shadowRadius)) {
         if (shadowEnabled) {
             Image(
-                painter = painter,
+                imageVector = imageVector,
                 contentDescription = "Shadow",
                 alignment = alignment,
                 contentScale = contentScale,
@@ -190,7 +190,7 @@ fun ImageWithShadow(
         }
 
         Image(
-            painter = painter, contentDescription = contentDescription, alignment = alignment, contentScale = contentScale, alpha = alpha, colorFilter = colorFilter, modifier = Modifier.fillMaxSize()
+            imageVector = imageVector, contentDescription = contentDescription, alignment = alignment, contentScale = contentScale, alpha = alpha, colorFilter = colorFilter, modifier = Modifier.fillMaxSize()
         )
     }
 }

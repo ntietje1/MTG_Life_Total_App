@@ -10,14 +10,17 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-import robotoFontFamily
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.roboto_regular
+import org.jetbrains.compose.resources.Font
 
 /**
  * Typography for the application
  */
-val Typography = Typography(
+@Composable
+fun Typography() = Typography(
     bodyLarge = TextStyle(
-        fontFamily = robotoFontFamily,
+        fontFamily = FontFamily(Font(Res.font.roboto_regular)),
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
@@ -86,8 +89,9 @@ val Float.scaledSp: TextUnit
 /**
  * Text style with shadow effect
  */
-val textShadowStyle = TextStyle(
-    fontFamily = robotoFontFamily,
+@Composable
+fun textShadowStyle() = TextStyle(
+    fontFamily = FontFamily(Font(Res.font.roboto_regular)),
 //    fontWeight = FontWeight.Normal
 ).copy(
     shadow = Shadow(

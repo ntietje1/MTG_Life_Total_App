@@ -24,8 +24,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.about_me
+import org.jetbrains.compose.resources.imageResource
 import theme.scaledSp
 
 /**
@@ -51,7 +52,6 @@ fun AboutMeDialogContent(
  * The body of the about me dialog
  * @param modifier the modifier for this composable
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun AboutMeDialogBody(
     modifier: Modifier = Modifier
@@ -80,7 +80,7 @@ fun AboutMeDialogBody(
                         .size(50.dp)
                         .clip(CircleShape)
                         .align(Alignment.Center),
-                    painter = painterResource("about_me.jpeg"),
+                    bitmap = imageResource(Res.drawable.about_me),
                     contentDescription = null
                 )
             }

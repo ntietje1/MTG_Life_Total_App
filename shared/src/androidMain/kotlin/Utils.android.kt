@@ -1,3 +1,4 @@
+
 import android.app.Activity
 import android.os.Build
 import android.provider.Settings
@@ -6,11 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.core.view.WindowCompat
-import com.hypeapps.lifelinked.R
 
 @Composable
 actual fun updateSystemBarsColors(isDarkTheme: Boolean) {
@@ -39,9 +36,3 @@ actual fun getAnimationCorrectionFactor(): Float {
 actual fun legacyMonarchyIndicator(): Boolean {
     return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 }
-
-actual val robotoFontFamily: FontFamily = FontFamily(
-    Font(R.font.roboto_regular, FontWeight.Normal),
-    Font(R.font.roboto_medium, FontWeight.Medium),
-    Font(R.font.roboto_bold, FontWeight.Bold)
-)

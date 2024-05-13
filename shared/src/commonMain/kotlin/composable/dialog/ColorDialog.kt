@@ -2,11 +2,7 @@ package composable.dialog
 
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.interaction.InteractionSource
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -25,10 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -38,14 +32,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
-
-
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.checkmark
+import lifelinked.shared.generated.resources.x_icon
+import org.jetbrains.compose.resources.vectorResource
 import theme.toHsv
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 
 /**
  * A dialog that allows the user to select a color
@@ -73,7 +65,6 @@ fun ColorDialog(
  * @param setColor the callback to perform when the color is set
  * @param onDismiss the action to perform when the dialog is dismissed
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {}, onDismiss: () -> Unit) {
     Column(
@@ -114,7 +105,7 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
             Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 SettingsButton(
                     modifier = Modifier.size(100.dp),
-                    imageResource = painterResource("x_icon.xml"),
+                    imageVector = vectorResource(Res.drawable.x_icon),
                     shape = RoundedCornerShape(10),
                     shadowEnabled = false,
                     backgroundColor = initialColor,
@@ -132,7 +123,7 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
             Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 SettingsButton(
                     modifier = Modifier.size(100.dp),
-                    imageResource = painterResource("checkmark.xml"),
+                    imageVector = vectorResource(Res.drawable.checkmark),
                     shape = RoundedCornerShape(10),
                     shadowEnabled = false,
                     backgroundColor = backgroundColor.value,

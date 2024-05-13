@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -32,8 +32,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import composable.modifier.bounceClick
 import composable.modifier.repeatingClickable
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.b_icon
+import lifelinked.shared.generated.resources.c_icon
+import lifelinked.shared.generated.resources.g_icon
+import lifelinked.shared.generated.resources.minus_icon
+import lifelinked.shared.generated.resources.placeholder_icon
+import lifelinked.shared.generated.resources.plus_icon
+import lifelinked.shared.generated.resources.r_icon
+import lifelinked.shared.generated.resources.storm_icon
+import lifelinked.shared.generated.resources.u_icon
+import lifelinked.shared.generated.resources.w_icon
+import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
 
@@ -42,7 +52,6 @@ import theme.scaledSp
  * @param modifier the modifier for this composable
  * @param counters the list of counters to display
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun CounterDialogContent(
     modifier: Modifier = Modifier, counters: List<MutableIntState>
@@ -51,13 +60,13 @@ fun CounterDialogContent(
     val haptic = LocalHapticFeedback.current
 
     val counterResources = arrayListOf(
-        Triple(painterResource("w_icon.xml"), Color(0xFFfffbd5), Color(0xFF211d15)),
-        Triple(painterResource("u_icon.xml"), Color(0xFFaae0fa), Color(0xFF061922)),
-        Triple(painterResource("b_icon.xml"), Color(0xFFcbc2bf), Color(0xFF130c0e)),
-        Triple(painterResource("r_icon.xml"), Color(0xFFf9aa8f), Color(0xFF200000)),
-        Triple(painterResource("g_icon.xml"), Color(0xFF9bd3ae), Color(0xFF00160b)),
-        Triple(painterResource("c_icon.xml"), Color(0xFFccc2c0), Color(0xFF130c0e)),
-        Triple(painterResource("storm_icon.xml"), Color(0xFFffd84c), Color(0xFF2b2515))
+        Triple(vectorResource(Res.drawable.w_icon), Color(0xFFfffbd5), Color(0xFF211d15)),
+        Triple(vectorResource(Res.drawable.u_icon), Color(0xFFaae0fa), Color(0xFF061922)),
+        Triple(vectorResource(Res.drawable.b_icon), Color(0xFFcbc2bf), Color(0xFF130c0e)),
+        Triple(vectorResource(Res.drawable.r_icon), Color(0xFFf9aa8f), Color(0xFF200000)),
+        Triple(vectorResource(Res.drawable.g_icon), Color(0xFF9bd3ae), Color(0xFF00160b)),
+        Triple(vectorResource(Res.drawable.c_icon), Color(0xFFccc2c0), Color(0xFF130c0e)),
+        Triple(vectorResource(Res.drawable.storm_icon), Color(0xFFffd84c), Color(0xFF2b2515))
     )
 
     LazyColumn(
@@ -71,7 +80,7 @@ fun CounterDialogContent(
 
         items(counters.size - 1) { index ->
             SingleCounter(
-                imageResource = counterResources[index].first, backgroundColor = counterResources[index].second, buttonColor = counterResources[index].third, counter = counters[index]
+                imageVector = counterResources[index].first, backgroundColor = counterResources[index].second, buttonColor = counterResources[index].third, counter = counters[index]
             )
         }
 
@@ -83,7 +92,7 @@ fun CounterDialogContent(
 
         item {
             SingleCounter(
-                imageResource = counterResources.last().first, backgroundColor = counterResources.last().second, buttonColor = counterResources.last().third, counter = counters.last()
+                imageVector = counterResources.last().first, backgroundColor = counterResources.last().second, buttonColor = counterResources.last().third, counter = counters.last()
             )
         }
 
@@ -104,13 +113,12 @@ fun CounterDialogContent(
  * @param imageResource the image resource of the counter
  * @param counter the counter to display
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun SingleCounter(
     modifier: Modifier = Modifier,
     backgroundColor: Color = Color.Transparent,
     buttonColor: Color = Color.White,
-    imageResource: Painter = painterResource("placeholder_icon.xml"),
+    imageVector: ImageVector= vectorResource(Res.drawable.placeholder_icon),
     counter: MutableIntState
 ) {
 
@@ -137,7 +145,7 @@ fun SingleCounter(
         ) {
             Image(
                 modifier = Modifier.fillMaxSize(0.7f).align(Alignment.CenterEnd),
-                painter = painterResource("minus_icon.xml"),
+                imageVector = vectorResource(Res.drawable.minus_icon),
                 contentScale = ContentScale.Crop,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(buttonColor)
@@ -147,7 +155,7 @@ fun SingleCounter(
         Spacer(modifier = Modifier.width(25.dp))
 
         Image(
-            painter = imageResource, contentDescription = null, modifier = Modifier.size(55.dp)
+            imageVector = imageVector, contentDescription = null, modifier = Modifier.size(55.dp)
         )
 
         Spacer(modifier = Modifier.width(5.dp))
@@ -163,7 +171,7 @@ fun SingleCounter(
         ) {
             Image(
                 modifier = Modifier.fillMaxSize(0.7f).align(Alignment.CenterStart),
-                painter = painterResource("plus_icon.xml"),
+                imageVector = vectorResource(Res.drawable.plus_icon),
                 contentScale = ContentScale.Crop,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(buttonColor)

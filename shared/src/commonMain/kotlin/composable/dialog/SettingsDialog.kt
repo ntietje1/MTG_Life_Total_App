@@ -25,7 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -34,8 +34,20 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.SettingsManager
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.change_name_icon
+import lifelinked.shared.generated.resources.coffee_icon
+import lifelinked.shared.generated.resources.coin_icon
+import lifelinked.shared.generated.resources.email_icon
+import lifelinked.shared.generated.resources.invisible_icon
+import lifelinked.shared.generated.resources.placeholder_icon
+import lifelinked.shared.generated.resources.player_select_icon
+import lifelinked.shared.generated.resources.skull_icon
+import lifelinked.shared.generated.resources.star_icon_small
+import lifelinked.shared.generated.resources.sun_icon
+import lifelinked.shared.generated.resources.thumbsup_icon
+import lifelinked.shared.generated.resources.visible_icon
+import org.jetbrains.compose.resources.vectorResource
 import theme.blendWith
 import theme.scaledSp
 
@@ -45,7 +57,6 @@ import theme.scaledSp
  * @param goToAboutMe the action to perform when the user selects the "About Me" option
  * @param addGoToSettingsToBackStack callback to add the "Settings" destination to the back stack
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun SettingsDialogContent(
     modifier: Modifier = Modifier, goToAboutMe: () -> Unit, addGoToSettingsToBackStack: () -> Unit
@@ -71,34 +82,34 @@ fun SettingsDialogContent(
                         text = "Fast Coin Flip",
                         initialState = SettingsManager.fastCoinFlip,
                         toggle = { SettingsManager.fastCoinFlip = it },
-                        icon = painterResource("coin_icon.xml")
+                        icon = vectorResource(Res.drawable.coin_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Disable Camera Roll",
                         initialState = SettingsManager.cameraRollDisabled,
                         toggle = { SettingsManager.cameraRollDisabled = it },
-                        icon = painterResource("invisible_icon.xml")
+                        icon = vectorResource(Res.drawable.invisible_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Auto KO",
                         initialState = SettingsManager.autoKo,
                         toggle = { SettingsManager.autoKo = it },
-                        icon = painterResource("skull_icon.xml")
+                        icon = vectorResource(Res.drawable.skull_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Auto Skip Player Select",
                         initialState = SettingsManager.autoSkip,
                         toggle = { SettingsManager.autoSkip = it },
-                        icon = painterResource("player_select_icon.xml")
+                        icon = vectorResource(Res.drawable.player_select_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Keep Screen On (requires restart)",
                         initialState = SettingsManager.keepScreenOn,
                         toggle = { SettingsManager.keepScreenOn = it },
-                        icon = painterResource("sun_icon.xml")
+                        icon = vectorResource(Res.drawable.sun_icon)
                     )
 //                    SettingsDialogButton(
-//                        text = "View Tutorial Again", additionalText = "", icon = painterResource("reset_icon.xml")
+//                        text = "View Tutorial Again", additionalText = "", icon = vectorResource(Res.drawable.reset_icon)
 //                    ) {
 ////                        SettingsManager.tutorialCompleted = false
 //                    }
@@ -116,37 +127,37 @@ fun SettingsDialogContent(
                         .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
                 ) {
                     SettingsDialogButton(
-                        text = "Submit Feedback", additionalText = "", icon = painterResource("thumbsup_icon.xml")
+                        text = "Submit Feedback", additionalText = "", icon = vectorResource(Res.drawable.thumbsup_icon)
                     ) {
                         val url = "https://forms.gle/2rPor1Dvm2EtAkgo6"
                         uriHandler.openUri(url)
                     }
                     SettingsDialogButton(
-                        text = "Write a Review", additionalText = "", icon = painterResource("star_icon_small.xml")
+                        text = "Write a Review", additionalText = "", icon = vectorResource(Res.drawable.star_icon_small)
                     ) {
                         val url = "https://play.google.com/store/apps/details?id=com.hypeapps.lifelinked"
                         uriHandler.openUri(url)
                     }
                     SettingsDialogButton(
-                        text = "Email", additionalText = "HypePixelSoftware@gmail.com", icon = painterResource("email_icon.xml")
+                        text = "Email", additionalText = "HypePixelSoftware@gmail.com", icon = vectorResource(Res.drawable.email_icon)
                     ) {
                         val url = "mailto:hypepixelsoftware@gmail.com"
                         uriHandler.openUri(url)
                     }
                     SettingsDialogButton(
-                        text = "About Me", additionalText = "", icon = painterResource("change_name_icon.xml")
+                        text = "About Me", additionalText = "", icon = vectorResource(Res.drawable.change_name_icon)
                     ) {
                         goToAboutMe()
                         addGoToSettingsToBackStack()
                     }
                     SettingsDialogButton(
-                        text = "Buy me a Coffee", additionalText = "", icon = painterResource("coffee_icon.xml")
+                        text = "Buy me a Coffee", additionalText = "", icon = vectorResource(Res.drawable.coffee_icon)
                     ) {
                         val url = "https://www.buymeacoffee.com/hypepixel"
                         uriHandler.openUri(url)
                     }
                     SettingsDialogButton(
-                        text = "Privacy Policy", additionalText = "", icon = painterResource("visible_icon.xml")
+                        text = "Privacy Policy", additionalText = "", icon = vectorResource(Res.drawable.visible_icon)
                     ) {
                         val url = "https://sites.google.com/view/lifelinked/privacy-policy"
                         uriHandler.openUri(url)
@@ -220,7 +231,7 @@ fun SettingsDialogButtonWithToggle(
     text: String = "placeholder text",
     initialState: Boolean,
     toggle: (Boolean) -> Unit,
-    icon: Painter
+    icon: ImageVector
 ) {
     val haptic = LocalHapticFeedback.current
     val isChecked = remember { mutableStateOf(initialState) }
@@ -239,7 +250,7 @@ fun SettingsDialogButtonWithToggle(
                 .padding(horizontal = 7.5.dp)
                 .size(50.dp),
             shadowEnabled = false,
-            imageResource = icon,
+            imageVector = icon,
             enabled = false
         )
         Text(
@@ -279,13 +290,12 @@ fun SettingsDialogButtonWithToggle(
  * @param icon the icon to display
  * @param onTap the action to perform when the button is tapped
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun SettingsDialogButton(
     modifier: Modifier = Modifier,
     text: String = "placeholder text",
     additionalText: String = "additional",
-    icon: Painter = painterResource("placeholder_icon.xml"),
+    icon: ImageVector = vectorResource(Res.drawable.placeholder_icon),
     onTap: () -> Unit = {},
 ) {
     val haptic = LocalHapticFeedback.current
@@ -306,7 +316,7 @@ fun SettingsDialogButton(
         SettingsButton(
             modifier = Modifier
                 .padding(horizontal = 7.5.dp)
-                .size(50.dp), shadowEnabled = false, imageResource = icon, enabled = false
+                .size(50.dp), shadowEnabled = false, imageVector = icon, enabled = false
         )
         Text(
             modifier = Modifier, text = text, style = TextStyle(

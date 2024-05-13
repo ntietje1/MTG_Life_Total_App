@@ -53,8 +53,19 @@ import data.ScryfallApiRetriever
 import data.SettingsManager
 import data.serializable.Card
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.back_icon_alt
+import lifelinked.shared.generated.resources.chaos_icon
+import lifelinked.shared.generated.resources.checkmark
+import lifelinked.shared.generated.resources.deck_icon
+import lifelinked.shared.generated.resources.invisible_icon
+import lifelinked.shared.generated.resources.planeswalker_icon
+import lifelinked.shared.generated.resources.question_icon
+import lifelinked.shared.generated.resources.reset_icon
+import lifelinked.shared.generated.resources.visible_icon
+import lifelinked.shared.generated.resources.x_icon
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
 /**
@@ -62,8 +73,11 @@ import theme.scaledSp
  * @param toString the string representation of the outcome
  * @param resourceId the resource id of the icon for the outcome
  */
-private enum class PlanarDieResult(val toString: String, val resourceId: String) {
-    PLANESWALK("Planeswalk", "planeswalker_icon.xml"), CHAOS("Chaos Ensues", "chaos_icon.xml"), NO_EFFECT("No Effect", "x_icon.xml")
+private enum class PlanarDieResult(
+    val toString: String,
+    val drawableResource: DrawableResource
+) {
+    PLANESWALK("Planeswalk", Res.drawable.planeswalker_icon), CHAOS("Chaos Ensues", Res.drawable.chaos_icon), NO_EFFECT("No Effect", Res.drawable.x_icon)
 }
 
 /**
@@ -72,7 +86,6 @@ private enum class PlanarDieResult(val toString: String, val resourceId: String)
  * @param component the LifeCounterComponent that this dialog is for
  * @param goToChoosePlanes the callback to switch to the choose planes dialog
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun PlaneChaseDialogContent(modifier: Modifier = Modifier, component: LifeCounterComponent, goToChoosePlanes: () -> Unit) {
     var rotated by remember { mutableStateOf(false) }
@@ -95,7 +108,7 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, component: LifeCounte
                     SettingsButton(
                         modifier = Modifier.size(100.dp).padding(bottom = 20.dp),
                         textSizeMultiplier = 0.8f,
-                        imageResource = painterResource(planarDieResult.resourceId),
+                        imageVector = vectorResource(planarDieResult.drawableResource),
                         shadowEnabled = false,
                         enabled = false
                     )
@@ -139,19 +152,19 @@ fun PlaneChaseDialogContent(modifier: Modifier = Modifier, component: LifeCounte
             Row(
                 Modifier.fillMaxWidth().wrapContentHeight(), horizontalArrangement = Arrangement.SpaceAround
             ) {
-                SettingsButton(modifier = buttonModifier, text = "Previous", shadowEnabled = false, imageResource = painterResource("back_icon_alt.xml"), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Previous", shadowEnabled = false, imageVector = vectorResource(Res.drawable.back_icon_alt), onPress = {
                     component.backPlane()
                 })
-                SettingsButton(modifier = buttonModifier, text = "Flip Image", shadowEnabled = false, imageResource = painterResource("reset_icon.xml"), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Flip Image", shadowEnabled = false, imageVector = vectorResource(Res.drawable.reset_icon), onPress = {
                     rotated = !rotated
                 })
-                SettingsButton(modifier = buttonModifier, text = "Planeswalk", shadowEnabled = false, imageResource = painterResource("planeswalker_icon.xml"), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Planeswalk", shadowEnabled = false, imageVector = vectorResource(Res.drawable.planeswalker_icon), onPress = {
                     component.planeswalk()
                 })
-                SettingsButton(modifier = buttonModifier, text = "Planar Die", shadowEnabled = false, imageResource = painterResource("chaos_icon.xml"), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Planar Die", shadowEnabled = false, imageVector = vectorResource(Res.drawable.chaos_icon), onPress = {
                     rollPlanarDie()
                 })
-                SettingsButton(modifier = buttonModifier, text = "Planar Deck", shadowEnabled = false, imageResource = painterResource("deck_icon.xml"), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Planar Deck", shadowEnabled = false, imageVector = vectorResource(Res.drawable.deck_icon), onPress = {
                     goToChoosePlanes()
                 })
             }
@@ -289,7 +302,6 @@ class ChoosePlanesActions(
  * @param modifier the modifier for this composable
  * @param actions the available methods for this dialog
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ChoosePlanesDialogContent(
     modifier: Modifier = Modifier, actions: ChoosePlanesActions
@@ -349,16 +361,16 @@ fun ChoosePlanesDialogContent(
                 Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = maxWidth / 10f), horizontalArrangement = Arrangement.SpaceAround
 
             ) {
-                SettingsButton(modifier = buttonModifier, text = "Select All", shadowEnabled = false, imageResource = painterResource("checkmark.xml"), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Select All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.checkmark), onPress = {
                     actions.selectAll()
                 })
-                SettingsButton(modifier = buttonModifier, text = "Unselect All", shadowEnabled = false, imageResource = painterResource("x_icon.xml"), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Unselect All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.x_icon), onPress = {
                     actions.unselectAll()
                 })
                 SettingsButton(modifier = buttonModifier,
                     text = if (!actions.hideUnselected) "Hide Unselected" else "Show Unselected",
                     shadowEnabled = false,
-                    imageResource = if (!actions.hideUnselected) painterResource("invisible_icon.xml") else painterResource("visible_icon.xml"),
+                    imageVector = if (!actions.hideUnselected) vectorResource(Res.drawable.invisible_icon) else vectorResource(Res.drawable.visible_icon),
                     onPress = {
                         actions.toggleHideUnselected()
                     })
@@ -378,7 +390,6 @@ fun ChoosePlanesDialogContent(
  * @param allowEnlarge whether the card can be enlarged to preview the full image
  * @param selected callback to check whether the card is selected
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun PlaneChaseCardPreview(
     modifier: Modifier = Modifier,
@@ -461,7 +472,7 @@ fun PlaneChaseCardPreview(
                     modifier = Modifier.fillMaxSize().padding(iconPadding),
                     text = "No Planes Selected",
                     textSizeMultiplier = 0.8f,
-                    imageResource = painterResource("question_icon.xml"),
+                    imageVector = vectorResource(Res.drawable.question_icon),
                     shadowEnabled = false,
                     enabled = false
                 )

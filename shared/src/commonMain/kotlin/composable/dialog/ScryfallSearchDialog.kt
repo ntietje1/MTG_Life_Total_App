@@ -69,8 +69,10 @@ import data.serializable.Card
 import data.serializable.Ruling
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.search_icon
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
 /**
@@ -286,7 +288,7 @@ fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>
                     )
                 } else {
                     Icon(
-                        painter = painterResource("search_icon.xml"), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.fillMaxSize().padding(5.dp)
+                        imageVector = vectorResource(Res.drawable.search_icon), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.fillMaxSize().padding(5.dp)
                     )
                 }
 

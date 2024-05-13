@@ -31,7 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -44,15 +44,20 @@ import composable.modifier.shake
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.d10_icon
+import lifelinked.shared.generated.resources.d12_icon
+import lifelinked.shared.generated.resources.d20_icon
+import lifelinked.shared.generated.resources.d4_icon
+import lifelinked.shared.generated.resources.d6_icon
+import lifelinked.shared.generated.resources.d8_icon
+import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
 /**
  * A dialog that allows the user to roll dice
  * @param modifier the modifier for this composable
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun DiceRollDialogContent(
     modifier: Modifier = Modifier
@@ -69,12 +74,12 @@ fun DiceRollDialogContent(
         }
     })
     val resources = mapOf(
-        4 to painterResource("d4_icon.xml"),
-        6 to painterResource("d6_icon.xml"),
-        8 to painterResource("d8_icon.xml"),
-        10 to painterResource("d10_icon.xml"),
-        12 to painterResource("d12_icon.xml"),
-        20 to painterResource("d20_icon.xml")
+        4 to vectorResource(Res.drawable.d4_icon),
+        6 to vectorResource(Res.drawable.d6_icon),
+        8 to vectorResource(Res.drawable.d8_icon),
+        10 to vectorResource(Res.drawable.d10_icon),
+        12 to vectorResource(Res.drawable.d12_icon),
+        20 to vectorResource(Res.drawable.d20_icon)
     )
 
     fun setLastResult(r: Int, fv: Int) {
@@ -86,17 +91,17 @@ fun DiceRollDialogContent(
     Column(modifier = modifier, verticalArrangement = Arrangement.Center) {
         Spacer(modifier = Modifier.weight(0.1f))
         GridDialogContent(modifier = Modifier.weight(0.8f), title = "Tap to roll", items = listOf({
-            DiceRollButton(value = 4, imageResource = painterResource("d4_icon.xml"), resultCallBack = { setLastResult(it, 4) })
+            DiceRollButton(value = 4, imageVector = vectorResource(Res.drawable.d4_icon), resultCallBack = { setLastResult(it, 4) })
         }, {
-            DiceRollButton(value = 6, imageResource = painterResource("d6_icon.xml"), resultCallBack = { setLastResult(it, 6) })
+            DiceRollButton(value = 6, imageVector = vectorResource(Res.drawable.d6_icon), resultCallBack = { setLastResult(it, 6) })
         }, {
-            DiceRollButton(value = 8, imageResource = painterResource("d8_icon.xml"), resultCallBack = { setLastResult(it, 8) })
+            DiceRollButton(value = 8, imageVector = vectorResource(Res.drawable.d8_icon), resultCallBack = { setLastResult(it, 8) })
         }, {
-            DiceRollButton(value = 10, imageResource = painterResource("d10_icon.xml"), resultCallBack = { setLastResult(it, 10) })
+            DiceRollButton(value = 10, imageVector = vectorResource(Res.drawable.d10_icon), resultCallBack = { setLastResult(it, 10) })
         }, {
-            DiceRollButton(value = 12, imageResource = painterResource("d12_icon.xml"), resultCallBack = { setLastResult(it, 12) })
+            DiceRollButton(value = 12, imageVector = vectorResource(Res.drawable.d12_icon), resultCallBack = { setLastResult(it, 12) })
         }, {
-            DiceRollButton(value = 20, imageResource = painterResource("d20_icon.xml"), resultCallBack = { setLastResult(it, 20) })
+            DiceRollButton(value = 20, imageVector = vectorResource(Res.drawable.d20_icon), resultCallBack = { setLastResult(it, 20) })
         }))
 
         Text(
@@ -114,7 +119,7 @@ fun DiceRollDialogContent(
                     Modifier
                 }
             ),
-                imageResource = if (faceValue != null) resources[faceValue]!! else painterResource("d20_icon.xml"),
+                imageVector = if (faceValue != null) resources[faceValue]!! else vectorResource(Res.drawable.d20_icon),
                 text = "",
                 mainColor = MaterialTheme.colorScheme.onPrimary,
                 shadowEnabled = false,
@@ -157,19 +162,18 @@ fun DiceRollDialogContent(
  * @param modifier the modifier for this composable
  * @param shape the shape of the button
  * @param backgroundColor the background color of the button
- * @param imageResource the image resource of the button
+ * @param imageVector the image resource of the button
  * @param mainColor the color of the text
  * @param enabled whether the button is enabled
  * @param visible whether the button is visible
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun DiceRollButton(
     value: Int,
     modifier: Modifier = Modifier,
     shape: Shape = RectangleShape,
     backgroundColor: Color = Color.Transparent,
-    imageResource: Painter = painterResource("d20_icon.xml"),
+    imageVector: ImageVector = vectorResource(Res.drawable.d20_icon),
     mainColor: Color = MaterialTheme.colorScheme.onPrimary,
     enabled: Boolean = true,
     visible: Boolean = true,
@@ -202,7 +206,7 @@ fun DiceRollButton(
     SettingsButton(modifier = modifier.bounceClick(amount = 0.04f).shake(shakeController),
         shape = shape,
         backgroundColor = backgroundColor,
-        imageResource = imageResource,
+        imageVector = imageVector,
         text = "D$value",
         mainColor = mainColor,
         shadowEnabled = false,
