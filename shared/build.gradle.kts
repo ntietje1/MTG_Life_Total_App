@@ -1,5 +1,3 @@
-import org.jetbrains.compose.ExperimentalComposeLibrary
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
@@ -43,8 +41,6 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
             implementation(libs.kotlinx.serialization.json)
-            @OptIn(ExperimentalComposeLibrary::class)
-            implementation(compose.components.resources)
             implementation(libs.ktor.client.core)
             implementation("org.slf4j:slf4j-simple:2.0.11") // needed because some other dependency was causing error during bundle generating
             implementation(libs.kotlinx.datetime)
@@ -55,6 +51,7 @@ kotlin {
             implementation(libs.multiplatform.settings.no.arg)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+            implementation(compose.components.resources)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
