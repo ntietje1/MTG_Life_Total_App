@@ -190,7 +190,7 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
     Box(
         modifier = modifier
             .width(50.dp)
-            .height(30.dp)
+            .height(25.dp)
             .clip(RoundedCornerShape(5.dp))
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { _ -> onReset() })
