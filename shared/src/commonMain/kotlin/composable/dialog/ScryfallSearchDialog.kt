@@ -183,19 +183,20 @@ fun ScryfallDialogContent(
         ) {
             Text("No cards found :(", color = Color.Red, fontSize = 15.scaledSp)
         }
+        if (lastSearchWasError) return@Column
         LazyColumn(
             Modifier.pointerInput(Unit) {
                 detectTapGestures(onPress = { focusManager.clearFocus() })
             }, horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (cardResults.isEmpty() && rulingsResults.isEmpty()) return@LazyColumn
+            if (initialBackStackSize == backStack.size || isSearchInProgress) return@LazyColumn
             item {
                 Text(
                     "${cardResults.size + rulingsResults.size} results",
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 15.scaledSp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 10.dp)
+                    modifier = Modifier.padding(vertical = 10.dp).align(Alignment.CenterHorizontally)
                 )
             }
             items(cardResults) { card ->
