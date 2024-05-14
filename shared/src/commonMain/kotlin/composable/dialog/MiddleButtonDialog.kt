@@ -411,9 +411,9 @@ fun MiddleButtonDialog(
         WarningDialog(
             onDismiss = { showResetDialog = false },
             title = "Reset Game",
-            message = "Would you like to start a new game with the same players, or reset all customizations as well?",
-            optionOneMessage = "New game, same players",
-            optionTwoMessage = "New game, different players",
+            message = "Select an option to start a new game",
+            optionOneMessage = "Same players",
+            optionTwoMessage = "Different players",
             onOptionOne = {
                 component.resetPlayerStates()
                 showResetDialog = false

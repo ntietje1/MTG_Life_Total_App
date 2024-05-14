@@ -187,7 +187,7 @@ fun PlayerButton(
     if (showResetPrefsDialog) {
         WarningDialog(
             title = "Reset Preferences",
-            message = "Are you sure you want to reset all preferences for this player?",
+            message = "Are you sure you want to reset your customizations?",
             optionOneEnabled = true,
             optionTwoEnabled = true,
             optionOneMessage = "Reset",
