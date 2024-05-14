@@ -71,7 +71,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.search_icon
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
@@ -235,7 +234,6 @@ fun ScryfallDialogContent(
  * @param query the query to search for
  * @param onSearch the action to perform when the search button is pressed
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>, searchInProgress: Boolean = false, onSearch: () -> Unit) {
     Box(
