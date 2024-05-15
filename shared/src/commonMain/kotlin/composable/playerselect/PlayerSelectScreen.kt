@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -36,9 +34,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import composable.dialog.SettingsButton
 import composable.modifier.routePointerChangesTo
 import composable.playerselect.PlayerSelectScreenValues.deselectDuration
@@ -51,7 +48,6 @@ import composable.playerselect.PlayerSelectScreenValues.pulseDuration1
 import composable.playerselect.PlayerSelectScreenValues.pulseDuration2
 import composable.playerselect.PlayerSelectScreenValues.pulseFreq
 import composable.playerselect.PlayerSelectScreenValues.selectionDelay
-import composable.playerselect.PlayerSelectScreenValues.showHelperTextDelay
 import getAnimationCorrectionFactor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -60,7 +56,6 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.skip_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.allPlayerColors
-import theme.scaledSp
 import kotlin.coroutines.coroutineContext
 import kotlin.math.pow
 import kotlin.native.concurrent.ThreadLocal
@@ -72,19 +67,24 @@ import kotlin.native.concurrent.ThreadLocal
 @Composable
 fun PlayerSelectScreen(component: PlayerSelectComponent) {
     Box(Modifier.fillMaxSize()) {
-        val showHelperText = remember { mutableStateOf(true) }
         PlayerSelectScreenValues.animScale = getAnimationCorrectionFactor()
-        PlayerSelectScreenBase(component, showHelperText)
-        if (showHelperText.value) {
-            Text(
-                text = "Tap to select player",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 40.scaledSp,
-                lineHeight = 50.scaledSp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.Center).rotate(90f)
-            )
+        PlayerSelectScreenBase(component) {
+            component.setHelperText(it)
+        }
+
+        val state by component.state.subscribeAsState()
+
+        if (state.showHelperText) {
+            //TODO: readd this once not broken
+//            Text(
+//                text = "Tap to select player",
+//                color = MaterialTheme.colorScheme.onPrimary,
+//                fontSize = 40.scaledSp,
+//                lineHeight = 50.scaledSp,
+//                fontWeight = FontWeight.Bold,
+//                textAlign = TextAlign.Center,
+//                modifier = Modifier.align(Alignment.Center).rotate(90f)
+//            )
 
             SettingsButton(modifier = Modifier.rotate(90f).align(Alignment.TopEnd).size(100.dp),
                 shape = RoundedCornerShape(30.dp),
@@ -134,7 +134,7 @@ private object PlayerSelectScreenValues {
  */
 @Composable
 fun PlayerSelectScreenBase(
-    component: PlayerSelectComponent, showHelperText: MutableState<Boolean>
+    component: PlayerSelectComponent, setHelperText: (Boolean) -> Unit
 ) {
     val circles = remember { mutableStateMapOf<PointerId, Circle>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
@@ -189,7 +189,9 @@ fun PlayerSelectScreenBase(
                 x = event.position.x, y = event.position.y
             ).apply {
                 applyRandomColor(this)
-                CoroutineScope(scope.coroutineContext).launch { popIn() }
+                CoroutineScope(scope.coroutineContext).launch {
+                    popIn()
+                }
             }
             allGoToNormal()
         }
@@ -222,11 +224,12 @@ fun PlayerSelectScreenBase(
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
         routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
-            for (id in circles.keys) {
-                if (!it.contains(id)) {
-                    disappearCircle(id)
-                }
-            }
+            //TODO: this used to be a fix, but now seems to not be necessary and also is broken
+//            for (id in circles.keys) {
+//                if (!it.contains(id)) {
+//                    disappearCircle(id)
+//                }
+//            }
         })
     }) {
         LaunchedEffect(circles.size) {
@@ -234,13 +237,14 @@ fun PlayerSelectScreenBase(
             val pulseScope = CoroutineScope(coroutineContext)
             val helperTextScope = CoroutineScope(coroutineContext)
 
+            //TODO: this is broken for some reason
             if (circles.size == 0) {
-                helperTextScope.launch {
-                    delay(showHelperTextDelay)
-                    showHelperText.value = true
-                }
+//                helperTextScope.launch {
+//                    delay(showHelperTextDelay)
+//                setHelperText(true)
+//                }
             } else {
-                showHelperText.value = false
+//                setHelperText(false)
             }
 
             if (circles.size >= 2) {
