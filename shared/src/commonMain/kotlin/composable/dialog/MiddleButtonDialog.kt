@@ -43,8 +43,25 @@ import composable.lifecounter.LifeCounterComponent
 import data.SettingsManager
 import data.SettingsManager.startingLife
 import getAnimationCorrectionFactor
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.back_icon_alt
+import lifelinked.shared.generated.resources.coin_icon
+import lifelinked.shared.generated.resources.heart_solid_icon
+import lifelinked.shared.generated.resources.mana_icon
+import lifelinked.shared.generated.resources.moon_icon
+import lifelinked.shared.generated.resources.planeswalker_icon
+import lifelinked.shared.generated.resources.player_count_icon
+import lifelinked.shared.generated.resources.player_select_icon
+import lifelinked.shared.generated.resources.reset_icon
+import lifelinked.shared.generated.resources.search_icon
+import lifelinked.shared.generated.resources.settings_icon_small
+import lifelinked.shared.generated.resources.six_icon
+import lifelinked.shared.generated.resources.star_icon_small
+import lifelinked.shared.generated.resources.sun_and_moon_icon
+import lifelinked.shared.generated.resources.sun_icon
+import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
 /**
@@ -250,7 +267,7 @@ fun MiddleButtonDialog(
                         {
                             SettingsButton(
                                 modifier = buttonModifier,
-                                imageResource = painterResource("player_select_icon.xml"),
+                                imageVector = vectorResource(Res.drawable.player_select_icon),
                                 text = "Player Select",
                                 shadowEnabled = false,
                                 onPress = {
@@ -261,7 +278,7 @@ fun MiddleButtonDialog(
                         {
                             SettingsButton(
                                 modifier = buttonModifier,
-                                imageResource = painterResource("reset_icon.xml"),
+                               imageVector = vectorResource(Res.drawable.reset_icon),
                                 text = "Reset Game",
                                 shadowEnabled = false,
                                 onPress = {
@@ -271,7 +288,7 @@ fun MiddleButtonDialog(
                         {
                             SettingsButton(
                                 modifier = buttonModifier,
-                                imageResource = painterResource("heart_solid_icon.xml"),
+                               imageVector = vectorResource(Res.drawable.heart_solid_icon),
                                 text = "Starting Life",
                                 shadowEnabled = false,
                                 onPress = {
@@ -282,7 +299,7 @@ fun MiddleButtonDialog(
                         {
                             SettingsButton(
                                 buttonModifier,
-                                imageResource = painterResource("star_icon_small.xml"),
+                               imageVector = vectorResource(Res.drawable.star_icon_small),
                                 text = "Toggle Theme",
                                 shadowEnabled = false,
                                 onPress = {
@@ -293,7 +310,7 @@ fun MiddleButtonDialog(
                         {
                             SettingsButton(
                                 buttonModifier,
-                                imageResource = painterResource("player_count_icon.xml"),
+                               imageVector = vectorResource(Res.drawable.player_count_icon),
                                 text = "Player Number",
                                 shadowEnabled = false,
                                 onPress = {
@@ -304,7 +321,7 @@ fun MiddleButtonDialog(
                         {
                             SettingsButton(
                                 buttonModifier,
-                                imageResource = painterResource("mana_icon.xml"),
+                               imageVector = vectorResource(Res.drawable.mana_icon),
                                 text = "Mana & Storm",
                                 shadowEnabled = false,
                                 onPress = {
@@ -315,7 +332,7 @@ fun MiddleButtonDialog(
                         {
                             SettingsButton(
                                 buttonModifier,
-                                imageResource = painterResource("six_icon.xml"),
+                               imageVector = vectorResource(Res.drawable.six_icon),
                                 text = "Dice roll",
                                 shadowEnabled = false,
                                 onPress = {
@@ -326,7 +343,7 @@ fun MiddleButtonDialog(
                         {
                             SettingsButton(
                                 buttonModifier,
-                                imageResource = painterResource("coin_icon.xml"),
+                               imageVector = vectorResource(Res.drawable.coin_icon),
                                 text = "Coin Flip",
                                 shadowEnabled = false,
                                 onPress = {
@@ -336,10 +353,10 @@ fun MiddleButtonDialog(
                         },
                         {
                             SettingsButton(buttonModifier,
-                                imageResource = when (component.dayNight) {
-                                    LifeCounterComponent.DayNightState.DAY -> painterResource("sun_icon.xml")
-                                    LifeCounterComponent.DayNightState.NIGHT -> painterResource("moon_icon.xml")
-                                    LifeCounterComponent.DayNightState.NONE -> painterResource("sun_and_moon_icon.xml")
+                                imageVector = when (component.dayNight) {
+                                    LifeCounterComponent.DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
+                                    LifeCounterComponent.DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
+                                    LifeCounterComponent.DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
                                 },
                                 text = when (component.dayNight) {
                                     LifeCounterComponent.DayNightState.DAY -> "Day/Night"
@@ -357,7 +374,7 @@ fun MiddleButtonDialog(
                         },
                         {
                             SettingsButton(buttonModifier,
-                                imageResource = painterResource("search_icon.xml"),
+                               imageVector = vectorResource(Res.drawable.search_icon),
                                 text = "Card Search",
                                 shadowEnabled = false,
                                 onPress = {
@@ -367,7 +384,7 @@ fun MiddleButtonDialog(
                         },
                         {
                             SettingsButton(buttonModifier,
-                                imageResource = painterResource("planeswalker_icon.xml"),
+                               imageVector = vectorResource(Res.drawable.planeswalker_icon),
                                 text = "Planechase",
                                 shadowEnabled = false,
                                 onPress = {
@@ -377,7 +394,7 @@ fun MiddleButtonDialog(
                         },
                         {
                             SettingsButton(buttonModifier,
-                                imageResource = painterResource("settings_icon_small.xml"),
+                               imageVector = vectorResource(Res.drawable.settings_icon_small),
                                 text = "Settings",
                                 shadowEnabled = false,
                                 onPress = {
@@ -394,9 +411,9 @@ fun MiddleButtonDialog(
         WarningDialog(
             onDismiss = { showResetDialog = false },
             title = "Reset Game",
-            message = "Would you like to start a new game with the same players, or reset all customizations as well?",
-            optionOneMessage = "New game, same players",
-            optionTwoMessage = "New game, different players",
+            message = "Select an option to start a new game",
+            optionOneMessage = "Same players",
+            optionTwoMessage = "Different players",
             onOptionOne = {
                 component.resetPlayerStates()
                 showResetDialog = false
@@ -551,7 +568,7 @@ fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Un
         text = "",
         visible = visible,
         shadowEnabled = false,
-        imageResource = painterResource("back_icon_alt.xml"),
+       imageVector = vectorResource(Res.drawable.back_icon_alt),
         onTap = onBack
     )
 }
@@ -572,7 +589,7 @@ fun ExitButton(modifier: Modifier = Modifier, visible: Boolean, onDismiss: () ->
         text = "",
         visible = visible,
         shadowEnabled = false,
-        imageResource = painterResource("x_icon.xml"),
+       imageVector = vectorResource(Res.drawable.x_icon),
         onTap = onDismiss
     )
 }

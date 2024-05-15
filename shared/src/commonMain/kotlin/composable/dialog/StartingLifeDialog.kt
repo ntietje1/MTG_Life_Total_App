@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
-
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -25,16 +24,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-
-import theme.scaledSp
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.enter_icon
+import lifelinked.shared.generated.resources.forty_icon
+import lifelinked.shared.generated.resources.thirty_icon
+import lifelinked.shared.generated.resources.twenty_icon
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.vectorResource
+import theme.scaledSp
 
 /**
  * A dialog that allows the user to set the starting life total
@@ -52,17 +54,17 @@ fun StartingLifeDialogContent(
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.weight(1.0f))
             GridDialogContent(Modifier.wrapContentSize().weight(0.9f), title = "Set starting life total", items = listOf({
-                SettingsButton(imageResource = painterResource("forty_icon.xml"), text = "", shadowEnabled = false, onPress = {
+                SettingsButton(imageVector = vectorResource(Res.drawable.forty_icon), text = "", shadowEnabled = false, onPress = {
                     setStartingLife(40)
                     onDismiss()
                 })
             }, {
-                SettingsButton(imageResource = painterResource("thirty_icon.xml"), text = "", shadowEnabled = false, onPress = {
+                SettingsButton(imageVector = vectorResource(Res.drawable.thirty_icon), text = "", shadowEnabled = false, onPress = {
                     setStartingLife(30)
                     onDismiss()
                 })
             }, {
-                SettingsButton(imageResource = painterResource("twenty_icon.xml"), text = "", shadowEnabled = false, onPress = {
+                SettingsButton(imageVector = vectorResource(Res.drawable.twenty_icon), text = "", shadowEnabled = false, onPress = {
                     setStartingLife(20)
                     onDismiss()
                 })
@@ -100,7 +102,7 @@ fun StartingLifeDialogContent(
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent
                 ), keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number, autoCorrect = false, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
+                    keyboardType = KeyboardType.Number, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
                 ), keyboardActions = KeyboardActions(onDone = { customSetStartLife() }), modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .height(80.dp)
@@ -112,7 +114,7 @@ fun StartingLifeDialogContent(
                         .align(Alignment.CenterEnd)
                         .padding(top = 20.dp, end = 5.dp)
                         .size(50.dp),
-                    imageResource = painterResource("enter_icon.xml"),
+                    imageVector = vectorResource(Res.drawable.enter_icon),
                     shadowEnabled = false,
                     onPress = { customSetStartLife() })
             }

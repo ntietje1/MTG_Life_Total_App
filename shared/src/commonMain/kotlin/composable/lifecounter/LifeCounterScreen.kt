@@ -47,8 +47,10 @@ import data.SettingsManager.numPlayers
 import getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.middle_icon
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.vectorResource
 
 /**
  * The main life counting screen of the app
@@ -243,7 +245,7 @@ fun AnimatedMiddleButton(
         })
     }) {
         Image(
-            modifier = Modifier.fillMaxSize().align(Alignment.Center), painter = painterResource("middle_icon.xml"), contentScale = ContentScale.Crop, contentDescription = null
+            modifier = Modifier.fillMaxSize().align(Alignment.Center), imageVector = vectorResource(Res.drawable.middle_icon), contentScale = ContentScale.Crop, contentDescription = null
         )
     }
 }

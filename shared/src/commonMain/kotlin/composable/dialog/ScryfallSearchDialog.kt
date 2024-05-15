@@ -69,8 +69,9 @@ import data.serializable.Card
 import data.serializable.Ruling
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.search_icon
+import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
 /**
@@ -181,19 +182,20 @@ fun ScryfallDialogContent(
         ) {
             Text("No cards found :(", color = Color.Red, fontSize = 15.scaledSp)
         }
+        if (lastSearchWasError) return@Column
         LazyColumn(
             Modifier.pointerInput(Unit) {
                 detectTapGestures(onPress = { focusManager.clearFocus() })
             }, horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (cardResults.isEmpty() && rulingsResults.isEmpty()) return@LazyColumn
+            if (initialBackStackSize == backStack.size || isSearchInProgress) return@LazyColumn
             item {
                 Text(
                     "${cardResults.size + rulingsResults.size} results",
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 15.scaledSp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 10.dp)
+                    modifier = Modifier.padding(vertical = 10.dp).align(Alignment.CenterHorizontally)
                 )
             }
             items(cardResults) { card ->
@@ -232,7 +234,6 @@ fun ScryfallDialogContent(
  * @param query the query to search for
  * @param onSearch the action to perform when the search button is pressed
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>, searchInProgress: Boolean = false, onSearch: () -> Unit) {
     Box(
@@ -286,7 +287,7 @@ fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>
                     )
                 } else {
                     Icon(
-                        painter = painterResource("search_icon.xml"), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.fillMaxSize().padding(5.dp)
+                        imageVector = vectorResource(Res.drawable.search_icon), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.fillMaxSize().padding(5.dp)
                     )
                 }
 

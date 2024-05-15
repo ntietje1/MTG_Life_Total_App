@@ -56,8 +56,9 @@ import getAnimationCorrectionFactor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.skip_icon
+import org.jetbrains.compose.resources.vectorResource
 import theme.allPlayerColors
 import theme.scaledSp
 import kotlin.coroutines.coroutineContext
@@ -68,7 +69,6 @@ import kotlin.native.concurrent.ThreadLocal
  * Screen for selecting players
  * @param component The PlayerSelectComponent to use for state and navigation
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun PlayerSelectScreen(component: PlayerSelectComponent) {
     Box(Modifier.fillMaxSize()) {
@@ -92,7 +92,7 @@ fun PlayerSelectScreen(component: PlayerSelectComponent) {
                 backgroundColor = Color.Transparent,
                 text = "Skip",
                 shadowEnabled = false,
-                imageResource = painterResource("skip_icon.xml"),
+                imageVector = vectorResource(Res.drawable.skip_icon),
                 onTap = {
                     component.goToLifeCounterScreen()
                 }) {}

@@ -46,8 +46,10 @@ import composable.flippable.FlippableState
 import composable.flippable.rememberFlipController
 import data.SettingsManager.fastCoinFlip
 import getAnimationCorrectionFactor
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.heads
+import lifelinked.shared.generated.resources.tails
+import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 import kotlin.random.Random
 
@@ -100,7 +102,6 @@ fun CoinFlipDialogContent(modifier: Modifier = Modifier, history: SnapshotStateL
  * @param modifier the modifier for this composable
  * @param history the list of coin flips
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun CoinFlippable(
     modifier: Modifier = Modifier, history: MutableList<String>
@@ -165,12 +166,12 @@ fun CoinFlippable(
             flipAnimationType = flipAnimationType,
             frontSide = {
                 Image(
-                    painter = painterResource("heads.xml"), contentDescription = "Front Side", modifier = Modifier.fillMaxSize()
+                    imageVector = vectorResource(Res.drawable.heads), contentDescription = "Front Side", modifier = Modifier.fillMaxSize()
                 )
             },
             backSide = {
                 Image(
-                    painter = painterResource("tails.xml"), contentDescription = "Back Side", modifier = Modifier.fillMaxSize()
+                    imageVector = vectorResource(Res.drawable.tails), contentDescription = "Back Side", modifier = Modifier.fillMaxSize()
                 )
             },
             onFlippedListener = { currentSide ->
@@ -189,7 +190,7 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
     Box(
         modifier = modifier
             .width(50.dp)
-            .height(30.dp)
+            .height(25.dp)
             .clip(RoundedCornerShape(5.dp))
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { _ -> onReset() })

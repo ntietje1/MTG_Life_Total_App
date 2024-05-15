@@ -35,12 +35,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,7 +56,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -87,8 +86,29 @@ import data.SettingsManager.cameraRollDisabled
 import data.initImageManager
 import getAnimationCorrectionFactor
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.add_icon
+import lifelinked.shared.generated.resources.back_icon
+import lifelinked.shared.generated.resources.change_background_icon
+import lifelinked.shared.generated.resources.change_name_icon
+import lifelinked.shared.generated.resources.color_picker_icon
+import lifelinked.shared.generated.resources.commander_solid_icon
+import lifelinked.shared.generated.resources.custom_color_icon
+import lifelinked.shared.generated.resources.download_icon
+import lifelinked.shared.generated.resources.enter_icon
+import lifelinked.shared.generated.resources.heart_solid_icon
+import lifelinked.shared.generated.resources.mana_icon
+import lifelinked.shared.generated.resources.monarchy_icon
+import lifelinked.shared.generated.resources.reset_icon
+import lifelinked.shared.generated.resources.search_icon
+import lifelinked.shared.generated.resources.settings_icon
+import lifelinked.shared.generated.resources.skull_icon
+import lifelinked.shared.generated.resources.sword_icon
+import lifelinked.shared.generated.resources.sword_icon_double
+import lifelinked.shared.generated.resources.text_icon
+import lifelinked.shared.generated.resources.transparent
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.vectorResource
 import theme.allPlayerColors
 import theme.brightenColor
 import theme.deadDealerColorMatrix
@@ -122,7 +142,6 @@ enum class PlayerButtonState {
  * @param component The [LifeCounterComponent] that this button belongs to
  * @return The composable
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun PlayerButton(
     modifier: Modifier = Modifier, player: Player, initialState: PlayerButtonState = PlayerButtonState.NORMAL, rotation: Float = 0f, component: LifeCounterComponent
@@ -168,7 +187,7 @@ fun PlayerButton(
     if (showResetPrefsDialog) {
         WarningDialog(
             title = "Reset Preferences",
-            message = "Are you sure you want to reset all preferences for this player?",
+            message = "Are you sure you want to reset your customizations?",
             optionOneEnabled = true,
             optionTwoEnabled = true,
             optionOneMessage = "Reset",
@@ -345,7 +364,7 @@ fun PlayerButton(
                         modifier = playerInfoPadding.align(Alignment.Center).size(smallButtonSize * 4).padding(top = maxHeight / 9f),
                         backgroundColor = Color.Transparent,
                         mainColor = player.textColor,
-                        imageResource = painterResource("skull_icon.xml"),
+                        imageVector = vectorResource(Res.drawable.skull_icon),
                         enabled = false
                     )
                 }
@@ -380,7 +399,7 @@ fun PlayerButton(
                             }
 
                             PlayerButtonState.COMMANDER_DEALER -> {
-                                val iconId = if (component.currentDealerIsPartnered()) "sword_icon_double.xml" else "sword_icon.xml"
+                                val iconResource = if (component.currentDealerIsPartnered()) Res.drawable.sword_icon_double else Res.drawable.sword_icon
                                 Column(
                                     Modifier.fillMaxSize(),
                                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -397,7 +416,7 @@ fun PlayerButton(
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
                                     SettingsButton(modifier = Modifier.size(smallButtonSize),
-                                        imageResource = painterResource(iconId),
+                                        imageVector = vectorResource(iconResource),
                                         backgroundColor = Color.Transparent,
                                         mainColor = player.textColor,
                                         onPress = {
@@ -432,8 +451,6 @@ fun PlayerButton(
                                     setBlurBackground = { component.blurBackground.value = it },
                                 )
                             }
-
-                            else -> throw Exception("unsupported state")
                         }
                     }
                 }
@@ -447,7 +464,7 @@ fun PlayerButton(
                         backgroundColor = Color.Transparent,
                         mainColor = player.textColor,
                         visible = backStack.isNotEmpty(),
-                        imageResource = painterResource("back_icon.xml"),
+                        imageVector = vectorResource(Res.drawable.back_icon),
                         onPress = { backStack.removeLast().invoke() })
                 }
 
@@ -459,7 +476,7 @@ fun PlayerButton(
                             bottom = commanderStateMargin,
                         ),
                         visible = commanderButtonVisible,
-                        icon = painterResource("commander_solid_icon.xml"),
+                        iconResource = Res.drawable.commander_solid_icon,
                         color = player.textColor,
                         size = smallButtonSize
                     ) {
@@ -495,7 +512,7 @@ fun PlayerButton(
                                 bottom = commanderStateMargin,
                             ),
                             visible = false,
-                            icon = painterResource("commander_solid_icon.xml"),
+                            iconResource = Res.drawable.commander_solid_icon,
                             color = player.textColor,
                             size = smallButtonSize
                         ) {}
@@ -510,7 +527,7 @@ fun PlayerButton(
                             bottom = settingsStateMargin
                         ),
                         visible = settingsButtonVisible,
-                        icon = painterResource("settings_icon.xml"),
+                        iconResource = Res.drawable.settings_icon,
                         color = player.textColor,
                         size = smallButtonSize
                     ) {
@@ -636,7 +653,6 @@ private enum class CounterMenuState {
  * @param player The player to display
  * @param backStack The back stack for the settings menu
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun Counters(
     modifier: Modifier = Modifier, player: Player, backStack: SnapshotStateList<() -> Unit>
@@ -678,7 +694,7 @@ fun Counters(
                         ) {
                             items(player.activeCounters) { counterType ->
                                 Counter(player = player,
-                                    icon = painterResource(counterType.resId),
+                                    iconResource = counterType.resource,
                                     value = player.getCounterValue(counterType),
                                     onIncrement = {
                                         player.incrementCounterValue(
@@ -735,7 +751,7 @@ fun Counters(
                                         }
                                     }) {
                                         SettingsButton(
-                                            imageResource = painterResource(counterType.resId),
+                                            imageVector = vectorResource(counterType.resource),
                                             modifier = Modifier.fillMaxSize().padding(5.dp),
                                             mainColor = player.textColor,
                                             backgroundColor = Color.Transparent,
@@ -758,7 +774,6 @@ fun Counters(
  * @param player The player to modify
  * @param onTap The callback for when the button is tapped
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun AddCounter(
     player: Player,
@@ -781,7 +796,7 @@ fun AddCounter(
         val iconSize = maxHeight / 2.5f
         SettingsButton(
             modifier = Modifier.align(Alignment.Center).size(iconSize),
-            imageResource = painterResource("add_icon.xml"),
+            imageVector = vectorResource(Res.drawable.add_icon),
             backgroundColor = Color.Transparent,
             mainColor = player.textColor,
             shadowEnabled = false,
@@ -800,7 +815,7 @@ fun AddCounter(
  */
 @Composable
 fun Counter(
-    player: Player, icon: Painter, value: Int, onIncrement: () -> Unit, onDecrement: () -> Unit
+    player: Player, iconResource: DrawableResource, value: Int, onIncrement: () -> Unit, onDecrement: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(
@@ -847,10 +862,10 @@ fun Counter(
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.wrapContentSize(),
-                style = textShadowStyle
+                style = textShadowStyle()
             )
             SettingsButton(
-                imageResource = icon,
+                imageVector = vectorResource(iconResource),
                 modifier = Modifier.fillMaxSize(0.35f).aspectRatio(1.0f).padding(bottom = 15.dp),
                 mainColor = player.textColor,
                 backgroundColor = Color.Transparent,
@@ -876,7 +891,6 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
             PlayerButtonState.COMMANDER_DEALER -> player.color.saturateColor(0.5f).brightenColor(0.6f)
 
             PlayerButtonState.SETTINGS -> player.color
-            else -> throw Exception("unsupported state")
         }
         if (player.isDead) {
             c = c.ghostify()
@@ -902,8 +916,6 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
             PlayerButtonState.SETTINGS -> {
                 if (player.isDead) deadSettingsColorMatrix else settingsColorMatrix
             }
-
-            else -> throw Exception("unsupported state")
         }
         AsyncImage(
             model = player.imageUri!!,
@@ -931,7 +943,7 @@ fun PlayerStateButton(
     modifier: Modifier = Modifier,
     size: Dp = 24.dp,
     visible: Boolean,
-    icon: Painter,
+    iconResource: DrawableResource,
     color: Color,
     onPress: () -> Unit,
 ) {
@@ -939,7 +951,7 @@ fun PlayerStateButton(
         modifier = modifier.size(size),
         backgroundColor = Color.Transparent,
         mainColor = color,
-        imageResource = icon,
+        imageVector = vectorResource(iconResource),
         visible = visible,
         onPress = onPress
     )
@@ -971,7 +983,7 @@ fun CommanderDamageNumber(
                 partner = false
             )
             if (partnerMode) {
-                Divider(
+                VerticalDivider(
                     modifier = Modifier.fillMaxHeight(0.6f).width(2.dp).offset(y = dividerOffset),
                     color = player.textColor
                 )
@@ -998,11 +1010,11 @@ fun CommanderDamageNumber(
 fun SingleCommanderDamageNumber(
     modifier: Modifier = Modifier, player: Player, currentDealer: Player?, partner: Boolean = false
 ) {
-    val iconID = "commander_solid_icon.xml"
+    val iconResource = Res.drawable.commander_solid_icon
 
     NumericValue(modifier = modifier,
         player = player,
-        iconID = iconID,
+        iconResource = iconResource,
         getValue = { p ->
             p.getCommanderDamage(
                 currentDealer!!,
@@ -1021,11 +1033,11 @@ fun SingleCommanderDamageNumber(
 fun LifeNumber(
     modifier: Modifier = Modifier, player: Player
 ) {
-    val iconID = "heart_solid_icon.xml"
+    val iconResource = Res.drawable.heart_solid_icon
 
     NumericValue(modifier = modifier,
         player = player,
-        iconID = iconID,
+        iconResource = iconResource,
         getValue = { p -> p.life.toString() },
         getRecentChangeText = { if (player.recentChange == 0) "" else if (player.recentChange > 0) "+${player.recentChange}" else "${player.recentChange}" })
 }
@@ -1038,10 +1050,9 @@ fun LifeNumber(
  * @param getValue The callback for getting the value
  * @param getRecentChangeText The callback for getting the recent change text
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun NumericValue(
-    modifier: Modifier = Modifier, player: Player, iconID: String, getValue: (Player) -> String, getRecentChangeText: (Player) -> String
+    modifier: Modifier = Modifier, player: Player, iconResource: DrawableResource, getValue: (Player) -> String, getRecentChangeText: (Player) -> String
 ) {
     BoxWithConstraints(
         modifier = modifier.fillMaxSize(),
@@ -1075,7 +1086,7 @@ fun NumericValue(
                 fontSize = smallTextSize.scaledSp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                style = textShadowStyle
+                style = textShadowStyle()
             )
             Row(
                 modifier = Modifier.wrapContentSize(unbounded = true).offset(y = (-largeTextSize / 12f).dp).padding(top = largeTextPadding),
@@ -1090,7 +1101,7 @@ fun NumericValue(
                     fontSize = largeTextSize.scaledSp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    style = textShadowStyle
+                    style = textShadowStyle()
                 )
                 Spacer(modifier = Modifier.weight(0.2f))
                 Text(
@@ -1098,14 +1109,14 @@ fun NumericValue(
                     text = recentChangeText,
                     color = player.textColor,
                     fontSize = recentChangeSize.scaledSp,
-                    style = textShadowStyle
+                    style = textShadowStyle()
                 )
             }
             SettingsButton(
                 modifier = Modifier.size(iconSize),
                 backgroundColor = Color.Transparent,
                 mainColor = player.textColor,
-                imageResource = painterResource(iconID),
+                imageVector = vectorResource(iconResource),
                 enabled = false
             )
         }
@@ -1129,7 +1140,6 @@ private enum class SettingsState { Default, Customize, BackgroundColorPicker, Te
  * @param onResetPrefsClick The callback for when the reset button is pressed
  * @param setBlurBackground The callback for when the blur background setting is changed
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun SettingsMenu(
     modifier: Modifier = Modifier,
@@ -1158,10 +1168,10 @@ fun SettingsMenu(
         val smallTextSize = maxHeight.value.scaledSp / 12f
 
         @Composable
-        fun FormattedSettingsButton(imageResource: Painter, text: String, onPress: () -> Unit) {
+        fun FormattedSettingsButton(imageResource: DrawableResource, text: String, onPress: () -> Unit) {
             SettingsButton(
                 Modifier.size(settingsButtonSize),
-                imageResource = imageResource,
+                imageVector = vectorResource(imageResource),
                 text = text,
                 onPress = onPress,
                 mainColor = player.textColor,
@@ -1179,13 +1189,13 @@ fun SettingsMenu(
                 ) {
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("monarchy_icon.xml"),
+                            imageResource = Res.drawable.monarchy_icon,
                             text = "Monarchy"
                         ) { onMonarchyButtonClick() }
                     }
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("transparent.xml"),
+                            imageResource = Res.drawable.transparent,
                             text = ""
                         ) {
 //                            state = SettingsState.LoadPlayer
@@ -1195,7 +1205,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("mana_icon.xml"),
+                            imageResource = Res.drawable.mana_icon,
                             text = "Counters"
                         ) {
                             state = SettingsState.Counters
@@ -1205,7 +1215,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("change_background_icon.xml"),
+                            imageResource =Res.drawable.change_background_icon,
                             text = "Customize"
                         ) {
                             state = SettingsState.Customize
@@ -1214,7 +1224,7 @@ fun SettingsMenu(
                     }
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("skull_icon.xml"),
+                            imageResource =Res.drawable.skull_icon,
                             text = "KO Player"
                         ) {
                             player.setDead = !player.isDead
@@ -1225,7 +1235,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("change_name_icon.xml"),
+                            imageResource =Res.drawable.change_name_icon,
                             text = "Change Name"
                         ) {
                             state = SettingsState.ChangeName
@@ -1252,7 +1262,7 @@ fun SettingsMenu(
                 ) {
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("color_picker_icon.xml"),
+                            imageResource =Res.drawable.color_picker_icon,
                             text = "Background Color"
                         ) {
                             state = SettingsState.BackgroundColorPicker
@@ -1262,7 +1272,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("text_icon.xml"),
+                            imageResource =Res.drawable.text_icon,
                             text = "Text Color"
                         ) {
                             state = SettingsState.TextColorPicker
@@ -1272,14 +1282,14 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("change_background_icon.xml"),
+                            imageResource =Res.drawable.change_background_icon,
                             text = "Upload Image"
                         ) { onFromCameraRollButtonClick() }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("download_icon.xml"),
+                            imageResource =Res.drawable.download_icon,
                             text = "Load Profile"
                         ) {
                             state = SettingsState.LoadPlayer
@@ -1291,7 +1301,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("search_icon.xml"),
+                            imageResource =Res.drawable.search_icon,
                             text = "Search Image",
                             onPress = onScryfallButtonClick
                         )
@@ -1299,7 +1309,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = painterResource("reset_icon.xml"),
+                            imageResource =Res.drawable.reset_icon,
                             text = "Reset",
                             onPress = onResetPrefsClick
                         )
@@ -1422,8 +1432,6 @@ fun SettingsMenu(
                     player = player
                 )
             }
-
-            else -> throw Exception("unsupported state")
         }
     }
 }
@@ -1498,7 +1506,6 @@ fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Col
  * @param closeSettingsMenu The callback for when the settings menu is closed
  * @param player The player to modify
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ChangeNameField(
     modifier: Modifier = Modifier, closeSettingsMenu: () -> Unit, player: Player
@@ -1510,7 +1517,7 @@ fun ChangeNameField(
         closeSettingsMenu()
         SettingsManager.savePlayerPref(player)
     }
-    BoxWithConstraints(modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -1541,7 +1548,6 @@ fun ChangeNameField(
                         focusedIndicatorColor = player.color
                     ),
                     keyboardOptions = KeyboardOptions.Default.copy(
-                        autoCorrect = false,
                         capitalization = KeyboardCapitalization.None,
                         imeAction = ImeAction.Done
                     ),
@@ -1552,7 +1558,7 @@ fun ChangeNameField(
                     top = 20.dp,
                     end = 5.dp
                 ),
-                    imageResource = painterResource("enter_icon.xml"),
+                    imageVector = vectorResource(Res.drawable.enter_icon),
                     shadowEnabled = false,
                     mainColor = player.color,
                     backgroundColor = player.textColor,
@@ -1632,7 +1638,7 @@ fun MiniPlayerButton(
  */
 @Composable
 fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color: Color) {
-    BoxWithConstraints(modifier = modifier.fillMaxHeight().aspectRatio(1f).background(color).pointerInput(Unit) {
+    Box(modifier = modifier.fillMaxHeight().aspectRatio(1f).background(color).pointerInput(Unit) {
         detectTapGestures(
             onTap = {
                 onClick()
@@ -1649,7 +1655,6 @@ fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color:
  *  @param setBlurBackground The callback for when the blur background setting is changed
  *  @param setColor The callback for when a color is selected
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initialColor: Color, setBlurBackground: (Boolean) -> Unit, setColor: (Color) -> Unit) {
     var showColorDialog by remember { mutableStateOf(false) }
@@ -1666,7 +1671,7 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initi
             })
     }
 
-    BoxWithConstraints(
+    Box(
         modifier = modifier.fillMaxHeight().aspectRatio(1f).pointerInput(Unit) {
             detectTapGestures(
                 onTap = {
@@ -1677,8 +1682,8 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initi
         },
     ) {
         Icon(
-            painter = painterResource("custom_color_icon.xml"),
-            contentDescription = null, // provide a localized description if needed
+            imageVector = vectorResource(Res.drawable.custom_color_icon),
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             tint = player.textColor
         )

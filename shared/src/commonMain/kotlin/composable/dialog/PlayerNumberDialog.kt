@@ -16,8 +16,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.alternate4player_icon
+import lifelinked.shared.generated.resources.default4player_icon
+import lifelinked.shared.generated.resources.five_icon
+import lifelinked.shared.generated.resources.four_icon
+import lifelinked.shared.generated.resources.one_icon
+import lifelinked.shared.generated.resources.six_icon
+import lifelinked.shared.generated.resources.three_icon
+import lifelinked.shared.generated.resources.two_icon
+import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
 /**
@@ -28,41 +36,40 @@ import theme.scaledSp
  * @param resetPlayers the action to perform when the players are reset
  * @param show4PlayerDialog the callback to switch to the 4 player layout dialog
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun PlayerNumberDialogContent(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, setPlayerNum: (Int) -> Unit, resetPlayers: () -> Unit, show4PlayerDialog: () -> Unit
 ) {
     GridDialogContent(modifier, title = "Set number of players", items = listOf({
-        SettingsButton(imageResource = painterResource("one_icon.xml"), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.one_icon), text = "", shadowEnabled = false, onPress = {
             setPlayerNum(1)
             resetPlayers()
             onDismiss()
         })
     }, {
-        SettingsButton(imageResource = painterResource("two_icon.xml"), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.two_icon), text = "", shadowEnabled = false, onPress = {
             setPlayerNum(2)
             resetPlayers()
             onDismiss()
         })
     }, {
-        SettingsButton(imageResource = painterResource("three_icon.xml"), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.three_icon), text = "", shadowEnabled = false, onPress = {
             setPlayerNum(3)
             resetPlayers()
             onDismiss()
         })
     }, {
-        SettingsButton(imageResource = painterResource("four_icon.xml"), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.four_icon), text = "", shadowEnabled = false, onPress = {
             show4PlayerDialog()
         })
     }, {
-        SettingsButton(imageResource = painterResource("five_icon.xml"), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.five_icon), text = "", shadowEnabled = false, onPress = {
             setPlayerNum(5)
             resetPlayers()
             onDismiss()
         })
     }, {
-        SettingsButton(imageResource = painterResource("six_icon.xml"), text = "", onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.six_icon), text = "", onPress = {
             setPlayerNum(6)
             resetPlayers()
             onDismiss()
@@ -77,7 +84,6 @@ fun PlayerNumberDialogContent(
  * @param setPlayerNum the action to perform when the number of players is set
  * @param setAlt4PlayerLayout the action to perform when the alternate 4 player layout is set
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun FourPlayerLayoutContent(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, setPlayerNum: (Int) -> Unit, setAlt4PlayerLayout: (value: Boolean) -> Unit
@@ -96,12 +102,12 @@ fun FourPlayerLayoutContent(
                 fontSize = 25.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary
             )
-            SettingsButton(Modifier.size(buttonSize), imageResource = painterResource("default4player_icon.xml"), shadowEnabled = false, onPress = {
+            SettingsButton(Modifier.size(buttonSize), imageVector = vectorResource(Res.drawable.default4player_icon), shadowEnabled = false, onPress = {
                 setPlayerNum(4)
                 setAlt4PlayerLayout(false)
                 onDismiss()
             })
-            SettingsButton(Modifier.size(buttonSize), imageResource = painterResource("alternate4player_icon.xml"), shadowEnabled = false, onPress = {
+            SettingsButton(Modifier.size(buttonSize), imageVector = vectorResource(Res.drawable.alternate4player_icon), shadowEnabled = false, onPress = {
                 setPlayerNum(4)
                 setAlt4PlayerLayout(true)
                 onDismiss()

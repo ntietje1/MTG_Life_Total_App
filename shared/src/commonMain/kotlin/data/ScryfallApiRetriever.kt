@@ -29,11 +29,7 @@ class ScryfallApiRetriever {
     suspend fun searchScryfall(query: String): String = withContext(Dispatchers.IO) {
         try {
             val client = HttpClient()
-            val q = if (query.isEmpty()) {
-                "\" \""
-            } else {
-                "\"$query\""
-            }
+            val q = query.ifEmpty { " " }
             val url = if (!query.startsWith("https://api.scryfall.com/")) {
                 "https://api.scryfall.com/cards/search?q=$q"
             } else {
@@ -42,9 +38,11 @@ class ScryfallApiRetriever {
             println("URL: $url")
 
             val response = client.get(url)
+            println("Response: $response")
             return@withContext response.body<String>()
 
         } catch (e: Exception) {
+            println("Error: $e")
             return@withContext "{}"
         }
     }
