@@ -102,7 +102,7 @@ fun StartingLifeDialogContent(
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent
                 ), keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number, autoCorrect = false, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
+                    keyboardType = KeyboardType.Number, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
                 ), keyboardActions = KeyboardActions(onDone = { customSetStartLife() }), modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .height(80.dp)

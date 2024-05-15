@@ -35,12 +35,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -451,8 +451,6 @@ fun PlayerButton(
                                     setBlurBackground = { component.blurBackground.value = it },
                                 )
                             }
-
-                            else -> throw Exception("unsupported state")
                         }
                     }
                 }
@@ -893,7 +891,6 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
             PlayerButtonState.COMMANDER_DEALER -> player.color.saturateColor(0.5f).brightenColor(0.6f)
 
             PlayerButtonState.SETTINGS -> player.color
-            else -> throw Exception("unsupported state")
         }
         if (player.isDead) {
             c = c.ghostify()
@@ -919,8 +916,6 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
             PlayerButtonState.SETTINGS -> {
                 if (player.isDead) deadSettingsColorMatrix else settingsColorMatrix
             }
-
-            else -> throw Exception("unsupported state")
         }
         AsyncImage(
             model = player.imageUri!!,
@@ -988,7 +983,7 @@ fun CommanderDamageNumber(
                 partner = false
             )
             if (partnerMode) {
-                Divider(
+                VerticalDivider(
                     modifier = Modifier.fillMaxHeight(0.6f).width(2.dp).offset(y = dividerOffset),
                     color = player.textColor
                 )
@@ -1437,8 +1432,6 @@ fun SettingsMenu(
                     player = player
                 )
             }
-
-            else -> throw Exception("unsupported state")
         }
     }
 }
@@ -1524,7 +1517,7 @@ fun ChangeNameField(
         closeSettingsMenu()
         SettingsManager.savePlayerPref(player)
     }
-    BoxWithConstraints(modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -1555,7 +1548,6 @@ fun ChangeNameField(
                         focusedIndicatorColor = player.color
                     ),
                     keyboardOptions = KeyboardOptions.Default.copy(
-                        autoCorrect = false,
                         capitalization = KeyboardCapitalization.None,
                         imeAction = ImeAction.Done
                     ),
@@ -1646,7 +1638,7 @@ fun MiniPlayerButton(
  */
 @Composable
 fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color: Color) {
-    BoxWithConstraints(modifier = modifier.fillMaxHeight().aspectRatio(1f).background(color).pointerInput(Unit) {
+    Box(modifier = modifier.fillMaxHeight().aspectRatio(1f).background(color).pointerInput(Unit) {
         detectTapGestures(
             onTap = {
                 onClick()
@@ -1679,7 +1671,7 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initi
             })
     }
 
-    BoxWithConstraints(
+    Box(
         modifier = modifier.fillMaxHeight().aspectRatio(1f).pointerInput(Unit) {
             detectTapGestures(
                 onTap = {

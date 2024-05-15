@@ -152,7 +152,6 @@ fun HueBar(setColor: (Float) -> Unit) {
         .width(300.dp)
         .height(40.dp)
     ) {
-        val maxWidth = maxWidth
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -219,7 +218,7 @@ fun SatValPanel(
             .wrapContentSize()
             .clip(RoundedCornerShape(12.dp))
             .pointerInput(Unit) {
-                detectDragGestures { position, change ->
+                detectDragGestures { position, _ ->
                     val x = position.position.x
                     val y = position.position.y
                     pressPosn.value = Offset(x, y)

@@ -42,6 +42,7 @@ import lifelinked.shared.generated.resources.email_icon
 import lifelinked.shared.generated.resources.invisible_icon
 import lifelinked.shared.generated.resources.placeholder_icon
 import lifelinked.shared.generated.resources.player_select_icon
+import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.skull_icon
 import lifelinked.shared.generated.resources.star_icon_small
 import lifelinked.shared.generated.resources.sun_icon
@@ -108,11 +109,11 @@ fun SettingsDialogContent(
                         toggle = { SettingsManager.keepScreenOn = it },
                         icon = vectorResource(Res.drawable.sun_icon)
                     )
-//                    SettingsDialogButton(
-//                        text = "View Tutorial Again", additionalText = "", icon = vectorResource(Res.drawable.reset_icon)
-//                    ) {
-////                        SettingsManager.tutorialCompleted = false
-//                    }
+                    SettingsDialogButton(
+                        text = "View Tutorial Again", additionalText = "", icon = vectorResource(Res.drawable.reset_icon)
+                    ) {
+//                        SettingsManager.tutorialCompleted = false
+                    }
                 }
             }
             item {
