@@ -33,7 +33,11 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
+
             implementation(libs.ktor.client.okhttp)
+
+            implementation(libs.koin.android)
+            implementation(libs.koin.androidx.compose)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -42,6 +46,7 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.animation)
             implementation(compose.components.resources)
+
             implementation(libs.navigation.compose)
 
             implementation(libs.androidx.lifecycle.viewmodel.ktx)
@@ -50,6 +55,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.ktx)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+
+            api(libs.koin.core)
 
             implementation(libs.kotlinx.serialization.json)
 
