@@ -28,14 +28,6 @@ import lifelinked.shared.generated.resources.two_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
-/**
- * A dialog that allows the user to set the number of players
- * @param modifier the modifier for this composable
- * @param onDismiss the action to perform when the dialog is dismissed
- * @param setPlayerNum the action to perform when the number of players is set
- * @param resetPlayers the action to perform when the players are reset
- * @param show4PlayerDialog the callback to switch to the 4 player layout dialog
- */
 @Composable
 fun PlayerNumberDialogContent(
     modifier: Modifier = Modifier,
@@ -81,13 +73,6 @@ fun PlayerNumberDialogContent(
     }))
 }
 
-/**
- * A dialog that allows the user to select a 4 player layout
- * @param modifier the modifier for this composable
- * @param onDismiss the action to perform when the dialog is dismissed
- * @param setPlayerNum the action to perform when the number of players is set
- * @param setAlt4PlayerLayout the action to perform when the alternate 4 player layout is set
- */
 @Composable
 fun FourPlayerLayoutContent(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, setPlayerNum: (Int) -> Unit, setAlt4PlayerLayout: (value: Boolean) -> Unit

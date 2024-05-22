@@ -66,11 +66,6 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
-/**
- * The possible outcomes of a planar die roll
- * @param toString the string representation of the outcome
- * @param resourceId the resource id of the icon for the outcome
- */
 private enum class PlanarDieResult(
     val toString: String,
     val drawableResource: DrawableResource
@@ -78,19 +73,12 @@ private enum class PlanarDieResult(
     PLANESWALK("Planeswalk", Res.drawable.planeswalker_icon), CHAOS("Chaos Ensues", Res.drawable.chaos_icon), NO_EFFECT("No Effect", Res.drawable.x_icon)
 }
 
-/**
- * A dialog that allows the user to view and interact with the planar deck
- * @param modifier the modifier for this composable
- * @param viewModel the LifeCounterComponent that this dialog is for
- * @param goToChoosePlanes the callback to switch to the choose planes dialog
- */
 @Composable
 fun PlaneChaseDialogContent(
     modifier: Modifier = Modifier,
     currentPlane: () -> Card?,
     backPlane: () -> Unit,
     planeswalk: () -> Unit,
-//    viewModel: LifeCounterViewModel,
     goToChoosePlanes: () -> Unit
 ) {
     var rotated by remember { mutableStateOf(false) }
@@ -102,10 +90,10 @@ fun PlaneChaseDialogContent(
             usePlatformDefaultWidth = false
         ), content = {
             Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                    detectTapGestures(onTap = {
-                        planarDieResultVisible = false
-                    })
-                }) {
+                detectTapGestures(onTap = {
+                    planarDieResultVisible = false
+                })
+            }) {
                 Column(
                     modifier = Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -151,9 +139,11 @@ fun PlaneChaseDialogContent(
         val previewPadding = maxWidth / 20f
         val buttonModifier = Modifier.size(maxWidth / 6f).padding(bottom = maxHeight / 15f, top = 5.dp)
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
-            PlaneChaseCardPreview(modifier = Modifier.graphicsLayer { rotationZ = if (rotated) 180f else 0f }.fillMaxHeight(0.9f).padding(bottom = previewPadding),
+            PlaneChaseCardPreview(
+                modifier = Modifier.graphicsLayer { rotationZ = if (rotated) 180f else 0f }.fillMaxHeight(0.9f).padding(bottom = previewPadding),
                 card = currentPlane(),
-                allowEnlarge = false)
+                allowEnlarge = false
+            )
             Row(
                 Modifier.fillMaxWidth().wrapContentHeight(), horizontalArrangement = Arrangement.SpaceAround
             ) {
@@ -178,12 +168,6 @@ fun PlaneChaseDialogContent(
     }
 }
 
-/**
- * The available actions for the choose planes dialog
- * @param planarDeck the planar deck
- * @param backStack the back stack
- * @param planarBackStack the planar back stack
- */
 class ChoosePlanesActions(
     private val settingsManager: SettingsManager,
     private val planarDeck: List<Card>,
@@ -205,11 +189,6 @@ class ChoosePlanesActions(
 
     var hideUnselected by mutableStateOf(false)
 
-    /**
-     * The planes that are currently visible
-     * Shows searched planes if a search is active, otherwise shows all planes
-     * Hides unselected planes if hideUnselected is true
-     */
     val filteredPlanes by derivedStateOf {
         if (searchedPlanes.isNotEmpty()) {
             searchedPlanes.filter { card -> planarDeck.contains(card) || !hideUnselected }
@@ -218,10 +197,6 @@ class ChoosePlanesActions(
         }
     }
 
-    /**
-     * Updates the list of all planes
-     * @param cards the cards to update allPlanes with
-     */
     fun updateAllPlanes(cards: List<Card>) {
         cards.forEach { card ->
             if (card !in allPlanes) {
@@ -233,19 +208,10 @@ class ChoosePlanesActions(
 
     var query = mutableStateOf("")
 
-    /**
-     * Searches for the current query
-     * @param qry the query to search for
-     * @return The cards that match the query
-     */
     suspend fun search(qry: String = query.value): List<Card> {
         return scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall("t:plane $qry"))
     }
 
-    /**
-     * Updates searchedPlanes and adds a back stack entry if necessary
-     * @param cards the cards to update searchedPlanes with
-     */
     fun onSearchResult(cards: List<Card>) {
         searchedPlanes.clear()
         searchedPlanes.addAll(cards)
@@ -257,11 +223,6 @@ class ChoosePlanesActions(
         }
     }
 
-    /**
-     * Is the given card in the planar deck?
-     * @param card the card to check
-     * @return Whether the card is in the planar deck
-     */
     fun isInPlanarDeck(card: Card): Boolean {
         return planarDeck.contains(card)
     }
@@ -269,19 +230,11 @@ class ChoosePlanesActions(
     val selectedText: String
         get() = "${planarDeck.size}/${filteredPlanes.size} Planes Selected (${allPlanes.size - filteredPlanes.size} Hidden)"
 
-    /**
-     * Toggles whether unselected planes are hidden
-     */
     fun toggleHideUnselected() {
         hideUnselected = !hideUnselected
     }
 }
 
-/**
- * A dialog that allows the user to choose which planes are in the planar deck
- * @param modifier the modifier for this composable
- * @param actions the available methods for this dialog
- */
 @Composable
 fun ChoosePlanesDialogContent(
     modifier: Modifier = Modifier, actions: ChoosePlanesActions
@@ -360,17 +313,6 @@ fun ChoosePlanesDialogContent(
     }
 }
 
-/**
- * A composable for showing a plane card (or lack thereof)
- * @param modifier the modifier for this composable
- * @param card the card to show
- * @param allowSelection whether the card can be selected
- * @param addToPlanarDeck the action to perform when the card is selected
- * @param removeFromPlanarDeck the action to perform when the card is unselected
- * @param onPress the action to perform when the card is pressed
- * @param allowEnlarge whether the card can be enlarged to preview the full image
- * @param selected callback to check whether the card is selected
- */
 @Composable
 fun PlaneChaseCardPreview(
     modifier: Modifier = Modifier,
@@ -390,10 +332,10 @@ fun PlaneChaseCardPreview(
             usePlatformDefaultWidth = false
         ), content = {
             Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                    detectTapGestures(onTap = {
-                        showLargeImage = false
-                    })
-                }) {
+                detectTapGestures(onTap = {
+                    showLargeImage = false
+                })
+            }) {
                 AsyncImage(
                     model = card!!.getUris().large, modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = ""
                 )
@@ -404,41 +346,41 @@ fun PlaneChaseCardPreview(
 
     if (card != null) {
         BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).pointerInput(Unit) {
-                detectTapGestures(onLongPress = {
-                    showLargeImage = true
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                }, onPress = {
-                    onPress()
-                }, onTap = {
-                    if (allowSelection) {
-                        if (!selected.invoke()) {
-                            addToPlanarDeck(card)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        } else {
-                            removeFromPlanarDeck(card)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
+            detectTapGestures(onLongPress = {
+                showLargeImage = true
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            }, onPress = {
+                onPress()
+            }, onTap = {
+                if (allowSelection) {
+                    if (!selected.invoke()) {
+                        addToPlanarDeck(card)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    } else {
+                        removeFromPlanarDeck(card)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
-                })
-            }) {
+                }
+            })
+        }) {
             val clipSize = maxWidth / 20f
             Box(
                 Modifier.fillMaxSize().then(
-                        if (selected.invoke() && allowSelection) {
-                            Modifier.background(Color.Green.copy(alpha = 0.2f))
-                        } else {
-                            Modifier
-                        }
-                    )
+                    if (selected.invoke() && allowSelection) {
+                        Modifier.background(Color.Green.copy(alpha = 0.2f))
+                    } else {
+                        Modifier
+                    }
+                )
             ) {
                 AsyncImage(
                     modifier = Modifier.fillMaxSize().then(
-                            if (selected.invoke() && allowSelection) {
-                                Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
-                            } else {
-                                Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
-                            }
-                        ), model = card.getUris().normal, contentDescription = ""
+                        if (selected.invoke() && allowSelection) {
+                            Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
+                        } else {
+                            Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
+                        }
+                    ), model = card.getUris().normal, contentDescription = ""
 
                 )
             }

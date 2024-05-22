@@ -18,17 +18,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/**
- * A modifier that adds a repeating click effect to a clickable
- * @param interactionSource The interaction source to use
- * @param enabled Whether the modifier is enabled
- * @param initialDelayMillis The initial delay before the first click
- * @param maxDelayMillis The maximum delay between clicks
- * @param minDelayMillis The minimum delay between clicks
- * @param delayDecayFactor The amount to decay the delay by
- * @param onPress The callback for when the button is pressed
- * @return The modifier
- */
 fun Modifier.repeatingClickable(
     interactionSource: MutableInteractionSource,
     enabled: Boolean = true,

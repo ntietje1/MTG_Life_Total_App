@@ -51,13 +51,6 @@ fun Color.ghostify(): Color {
     return this.copy().blendWith(Color.Gray)
 }
 
-/**
- * Generates a color matrix that can be used to adjust the saturation and luminosity of a color
- * @param sat the saturation multiplier
- * @param lum the luminosity multiplier
- * @param dead whether the color is dead or not
- * @return the color matrix
- */
 fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = false): ColorMatrix {
     val s = if (dead) sat * 0.2f else sat
     val l = if (dead) lum * 1.05f else lum
@@ -68,20 +61,11 @@ fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = fals
     }
 }
 
-/**
- * Generates a shadow color for a given color
- * @return the shadow color
- */
 fun generateShadow(): Color {
 //    return this.invert().saturateColor(0.0f).brightenColor(0.6f).copy(alpha = 0.7f)
     return Color.Black.copy(alpha = 0.7f)
 }
 
-/**
- * Blends two colors together
- * @param other the other color to blend with
- * @return the blended color
- */
 fun Color.blendWith(other: Color): Color {
     val alpha = 0.5f
     val blendedRed = (1 - alpha) * this.red + alpha * other.red
@@ -91,22 +75,12 @@ fun Color.blendWith(other: Color): Color {
     return Color(blendedRed, blendedGreen, blendedBlue)
 }
 
-/**
- * Brightens or darkens a color
- * @param factor luminosity multiplier
- * @return the brightened or darkened color
- */
 fun Color.brightenColor(factor: Float): Color {
     return this.toHsv().let {
         Color.hsv(it[0], it[1], min(it[2] * factor, 1.0f))
     }
 }
 
-/**
- * Saturates or desaturates a color
- * @param factor saturation multiplier
- * @return the saturated or desaturated color
- */
 fun Color.saturateColor(factor: Float): Color {
     return this.toHsv().let {
         Color.hsv(it[0], it[1] * factor, it[2])
@@ -125,18 +99,10 @@ fun Color.saturateColor(factor: Float): Color {
 //    }
 //}
 
-/**
- * Inverts a color
- * @return the inverted color
- */
-fun Color.invert(): Color {
-    return this.copy(red = 1f - this.red, green = 1f - this.green, blue = 1f - this.blue)
-}
+//fun Color.invert(): Color {
+//    return this.copy(red = 1f - this.red, green = 1f - this.green, blue = 1f - this.blue)
+//}
 
-/**
- * Converts a color to HSV
- * @return the HSV values
- */
 fun Color.toHsv(): FloatArray {
     val r = this.red
     val g = this.green

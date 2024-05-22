@@ -69,13 +69,6 @@ import lifelinked.shared.generated.resources.search_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
-/**
- * A dialog that allows the user to search for cards on Scryfall
- * @param modifier the modifier for this composable
- * @param playerButtonViewModel the player to set the image for
- * @param backStack the back stack of the dialog
- * @param onDismiss the action to perform when the dialog is dismissed
- */
 @Composable
 fun ScryfallSearchDialog(
     modifier: Modifier = Modifier,
@@ -106,19 +99,9 @@ fun ScryfallSearchDialog(
     }
 }
 
-/**
- * The content of the Scryfall search dialog
- * @param modifier the modifier for this composable
- * @param playerButtonViewModel the player to set the image for
- * @param backStack the back stack of the dialog
- * @param selectButtonEnabled whether the select button is enabled
- * @param printingsButtonEnabled whether the printings button is enabled
- * @param rulingsButtonEnabled whether the rulings button is enabled
- */
 @Composable
 fun ScryfallDialogContent(
     modifier: Modifier = Modifier,
-//    playerButtonViewModel: PlayerButtonViewModel?,
     backStack: List<() -> Unit>,
     addToBackStack: (() -> Unit) -> Unit,
     selectButtonEnabled: Boolean = true,
@@ -184,7 +167,8 @@ fun ScryfallDialogContent(
             Modifier.padding(top = 10.dp).padding(start = 20.dp, end = 20.dp).clip(RoundedCornerShape(10.dp)),
             query = query.value,
             onQueryChange = { query.value = it },
-            searchInProgress = isSearchInProgress) {
+            searchInProgress = isSearchInProgress
+        ) {
             searchCards(query.value)
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
@@ -239,13 +223,6 @@ fun ScryfallDialogContent(
     }
 }
 
-/**
- * A search bar for searching Scryfall
- * @param modifier the modifier for this composable
- * @param query the query to search for
- * @param onQueryChange the action to perform when the query changes
- * @param onSearch the action to perform when the search button is pressed
- */
 @Composable
 fun ScryfallSearchBar(
     modifier: Modifier = Modifier,
@@ -257,7 +234,8 @@ fun ScryfallSearchBar(
     Box(
         modifier = modifier.wrapContentSize()
     ) {
-        TextField(value = query,
+        TextField(
+            value = query,
             onValueChange = onQueryChange,
             label = { Text("Search Scryfall", fontSize = 15.scaledSp) },
             singleLine = true,
@@ -288,8 +266,8 @@ fun ScryfallSearchBar(
                 disabledIndicatorColor = Color.Transparent
             ),
             modifier = Modifier.height(60.dp).fillMaxWidth().border(
-                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10.dp)
-                ).align(Alignment.CenterStart)
+                1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10.dp)
+            ).align(Alignment.CenterStart)
         )
         Box(
             Modifier.wrapContentSize().padding(end = 10.dp).align(Alignment.CenterEnd)
@@ -305,7 +283,10 @@ fun ScryfallSearchBar(
                     )
                 } else {
                     Icon(
-                        imageVector = vectorResource(Res.drawable.search_icon), contentDescription = "Search", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.fillMaxSize().padding(5.dp)
+                        imageVector = vectorResource(Res.drawable.search_icon),
+                        contentDescription = "Search",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.fillMaxSize().padding(5.dp)
                     )
                 }
 
@@ -314,12 +295,6 @@ fun ScryfallSearchBar(
     }
 }
 
-/**
- * A generic button to be used in scryfall dialog
- * @param modifier the modifier for this composable
- * @param text the text of the button
- * @param onTap the action to perform when the button is tapped
- */
 @Composable
 fun ScryfallButton(
     modifier: Modifier = Modifier,
@@ -360,18 +335,14 @@ fun ScryfallButton(
     }
 }
 
-/**
- * A detailed view of a card
- * @param card the card to display
- */
 @Composable
 fun CardDetails(
     card: Card
 ) {
     Box(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp).border(
-                1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
-            ).clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
+            1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
+        ).clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
     ) {
         Column(Modifier.fillMaxWidth()) {
             Text(
@@ -394,18 +365,14 @@ fun CardDetails(
     }
 }
 
-/**
- * A view of card ruling
- * @param ruling the ruling to display
- */
 @Composable
 fun RulingPreview(
     ruling: Ruling
 ) {
     Box(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp).border(
-                1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
-            ).clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
+            1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
+        ).clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
     ) {
         Column(Modifier.fillMaxWidth()) {
             Text(
@@ -430,16 +397,6 @@ fun RulingPreview(
     }
 }
 
-/**
- * A preview of a card's image with additional options
- * @param card the card to display
- * @param onRulings the action to perform when the rulings button is pressed
- * @param onSelect the action to perform when the select button is pressed
- * @param onPrintings the action to perform when the printings button is pressed
- * @param selectButtonEnabled whether the select button is enabled
- * @param printingsButtonEnabled whether the printings button is enabled
- * @param rulingsButtonEnabled whether the rulings button is enabled
- */
 @Composable
 fun CardPreview(
     card: Card, onRulings: () -> Unit = {}, onSelect: () -> Unit = {}, onPrintings: () -> Unit = {}, selectButtonEnabled: Boolean, printingsButtonEnabled: Boolean, rulingsButtonEnabled: Boolean
@@ -452,10 +409,10 @@ fun CardPreview(
             usePlatformDefaultWidth = false
         ), content = {
             Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                    detectTapGestures(onTap = {
-                        showLargeImage = false
-                    })
-                }) {
+                detectTapGestures(onTap = {
+                    showLargeImage = false
+                })
+            }) {
                 SubcomposeAsyncImage(
                     model = card.getUris().large, modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = "",
                     loading = { CircularProgressIndicator(modifier = Modifier.align(Alignment.Center)) }
@@ -470,8 +427,8 @@ fun CardPreview(
     ) {
         Surface(
             modifier = Modifier.fillMaxSize().border(
-                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
-                ).clip(RoundedCornerShape(30.dp)), color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f)
+                1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
+            ).clip(RoundedCornerShape(30.dp)), color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f)
         ) {
             Row(
                 modifier = Modifier.padding(vertical = 10.dp, horizontal = 15.dp).height(150.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
@@ -518,11 +475,11 @@ fun CardPreview(
                     }
                 }
                 Box(Modifier.fillMaxHeight().weight(1.0f).clip(CutCornerShape(6.dp)).pointerInput(Unit) {
-                        detectTapGestures(onLongPress = {
-                            showLargeImage = true
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        })
-                    }) {
+                    detectTapGestures(onLongPress = {
+                        showLargeImage = true
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    })
+                }) {
                     AsyncImage(
                         model = card.getUris().large, modifier = Modifier.fillMaxSize(), contentDescription = ""
                     )

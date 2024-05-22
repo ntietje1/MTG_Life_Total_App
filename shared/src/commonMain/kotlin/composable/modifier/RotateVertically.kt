@@ -10,11 +10,6 @@ import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.unit.Constraints
 
-/**
- * A modifier that rotates a composable vertically, aware of boundaries
- * @param rotation The rotation to apply
- * @return The modifier
- */
 fun Modifier.rotateVertically(rotation: VerticalRotation) = then(object : LayoutModifier {
     override fun MeasureScope.measure(
         measurable: Measurable, constraints: Constraints
@@ -53,9 +48,6 @@ fun Modifier.rotateVertically(rotation: VerticalRotation) = then(object : Layout
     }
 }).then(rotate(rotation.value))
 
-/**
- * Vertical rotation values
- */
 enum class VerticalRotation(val value: Float) {
     CLOCKWISE(90f), COUNTER_CLOCKWISE(270f)
 }

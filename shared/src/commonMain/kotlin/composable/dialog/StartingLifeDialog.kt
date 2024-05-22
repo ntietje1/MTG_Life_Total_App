@@ -37,12 +37,6 @@ import lifelinked.shared.generated.resources.twenty_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
-/**
- * A dialog that allows the user to set the starting life total
- * @param modifier the modifier for this composable
- * @param onDismiss the action to perform when the dialog is dismissed
- * @param setStartingLife the action to perform when the starting life total is set
- */
 @Composable
 fun StartingLifeDialogContent(
     modifier: Modifier = Modifier,

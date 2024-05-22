@@ -60,24 +60,13 @@ import lifelinked.shared.generated.resources.star_icon_small
 import lifelinked.shared.generated.resources.sun_and_moon_icon
 import lifelinked.shared.generated.resources.sun_icon
 import lifelinked.shared.generated.resources.x_icon
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
-/**
- * The possible states of the middle button dialog
- */
 private enum class MiddleButtonDialogState {
     Default, CoinFlip, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, AboutMe, PlaneChase, PlanarDeck
 }
 
-/**
- * A dialog that allows the user to quickly interact with settings or move to other screens
- * @param modifier the modifier for this composable
- * @param onDismiss the action to perform when the dialog is dismissed
- * @param viewModel the LifeCounterComponent
- * @param toggleTheme the action to perform when the theme is toggled
- */
 @Composable
 fun MiddleButtonDialog(
     modifier: Modifier = Modifier,
@@ -116,8 +105,8 @@ fun MiddleButtonDialog(
         ) {
             BoxWithConstraints(
                 modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f)).border(
-                        1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
-                    ),
+                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+                ),
             ) {
                 content()
             }
@@ -224,10 +213,12 @@ fun MiddleButtonDialog(
             FormattedAnimatedVisibility(
                 visible = middleButtonDialogState == MiddleButtonDialogState.PlaneChase
             ) {
-                PlaneChaseDialogContent(modifier = Modifier.fillMaxSize(), goToChoosePlanes = {
-                    middleButtonDialogState = MiddleButtonDialogState.PlanarDeck
-                    backStack.add { middleButtonDialogState = MiddleButtonDialogState.PlaneChase }
-                },
+                PlaneChaseDialogContent(
+                    modifier = Modifier.fillMaxSize(),
+                    goToChoosePlanes = {
+                        middleButtonDialogState = MiddleButtonDialogState.PlanarDeck
+                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.PlaneChase }
+                    },
                     backPlane = viewModel::backPlane,
                     planeswalk = viewModel::planeswalk,
                     currentPlane = viewModel::currentPlane,
@@ -258,81 +249,82 @@ fun MiddleButtonDialog(
             FormattedAnimatedVisibility(
                 visible = middleButtonDialogState == MiddleButtonDialogState.Default
             ) {
-                GridDialogContent(Modifier.fillMaxSize(), title = "Settings", items = listOf({
-                    SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
-                        goToPlayerSelectScreen()
-                        onDismiss()
+                GridDialogContent(
+                    Modifier.fillMaxSize(), title = "Settings", items = listOf({
+                        SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
+                            goToPlayerSelectScreen()
+                            onDismiss()
+                        })
+                    }, {
+                        SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.reset_icon), text = "Reset Game", shadowEnabled = false, onPress = {
+                            showResetDialog = true
+                        })
+                    }, {
+                        SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
+                            middleButtonDialogState = MiddleButtonDialogState.StartingLife
+                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                        })
+                    }, {
+                        SettingsButton(
+                            buttonModifier,
+                            imageVector = vectorResource(Res.drawable.star_icon_small),
+                            text = "Toggle Theme",
+                            shadowEnabled = false,
+                            onPress = {
+                                toggleTheme()
+                            },
+                        )
+                    }, {
+                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.player_count_icon), text = "Player Number", shadowEnabled = false, onPress = {
+                            middleButtonDialogState = MiddleButtonDialogState.PlayerNumber
+                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                        })
+                    }, {
+                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.mana_icon), text = "Mana & Storm", shadowEnabled = false, onPress = {
+                            middleButtonDialogState = MiddleButtonDialogState.Counter
+                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                        })
+                    }, {
+                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.six_icon), text = "Dice roll", shadowEnabled = false, onPress = {
+                            middleButtonDialogState = MiddleButtonDialogState.DiceRoll
+                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                        })
+                    }, {
+                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.coin_icon), text = "Coin Flip", shadowEnabled = false, onPress = {
+                            middleButtonDialogState = MiddleButtonDialogState.CoinFlip
+                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                        })
+                    }, {
+                        SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
+                            DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
+                            DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
+                            DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
+                        }, text = when (state.dayNight) {
+                            DayNightState.DAY -> "Day/Night"
+                            DayNightState.NIGHT -> "Day/Night"
+                            DayNightState.NONE -> "Day/Night"
+                        }, shadowEnabled = false, onPress = {
+                            viewModel.toggleDayNight()
+                        }, onLongPress = {
+                            viewModel.setDayNight(DayNightState.NONE)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        })
+                    }, {
+                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.search_icon), text = "Card Search", shadowEnabled = false, onPress = {
+                            middleButtonDialogState = MiddleButtonDialogState.Scryfall
+                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                        })
+                    }, {
+                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.planeswalker_icon), text = "Planechase", shadowEnabled = false, onPress = {
+                            middleButtonDialogState = MiddleButtonDialogState.PlaneChase
+                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                        })
+                    }, {
+                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.settings_icon_small), text = "Settings", shadowEnabled = false, onPress = {
+                            middleButtonDialogState = MiddleButtonDialogState.Settings
+                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                        })
                     })
-                }, {
-                    SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.reset_icon), text = "Reset Game", shadowEnabled = false, onPress = {
-                        showResetDialog = true
-                    })
-                }, {
-                    SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
-                        middleButtonDialogState = MiddleButtonDialogState.StartingLife
-                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
-                    })
-                }, {
-                    SettingsButton(
-                        buttonModifier,
-                        imageVector = vectorResource(Res.drawable.star_icon_small),
-                        text = "Toggle Theme",
-                        shadowEnabled = false,
-                        onPress = {
-                            toggleTheme()
-                        },
-                    )
-                }, {
-                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.player_count_icon), text = "Player Number", shadowEnabled = false, onPress = {
-                        middleButtonDialogState = MiddleButtonDialogState.PlayerNumber
-                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
-                    })
-                }, {
-                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.mana_icon), text = "Mana & Storm", shadowEnabled = false, onPress = {
-                        middleButtonDialogState = MiddleButtonDialogState.Counter
-                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
-                    })
-                }, {
-                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.six_icon), text = "Dice roll", shadowEnabled = false, onPress = {
-                        middleButtonDialogState = MiddleButtonDialogState.DiceRoll
-                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
-                    })
-                }, {
-                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.coin_icon), text = "Coin Flip", shadowEnabled = false, onPress = {
-                        middleButtonDialogState = MiddleButtonDialogState.CoinFlip
-                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
-                    })
-                }, {
-                    SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
-                        DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
-                        DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
-                        DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
-                    }, text = when (state.dayNight) {
-                        DayNightState.DAY -> "Day/Night"
-                        DayNightState.NIGHT -> "Day/Night"
-                        DayNightState.NONE -> "Day/Night"
-                    }, shadowEnabled = false, onPress = {
-                        viewModel.toggleDayNight()
-                    }, onLongPress = {
-                        viewModel.setDayNight(DayNightState.NONE)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    })
-                }, {
-                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.search_icon), text = "Card Search", shadowEnabled = false, onPress = {
-                        middleButtonDialogState = MiddleButtonDialogState.Scryfall
-                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
-                    })
-                }, {
-                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.planeswalker_icon), text = "Planechase", shadowEnabled = false, onPress = {
-                        middleButtonDialogState = MiddleButtonDialogState.PlaneChase
-                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
-                    })
-                }, {
-                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.settings_icon_small), text = "Settings", shadowEnabled = false, onPress = {
-                        middleButtonDialogState = MiddleButtonDialogState.Settings
-                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
-                    })
-                })
                 )
             }
         }
@@ -366,12 +358,6 @@ fun MiddleButtonDialog(
     })
 }
 
-/**
- * A generic dialog for displaying a grid of buttons
- * @param modifier the modifier for this composable
- * @param title the title of the dialog
- * @param items the composable items to display in the grid
- */
 @Composable
 fun GridDialogContent(
     modifier: Modifier = Modifier, title: String, items: List<@Composable () -> Unit> = emptyList()
@@ -395,15 +381,6 @@ fun GridDialogContent(
     }
 }
 
-/**
- * A base dialog for displaying settings within
- * @param modifier the modifier for this composable
- * @param onDismiss the action to perform when the dialog is dismissed
- * @param onBack the action to perform when the back button is pressed
- * @param exitButtonEnabled whether the exit button is enabled
- * @param backButtonEnabled whether the back button is enabled
- * @param content the content of the dialog
- */
 @Composable
 fun SettingsDialog(
     modifier: Modifier = Modifier, onDismiss: () -> Unit = {}, onBack: () -> Unit = {}, exitButtonEnabled: Boolean = true, backButtonEnabled: Boolean = true, content: @Composable () -> Unit = {}
@@ -451,13 +428,6 @@ fun SettingsDialog(
     }
 }
 
-/**
- * Back button for use in dialogs
- * @param modifier the modifier for this composable
- * @param visible whether the button is visible
- * @param onBack the action to perform when the button is pressed
- */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Unit) {
     SettingsButton(
@@ -465,13 +435,6 @@ fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Un
     )
 }
 
-/**
- * Exit button for use in dialogs
- * @param modifier the modifier for this composable
- * @param visible whether the button is visible
- * @param onDismiss the action to perform when the button is pressed
- */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ExitButton(modifier: Modifier = Modifier, visible: Boolean, onDismiss: () -> Unit) {
     SettingsButton(

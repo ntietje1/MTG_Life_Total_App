@@ -46,13 +46,8 @@ import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
 
-val COUNTER_DIALOG_ENTRIES = 7
+const val COUNTER_DIALOG_ENTRIES = 7
 
-/**
- * A dialog that allows the user to keep track of floating mana and storm count
- * @param modifier the modifier for this composable
- * @param counters the list of counters to display
- */
 @Composable
 fun CounterDialogContent(
     modifier: Modifier = Modifier,
@@ -117,18 +112,12 @@ fun CounterDialogContent(
     }
 }
 
-/**
- * A single counter that can be incremented
- * @param modifier the modifier for this composable
- * @param imageResource the image resource of the counter
- * @param counter the counter to display
- */
 @Composable
 fun SingleCounter(
     modifier: Modifier = Modifier,
     backgroundColor: Color = Color.Transparent,
     buttonColor: Color = Color.White,
-    imageVector: ImageVector= vectorResource(Res.drawable.placeholder_icon),
+    imageVector: ImageVector = vectorResource(Res.drawable.placeholder_icon),
     counter: Int,
     incrementCounter: (Int) -> Unit
 ) {

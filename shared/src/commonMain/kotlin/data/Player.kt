@@ -16,22 +16,6 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
 
-/**
- * Represents a player in the game
- * @param life The player's current life total
- * @param recentChange The player's most recent change to their life total
- * @param imageUri The player's image URI
- * @param color The player's color
- * @param textColor The player's text color
- * @param playerNum The player's number
- * @param name The player's name
- * @param monarch Whether or not the player is the monarch
- * @param commanderDamage The player's commander damage
- * @param counters The player's counters
- * @param activeCounters The player's active (visible) counters
- * @param setDead Whether or not the player artificially set to dead
- * @param partnerMode Whether or not the player is in partner mode
- */
 @Serializable(with = PlayerSerializer::class)
 data class Player(
     val life: Int = -1,
@@ -42,8 +26,8 @@ data class Player(
     val playerNum: Int = -1,
     val name: String = "Placeholder",
     val monarch: Boolean = false,
-    val commanderDamage: List<Int> = List(MAX_PLAYERS *2) { 0 },
-    val counters: List<Int> = List(CounterType.entries.size *2) { 0 },
+    val commanderDamage: List<Int> = List(MAX_PLAYERS * 2) { 0 },
+    val counters: List<Int> = List(CounterType.entries.size * 2) { 0 },
     val activeCounters: List<CounterType> = listOf(),
     val setDead: Boolean = false,
     val partnerMode: Boolean = false,
@@ -57,9 +41,6 @@ data class Player(
     }
 }
 
-/**
- * Serializer for [Player] class
- */
 object PlayerSerializer : KSerializer<Player> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("PlayerInfo") {
         element<String>("playerName")

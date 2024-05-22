@@ -3,9 +3,6 @@ package data.serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/**
- * Represents a single card
- */
 @Serializable
 data class Card(
     @SerialName("name") val name: String,
@@ -17,9 +14,6 @@ data class Card(
     @SerialName("prints_search_uri") val printsSearchUri: String,
     @SerialName("rulings_uri") val rulingsUri: String? = null,
 ) {
-    /**
-     * Returns the image uris for the card, no matter if it's a single-faced or dual-faced card
-     */
     fun getUris(): ImageUris {
         return when {
             imageUris != null -> imageUris

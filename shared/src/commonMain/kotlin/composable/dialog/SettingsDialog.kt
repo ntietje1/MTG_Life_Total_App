@@ -53,18 +53,12 @@ import org.koin.compose.koinInject
 import theme.blendWith
 import theme.scaledSp
 
-/**
- * A dialog that allows the user to set global settings and view contact information
- * @param modifier the modifier for this composable
- * @param goToAboutMe the action to perform when the user selects the "About Me" option
- * @param addGoToSettingsToBackStack callback to add the "Settings" destination to the back stack
- */
 @Composable
 fun SettingsDialogContent(
     modifier: Modifier = Modifier,
     goToAboutMe: () -> Unit,
     addGoToSettingsToBackStack: () -> Unit,
-    settingsManager: SettingsManager = koinInject() //TODO: move this
+    settingsManager: SettingsManager = koinInject()
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -198,11 +192,6 @@ fun SettingsDialogContent(
     }
 }
 
-/**
- * Header composable
- * @param modifier the modifier for this composable
- * @param text the text to display
- */
 @Composable
 fun SettingsDialogHeader(
     modifier: Modifier = Modifier,
@@ -222,14 +211,6 @@ fun SettingsDialogHeader(
     }
 }
 
-/**
- * A settings button with a toggle
- * @param modifier the modifier for this composable
- * @param text the text to display
- * @param initialState the initial state of the toggle
- * @param toggle the action to perform when the toggle is toggled
- * @param icon the icon to display
- */
 @Composable
 fun SettingsDialogButtonWithToggle(
     modifier: Modifier = Modifier,
@@ -287,14 +268,6 @@ fun SettingsDialogButtonWithToggle(
     }
 }
 
-/**
- * A settings button with an additional text field
- * @param modifier the modifier for this composable
- * @param text the text to display
- * @param additionalText the additional text to display
- * @param icon the icon to display
- * @param onTap the action to perform when the button is tapped
- */
 @Composable
 fun SettingsDialogButton(
     modifier: Modifier = Modifier,

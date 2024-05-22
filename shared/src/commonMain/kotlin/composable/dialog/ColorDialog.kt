@@ -39,13 +39,6 @@ import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.toHsv
 
-/**
- * A dialog that allows the user to select a color
- * @param modifier the modifier for this composable
- * @param onDismiss the action to perform when the dialog is dismissed
- * @param initialColor the initial color of the dialog
- * @param setColor the callback to perform when the color is set
- */
 @Composable
 fun ColorDialog(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, initialColor: Color, setColor: (Color) -> Unit
@@ -59,12 +52,6 @@ fun ColorDialog(
     }
 }
 
-/**
- * A color selector composable that allows the user to select a hue, saturation, and value
- * @param initialColor the initial color of the dialog
- * @param setColor the callback to perform when the color is set
- * @param onDismiss the action to perform when the dialog is dismissed
- */
 @Composable
 fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {}, onDismiss: () -> Unit) {
     Column(
@@ -81,7 +68,7 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
 
         val backgroundColor = remember {
             derivedStateOf {
-                Color.hsv(hsv.value.first.coerceIn(0.0f, 360f) , hsv.value.second.coerceIn(0.0f, 1.0f), hsv.value.third.coerceIn(0.0f, 1.0f))
+                Color.hsv(hsv.value.first.coerceIn(0.0f, 360f), hsv.value.second.coerceIn(0.0f, 1.0f), hsv.value.third.coerceIn(0.0f, 1.0f))
             }
         }
 
@@ -140,17 +127,14 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
     }
 }
 
-/**
- * A hue bar composable that allows the user to select a hue
- * @param setColor the callback to perform when the color is set
- */
 @Composable
 fun HueBar(setColor: (Float) -> Unit) {
     val pressOffset = remember { mutableStateOf(Offset.Zero) }
 
-    BoxWithConstraints(modifier = Modifier
-        .width(300.dp)
-        .height(40.dp)
+    BoxWithConstraints(
+        modifier = Modifier
+            .width(300.dp)
+            .height(40.dp)
     ) {
         Box(
             modifier = Modifier
@@ -196,11 +180,6 @@ fun HueBar(setColor: (Float) -> Unit) {
     }
 }
 
-/**
- * A saturation and value panel composable that allows the user to select a saturation and value
- * @param hue the hue of the color
- * @param setSatVal the callback to perform when the saturation and value are set
- */
 @Composable
 fun SatValPanel(
     hue: Float, setSatVal: (Float, Float) -> Unit
@@ -213,68 +192,68 @@ fun SatValPanel(
         val pressPosn = remember {
             mutableStateOf(Offset.Zero)
         }
-    Box(
-        modifier = Modifier
-            .wrapContentSize()
-            .clip(RoundedCornerShape(12.dp))
-            .pointerInput(Unit) {
-                detectDragGestures { position, _ ->
-                    val x = position.position.x
-                    val y = position.position.y
-                    pressPosn.value = Offset(x, y)
-                    val sat = x / maxWidth.value
-                    val value = 1f - y / maxHeight.value
-                    setSatVal(sat, value)
-                }
-            }
-    ) {
-        val color = Color.hsv(hue, 1f, 1f)
-        val satShader = Brush.horizontalGradient(
-            colors = listOf(Color.Transparent, color),
-            startX = 0f,
-            endX = maxWidth.value
-        )
-        val valShader = Brush.verticalGradient(
-            colors = listOf(Color.White, Color.Black),
-            startY = 0f,
-            endY = maxHeight.value
-        )
-
-        Canvas(
+        Box(
             modifier = Modifier
-                .size(300.dp)
+                .wrapContentSize()
+                .clip(RoundedCornerShape(12.dp))
+                .pointerInput(Unit) {
+                    detectDragGestures { position, _ ->
+                        val x = position.position.x
+                        val y = position.position.y
+                        pressPosn.value = Offset(x, y)
+                        val sat = x / maxWidth.value
+                        val value = 1f - y / maxHeight.value
+                        setSatVal(sat, value)
+                    }
+                }
         ) {
-
-            drawRect(
-                color = Color.White,
-                topLeft = Offset.Zero,
-                size = size
+            val color = Color.hsv(hue, 1f, 1f)
+            val satShader = Brush.horizontalGradient(
+                colors = listOf(Color.Transparent, color),
+                startX = 0f,
+                endX = maxWidth.value
+            )
+            val valShader = Brush.verticalGradient(
+                colors = listOf(Color.White, Color.Black),
+                startY = 0f,
+                endY = maxHeight.value
             )
 
-            drawRect(
-                brush = valShader,
-                topLeft = Offset.Zero,
-                size = size,
-            )
-            drawRect(
-                brush = satShader,
-                topLeft = Offset.Zero,
-                size = size,
-                blendMode = BlendMode.Multiply
-            )
+            Canvas(
+                modifier = Modifier
+                    .size(300.dp)
+            ) {
 
-            drawCircle(
-                color = Color.White, radius = 8.dp.toPx(), center = pressPosn.value, style = Stroke(
-                    width = 2.dp.toPx()
+                drawRect(
+                    color = Color.White,
+                    topLeft = Offset.Zero,
+                    size = size
                 )
-            )
 
-            drawCircle(
-                color = Color.White,
-                radius = 2.dp.toPx(),
-                center = pressPosn.value,
-            )
-        }
+                drawRect(
+                    brush = valShader,
+                    topLeft = Offset.Zero,
+                    size = size,
+                )
+                drawRect(
+                    brush = satShader,
+                    topLeft = Offset.Zero,
+                    size = size,
+                    blendMode = BlendMode.Multiply
+                )
+
+                drawCircle(
+                    color = Color.White, radius = 8.dp.toPx(), center = pressPosn.value, style = Stroke(
+                        width = 2.dp.toPx()
+                    )
+                )
+
+                drawCircle(
+                    color = Color.White,
+                    radius = 2.dp.toPx(),
+                    center = pressPosn.value,
+                )
+            }
         }
     }
 }

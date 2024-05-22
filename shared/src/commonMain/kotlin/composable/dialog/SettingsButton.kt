@@ -46,25 +46,6 @@ import org.jetbrains.compose.resources.vectorResource
 import theme.generateShadow
 import theme.scaledSp
 
-/**
- * A generic button composable with icon and text
- * @param modifier the modifier for this composable
- * @param shape the shape of the button
- * @param backgroundColor the background color of the button
- * @param imageVector the vector image of the button
- * @param text the text of the button
- * @param textSizeMultiplier the multiplier for the text size
- * @param mainColor the color of the text
- * @param enabled whether the button is enabled
- * @param visible whether the button is visible
- * @param shadowEnabled whether the button has a shadow
- * @param hapticEnabled whether the button has haptic feedback
- * @param onPress the action to perform when the button is pressed
- * @param onTap the action to perform when the button is tapped
- * @param onLongPress the action to perform when the button is long pressed
- * @param onDoubleTap the action to perform when the button is double tapped
- * @param overlay the overlay to draw on top of the button
- */
 @Composable
 fun SettingsButton(
     modifier: Modifier = Modifier,
@@ -190,7 +171,13 @@ fun ImageWithShadow(
         }
 
         Image(
-            imageVector = imageVector, contentDescription = contentDescription, alignment = alignment, contentScale = contentScale, alpha = alpha, colorFilter = colorFilter, modifier = Modifier.fillMaxSize()
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            alignment = alignment,
+            contentScale = contentScale,
+            alpha = alpha,
+            colorFilter = colorFilter,
+            modifier = Modifier.fillMaxSize()
         )
     }
 }

@@ -3,9 +3,6 @@ package data.serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/**
- * Represents the image uris for a card
- */
 @Serializable
 data class ImageUris(
     @SerialName("small") val small: String,

@@ -7,9 +7,6 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-/**
- * Dark color palette for the app
- */
 private val DarkColorScheme = darkColorScheme(
     primary = Black,
     background = Black,
@@ -17,9 +14,6 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = White     // Set the text color on the surface/background
 )
 
-/**
- * Light color palette for the app
- */
 private val LightColorScheme = lightColorScheme(
     primary = White,
     background = White,
@@ -27,11 +21,6 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Black     // Set the text color on the surface/background
 )
 
-/**
- * The main theme of the app
- * @param darkTheme whether the theme is dark or not
- * @param content content to apply theme to
- */
 @Composable
 fun LifeLinkedTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

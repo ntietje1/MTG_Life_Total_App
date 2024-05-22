@@ -12,20 +12,12 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
-/**
- * Handles retrieving data from the Scryfall API
- */
 class ScryfallApiRetriever {
 
     val json = Json {
         ignoreUnknownKeys = true
     }
 
-    /**
-     * Searches the Scryfall API for the given query
-     * @param query The query to search for
-     * @return The response from the Scryfall API
-     */
     suspend fun searchScryfall(query: String): String = withContext(Dispatchers.IO) {
         try {
             val client = HttpClient()
@@ -35,26 +27,14 @@ class ScryfallApiRetriever {
             } else {
                 q
             }
-            println("URL: $url")
-
             val response = client.get(url)
-            println("Response: $response")
             return@withContext response.body<String>()
-
         } catch (e: Exception) {
-            println("Error: $e")
             return@withContext "{}"
         }
     }
 
-    /**
-     * Parses the response from the Scryfall API into a list of the given type
-     * @param T The type to parse the response into
-     * @param response The response from the Scryfall API
-     * @return A list of the given type
-     */
     inline fun <reified T> parseScryfallResponse(response: String): List<T> {
-        println("Response: $response")
         return when (T::class) {
             Card::class -> {
                 val jsonResponse = json.decodeFromString<CardResponse>(response)

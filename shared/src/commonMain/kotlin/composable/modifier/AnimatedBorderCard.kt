@@ -27,14 +27,6 @@ import androidx.compose.ui.unit.dp
 import legacyMonarchyIndicator
 import kotlin.math.max
 
-/**
- * Modifier that adds a border to a card that animates a list of colors
- * @param shape The shape of the card
- * @param borderWidth The width of the border
- * @param colors The list of colors to animate
- * @param animationDuration The duration of the animation
- * @return The modifier
- */
 fun Modifier.animatedBorderCard(
     shape: Shape = RoundedCornerShape(size = 0.dp),
     borderWidth: Dp = 2.dp,
@@ -69,26 +61,30 @@ fun Modifier.animatedBorderCard(
                     .clip(shape)))
     } else {
         val minScale = 1.25f
-        val maxScale= 0.0f
+        val maxScale = 0.0f
         val scale by infiniteTransition.animateFloat(
             initialValue = minScale,
             targetValue = maxScale,
             animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = animationDuration/8, delayMillis = animationDuration/32, easing = FastOutLinearInEasing),
+                animation = tween(durationMillis = animationDuration / 8, delayMillis = animationDuration / 32, easing = FastOutLinearInEasing),
                 repeatMode = RepeatMode.Reverse
             ), label = "Infinite Pulsing Colors"
         )
         this.then(
             Modifier
                 .clip(shape)
-                .then(Modifier
-                    .fillMaxWidth()
-                    .padding(borderWidth)
-                    .border(
-                        width = borderWidth*scale,
-                        brush = Brush.radialGradient(colors),
-                        shape = shape)
-                    .clip(shape)))
+                .then(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(borderWidth)
+                        .border(
+                            width = borderWidth * scale,
+                            brush = Brush.radialGradient(colors),
+                            shape = shape
+                        )
+                        .clip(shape)
+                )
+        )
     }
 }
 

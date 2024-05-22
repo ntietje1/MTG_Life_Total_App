@@ -18,11 +18,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 
 private enum class ButtonState { Pressed, Idle }
 
-/**
- * A modifier that adds a bounce effect to a clickable
- * @param amount The amount to bounce by percentage
- * @return The modifier
- */
 fun Modifier.bounceClick(amount: Float = 0.0075f) = composed {
     var buttonState by remember { mutableStateOf(ButtonState.Idle) }
     val scale by animateFloatAsState(

@@ -26,10 +26,6 @@ import lifelinked.shared.generated.resources.u_icon_alt
 import lifelinked.shared.generated.resources.w_icon_alt
 import org.jetbrains.compose.resources.DrawableResource
 
-/**
- * Enum class for the different types of counters
- * @param resource The resource id for the counter icon
- */
 @Serializable
 enum class CounterType(val resource: DrawableResource) {
     Poison(Res.drawable.poison_icon),

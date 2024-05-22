@@ -6,21 +6,13 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
 
-/**
- * Analog to pointerinteropfilter
- * @param onDown Callback for when a pointer is pressed
- * @param onMove Callback for when a pointer is moved
- * @param onUp Callback for when a pointer is released
- * @return The modifier
- */
 suspend fun PointerInputScope.routePointerChangesTo(
-    onDown: (PointerInputChange) -> Unit = {}, onMove: (PointerInputChange) -> Unit = {}, onUp: (PointerInputChange) -> Unit = {}, countCallback: (List<PointerId>) -> Unit = {}
+    onDown: (PointerInputChange) -> Unit = {}, onMove: (PointerInputChange) -> Unit = {}, onUp: (PointerInputChange) -> Unit = {}
 ) {
     val activePointers = mutableSetOf<PointerId>()
     awaitEachGesture {
         do {
             val event = awaitPointerEvent()
-            countCallback(event.changes.map { it.id })
             event.changes.forEach { pointerInputChange ->
                 when (event.type) {
                     PointerEventType.Press, PointerEventType.Enter -> {

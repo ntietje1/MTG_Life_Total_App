@@ -3,9 +3,6 @@ package data.serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/**
- * Represents a list of cards
- */
 @Serializable
 data class CardResponse(
     @SerialName("object") val type: String = "error",

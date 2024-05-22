@@ -65,18 +65,13 @@ import kotlin.coroutines.coroutineContext
 import kotlin.math.pow
 import kotlin.native.concurrent.ThreadLocal
 
-/**
- * Screen for selecting players
- */
 @Composable
 fun PlayerSelectScreen(
     viewModel: PlayerSelectViewModel,
     goToLifeCounterScreen: () -> Unit,
     setNumPlayers: (Int) -> Unit
 ) {
-    val timer by viewModel.timer.collectAsState()
     val state by viewModel.state.collectAsState()
-    println("Timer: $timer")
 
     Box(Modifier.fillMaxSize()) {
         PlayerSelectScreenValues.animScale = getAnimationCorrectionFactor()
@@ -112,9 +107,6 @@ fun PlayerSelectScreen(
     }
 }
 
-/**
- * Values used for animating the PlayerSelectScreen
- */
 @ThreadLocal
 private object PlayerSelectScreenValues {
     var animScale = 1.0f
@@ -139,10 +131,6 @@ private object PlayerSelectScreenValues {
         get() = (750 / animScale).toInt()
 }
 
-/**
- * Base of the PlayerSelectScreen
- * @param showHelperText Whether or not to show the helper text.
- */
 @Composable
 fun PlayerSelectScreenBase(
     setHelperText: (Boolean) -> Unit,
@@ -154,18 +142,12 @@ fun PlayerSelectScreenBase(
     var selectedId: PointerId? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
 
-    /**
-     * Applies a random default color to the circle that is not already used
-     */
     fun applyRandomColor(circle: Circle) {
         do {
             circle.color = allPlayerColors.random()
         } while (circles.values.any { it.color == circle.color })
     }
 
-    /**
-     * Makes all circles go to normal size
-     */
     fun allGoToNormal() {
         if (selectedId != null) return
         for (id in circles.keys) {
@@ -177,9 +159,6 @@ fun PlayerSelectScreenBase(
         }
     }
 
-    /**
-     * Makes a circle disappear
-     */
     fun disappearCircle(id: PointerId, duration: Int = deselectDuration) {
         if (circles.containsKey(id)) {
             val circle = circles[id]!!
@@ -193,9 +172,6 @@ fun PlayerSelectScreenBase(
         }
     }
 
-    /**
-     * Called when a pointer goes down
-     */
     fun onDown(event: PointerInputChange) {
         if (circles.size < 6 && selectedId == null) {
             circles[event.id] = Circle(
@@ -210,16 +186,10 @@ fun PlayerSelectScreenBase(
         }
     }
 
-    /**
-     * Called when a pointer moves
-     */
     fun onMove(event: PointerInputChange) {
         circles[event.id]?.updatePosition(event.position.x, event.position.y)
     }
 
-    /**
-     * Called when a pointer goes up
-     */
     fun onUp(event: PointerInputChange) {
         CoroutineScope(scope.coroutineContext).launch {
             val circle = circles[event.id]
@@ -236,14 +206,7 @@ fun PlayerSelectScreenBase(
     }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
-        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
-            //this used to be a fix, but now seems to not be necessary and also is broken
-//            for (id in circles.keys) {
-//                if (!it.contains(id)) {
-//                    disappearCircle(id)
-//                }
-//            }
-        })
+        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) })
     }) {
         LaunchedEffect(circles.size) {
             val selectionScope = CoroutineScope(coroutineContext)
@@ -253,7 +216,7 @@ fun PlayerSelectScreenBase(
             if (circles.size == 0) {
                 helperTextScope.launch {
                     delay(showHelperTextDelay)
-                setHelperText(true)
+                    setHelperText(true)
                 }
             } else {
                 setHelperText(false)
@@ -289,12 +252,6 @@ fun PlayerSelectScreenBase(
     }
 }
 
-/**
- * Represents a circle on the screen
- * @param x The x position of the circle
- *  @param y The y position of the circle
- *  @param color The color of the circle
- */
 private class Circle(
     x: Float, y: Float, color: Color = Color.Magenta, val predictor: CirclePredictor = CirclePredictor()
 ) {
@@ -313,9 +270,6 @@ private class Circle(
     val radius by mutableStateOf(animatedRadius)
     val width by mutableStateOf(animatedWidth)
 
-    /**
-     * Updates the position of the circle
-     */
     fun updatePosition(x: Float, y: Float) {
         predictor.addPosition(Offset(x, y))
         val posn = predictor.getNextPosition()
@@ -323,9 +277,6 @@ private class Circle(
         this.x = posn.x
     }
 
-    /**
-     * Animates the circle to pop in
-     */
     suspend fun popIn() {
         radius.animateTo(
             targetValue = baseRadius, animationSpec = spring(
@@ -334,9 +285,6 @@ private class Circle(
         )
     }
 
-    /**
-     * Animates the circle go to normal size
-     */
     suspend fun goToNormal() {
         if (radius.value > baseRadius) {
             radius.animateTo(
@@ -347,9 +295,6 @@ private class Circle(
         }
     }
 
-    /**
-     * Animates the circle to pulse
-     */
     suspend fun pulse() {
         radius.animateTo(
             targetValue = pulsedRadius, animationSpec = tween(
@@ -363,9 +308,6 @@ private class Circle(
         )
     }
 
-    /**
-     * Animates the circle to grow to the screen
-     */
     suspend fun growToScreen(onComplete: () -> Unit = {}) {
         val duration = growToScreenDuration
         val target = 10 * baseRadius
@@ -395,9 +337,6 @@ private class Circle(
         }
     }
 
-    /**
-     * Animates the circle to pop out
-     */
     suspend fun deselect(duration: Int, onComplete: () -> Unit) {
         CoroutineScope(coroutineContext).launch {
             launch {
@@ -420,9 +359,6 @@ private class Circle(
     }
 }
 
-/**
- * Predicts the next position of a circle based on its previous positions
- */
 class CirclePredictor {
     companion object {
         private const val HISTORY_SIZE = 10f
@@ -431,10 +367,6 @@ class CirclePredictor {
     private val historyX: MutableList<Float> = mutableListOf()
     private val historyY: MutableList<Float> = mutableListOf()
 
-    /**
-     * Adds a position to the predictor
-     * @param posn The position to add
-     */
     fun addPosition(posn: Offset) {
         historyX.add(posn.x)
         historyY.add(posn.y)
@@ -445,10 +377,6 @@ class CirclePredictor {
         }
     }
 
-    /**
-     * Gets the next predicted position
-     * @return The next predicted position
-     */
     fun getNextPosition(): Offset {
         val adjX = calculateAdjustment(historyX)
         val adjY = calculateAdjustment(historyY)
@@ -458,10 +386,6 @@ class CirclePredictor {
         )
     }
 
-    /**
-     * Calculates the adjustment for the next position
-     * @param history The history of positions
-     */
     private fun calculateAdjustment(history: List<Float>): Float {
         var adj = 0f
         for (i in history.indices) {
@@ -471,11 +395,6 @@ class CirclePredictor {
     }
 }
 
-/**
- * Draws the circles on the screen
- * @param circles The circles to draw
- * @param disappearingCircles The circles that are currently disappearing but still visible
- */
 @Composable
 private fun DrawCircles(circles: List<Circle>, disappearingCircles: List<Circle>) {
     Box(modifier = Modifier.fillMaxSize().drawBehind {

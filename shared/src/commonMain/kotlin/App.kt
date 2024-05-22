@@ -1,4 +1,3 @@
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,9 +17,6 @@ import org.koin.compose.KoinContext
 import org.koin.compose.currentKoinScope
 import theme.LifeLinkedTheme
 
-/**
- * Root composable of the application
- */
 @Composable
 fun LifeLinkedApp() {
     var darkTheme by remember { mutableStateOf(SettingsManager.instance.darkTheme) }
@@ -30,7 +26,6 @@ fun LifeLinkedApp() {
             updateSystemBarsColors(true)
 
             val navController = rememberNavController()
-//            val numPlayers by PlayerManager.instance.numPlayers.collectAsState()
 
             NavHost(
                 navController = navController,
@@ -49,20 +44,19 @@ fun LifeLinkedApp() {
 
                 composable("life counter") {
                     val viewModel = koinViewModel<LifeCounterViewModel>()
-                LifeCounterScreen(
-                    viewModel = viewModel,
-//                    numPlayers = numPlayers,
-                    toggleTheme = {
-                        SettingsManager.instance.darkTheme = !darkTheme
-                        darkTheme = !darkTheme
-                    },
-                    goToPlayerSelectScreen = {
-                        navController.navigate("player select")
-                    },
-                    returnToLifeCounterScreen = {
-                        navController.navigate("life counter")
-                    }
-                )
+                    LifeCounterScreen(
+                        viewModel = viewModel,
+                        toggleTheme = {
+                            SettingsManager.instance.darkTheme = !darkTheme
+                            darkTheme = !darkTheme
+                        },
+                        goToPlayerSelectScreen = {
+                            navController.navigate("player select")
+                        },
+                        returnToLifeCounterScreen = {
+                            navController.navigate("life counter")
+                        }
+                    )
                 }
             }
         }
@@ -70,7 +64,7 @@ fun LifeLinkedApp() {
 }
 
 @Composable
-inline fun <reified T: ViewModel> koinViewModel(): T {
+inline fun <reified T : ViewModel> koinViewModel(): T {
     val scope = currentKoinScope()
     return viewModel {
         scope.get<T>()

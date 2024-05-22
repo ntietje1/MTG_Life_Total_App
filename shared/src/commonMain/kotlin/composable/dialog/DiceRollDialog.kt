@@ -54,10 +54,6 @@ import lifelinked.shared.generated.resources.d8_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
-/**
- * A dialog that allows the user to roll dice
- * @param modifier the modifier for this composable
- */
 @Composable
 fun DiceRollDialogContent(
     modifier: Modifier = Modifier
@@ -156,17 +152,6 @@ fun DiceRollDialogContent(
     }
 }
 
-/**
- * A button that rolls a die
- * @param value the value of the die
- * @param modifier the modifier for this composable
- * @param shape the shape of the button
- * @param backgroundColor the background color of the button
- * @param imageVector the image resource of the button
- * @param mainColor the color of the text
- * @param enabled whether the button is enabled
- * @param visible whether the button is visible
- */
 @Composable
 fun DiceRollButton(
     value: Int,

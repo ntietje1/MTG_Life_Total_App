@@ -52,11 +52,6 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
 import org.jetbrains.compose.resources.vectorResource
 
-/**
- * The main life counting screen of the app
- * @param viewModel The life counter component
- * @param toggleTheme Callback to toggle the theme
- */
 @Composable
 fun LifeCounterScreen(
     viewModel: LifeCounterViewModel,
@@ -72,12 +67,19 @@ fun LifeCounterScreen(
 
     LaunchedEffect(lifecycleState) {
         when (lifecycleState) {
-            Lifecycle.State.DESTROYED -> { viewModel.savePlayerStates() }
+            Lifecycle.State.DESTROYED -> {
+                viewModel.savePlayerStates()
+            }
+
             Lifecycle.State.INITIALIZED -> {
 //                viewModel.generatePlayers()
             }
+
             Lifecycle.State.CREATED -> {}
-            Lifecycle.State.STARTED -> { viewModel.savePlayerStates() }
+            Lifecycle.State.STARTED -> {
+                viewModel.savePlayerStates()
+            }
+
             Lifecycle.State.RESUMED -> {}
         }
     }
@@ -175,15 +177,6 @@ fun LifeCounterScreen(
 
 }
 
-/**
- * A wrapper for the player button that animates it in and out
- * @param visible Whether the button is visible
- * @param playerButtonViewModel The player to display
- * @param rotation The rotation of the button
- * @param width The width of the button
- * @param height The height of the button
- * @param component The life counter component
- */
 @Composable
 fun AnimatedPlayerButton(
     visible: Boolean, playerButtonViewModel: PlayerButtonViewModel, rotation: Float, width: Dp, height: Dp
@@ -240,11 +233,6 @@ fun AnimatedPlayerButton(
     }
 }
 
-/**
- * A wrapper for the middle settings button that animates it in and out
- * @param modifier The modifier to apply to the button
- * @param onMiddleButtonClick Callback for when the button is clicked
- */
 @Composable
 fun AnimatedMiddleButton(
     modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit, visible: Boolean

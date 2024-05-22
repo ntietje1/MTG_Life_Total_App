@@ -29,10 +29,6 @@ import lifelinked.shared.generated.resources.about_me
 import org.jetbrains.compose.resources.imageResource
 import theme.scaledSp
 
-/**
- * A dialog that displays information about the me, the creator of the app :^)
- * @param modifier the modifier for this composable
- */
 @Composable
 fun AboutMeDialogContent(
     modifier: Modifier = Modifier
@@ -48,10 +44,6 @@ fun AboutMeDialogContent(
     }
 }
 
-/**
- * The body of the about me dialog
- * @param modifier the modifier for this composable
- */
 @Composable
 fun AboutMeDialogBody(
     modifier: Modifier = Modifier

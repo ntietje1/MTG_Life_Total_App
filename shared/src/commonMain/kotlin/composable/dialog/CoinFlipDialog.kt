@@ -64,12 +64,6 @@ import kotlin.random.Random
  * -
  */
 
-
-/**
- * A dialog that allows the user to flip a coin and view the history of flips
- * @param modifier the modifier for this composable
- * @param history the list of coin flips
- */
 @Composable
 fun CoinFlipDialogContent(
     modifier: Modifier = Modifier,
@@ -182,11 +176,6 @@ fun CoinFlippable(
     }
 }
 
-/**
- * A button that resets flip history
- * @param modifier the modifier for this composable
- * @param onReset the action to perform when the button is pressed
- */
 @Composable
 fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
     Box(
@@ -214,11 +203,6 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
     }
 }
 
-/**
- * A counter that displays the number of heads and tails
- * @param modifier the modifier for this composable
- * @param history the list of coin flips
- */
 @Composable
 fun FlipCounter(
     modifier: Modifier = Modifier,
@@ -274,12 +258,6 @@ fun FlipCounter(
     }
 }
 
-/**
- * A list of the history of coin flips
- * @param modifier the modifier for this composable
- * @param coinFlipHistory the list of coin flips
- * @param maxHistoryLength the maximum number of flips to display
- */
 @Composable
 fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: List<String>, maxHistoryLength: Int = 18) {
     val hPadding = 10.dp
