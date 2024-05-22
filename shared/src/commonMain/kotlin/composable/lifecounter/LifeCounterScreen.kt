@@ -57,7 +57,8 @@ fun LifeCounterScreen(
     viewModel: LifeCounterViewModel,
     toggleTheme: () -> Unit,
     goToPlayerSelectScreen: () -> Unit,
-    returnToLifeCounterScreen: () -> Unit
+    returnToLifeCounterScreen: () -> Unit,
+    goToTutorialScreen: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
@@ -172,7 +173,9 @@ fun LifeCounterScreen(
                 viewModel.setNumPlayers(it)
                 println("SETNUMOFPLAYERS: $it")
             },
-            returnToLifeCounterScreen = { returnToLifeCounterScreen() })
+            returnToLifeCounterScreen = { returnToLifeCounterScreen() },
+            goToTutorialScreen = goToTutorialScreen
+        )
     }
 
 }

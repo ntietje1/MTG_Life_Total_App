@@ -75,7 +75,8 @@ fun MiddleButtonDialog(
     toggleTheme: () -> Unit,
     goToPlayerSelectScreen: () -> Unit,
     returnToLifeCounterScreen: () -> Unit,
-    setNumPlayers: (Int) -> Unit
+    setNumPlayers: (Int) -> Unit,
+    goToTutorialScreen: () -> Unit
 ) {
 
     val state by viewModel.state.collectAsState()
@@ -199,9 +200,15 @@ fun MiddleButtonDialog(
             FormattedAnimatedVisibility(
                 visible = middleButtonDialogState == MiddleButtonDialogState.Settings
             ) {
-                SettingsDialogContent(Modifier.fillMaxSize(),
+                SettingsDialogContent(
+                    Modifier.fillMaxSize(),
                     goToAboutMe = { middleButtonDialogState = MiddleButtonDialogState.AboutMe },
-                    addGoToSettingsToBackStack = { backStack.add { middleButtonDialogState = MiddleButtonDialogState.Settings } })
+                    addGoToSettingsToBackStack = { backStack.add { middleButtonDialogState = MiddleButtonDialogState.Settings } },
+                    goToTutorialScreen = {
+                        onDismiss()
+                        goToTutorialScreen()
+                    }
+                )
             }
             FormattedAnimatedVisibility(
                 visible = middleButtonDialogState == MiddleButtonDialogState.AboutMe
@@ -268,7 +275,7 @@ fun MiddleButtonDialog(
                         SettingsButton(
                             buttonModifier,
                             imageVector = vectorResource(Res.drawable.star_icon_small),
-                            text = "Toggle Theme",
+                            text = "Toggle Theme", //TODO: THIS IS BROKEN RIGHT NOW
                             shadowEnabled = false,
                             onPress = {
                                 toggleTheme()

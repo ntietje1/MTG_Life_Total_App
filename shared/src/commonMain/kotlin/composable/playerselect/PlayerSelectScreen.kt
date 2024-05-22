@@ -102,7 +102,7 @@ fun PlayerSelectScreen(
                 imageVector = vectorResource(Res.drawable.skip_icon),
                 onTap = {
                     goToLifeCounterScreen()
-                }) {}
+                })
         }
     }
 }

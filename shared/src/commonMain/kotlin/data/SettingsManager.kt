@@ -52,6 +52,10 @@ class SettingsManager private constructor() {
         get() = settings.getInt("startingLife", 40)
         set(value) = settings.putInt("startingLife", value)
 
+    var tutorialSkip: Boolean
+        get() = settings.getBoolean("tutorialSkip", false)
+        set(value) = settings.putBoolean("tutorialSkip", value)
+
     fun loadPlayerStates(): List<Player> {
         val allPrefString = settings.getString("playerStates", "[]")
         return Json.decodeFromString<List<Player>>(allPrefString)

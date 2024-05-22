@@ -58,6 +58,7 @@ fun SettingsDialogContent(
     modifier: Modifier = Modifier,
     goToAboutMe: () -> Unit,
     addGoToSettingsToBackStack: () -> Unit,
+    goToTutorialScreen: () -> Unit,
     settingsManager: SettingsManager = koinInject()
 ) {
     val uriHandler = LocalUriHandler.current
@@ -110,7 +111,7 @@ fun SettingsDialogContent(
                     SettingsDialogButton(
                         text = "View Tutorial Again", additionalText = "", icon = vectorResource(Res.drawable.reset_icon)
                     ) {
-//                        SettingsManager.tutorialCompleted = false
+                        goToTutorialScreen()
                     }
                 }
             }
