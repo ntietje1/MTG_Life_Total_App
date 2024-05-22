@@ -8,5 +8,5 @@ import org.koin.dsl.module
 actual val platformModule = module {
     single { ImageManager(get()) }
     viewModel { PlayerSelectViewModel() }
-    viewModel { LifeCounterViewModel(get(), get(), get()) }
+    viewModel { LifeCounterViewModel(get(), get()) }
 }

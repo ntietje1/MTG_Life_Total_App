@@ -18,11 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import theme.allPlayerColors
 
-/**
- * The component for the life counter screen for state and navigation
- */
 class LifeCounterViewModel(
-    private val helloWorld: String,
     val settingsManager: SettingsManager,
     private val imageManager: ImageManager
 ) : ViewModel() {
@@ -35,7 +31,6 @@ class LifeCounterViewModel(
     lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
 
     init {
-        println(helloWorld)
         startTimer()
         generatePlayers()
         savePlayerStates()

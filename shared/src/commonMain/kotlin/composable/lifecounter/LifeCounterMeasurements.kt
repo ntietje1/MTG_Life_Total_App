@@ -2,13 +2,6 @@ package composable.lifecounter
 
 import androidx.compose.ui.unit.Dp
 
-/**
- * Class that calculates the measurements for the life counter depending on layout and player number
- * @param maxWidth The max width of the life counter
- * @param maxHeight The max height of the life counter
- * @param numPlayers The number of players
- * @param alt4Layout Whether to use the alternative 4 player layout
- */
 class LifeCounterMeasurements(maxWidth: Dp, maxHeight: Dp, numPlayers: Int, alt4Layout: Boolean = true) {
 
     data class ButtonPlacement(val index: Int, val width: Dp, val height: Dp, val angle: Float)
