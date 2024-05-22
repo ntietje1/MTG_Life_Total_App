@@ -6,9 +6,10 @@ import platform.UIKit.UIViewController
 
 //import navigation.RootComponent
 
-fun MainViewController(): UIViewController = ComposeUIViewController {
-    val root = remember {
-        RootComponent(DefaultComponentContext(LifecycleRegistry()))
+fun MainViewController(): UIViewController = ComposeUIViewController(
+    configure = {
+        KoinInitializer().init()
     }
-    LifeLinkedApp(root)
+) {
+    LifeLinkedApp()
 }

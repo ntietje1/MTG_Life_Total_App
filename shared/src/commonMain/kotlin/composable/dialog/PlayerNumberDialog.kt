@@ -38,7 +38,11 @@ import theme.scaledSp
  */
 @Composable
 fun PlayerNumberDialogContent(
-    modifier: Modifier = Modifier, onDismiss: () -> Unit, setPlayerNum: (Int) -> Unit, resetPlayers: () -> Unit, show4PlayerDialog: () -> Unit
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    setPlayerNum: (Int) -> Unit,
+    resetPlayers: () -> Unit,
+    show4PlayerDialog: () -> Unit
 ) {
     GridDialogContent(modifier, title = "Set number of players", items = listOf({
         SettingsButton(imageVector = vectorResource(Res.drawable.one_icon), text = "", shadowEnabled = false, onPress = {

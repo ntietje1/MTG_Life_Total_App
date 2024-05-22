@@ -35,14 +35,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,9 +59,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
-import data.Player
 import data.ScryfallApiRetriever
-import data.SettingsManager
 import data.serializable.Card
 import data.serializable.Ruling
 import kotlinx.coroutines.delay
@@ -77,12 +72,19 @@ import theme.scaledSp
 /**
  * A dialog that allows the user to search for cards on Scryfall
  * @param modifier the modifier for this composable
- * @param player the player to set the image for
+ * @param playerButtonViewModel the player to set the image for
  * @param backStack the back stack of the dialog
  * @param onDismiss the action to perform when the dialog is dismissed
  */
 @Composable
-fun ScryfallSearchDialog(modifier: Modifier = Modifier, player: Player, backStack: SnapshotStateList<() -> Unit> = mutableStateListOf(), onDismiss: () -> Unit) {
+fun ScryfallSearchDialog(
+    modifier: Modifier = Modifier,
+//    playerButtonViewModel: PlayerButtonViewModel,
+    backStack: List<() -> Unit> = listOf(),
+    addToBackStack: (() -> Unit) -> Unit,
+    onDismiss: () -> Unit,
+    onImageSelected: (String) -> Unit
+) {
     SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss) {
 //        BackHandler {
 //            backStack.removeLast().invoke()
@@ -96,14 +98,18 @@ fun ScryfallSearchDialog(modifier: Modifier = Modifier, player: Player, backStac
 //                    println("BACKSTACK POPPED")
 //                })
 //        )
-        ScryfallDialogContent(player = player, backStack = backStack)
+        ScryfallDialogContent(
+            backStack = backStack,
+            addToBackStack = addToBackStack,
+            onImageSelected = onImageSelected
+        )
     }
 }
 
 /**
  * The content of the Scryfall search dialog
  * @param modifier the modifier for this composable
- * @param player the player to set the image for
+ * @param playerButtonViewModel the player to set the image for
  * @param backStack the back stack of the dialog
  * @param selectButtonEnabled whether the select button is enabled
  * @param printingsButtonEnabled whether the printings button is enabled
@@ -112,11 +118,13 @@ fun ScryfallSearchDialog(modifier: Modifier = Modifier, player: Player, backStac
 @Composable
 fun ScryfallDialogContent(
     modifier: Modifier = Modifier,
-    player: Player?,
-    backStack: SnapshotStateList<() -> Unit>,
+//    playerButtonViewModel: PlayerButtonViewModel?,
+    backStack: List<() -> Unit>,
+    addToBackStack: (() -> Unit) -> Unit,
     selectButtonEnabled: Boolean = true,
     printingsButtonEnabled: Boolean = true,
-    rulingsButtonEnabled: Boolean = false
+    rulingsButtonEnabled: Boolean = false,
+    onImageSelected: (String) -> Unit
 ) {
     val query = remember { mutableStateOf("") }
     var cardResults by remember { mutableStateOf(listOf<Card>()) }
@@ -149,7 +157,7 @@ fun ScryfallDialogContent(
             isSearchInProgress = false
 
             if (initialBackStackSize == backStack.size) {
-                backStack.add {
+                addToBackStack {
                     query.value = ""
                     clearResults()
                 }
@@ -163,7 +171,7 @@ fun ScryfallDialogContent(
             rulingsResults = scryfallApiRetriever.parseScryfallResponse<Ruling>(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError = false
             if (initialBackStackSize == backStack.size) {
-                backStack.add {
+                addToBackStack {
                     query.value = ""
                     clearResults()
                 }
@@ -172,7 +180,11 @@ fun ScryfallDialogContent(
     }
 
     Column(modifier) {
-        ScryfallSearchBar(Modifier.padding(top = 10.dp).padding(start = 20.dp, end = 20.dp).clip(RoundedCornerShape(10.dp)), query = query, searchInProgress = isSearchInProgress) {
+        ScryfallSearchBar(
+            Modifier.padding(top = 10.dp).padding(start = 20.dp, end = 20.dp).clip(RoundedCornerShape(10.dp)),
+            query = query.value,
+            onQueryChange = { query.value = it },
+            searchInProgress = isSearchInProgress) {
             searchCards(query.value)
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
@@ -202,16 +214,15 @@ fun ScryfallDialogContent(
                 CardPreview(card, selectButtonEnabled = selectButtonEnabled, printingsButtonEnabled = _printingsButtonEnabled, rulingsButtonEnabled = rulingsButtonEnabled, onRulings = {
                     searchRulings(card.rulingsUri ?: "")
                     rulingCard = card
-                    backStack.add {
+                    addToBackStack {
                         searchCards(query.value)
                         rulingCard = null
                     }
                 }, onSelect = {
-                    player!!.imageUri = card.getUris().artCrop
-                    SettingsManager.savePlayerPref(player)
+                    onImageSelected(card.getUris().artCrop)
                 }, onPrintings = {
                     searchCards(card.printsSearchUri, disablePrintingsButton = true)
-                    backStack.add {
+                    addToBackStack {
                         searchCards(query.value)
                     }
                 })
@@ -232,15 +243,22 @@ fun ScryfallDialogContent(
  * A search bar for searching Scryfall
  * @param modifier the modifier for this composable
  * @param query the query to search for
+ * @param onQueryChange the action to perform when the query changes
  * @param onSearch the action to perform when the search button is pressed
  */
 @Composable
-fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>, searchInProgress: Boolean = false, onSearch: () -> Unit) {
+fun ScryfallSearchBar(
+    modifier: Modifier = Modifier,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    searchInProgress: Boolean = false,
+    onSearch: () -> Unit
+) {
     Box(
         modifier = modifier.wrapContentSize()
     ) {
-        TextField(value = query.value,
-            onValueChange = { query.value = it },
+        TextField(value = query,
+            onValueChange = onQueryChange,
             label = { Text("Search Scryfall", fontSize = 15.scaledSp) },
             singleLine = true,
             textStyle = TextStyle(fontSize = 15.scaledSp, color = MaterialTheme.colorScheme.onPrimary),
@@ -303,7 +321,11 @@ fun ScryfallSearchBar(modifier: Modifier = Modifier, query: MutableState<String>
  * @param onTap the action to perform when the button is tapped
  */
 @Composable
-fun ScryfallButton(modifier: Modifier = Modifier, text: String, onTap: () -> Unit) {
+fun ScryfallButton(
+    modifier: Modifier = Modifier,
+    text: String,
+    onTap: () -> Unit
+) {
     val originalColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
     val pressedColor = Color.Green.copy(alpha = 0.5f)
     var color by remember { mutableStateOf(originalColor) }

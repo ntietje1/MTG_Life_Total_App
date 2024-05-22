@@ -2,11 +2,8 @@ package data
 
 import android.content.Context
 import android.net.Uri
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-
 import com.hypeapps.lifelinked.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,28 +11,9 @@ import java.io.File
 import java.util.UUID
 
 /**
- * Initializes the ImageStorage class with platform-specific implementations
- * @return The initialized ImageStorage
- */
-@Composable
-actual fun initImageManager(): ImageStorage {
-    return ImageStorage().apply {
-        setContext(LocalContext.current)
-    }
-}
-
-/**
  * Actual implementation of ImageStorage on android
  */
-actual class ImageStorage {
-    private lateinit var context: Context
-
-    /**
-     * Sets the context for the ImageStorage to access internal storage
-     */
-    fun setContext(context: Context) {
-        this.context = context
-    }
+actual class ImageManager(private val context: Context) {
 
     /**
      * Saves an image to the platform-specific app storage

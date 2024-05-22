@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +46,8 @@ import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
 
+val COUNTER_DIALOG_ENTRIES = 7
+
 /**
  * A dialog that allows the user to keep track of floating mana and storm count
  * @param modifier the modifier for this composable
@@ -54,7 +55,10 @@ import theme.scaledSp
  */
 @Composable
 fun CounterDialogContent(
-    modifier: Modifier = Modifier, counters: List<MutableIntState>
+    modifier: Modifier = Modifier,
+    counters: List<Int>,
+    incrementCounter: (Int, Int) -> Unit,
+    resetCounters: () -> Unit
 ) {
 
     val haptic = LocalHapticFeedback.current
@@ -80,7 +84,11 @@ fun CounterDialogContent(
 
         items(counters.size - 1) { index ->
             SingleCounter(
-                imageVector = counterResources[index].first, backgroundColor = counterResources[index].second, buttonColor = counterResources[index].third, counter = counters[index]
+                imageVector = counterResources[index].first,
+                backgroundColor = counterResources[index].second,
+                buttonColor = counterResources[index].third,
+                counter = counters[index],
+                incrementCounter = { incrementCounter(index, it) }
             )
         }
 
@@ -92,16 +100,18 @@ fun CounterDialogContent(
 
         item {
             SingleCounter(
-                imageVector = counterResources.last().first, backgroundColor = counterResources.last().second, buttonColor = counterResources.last().third, counter = counters.last()
+                imageVector = counterResources.last().first,
+                backgroundColor = counterResources.last().second,
+                buttonColor = counterResources.last().third,
+                counter = counters.last(),
+                incrementCounter = { incrementCounter(counters.lastIndex, it) }
             )
         }
 
         item {
             ResetButton(modifier = Modifier.padding(top = 20.dp), onReset = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                for (value in counters) {
-                    value.value = 0
-                }
+                resetCounters()
             })
         }
     }
@@ -119,19 +129,20 @@ fun SingleCounter(
     backgroundColor: Color = Color.Transparent,
     buttonColor: Color = Color.White,
     imageVector: ImageVector= vectorResource(Res.drawable.placeholder_icon),
-    counter: MutableIntState
+    counter: Int,
+    incrementCounter: (Int) -> Unit
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
     val haptic = LocalHapticFeedback.current
 
     fun onIncrement() {
-        counter.value++
+        incrementCounter(1)
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
     fun onDecrement() {
-        counter.value--
+        incrementCounter(-1)
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
@@ -161,7 +172,7 @@ fun SingleCounter(
         Spacer(modifier = Modifier.width(5.dp))
 
         Text(
-            modifier = Modifier.width(50.dp), text = "${counter.value}", textAlign = TextAlign.Justify, color = buttonColor, fontSize = 28.scaledSp, fontWeight = FontWeight.Bold
+            modifier = Modifier.width(50.dp), text = "$counter", textAlign = TextAlign.Justify, color = buttonColor, fontSize = 28.scaledSp, fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.width(0.dp))

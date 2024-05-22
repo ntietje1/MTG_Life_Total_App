@@ -1,19 +1,8 @@
 package data
 
-
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import composable.lifecounter.CounterType
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -26,8 +15,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
-import composable.lifecounter.CounterType
-import data.SettingsManager.autoKo
 
 /**
  * Represents a player in the game
@@ -46,147 +33,23 @@ import data.SettingsManager.autoKo
  * @param partnerMode Whether or not the player is in partner mode
  */
 @Serializable(with = PlayerSerializer::class)
-class Player(
-    life: Int = -1,
-    recentChange: Int = 0,
-    imageUri: String? = null,
-    color: Color = Color.LightGray,
-    textColor: Color = Color.White,
-    playerNum: Int = -1,
-    name: String = "Placeholder",
-    monarch: Boolean = false,
-    commanderDamage: List<Int> = mutableListOf<Int>().apply {
-        repeat(MAX_PLAYERS *2) { add(0) }
-    },
-    counters: List<Int> = mutableListOf<Int>().apply {
-        repeat(CounterType.entries.size) { add(0) }
-    },
-    activeCounters: List<CounterType> = mutableListOf(),
-    setDead: Boolean = false,
-    partnerMode: Boolean = false
+data class Player(
+    val life: Int = -1,
+    val recentChange: Int = 0,
+    val imageUri: String? = null,
+    val color: Color = Color.LightGray,
+    val textColor: Color = Color.White,
+    val playerNum: Int = -1,
+    val name: String = "Placeholder",
+    val monarch: Boolean = false,
+    val commanderDamage: List<Int> = List(MAX_PLAYERS *2) { 0 },
+    val counters: List<Int> = List(CounterType.entries.size *2) { 0 },
+    val activeCounters: List<CounterType> = listOf(),
+    val setDead: Boolean = false,
+    val partnerMode: Boolean = false,
 ) {
-    var life: Int by mutableIntStateOf(life)
-    var imageUri: String? by mutableStateOf(imageUri)
-    var color: Color by mutableStateOf(color)
-    var textColor: Color by mutableStateOf(textColor)
-    var name: String by mutableStateOf(name)
-    var monarch: Boolean by mutableStateOf(monarch)
-    var recentChange: Int by mutableIntStateOf(recentChange)
-    var partnerMode: Boolean by mutableStateOf(partnerMode)
-    var playerNum by mutableIntStateOf(playerNum)
-    var setDead by mutableStateOf(setDead)
-
-    val isDead get() = (autoKo && (life <= 0  || commanderDamage.any { it >= 21 }) || setDead)
-
-    val commanderDamage = commanderDamage.toMutableStateList()
-    val counters = counters.toMutableStateList()
-    val activeCounters = activeCounters.toMutableStateList()
-    private var scope = CoroutineScope(Dispatchers.IO)
-
-    init {
-        resetRecentChange()
-    }
-
-    /**
-     * Gets the value of a specific counter
-     * @param counterType The type of counter to get
-     */
-    fun getCounterValue(counterType: CounterType): Int {
-        return counters[counterType.ordinal]
-    }
-
-    /**
-     * Increments a specific counter
-     * @param counterType The type of counter to increment
-     * @param value The value to increment by
-     */
-    fun incrementCounterValue(counterType: CounterType, value: Int) {
-        counters[counterType.ordinal] += value
-    }
-
-    /**
-     * Gets the commander damage dealt to this player by the current dealer
-     * @param currentDealer The current dealer
-     * @param partner Whether or not to get the partner commander damage
-     */
-    fun getCommanderDamage(currentDealer: Player, partner: Boolean = false): Int {
-        val index = (currentDealer.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
-        return this.commanderDamage[index]
-    }
-
-    /**
-     * Increments the commander damage dealt to this player by the current dealer
-     * @param currentDealer The current dealer
-     * @param value The value to increment by
-     * @param partner Whether or not to increment the partner commander damage
-     */
-    fun incrementCommanderDamage(currentDealer: Player, value: Int, partner: Boolean = false) {
-        val index = (this.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
-        currentDealer.commanderDamage[index] += value
-    }
-
-    /**
-     * Copies the settings from another player
-     * @param other The player to copy the settings from
-     */
-    fun copySettings(other: Player) {
-        this.imageUri = other.imageUri
-        this.color = other.color
-        this.textColor = other.textColor
-        this.name = other.name
-    }
-
-    /**
-     * Checks if the player has a default name
-     */
-    fun isDefaultName(): Boolean {
-        return name.matches("P[1-$MAX_PLAYERS]".toRegex())
-    }
-
-    /**
-     * Increments the player's life total
-     * @param value The value to increment by
-     */
-    fun incrementLife(value: Int) {
-        life += value
-        recentChange += value
-        resetRecentChange()
-    }
-
-    /**
-     * Resets the player's recent change number
-     */
-    private fun resetRecentChange() {
-        scope.cancel()
-        scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
-            delay(1500)
-            recentChange = 0
-        }
-    }
-
-    /**
-     * Resets the player's state
-     * @param startingLife The starting life total
-     */
-    fun resetState(startingLife: Int) {
-        life = startingLife
-        recentChange = 0
-        monarch = false
-        setDead = false
-        commanderDamage.apply {
-            clear()
-            for (i in 0 until MAX_PLAYERS *2) {
-                add(0)
-            }
-        }
-        counters.apply {
-            clear()
-            for (i in 0 until CounterType.entries.size) {
-                add(0)
-            }
-        }
-        activeCounters.clear()
+    fun isDefaultOrEmptyName(): Boolean {
+        return name.matches("P[1-$MAX_PLAYERS]".toRegex()) || name == "Placeholder" || name.isEmpty()
     }
 
     companion object {
@@ -198,7 +61,7 @@ class Player(
  * Serializer for [Player] class
  */
 object PlayerSerializer : KSerializer<Player> {
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Player") {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("PlayerInfo") {
         element<String>("playerName")
         element<String>("imageUri")
         element<Int>("color")

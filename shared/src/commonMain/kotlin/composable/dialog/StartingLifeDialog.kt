@@ -34,7 +34,6 @@ import lifelinked.shared.generated.resources.enter_icon
 import lifelinked.shared.generated.resources.forty_icon
 import lifelinked.shared.generated.resources.thirty_icon
 import lifelinked.shared.generated.resources.twenty_icon
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
@@ -44,10 +43,11 @@ import theme.scaledSp
  * @param onDismiss the action to perform when the dialog is dismissed
  * @param setStartingLife the action to perform when the starting life total is set
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun StartingLifeDialogContent(
-    modifier: Modifier = Modifier, onDismiss: () -> Unit, setStartingLife: (Int) -> Unit
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    setStartingLife: (Int) -> Unit
 ) {
     var customLife by remember { mutableStateOf("") }
     Box(modifier) {

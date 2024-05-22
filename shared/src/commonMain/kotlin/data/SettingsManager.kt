@@ -5,13 +5,19 @@ import com.russhwolf.settings.Settings
 import data.serializable.Card
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.native.concurrent.ThreadLocal
 
 /**
  * A singleton object that manages the application's settings.
  */
-@ThreadLocal
-object SettingsManager {
+class SettingsManager private constructor() {
+
+    companion object {
+        /**
+         * The singleton instance of the [SettingsManager].
+         */
+        val instance: SettingsManager by lazy { SettingsManager() }
+    }
+
     /**
      * The [Settings] object that is used to store the settings.
      */
@@ -57,7 +63,9 @@ object SettingsManager {
      */
     var numPlayers: Int
         get() = settings.getInt("numPlayers", 4)
-        set(value) = settings.putInt("numPlayers", value)
+        set(value) = settings.putInt("numPlayers", value).apply {
+            println("numPlayers: $value")
+        }
 
     /**
      * Setting for whether or not to use the alt 4 player layout
@@ -85,15 +93,15 @@ object SettingsManager {
      */
     fun loadPlayerStates(): List<Player> {
         val allPrefString = settings.getString("playerStates", "[]")
-        return Json.decodeFromString(allPrefString)
+        return Json.decodeFromString<List<Player>>(allPrefString)
     }
 
     /**
      * Save the player states to the storage
      */
     fun savePlayerStates(players: List<Player>) {
-            val allPrefString = Json.encodeToString(players)
-            settings.putString("playerStates", allPrefString)
+        val allPrefString = Json.encodeToString(players)
+        settings.putString("playerStates", allPrefString)
     }
 
     /**
@@ -132,7 +140,7 @@ object SettingsManager {
      * Save a player's customizations
      */
     fun savePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
-        if (player.isDefaultName()) return
+        if (player.isDefaultOrEmptyName()) return
         deletePlayerPref(player, playerList)
         playerList.add(player)
         savePlayerPrefs(playerList)
@@ -156,7 +164,7 @@ object SettingsManager {
      */
     fun loadPlayerPrefs(): ArrayList<Player> {
         val allPrefString = settings.getString("playerPrefs", "[]")
-        return Json.decodeFromString(allPrefString)
+        return Json.decodeFromString<List<Player>>(allPrefString).toCollection(ArrayList())
     }
 
     /**

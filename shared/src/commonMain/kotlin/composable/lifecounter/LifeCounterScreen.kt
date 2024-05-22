@@ -23,7 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,48 +37,67 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import composable.dialog.MiddleButtonDialog
-import data.Player
-import data.SettingsManager.alt4PlayerLayout
-import data.SettingsManager.numPlayers
+import composable.lifecounter.playerbutton.PlayerButton
+import composable.lifecounter.playerbutton.PlayerButtonViewModel
 import getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.vectorResource
 
 /**
  * The main life counting screen of the app
- * @param component The life counter component
+ * @param viewModel The life counter component
  * @param toggleTheme Callback to toggle the theme
  */
 @Composable
 fun LifeCounterScreen(
-    component: LifeCounterComponent, toggleTheme: () -> Unit
+    viewModel: LifeCounterViewModel,
+    toggleTheme: () -> Unit,
+    goToPlayerSelectScreen: () -> Unit,
+    returnToLifeCounterScreen: () -> Unit
 ) {
+    val state by viewModel.state.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(showDialog) {
-        if (!showDialog) component.blurBackground.value = false
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+
+    LaunchedEffect(lifecycleState) {
+        when (lifecycleState) {
+            Lifecycle.State.DESTROYED -> { viewModel.savePlayerStates() }
+            Lifecycle.State.INITIALIZED -> {
+//                viewModel.generatePlayers()
+            }
+            Lifecycle.State.CREATED -> {}
+            Lifecycle.State.STARTED -> { viewModel.savePlayerStates() }
+            Lifecycle.State.RESUMED -> {}
+        }
     }
 
-    LaunchedEffect(component.showButtons.value) {
+    LaunchedEffect(showDialog) {
+        if (!showDialog) viewModel.setBlurBackground(false)
+    }
+
+    LaunchedEffect(state.showButtons) {
         launch {
             delay(1)
-            if (!component.showButtons.value) {
-                component.showButtons.value = true
+            if (!state.showButtons) {
+                viewModel.setShowButtons(true)
             }
         }
     }
 
     BoxWithConstraints(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).then(
-            if (component.blurBackground.value) {
+            if (state.blurBackground) {
                 Modifier.blur(radius = 20.dp)
             } else {
                 Modifier
@@ -86,7 +105,7 @@ fun LifeCounterScreen(
         )
     ) {
         val m = LifeCounterMeasurements(
-            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
+            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = state.numPlayers, alt4Layout = viewModel.settingsManager.alt4PlayerLayout
         )
         LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
             m.rows.forEach { buttonPlacements ->
@@ -94,23 +113,43 @@ fun LifeCounterScreen(
                     LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
                         buttonPlacements.forEach {
                             item {
+                                if (viewModel.settingsManager.loadPlayerStates().isEmpty()) {
+                                    viewModel.generatePlayers()
+                                }
                                 AnimatedPlayerButton(
-                                    visible = component.showButtons, player = component.activePlayers[it.index], rotation = it.angle, width = it.width, height = it.height, component
+                                    visible = state.showButtons,
+                                    playerButtonViewModel = viewModel.playerButtonViewModels[it.index],
+                                    rotation = it.angle,
+                                    width = it.width,
+                                    height = it.height
                                 )
                             }
                         }
+//                        viewModel.playerButtonViewModels.forEachIndexed { index, playerButtonViewModel ->
+//                        val buttonPlacement = buttonPlacements[index]
+//                        item {
+////                            println("RENDERING BUTTON: $index")
+//                            AnimatedPlayerButton(
+//                                visible = state.showButtons,
+//                                playerButtonViewModel = playerButtonViewModel,
+//                                rotation = buttonPlacement.angle,
+//                                width = buttonPlacement.width,
+//                                height = buttonPlacement.height
+//                            )
+//                        }
+//                    }
                     })
                 }
             }
         })
 
-        if (!component.showButtons.value) {
+        if (!state.showButtons) {
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
         }
 
         Column(Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.weight(0 + m.middleOffset()))
-            AnimatedMiddleButton(modifier = Modifier.align(Alignment.CenterHorizontally).size(50.dp), visible = component.showButtons, onMiddleButtonClick = {
+            AnimatedMiddleButton(modifier = Modifier.align(Alignment.CenterHorizontally).size(50.dp), visible = state.showButtons, onMiddleButtonClick = {
                 showDialog = true
             })
             Spacer(modifier = Modifier.weight(1 - m.middleOffset()))
@@ -119,15 +158,27 @@ fun LifeCounterScreen(
 
     if (showDialog) {
         MiddleButtonDialog(modifier = Modifier.onGloballyPositioned { _ ->
-            component.blurBackground.value = showDialog
-        }, onDismiss = { showDialog = false }, component = component, toggleTheme = { toggleTheme() })
+            viewModel.setBlurBackground(showDialog)
+        },
+            onDismiss = {
+                showDialog = false
+            },
+            viewModel = viewModel,
+            toggleTheme = { toggleTheme() },
+            goToPlayerSelectScreen = { goToPlayerSelectScreen() },
+            setNumPlayers = {
+                viewModel.setNumPlayers(it)
+                println("SETNUMOFPLAYERS: $it")
+            },
+            returnToLifeCounterScreen = { returnToLifeCounterScreen() })
     }
+
 }
 
 /**
  * A wrapper for the player button that animates it in and out
  * @param visible Whether the button is visible
- * @param player The player to display
+ * @param playerButtonViewModel The player to display
  * @param rotation The rotation of the button
  * @param width The width of the button
  * @param height The height of the button
@@ -135,11 +186,11 @@ fun LifeCounterScreen(
  */
 @Composable
 fun AnimatedPlayerButton(
-    visible: MutableState<Boolean>, player: Player, rotation: Float, width: Dp, height: Dp, component: LifeCounterComponent
+    visible: Boolean, playerButtonViewModel: PlayerButtonViewModel, rotation: Float, width: Dp, height: Dp
 ) {
     val multiplesAway = 3
     val duration = (1250 / getAnimationCorrectionFactor()).toInt()
-    val targetOffsetY = if (visible.value) 0f else {
+    val targetOffsetY = if (visible) 0f else {
         when (rotation) {
             0f -> height.value * multiplesAway
             90f -> 0f
@@ -149,7 +200,7 @@ fun AnimatedPlayerButton(
         }
     }
 
-    val targetOffsetX = if (visible.value) 0f else {
+    val targetOffsetX = if (visible) 0f else {
         when (rotation) {
             0f -> 0f
             90f -> -width.value * multiplesAway
@@ -162,9 +213,9 @@ fun AnimatedPlayerButton(
     val offsetX = remember { Animatable(targetOffsetX) }
     val offsetY = remember { Animatable(targetOffsetY) }
 
-    LaunchedEffect(visible.value) {
+    LaunchedEffect(visible) {
         launch {
-            if (visible.value) {
+            if (visible) {
                 offsetX.animateTo(targetValue = 0f, animationSpec = tween(durationMillis = duration))
             } else {
                 offsetX.snapTo(targetOffsetX)
@@ -172,7 +223,7 @@ fun AnimatedPlayerButton(
         }
 
         launch {
-            if (visible.value) {
+            if (visible) {
                 offsetY.animateTo(targetValue = 0f, animationSpec = tween(durationMillis = duration))
             } else {
                 offsetY.snapTo(targetOffsetY)
@@ -182,7 +233,9 @@ fun AnimatedPlayerButton(
 
     Box(modifier = Modifier.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }) {
         PlayerButton(
-            modifier = Modifier.width(width).height(height), player = player, rotation = rotation, component = component
+            modifier = Modifier.width(width).height(height), viewModel = playerButtonViewModel, rotation = rotation, onOpenDialog = {
+                //TODO: toggle blur
+            }
         )
     }
 }
@@ -192,10 +245,9 @@ fun AnimatedPlayerButton(
  * @param modifier The modifier to apply to the button
  * @param onMiddleButtonClick Callback for when the button is clicked
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun AnimatedMiddleButton(
-    modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit, visible: MutableState<Boolean>
+    modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit, visible: Boolean
 ) {
     var animationFinished by remember { mutableStateOf(false) }
 
@@ -207,9 +259,9 @@ fun AnimatedMiddleButton(
     val animatableAngle = remember { Animatable(0f) }
     val animatableScale = remember { Animatable(0f) }
 
-    LaunchedEffect(visible.value) {
+    LaunchedEffect(visible) {
         launch {
-            if (visible.value) {
+            if (visible) {
                 animatableAngle.animateTo(
                     targetValue = 360f, animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
                 )
@@ -219,7 +271,7 @@ fun AnimatedMiddleButton(
         }
 
         launch {
-            if (visible.value) {
+            if (visible) {
                 animationFinished = false
                 animatableScale.animateTo(
                     targetValue = 1f, animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)

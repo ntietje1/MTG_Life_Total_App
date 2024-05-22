@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -39,9 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import composable.lifecounter.LifeCounterComponent
-import data.SettingsManager
-import data.SettingsManager.startingLife
+import composable.lifecounter.DayNightState
+import composable.lifecounter.LifeCounterViewModel
 import getAnimationCorrectionFactor
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
@@ -75,19 +75,22 @@ private enum class MiddleButtonDialogState {
  * A dialog that allows the user to quickly interact with settings or move to other screens
  * @param modifier the modifier for this composable
  * @param onDismiss the action to perform when the dialog is dismissed
- * @param component the LifeCounterComponent
+ * @param viewModel the LifeCounterComponent
  * @param toggleTheme the action to perform when the theme is toggled
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun MiddleButtonDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    component: LifeCounterComponent,
-    toggleTheme: () -> Unit
+    viewModel: LifeCounterViewModel,
+    toggleTheme: () -> Unit,
+    goToPlayerSelectScreen: () -> Unit,
+    returnToLifeCounterScreen: () -> Unit,
+    setNumPlayers: (Int) -> Unit
 ) {
 
-    var state by remember { mutableStateOf(MiddleButtonDialogState.Default) }
+    val state by viewModel.state.collectAsState()
+    var middleButtonDialogState by remember { mutableStateOf(MiddleButtonDialogState.Default) }
     val backStack = remember { mutableStateListOf(onDismiss) }
     val haptic = LocalHapticFeedback.current
     val duration = (450 / getAnimationCorrectionFactor()).toInt()
@@ -95,14 +98,12 @@ fun MiddleButtonDialog(
 
     val enterAnimation = slideInHorizontally(
         TweenSpec(
-            duration,
-            easing = LinearOutSlowInEasing
+            duration, easing = LinearOutSlowInEasing
         )
     ) { (-it * 1.25).toInt() }
     val exitAnimation = slideOutHorizontally(
         TweenSpec(
-            duration,
-            easing = LinearOutSlowInEasing
+            duration, easing = LinearOutSlowInEasing
         )
     ) { (it * 1.25).toInt() }
 
@@ -111,17 +112,11 @@ fun MiddleButtonDialog(
         visible: Boolean, content: @Composable () -> Unit
     ) {
         AnimatedVisibility(
-            visible = visible,
-            enter = enterAnimation,
-            exit = exitAnimation
+            visible = visible, enter = enterAnimation, exit = exitAnimation
         ) {
             BoxWithConstraints(
-                modifier = modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f))
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+                modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f)).border(
+                        1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
                     ),
             ) {
                 content()
@@ -130,278 +125,214 @@ fun MiddleButtonDialog(
     }
 
     val dialogContent: @Composable () -> Unit = {
-//        BackHandler {
-//            backStack.removeLast().invoke()
-//        }
+
         BoxWithConstraints(
             modifier = modifier.fillMaxSize(),
         ) {
             val buttonModifier = Modifier.size(
                 min(
-                    maxWidth / 3,
-                    maxHeight / 4
+                    maxWidth / 3, maxHeight / 4
                 )
             )
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.CoinFlip
+                visible = middleButtonDialogState == MiddleButtonDialogState.CoinFlip
             ) {
                 CoinFlipDialogContent(
                     modifier = modifier,
-                    history = component.coinFlipHistory
+                    history = state.coinFlipHistory,
+                    addToHistory = { viewModel.addToCoinFlipHistory(it) },
+                    resetHistory = { viewModel.resetCoinFlipHistory() },
+                    fastCoinFlip = viewModel.settingsManager.fastCoinFlip
                 )
             }
 
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.PlayerNumber
+                visible = middleButtonDialogState == MiddleButtonDialogState.PlayerNumber
             ) {
-                PlayerNumberDialogContent(
-                    modifier = Modifier.fillMaxSize(),
-                    onDismiss = onDismiss,
-                    setPlayerNum = {
-                        component.setNumPlayers(it)
-                        component.resetPlayerStates()
-                                   },
-                    resetPlayers = { component.resetPlayerStates() },
-                    show4PlayerDialog = { state = MiddleButtonDialogState.FourPlayerLayout }
-                )
+                PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
+                    setNumPlayers(it)
+                    viewModel.resetPlayerStates()
+                    returnToLifeCounterScreen()
+                }, resetPlayers = {
+                    viewModel.resetPlayerStates()
+                    returnToLifeCounterScreen()
+                }, show4PlayerDialog = { middleButtonDialogState = MiddleButtonDialogState.FourPlayerLayout })
             }
 
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.FourPlayerLayout
+                visible = middleButtonDialogState == MiddleButtonDialogState.FourPlayerLayout
             ) {
-                FourPlayerLayoutContent(
-                    modifier = Modifier.fillMaxSize(),
-                    onDismiss = onDismiss,
-                    setPlayerNum = {
-                        component.setNumPlayers(it)
-                        component.resetPlayerStates()
-                                   },
-                    setAlt4PlayerLayout = { SettingsManager.alt4PlayerLayout = it }
-                )
+                FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
+                    setNumPlayers(it)
+                    viewModel.resetPlayerStates()
+                    returnToLifeCounterScreen()
+                }, setAlt4PlayerLayout = { viewModel.settingsManager.alt4PlayerLayout = it })
             }
 
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.StartingLife
+                visible = middleButtonDialogState == MiddleButtonDialogState.StartingLife
             ) {
-                StartingLifeDialogContent(
-                    modifier = Modifier.fillMaxSize(),
-                    onDismiss = onDismiss,
-                    setStartingLife = {
-                        startingLife = it
-                        component.resetPlayerStates()
-                    }
-                )
+                StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setStartingLife = {
+                    viewModel.settingsManager.startingLife = it
+                    viewModel.resetPlayerStates()
+                    returnToLifeCounterScreen()
+                })
             }
 
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.DiceRoll
+                visible = middleButtonDialogState == MiddleButtonDialogState.DiceRoll
             ) {
                 DiceRollDialogContent(Modifier.fillMaxSize())
             }
 
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.Counter
+                visible = middleButtonDialogState == MiddleButtonDialogState.Counter
             ) {
-                CounterDialogContent(
-                    modifier = Modifier.fillMaxSize(),
-                    counters = component.counters
-                )
+                CounterDialogContent(modifier = Modifier.fillMaxSize(),
+                    counters = state.counters,
+                    incrementCounter = { index, value -> viewModel.incrementCounter(index, value) },
+                    resetCounters = { viewModel.resetCounters() })
             }
 
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.Scryfall
+                visible = middleButtonDialogState == MiddleButtonDialogState.Scryfall
             ) {
                 ScryfallDialogContent(
                     Modifier.fillMaxSize(),
-                    player = null,
                     backStack = backStack,
                     selectButtonEnabled = false,
-                    rulingsButtonEnabled = true
+                    rulingsButtonEnabled = true,
+                    addToBackStack = { backStack.add(it) },
+                    onImageSelected = {}
                 )
             }
 
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.Settings
+                visible = middleButtonDialogState == MiddleButtonDialogState.Settings
             ) {
                 SettingsDialogContent(Modifier.fillMaxSize(),
-                    goToAboutMe = { state = MiddleButtonDialogState.AboutMe },
-                    addGoToSettingsToBackStack = { backStack.add { state = MiddleButtonDialogState.Settings } })
+                    goToAboutMe = { middleButtonDialogState = MiddleButtonDialogState.AboutMe },
+                    addGoToSettingsToBackStack = { backStack.add { middleButtonDialogState = MiddleButtonDialogState.Settings } })
             }
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.AboutMe
+                visible = middleButtonDialogState == MiddleButtonDialogState.AboutMe
             ) {
                 AboutMeDialogContent(
                     Modifier.fillMaxSize()
                 )
             }
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.PlaneChase
+                visible = middleButtonDialogState == MiddleButtonDialogState.PlaneChase
             ) {
-                PlaneChaseDialogContent(
-                    modifier = Modifier.fillMaxSize(),
-                    component = component,
-                    goToChoosePlanes = {
-                        state = MiddleButtonDialogState.PlanarDeck
-                        backStack.add { state = MiddleButtonDialogState.PlaneChase }
-                    }
+                PlaneChaseDialogContent(modifier = Modifier.fillMaxSize(), goToChoosePlanes = {
+                    middleButtonDialogState = MiddleButtonDialogState.PlanarDeck
+                    backStack.add { middleButtonDialogState = MiddleButtonDialogState.PlaneChase }
+                },
+                    backPlane = viewModel::backPlane,
+                    planeswalk = viewModel::planeswalk,
+                    currentPlane = viewModel::currentPlane,
                 )
             }
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.PlanarDeck
+                visible = middleButtonDialogState == MiddleButtonDialogState.PlanarDeck
             ) {
-                val choosePlanesActions = remember { ChoosePlanesActions(planarDeck = component.planarDeck, backStack = backStack, planarBackStack = component.planarBackStack) }
+                val choosePlanesActions = remember {
+                    ChoosePlanesActions(
+                        settingsManager = viewModel.settingsManager,
+                        planarDeck = state.planarDeck,
+                        backStack = backStack,
+                        planarBackStack = state.planarBackStack,
+                        selectPlane = viewModel::selectPlane,
+                        deselectPlane = viewModel::deselectPlane,
+                        addAllPlanarDeck = viewModel::addAllPlanarDeck,
+                        removeAllPlanarDeck = viewModel::removeAllPlanarDeck,
+                        addToBackStack = backStack::add,
+                    )
+                }
                 ChoosePlanesDialogContent(
-                    modifier = Modifier.fillMaxSize(),
-                    actions = choosePlanesActions
+                    modifier = Modifier.fillMaxSize(), actions = choosePlanesActions
                 )
             }
 
 
             FormattedAnimatedVisibility(
-                visible = state == MiddleButtonDialogState.Default
+                visible = middleButtonDialogState == MiddleButtonDialogState.Default
             ) {
-                GridDialogContent(
-                    Modifier.fillMaxSize(),
-                    title = "Settings",
-                    items = listOf(
-                        {
-                            SettingsButton(
-                                modifier = buttonModifier,
-                                imageVector = vectorResource(Res.drawable.player_select_icon),
-                                text = "Player Select",
-                                shadowEnabled = false,
-                                onPress = {
-                                    component.goToPlayerSelectScreen()
-                                    onDismiss()
-                                })
+                GridDialogContent(Modifier.fillMaxSize(), title = "Settings", items = listOf({
+                    SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
+                        goToPlayerSelectScreen()
+                        onDismiss()
+                    })
+                }, {
+                    SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.reset_icon), text = "Reset Game", shadowEnabled = false, onPress = {
+                        showResetDialog = true
+                    })
+                }, {
+                    SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
+                        middleButtonDialogState = MiddleButtonDialogState.StartingLife
+                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                    })
+                }, {
+                    SettingsButton(
+                        buttonModifier,
+                        imageVector = vectorResource(Res.drawable.star_icon_small),
+                        text = "Toggle Theme",
+                        shadowEnabled = false,
+                        onPress = {
+                            toggleTheme()
                         },
-                        {
-                            SettingsButton(
-                                modifier = buttonModifier,
-                               imageVector = vectorResource(Res.drawable.reset_icon),
-                                text = "Reset Game",
-                                shadowEnabled = false,
-                                onPress = {
-                                    showResetDialog = true
-                                })
-                        },
-                        {
-                            SettingsButton(
-                                modifier = buttonModifier,
-                               imageVector = vectorResource(Res.drawable.heart_solid_icon),
-                                text = "Starting Life",
-                                shadowEnabled = false,
-                                onPress = {
-                                    state = MiddleButtonDialogState.StartingLife
-                                    backStack.add { state = MiddleButtonDialogState.Default }
-                                })
-                        },
-                        {
-                            SettingsButton(
-                                buttonModifier,
-                               imageVector = vectorResource(Res.drawable.star_icon_small),
-                                text = "Toggle Theme",
-                                shadowEnabled = false,
-                                onPress = {
-                                    toggleTheme()
-                                },
-                            )
-                        },
-                        {
-                            SettingsButton(
-                                buttonModifier,
-                               imageVector = vectorResource(Res.drawable.player_count_icon),
-                                text = "Player Number",
-                                shadowEnabled = false,
-                                onPress = {
-                                    state = MiddleButtonDialogState.PlayerNumber
-                                    backStack.add { state = MiddleButtonDialogState.Default }
-                                })
-                        },
-                        {
-                            SettingsButton(
-                                buttonModifier,
-                               imageVector = vectorResource(Res.drawable.mana_icon),
-                                text = "Mana & Storm",
-                                shadowEnabled = false,
-                                onPress = {
-                                    state = MiddleButtonDialogState.Counter
-                                    backStack.add { state = MiddleButtonDialogState.Default }
-                                })
-                        },
-                        {
-                            SettingsButton(
-                                buttonModifier,
-                               imageVector = vectorResource(Res.drawable.six_icon),
-                                text = "Dice roll",
-                                shadowEnabled = false,
-                                onPress = {
-                                    state = MiddleButtonDialogState.DiceRoll
-                                    backStack.add { state = MiddleButtonDialogState.Default }
-                                })
-                        },
-                        {
-                            SettingsButton(
-                                buttonModifier,
-                               imageVector = vectorResource(Res.drawable.coin_icon),
-                                text = "Coin Flip",
-                                shadowEnabled = false,
-                                onPress = {
-                                    state = MiddleButtonDialogState.CoinFlip
-                                    backStack.add { state = MiddleButtonDialogState.Default }
-                                })
-                        },
-                        {
-                            SettingsButton(buttonModifier,
-                                imageVector = when (component.dayNight) {
-                                    LifeCounterComponent.DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
-                                    LifeCounterComponent.DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
-                                    LifeCounterComponent.DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
-                                },
-                                text = when (component.dayNight) {
-                                    LifeCounterComponent.DayNightState.DAY -> "Day/Night"
-                                    LifeCounterComponent.DayNightState.NIGHT -> "Day/Night"
-                                    LifeCounterComponent.DayNightState.NONE -> "Day/Night"
-                                },
-                                shadowEnabled = false,
-                                onPress = {
-                                    component.toggleDayNight()
-                                },
-                                onLongPress = {
-                                    component.dayNight = LifeCounterComponent.DayNightState.NONE
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                })
-                        },
-                        {
-                            SettingsButton(buttonModifier,
-                               imageVector = vectorResource(Res.drawable.search_icon),
-                                text = "Card Search",
-                                shadowEnabled = false,
-                                onPress = {
-                                    state = MiddleButtonDialogState.Scryfall
-                                    backStack.add { state = MiddleButtonDialogState.Default }
-                                })
-                        },
-                        {
-                            SettingsButton(buttonModifier,
-                               imageVector = vectorResource(Res.drawable.planeswalker_icon),
-                                text = "Planechase",
-                                shadowEnabled = false,
-                                onPress = {
-                                    state = MiddleButtonDialogState.PlaneChase
-                                    backStack.add { state = MiddleButtonDialogState.Default }
-                                })
-                        },
-                        {
-                            SettingsButton(buttonModifier,
-                               imageVector = vectorResource(Res.drawable.settings_icon_small),
-                                text = "Settings",
-                                shadowEnabled = false,
-                                onPress = {
-                                    state = MiddleButtonDialogState.Settings
-                                    backStack.add { state = MiddleButtonDialogState.Default }
-                                })
-                        })
+                    )
+                }, {
+                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.player_count_icon), text = "Player Number", shadowEnabled = false, onPress = {
+                        middleButtonDialogState = MiddleButtonDialogState.PlayerNumber
+                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                    })
+                }, {
+                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.mana_icon), text = "Mana & Storm", shadowEnabled = false, onPress = {
+                        middleButtonDialogState = MiddleButtonDialogState.Counter
+                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                    })
+                }, {
+                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.six_icon), text = "Dice roll", shadowEnabled = false, onPress = {
+                        middleButtonDialogState = MiddleButtonDialogState.DiceRoll
+                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                    })
+                }, {
+                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.coin_icon), text = "Coin Flip", shadowEnabled = false, onPress = {
+                        middleButtonDialogState = MiddleButtonDialogState.CoinFlip
+                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                    })
+                }, {
+                    SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
+                        DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
+                        DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
+                        DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
+                    }, text = when (state.dayNight) {
+                        DayNightState.DAY -> "Day/Night"
+                        DayNightState.NIGHT -> "Day/Night"
+                        DayNightState.NONE -> "Day/Night"
+                    }, shadowEnabled = false, onPress = {
+                        viewModel.toggleDayNight()
+                    }, onLongPress = {
+                        viewModel.setDayNight(DayNightState.NONE)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    })
+                }, {
+                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.search_icon), text = "Card Search", shadowEnabled = false, onPress = {
+                        middleButtonDialogState = MiddleButtonDialogState.Scryfall
+                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                    })
+                }, {
+                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.planeswalker_icon), text = "Planechase", shadowEnabled = false, onPress = {
+                        middleButtonDialogState = MiddleButtonDialogState.PlaneChase
+                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                    })
+                }, {
+                    SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.settings_icon_small), text = "Settings", shadowEnabled = false, onPress = {
+                        middleButtonDialogState = MiddleButtonDialogState.Settings
+                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                    })
+                })
                 )
             }
         }
@@ -415,27 +346,24 @@ fun MiddleButtonDialog(
             optionOneMessage = "Same players",
             optionTwoMessage = "Different players",
             onOptionOne = {
-                component.resetPlayerStates()
+                viewModel.resetPlayerStates()
                 showResetDialog = false
                 onDismiss()
             },
             onOptionTwo = {
-                component.resetCustomizations()
-                component.resetPlayerStates()
+                viewModel.resetAllPrefs()
+                viewModel.resetPlayerStates()
                 showResetDialog = false
                 onDismiss()
             },
         )
     }
 
-    SettingsDialog(
-        onDismiss = {
-            onDismiss()
-        },
-        content = dialogContent,
-        onBack = {
-            backStack.removeLast().invoke()
-        })
+    SettingsDialog(onDismiss = {
+        onDismiss()
+    }, content = dialogContent, onBack = {
+        backStack.removeLast().invoke()
+    })
 }
 
 /**
@@ -450,29 +378,18 @@ fun GridDialogContent(
 ) {
     Box(modifier = modifier) {
         Column(
-            Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.weight(0.05f))
             Text(
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .wrapContentWidth(),
-                text = title,
-                fontSize = 25.scaledSp,
-                color = MaterialTheme.colorScheme.onPrimary
+                modifier = Modifier.wrapContentHeight().wrapContentWidth(), text = title, fontSize = 25.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.weight(0.025f))
-            LazyVerticalGrid(modifier = Modifier
-                .padding(horizontal = 10.dp)
-                .wrapContentSize(),
-                columns = GridCells.Fixed(3),
-                content = {
-                    items(items.size) { index ->
-                        items[index]()
-                    }
-                })
+            LazyVerticalGrid(modifier = Modifier.padding(horizontal = 10.dp).wrapContentSize(), columns = GridCells.Fixed(3), content = {
+                items(items.size) { index ->
+                    items[index]()
+                }
+            })
             Spacer(modifier = Modifier.weight(0.075f))
         }
     }
@@ -489,41 +406,27 @@ fun GridDialogContent(
  */
 @Composable
 fun SettingsDialog(
-    modifier: Modifier = Modifier,
-    onDismiss: () -> Unit = {},
-    onBack: () -> Unit = {},
-    exitButtonEnabled: Boolean = true,
-    backButtonEnabled: Boolean = true,
-    content: @Composable () -> Unit = {}
+    modifier: Modifier = Modifier, onDismiss: () -> Unit = {}, onBack: () -> Unit = {}, exitButtonEnabled: Boolean = true, backButtonEnabled: Boolean = true, content: @Composable () -> Unit = {}
 ) {
     Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
+        onDismissRequest = onDismiss, properties = DialogProperties(
             dismissOnBackPress = true,
             usePlatformDefaultWidth = false,
         )
     ) {
         BoxWithConstraints(
-            modifier = modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
+            modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)), contentAlignment = Alignment.Center
         ) {
             val buttonSize = maxHeight / 15f
 
             Column(Modifier.fillMaxSize()) {
                 if (exitButtonEnabled) {
                     Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        horizontalArrangement = Arrangement.End
+                        Modifier.fillMaxWidth().wrapContentHeight(), horizontalArrangement = Arrangement.End
                     ) {
 
                         ExitButton(
-                            Modifier.size(buttonSize),
-                            onDismiss = onDismiss,
-                            visible = exitButtonEnabled
+                            Modifier.size(buttonSize), onDismiss = onDismiss, visible = exitButtonEnabled
                         )
                     }
                 }
@@ -535,15 +438,10 @@ fun SettingsDialog(
 
                 if (backButtonEnabled) {
                     Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        Modifier.fillMaxWidth().wrapContentHeight(), horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         BackButton(
-                            Modifier.size(buttonSize),
-                            onBack = onBack,
-                            visible = backButtonEnabled
+                            Modifier.size(buttonSize), onBack = onBack, visible = backButtonEnabled
                         )
                     }
                 }
@@ -563,13 +461,7 @@ fun SettingsDialog(
 @Composable
 fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Unit) {
     SettingsButton(
-        modifier = modifier,
-        backgroundColor = Color.Transparent,
-        text = "",
-        visible = visible,
-        shadowEnabled = false,
-       imageVector = vectorResource(Res.drawable.back_icon_alt),
-        onTap = onBack
+        modifier = modifier, backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageVector = vectorResource(Res.drawable.back_icon_alt), onTap = onBack
     )
 }
 
@@ -585,12 +477,7 @@ fun ExitButton(modifier: Modifier = Modifier, visible: Boolean, onDismiss: () ->
     SettingsButton(
         modifier = modifier,
 
-        backgroundColor = Color.Transparent,
-        text = "",
-        visible = visible,
-        shadowEnabled = false,
-       imageVector = vectorResource(Res.drawable.x_icon),
-        onTap = onDismiss
+        backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageVector = vectorResource(Res.drawable.x_icon), onTap = onDismiss
     )
 }
 

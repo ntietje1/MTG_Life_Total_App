@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -34,8 +36,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import composable.dialog.SettingsButton
 import composable.modifier.routePointerChangesTo
 import composable.playerselect.PlayerSelectScreenValues.deselectDuration
@@ -48,6 +51,7 @@ import composable.playerselect.PlayerSelectScreenValues.pulseDuration1
 import composable.playerselect.PlayerSelectScreenValues.pulseDuration2
 import composable.playerselect.PlayerSelectScreenValues.pulseFreq
 import composable.playerselect.PlayerSelectScreenValues.selectionDelay
+import composable.playerselect.PlayerSelectScreenValues.showHelperTextDelay
 import getAnimationCorrectionFactor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -56,35 +60,43 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.skip_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.allPlayerColors
+import theme.scaledSp
 import kotlin.coroutines.coroutineContext
 import kotlin.math.pow
 import kotlin.native.concurrent.ThreadLocal
 
 /**
  * Screen for selecting players
- * @param component The PlayerSelectComponent to use for state and navigation
  */
 @Composable
-fun PlayerSelectScreen(component: PlayerSelectComponent) {
+fun PlayerSelectScreen(
+    viewModel: PlayerSelectViewModel,
+    goToLifeCounterScreen: () -> Unit,
+    setNumPlayers: (Int) -> Unit
+) {
+    val timer by viewModel.timer.collectAsState()
+    val state by viewModel.state.collectAsState()
+    println("Timer: $timer")
+
     Box(Modifier.fillMaxSize()) {
         PlayerSelectScreenValues.animScale = getAnimationCorrectionFactor()
-        PlayerSelectScreenBase(component) {
-            component.setHelperText(it)
-        }
 
-        val state by component.state.subscribeAsState()
+        PlayerSelectScreenBase(
+            setHelperText = { viewModel.setHelperText(it) },
+            goToLifeCounterScreen = goToLifeCounterScreen,
+            setNumPlayers = setNumPlayers
+        )
 
         if (state.showHelperText) {
-            //TODO: readd this once not broken
-//            Text(
-//                text = "Tap to select player",
-//                color = MaterialTheme.colorScheme.onPrimary,
-//                fontSize = 40.scaledSp,
-//                lineHeight = 50.scaledSp,
-//                fontWeight = FontWeight.Bold,
-//                textAlign = TextAlign.Center,
-//                modifier = Modifier.align(Alignment.Center).rotate(90f)
-//            )
+            Text(
+                text = "Tap to select player",
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 40.scaledSp,
+                lineHeight = 50.scaledSp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.Center).rotate(90f)
+            )
 
             SettingsButton(modifier = Modifier.rotate(90f).align(Alignment.TopEnd).size(100.dp),
                 shape = RoundedCornerShape(30.dp),
@@ -94,7 +106,7 @@ fun PlayerSelectScreen(component: PlayerSelectComponent) {
                 shadowEnabled = false,
                 imageVector = vectorResource(Res.drawable.skip_icon),
                 onTap = {
-                    component.goToLifeCounterScreen()
+                    goToLifeCounterScreen()
                 }) {}
         }
     }
@@ -129,12 +141,13 @@ private object PlayerSelectScreenValues {
 
 /**
  * Base of the PlayerSelectScreen
- * @param component The PlayerSelectComponent to use for state and navigation.
  * @param showHelperText Whether or not to show the helper text.
  */
 @Composable
 fun PlayerSelectScreenBase(
-    component: PlayerSelectComponent, setHelperText: (Boolean) -> Unit
+    setHelperText: (Boolean) -> Unit,
+    goToLifeCounterScreen: () -> Unit,
+    setNumPlayers: (Int) -> Unit
 ) {
     val circles = remember { mutableStateMapOf<PointerId, Circle>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
@@ -213,7 +226,7 @@ fun PlayerSelectScreenBase(
             if (circles.size == 1 && selectedId != null) {
                 launch {
                     circle?.growToScreen {
-                        component.goToLifeCounterScreen()
+                        goToLifeCounterScreen()
                     }
                 }
             } else {
@@ -224,7 +237,7 @@ fun PlayerSelectScreenBase(
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
         routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
-            //TODO: this used to be a fix, but now seems to not be necessary and also is broken
+            //this used to be a fix, but now seems to not be necessary and also is broken
 //            for (id in circles.keys) {
 //                if (!it.contains(id)) {
 //                    disappearCircle(id)
@@ -237,21 +250,20 @@ fun PlayerSelectScreenBase(
             val pulseScope = CoroutineScope(coroutineContext)
             val helperTextScope = CoroutineScope(coroutineContext)
 
-            //TODO: this is broken for some reason
             if (circles.size == 0) {
-//                helperTextScope.launch {
-//                    delay(showHelperTextDelay)
-//                setHelperText(true)
-//                }
+                helperTextScope.launch {
+                    delay(showHelperTextDelay)
+                setHelperText(true)
+                }
             } else {
-//                setHelperText(false)
+                setHelperText(false)
             }
 
             if (circles.size >= 2) {
                 selectionScope.launch {
                     delay(selectionDelay)
                     selectedId = circles.keys.random()
-                    component.setNumPlayers(circles.size)
+                    setNumPlayers(circles.size)
                     for (id in circles.keys) {
                         if (selectedId != id) launch {
                             disappearCircle(id, finalDeselectDuration)

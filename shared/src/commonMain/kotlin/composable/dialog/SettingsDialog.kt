@@ -49,6 +49,7 @@ import lifelinked.shared.generated.resources.sun_icon
 import lifelinked.shared.generated.resources.thumbsup_icon
 import lifelinked.shared.generated.resources.visible_icon
 import org.jetbrains.compose.resources.vectorResource
+import org.koin.compose.koinInject
 import theme.blendWith
 import theme.scaledSp
 
@@ -60,7 +61,10 @@ import theme.scaledSp
  */
 @Composable
 fun SettingsDialogContent(
-    modifier: Modifier = Modifier, goToAboutMe: () -> Unit, addGoToSettingsToBackStack: () -> Unit
+    modifier: Modifier = Modifier,
+    goToAboutMe: () -> Unit,
+    addGoToSettingsToBackStack: () -> Unit,
+    settingsManager: SettingsManager = koinInject() //TODO: move this
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -81,32 +85,32 @@ fun SettingsDialogContent(
                 ) {
                     SettingsDialogButtonWithToggle(
                         text = "Fast Coin Flip",
-                        initialState = SettingsManager.fastCoinFlip,
-                        toggle = { SettingsManager.fastCoinFlip = it },
+                        initialState = settingsManager.fastCoinFlip,
+                        toggle = { settingsManager.fastCoinFlip = it },
                         icon = vectorResource(Res.drawable.coin_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Disable Camera Roll",
-                        initialState = SettingsManager.cameraRollDisabled,
-                        toggle = { SettingsManager.cameraRollDisabled = it },
+                        initialState = settingsManager.cameraRollDisabled,
+                        toggle = { settingsManager.cameraRollDisabled = it },
                         icon = vectorResource(Res.drawable.invisible_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Auto KO",
-                        initialState = SettingsManager.autoKo,
-                        toggle = { SettingsManager.autoKo = it },
+                        initialState = settingsManager.autoKo,
+                        toggle = { settingsManager.autoKo = it },
                         icon = vectorResource(Res.drawable.skull_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Auto Skip Player Select",
-                        initialState = SettingsManager.autoSkip,
-                        toggle = { SettingsManager.autoSkip = it },
+                        initialState = settingsManager.autoSkip,
+                        toggle = { settingsManager.autoSkip = it },
                         icon = vectorResource(Res.drawable.player_select_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         text = "Keep Screen On (requires restart)",
-                        initialState = SettingsManager.keepScreenOn,
-                        toggle = { SettingsManager.keepScreenOn = it },
+                        initialState = settingsManager.keepScreenOn,
+                        toggle = { settingsManager.keepScreenOn = it },
                         icon = vectorResource(Res.drawable.sun_icon)
                     )
                     SettingsDialogButton(
