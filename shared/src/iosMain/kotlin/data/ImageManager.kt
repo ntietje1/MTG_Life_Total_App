@@ -6,19 +6,9 @@ import kotlinx.coroutines.Dispatchers
 import platform.Foundation.*
 
 /**
- * Initializes the ImageStorage class with platform-specific implementations
- * @return The initialized ImageStorage
- */
-@Composable
-actual fun initImageManager(): ImageStorage {
-    return ImageStorage()
-}
-
-/**
  * Actual implementation of ImageStorage on IOS
  */
-actual class ImageStorage {
-
+actual class ImageManager {
     /**
      * @param uri the path to the temporarily available image
      * @param fileName the name to use for the file
