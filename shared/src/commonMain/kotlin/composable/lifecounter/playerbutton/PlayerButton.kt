@@ -1,4 +1,4 @@
-package composable.lifecounter
+package composable.lifecounter.playerbutton
 
 
 import androidx.compose.foundation.background
@@ -43,13 +43,14 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,15 +76,13 @@ import composable.dialog.ColorDialog
 import composable.dialog.ScryfallSearchDialog
 import composable.dialog.SettingsButton
 import composable.dialog.WarningDialog
+import composable.lifecounter.CounterType
 import composable.modifier.VerticalRotation
 import composable.modifier.animatedBorderCard
 import composable.modifier.bounceClick
 import composable.modifier.repeatingClickable
 import composable.modifier.rotateVertically
 import data.Player
-import data.SettingsManager
-import data.SettingsManager.cameraRollDisabled
-import data.initImageManager
 import getAnimationCorrectionFactor
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
@@ -117,7 +116,6 @@ import theme.deadReceiverColorMatrix
 import theme.deadSettingsColorMatrix
 import theme.dealerColorMatrix
 import theme.ghostify
-import theme.invert
 import theme.normalColorMatrix
 import theme.receiverColorMatrix
 import theme.saturateColor
@@ -126,65 +124,48 @@ import theme.settingsColorMatrix
 import theme.textShadowStyle
 import kotlin.math.min
 
-/**
- * Possible states for the [PlayerButton]  composable
- */
-enum class PlayerButtonState {
-    NORMAL, COMMANDER_DEALER, COMMANDER_RECEIVER, SETTINGS
-}
-
-/**
- * Player Button composable
- * @param modifier Modifier to apply to the layout
- * @param player The player to display
- * @param initialState The initial state of the button
- * @param rotation The rotation of the button
- * @param component The [LifeCounterComponent] that this button belongs to
- * @return The composable
- */
 @Composable
 fun PlayerButton(
-    modifier: Modifier = Modifier, player: Player, initialState: PlayerButtonState = PlayerButtonState.NORMAL, rotation: Float = 0f, component: LifeCounterComponent
+    modifier: Modifier = Modifier,
+    viewModel: PlayerButtonViewModel,
+    rotation: Float = 0f,
+    onOpenDialog: (Boolean) -> Unit,
 ) {
-    val haptic = LocalHapticFeedback.current
+    val state by viewModel.state.collectAsState()
+    val currentDealerIsPartnered by viewModel.currentDealerIsPartnered.collectAsState()
 
-    val imageManager = initImageManager()
-    var showScryfallSearch by remember { mutableStateOf(false) }
+    val haptic = LocalHapticFeedback.current
     val backStack = remember { mutableStateListOf<() -> Unit>() }
+
+    val scope = rememberCoroutineScope()
+
+    val commanderButtonVisible by remember { derivedStateOf {
+        state.buttonState in listOf(PBState.NORMAL, PBState.COMMANDER_DEALER)
+    }}
+    val settingsButtonVisible by remember { derivedStateOf {
+        state.buttonState in listOf(PBState.NORMAL, PBState.SETTINGS)
+    }}
+
     val scryfallBackStack = remember {
         mutableStateListOf({
-            showScryfallSearch = false
-            component.blurBackground.value = false
+            viewModel.showScryfallSearch(false)
+            onOpenDialog(false)
         })
     }
-    val state = remember { mutableStateOf(initialState) }
-    component.registerButtonState(state)
-    val commanderButtonVisible = state.value in listOf(
-        PlayerButtonState.NORMAL,
-        PlayerButtonState.COMMANDER_DEALER
-    )
-    val settingsButtonVisible = state.value in listOf(
-        PlayerButtonState.NORMAL,
-        PlayerButtonState.SETTINGS
-    )
-    val scope = rememberCoroutineScope()
-    var showFilePicker by remember { mutableStateOf(false) }
-    var showCameraWarning by remember { mutableStateOf(false) }
-    var showResetPrefsDialog by remember { mutableStateOf(false) }
 
     val fileType = listOf("jpg", "png")
-    FilePicker(show = showFilePicker, fileExtensions = fileType) { file ->
-        showFilePicker = false
+    FilePicker(show = state.showFilePicker, fileExtensions = fileType) { file ->
+        viewModel.showFilePicker(false)
         if (file != null) {
-            scope.launch {
-                val copiedUri = imageManager.copyImageToLocalStorage(file.path, player.name)
-                player.imageUri = copiedUri
-                SettingsManager.savePlayerPref(player)
+            scope.launch { //TODO: move to viewmodel
+                val copiedUri = viewModel.imageManager.copyImageToLocalStorage(file.path, state.player.name)
+                viewModel.setImageUri(copiedUri)
+                viewModel.savePlayerPref()
             }
         }
     }
 
-    if (showResetPrefsDialog) {
+    if (state.showResetPrefsDialog) {
         WarningDialog(
             title = "Reset Preferences",
             message = "Are you sure you want to reset your customizations?",
@@ -193,24 +174,24 @@ fun PlayerButton(
             optionOneMessage = "Reset",
             optionTwoMessage = "Cancel",
             onOptionOne = {
-                component.resetPlayerPrefs(player)
-                showResetPrefsDialog = false
+                viewModel.resetPlayerPref()
+                viewModel.showResetPrefsDialog(false)
             },
             onDismiss = {
-                showResetPrefsDialog = false
+                viewModel.showResetPrefsDialog(false)
             }
         )
     }
 
-    if (showCameraWarning) {
-        if (cameraRollDisabled) {
+    if (state.showCameraWarning) {
+        if (viewModel.settingsManager.cameraRollDisabled) {
             WarningDialog(
                 title = "Info",
                 message = "Camera roll access is disabled. Enable in settings.",
                 optionOneEnabled = false,
                 optionTwoEnabled = true,
                 onDismiss = {
-                    showCameraWarning = false
+                    viewModel.showCameraWarning(false)
                 }
             )
         } else {
@@ -222,18 +203,18 @@ fun PlayerButton(
                 optionOneMessage = "Proceed",
                 optionTwoMessage = "Cancel",
                 onOptionOne = {
-                    showFilePicker = true
-                    showCameraWarning = false
+                    viewModel.showFilePicker(true)
+                    viewModel.showCameraWarning(false)
                 },
                 onDismiss = {
-                    showCameraWarning = false
+                    viewModel.showCameraWarning(false)
                 }
             )
         }
     }
 
-    LaunchedEffect(state.value) {
-        if (state.value == PlayerButtonState.COMMANDER_RECEIVER) backStack.clear()
+    LaunchedEffect(state.buttonState) {
+        if (state.buttonState == PBState.COMMANDER_RECEIVER) backStack.clear()
     }
 
     BoxWithConstraints(
@@ -245,38 +226,46 @@ fun PlayerButton(
                 else -> Modifier
             }
         ).then(
-            if (state.value == PlayerButtonState.NORMAL || state.value == PlayerButtonState.COMMANDER_RECEIVER) {
+            if (state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) {
                 Modifier.bounceClick()
             } else {
                 Modifier
             }
         )
     ) {
-        if (showScryfallSearch) {
+        if (state.showScryfallSearch) {
             ScryfallSearchDialog(
                 modifier = Modifier.onGloballyPositioned { _ ->
-                    component.blurBackground.value = true
+                    onOpenDialog(true)
                 },
                 onDismiss = {
-                    showScryfallSearch = false
-                    component.blurBackground.value = false
+                    viewModel.showScryfallSearch(false)
+                    onOpenDialog(false)
                 },
                 backStack = scryfallBackStack,
-                player = player
+                addToBackStack = {
+                    scryfallBackStack.add(it)
+                },
+                onImageSelected = {
+                    viewModel.setImageUri(it)
+                    viewModel.savePlayerPref()
+                }
             )
         }
 
         MonarchyIndicator(
             modifier = modifier,
-            monarch = player.monarch
+            monarch = state.player.monarch
         ) {
             BoxWithConstraints(
                 modifier = Modifier.fillMaxSize().background(Color.Transparent).clip(RoundedCornerShape(30.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 PlayerButtonBackground(
-                    player = player,
-                    state = state.value
+                    state = state.buttonState,
+                    imageUri = state.player.imageUri,
+                    color = state.player.color,
+                    isDead = viewModel.isDead(),
                 )
 
 
@@ -296,57 +285,54 @@ fun PlayerButton(
                 ) else Modifier.padding(
                     top = smallButtonSize / 2
                 )
-                if (!player.setDead) {
-                    when (state.value) {
-                        PlayerButtonState.NORMAL -> {
+                if (!state.player.setDead) {
+                    when (state.buttonState) {
+                        PBState.NORMAL -> {
                             LifeChangeButtons(Modifier.fillMaxWidth(),
                                 onIncrementLife = {
-                                    player.incrementLife(1)
+                                    viewModel.incrementLife(1)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 },
                                 onDecrementLife = {
-                                    player.incrementLife(-1)
+                                    viewModel.incrementLife(-1)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 })
                         }
 
-                        PlayerButtonState.COMMANDER_RECEIVER -> {
+                        PBState.COMMANDER_RECEIVER -> {
                             Row(Modifier.fillMaxSize()) {
-                                LifeChangeButtons(Modifier.then(if (component.currentDealerIsPartnered()) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()),
+                                LifeChangeButtons(Modifier.then(if (currentDealerIsPartnered) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()),
                                     onIncrementLife = {
-                                        component.currentDealer?.incrementCommanderDamage(
-                                            player,
-                                            1
+                                        viewModel.incrementCommanderDamage(
+                                            value = 1
                                         )
-                                        player.incrementLife(-1)
+                                        viewModel.incrementLife(-1)
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     },
                                     onDecrementLife = {
-                                        component.currentDealer?.incrementCommanderDamage(
-                                            player,
-                                            -1
+                                        viewModel.incrementCommanderDamage(
+                                            value = -1
                                         )
-                                        player.incrementLife(1)
+                                        viewModel.incrementLife(1)
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     })
-                                if (component.currentDealerIsPartnered()) {
+                                if (currentDealerIsPartnered) {
                                     LifeChangeButtons(Modifier.fillMaxWidth(),
                                         onIncrementLife = {
-                                            component.currentDealer?.incrementCommanderDamage(
-                                                player,
-                                                1,
-                                                true
+                                            viewModel.incrementCommanderDamage(
+                                                value = 1,
+                                                partner = true
                                             )
-                                            player.incrementLife(-1)
+                                            viewModel.incrementLife(-1)
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         },
                                         onDecrementLife = {
-                                            component.currentDealer?.incrementCommanderDamage(
-                                                player,
-                                                -1,
-                                                true
+                                            viewModel.incrementCommanderDamage(
+                                                viewModel,
+                                                value = -1,
+                                                partner = true
                                             )
-                                            player.incrementLife(1)
+                                            viewModel.incrementLife(1)
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         })
                                 }
@@ -363,7 +349,7 @@ fun PlayerButton(
                     SettingsButton(
                         modifier = playerInfoPadding.align(Alignment.Center).size(smallButtonSize * 4).padding(top = maxHeight / 9f),
                         backgroundColor = Color.Transparent,
-                        mainColor = player.textColor,
+                        mainColor = state.player.textColor,
                         imageVector = vectorResource(Res.drawable.skull_icon),
                         enabled = false
                     )
@@ -372,34 +358,41 @@ fun PlayerButton(
                 @Composable
                 fun PlayerButtonContent(modifier: Modifier = Modifier) {
                     Box(modifier.fillMaxSize()) {
-                        when (state.value) {
-                            PlayerButtonState.NORMAL -> {
-                                if (player.setDead || (SettingsManager.autoKo && player.isDead)) {
+                        when (state.buttonState) {
+                            PBState.NORMAL -> {
+                                if (viewModel.isDead()) {
                                     Skull()
                                 } else {
                                     LifeNumber(
                                         modifier = playerInfoPadding.fillMaxSize(),
-                                        player = player
+                                        name = state.player.name,
+                                        textColor = state.player.textColor,
+                                        largeText = state.player.life.toString(),
+                                        recentChangeText = if (state.player.recentChange == 0) "" else if (state.player.recentChange > 0) "+${state.player.recentChange}" else "${state.player.recentChange}",
                                     )
                                 }
                             }
 
-                            PlayerButtonState.COMMANDER_RECEIVER -> {
-                                if (player.setDead || (SettingsManager.autoKo && player.isDead)) {
+                            PBState.COMMANDER_RECEIVER -> {
+                                if (viewModel.isDead()) {
                                     Skull()
                                 } else {
                                     CommanderDamageNumber(
                                         modifier = playerInfoPadding.fillMaxSize(),
-                                        player = player,
-                                        currentDealer = component.currentDealer,
-                                        partnerMode = component.currentDealerIsPartnered()
+                                        name = state.player.name,
+                                        textColor = state.player.textColor,
+                                        firstValue = viewModel.getCommanderDamage(
+                                            partner = false
+                                        ).toString(),
+                                        secondValue = if (currentDealerIsPartnered) viewModel.getCommanderDamage(
+                                            partner = true
+                                        ).toString() else null,
                                     )
                                 }
-
                             }
 
-                            PlayerButtonState.COMMANDER_DEALER -> {
-                                val iconResource = if (component.currentDealerIsPartnered()) Res.drawable.sword_icon_double else Res.drawable.sword_icon
+                            PBState.COMMANDER_DEALER -> {
+                                val iconResource = if (currentDealerIsPartnered) Res.drawable.sword_icon_double else Res.drawable.sword_icon
                                 Column(
                                     Modifier.fillMaxSize(),
                                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -409,7 +402,7 @@ fun PlayerButton(
                                     Text(
                                         modifier = Modifier,
                                         text = "Deal damage with your commander",
-                                        color = player.textColor,
+                                        color = state.player.textColor,
                                         fontSize = 20.scaledSp,
                                         lineHeight = 20.scaledSp,
                                         textAlign = TextAlign.Center
@@ -418,14 +411,14 @@ fun PlayerButton(
                                     SettingsButton(modifier = Modifier.size(smallButtonSize),
                                         imageVector = vectorResource(iconResource),
                                         backgroundColor = Color.Transparent,
-                                        mainColor = player.textColor,
+                                        mainColor = state.player.textColor,
                                         onPress = {
-                                            player.partnerMode = !player.partnerMode
+                                            viewModel.togglePartnerMode()
                                         })
                                     Text(
                                         modifier = Modifier.wrapContentSize(unbounded = true),
                                         text = "Toggle Partner Mode",
-                                        color = player.textColor,
+                                        color = state.player.textColor,
                                         fontSize = 10.scaledSp,
                                         textAlign = TextAlign.Center
                                     )
@@ -433,22 +426,30 @@ fun PlayerButton(
 
                             }
 
-                            PlayerButtonState.SETTINGS -> {
+                            PBState.SETTINGS -> {
                                 SettingsMenu(
                                     modifier = settingsPadding,
-                                    player = player,
-                                    backStack = backStack,
-                                    onMonarchyButtonClick = { component.toggleMonarch(player) },
-                                    onFromCameraRollButtonClick = { showCameraWarning = true },
-                                    closeSettingsMenu = { state.value = PlayerButtonState.NORMAL },
-                                    onScryfallButtonClick = {
-                                        showScryfallSearch = !showScryfallSearch
-                                    },
-                                    onResetPrefsClick = {
-                                        showResetPrefsDialog = true
-//                                        component.resetPlayerPrefs(player)
-                                                        },
-                                    setBlurBackground = { component.blurBackground.value = it },
+                                    player = state.player,
+                                    addToBackStack = { backStack.add(it) },
+                                    clearBackStack = { backStack.clear() },
+                                    onMonarchyButtonClick = { viewModel.onMonarchyButtonClicked(null) },
+                                    onFromCameraRollButtonClick = { viewModel.showCameraWarning(true) },
+                                    closeSettingsMenu = { viewModel.setPlayerButtonState(PBState.NORMAL) },
+                                    onScryfallButtonClick = { viewModel.showScryfallSearch(!state.showScryfallSearch) },
+                                    onResetPrefsClick = { viewModel.showResetPrefsDialog(true) },
+                                    setBlurBackground = onOpenDialog, //TODO: this is broken. Also add to all other dialog methods
+                                    savePlayerPref = { viewModel.savePlayerPref() },
+                                    loadPlayerPrefs = viewModel.settingsManager::loadPlayerPrefs,
+                                    deletePlayerPref = viewModel.settingsManager::deletePlayerPref,
+                                    getCounterValue = viewModel::getCounterValue,
+                                    incrementCounterValue = viewModel::incrementCounterValue,
+                                    setActiveCounter = viewModel::setActiveCounter,
+                                    toggleSetDead = viewModel::toggleSetDead,
+                                    copyPlayerPrefs = viewModel::copySettings,
+                                    onChangeName = viewModel::setName,
+                                    onChangeTextColor = viewModel::setTextColor,
+                                    onChangeImageUri = viewModel::setImageUri,
+                                    onChangeBackgroundColor = viewModel::setBackgroundColor,
                                 )
                             }
                         }
@@ -462,7 +463,7 @@ fun PlayerButton(
                         bottom = settingsStateMargin
                     ),
                         backgroundColor = Color.Transparent,
-                        mainColor = player.textColor,
+                        mainColor = state.player.textColor,
                         visible = backStack.isNotEmpty(),
                         imageVector = vectorResource(Res.drawable.back_icon),
                         onPress = { backStack.removeLast().invoke() })
@@ -477,25 +478,10 @@ fun PlayerButton(
                         ),
                         visible = commanderButtonVisible,
                         iconResource = Res.drawable.commander_solid_icon,
-                        color = player.textColor,
+                        color = state.player.textColor,
                         size = smallButtonSize
                     ) {
-                        state.value = when (state.value) {
-                            PlayerButtonState.NORMAL -> {
-                                println("currentDealer: ${component.currentDealer?.name}")
-                                component.currentDealer = player
-                                println("currentDealer: ${component.currentDealer?.name}")
-                                component.updateAllStates(PlayerButtonState.COMMANDER_RECEIVER)
-                                PlayerButtonState.COMMANDER_DEALER
-                            }
-
-                            PlayerButtonState.COMMANDER_DEALER -> {
-                                component.updateAllStates(PlayerButtonState.NORMAL)
-                                PlayerButtonState.NORMAL
-                            }
-
-                            else -> throw Exception("Invalid state for commanderButtonOnClick")
-                        }
+                        viewModel.onCommanderButtonClicked()
                     }
                 }
 
@@ -513,7 +499,7 @@ fun PlayerButton(
                             ),
                             visible = false,
                             iconResource = Res.drawable.commander_solid_icon,
-                            color = player.textColor,
+                            color = state.player.textColor,
                             size = smallButtonSize
                         ) {}
                     }
@@ -528,20 +514,17 @@ fun PlayerButton(
                         ),
                         visible = settingsButtonVisible,
                         iconResource = Res.drawable.settings_icon,
-                        color = player.textColor,
+                        color = state.player.textColor,
                         size = smallButtonSize
                     ) {
-                        when (state.value) {
-                            PlayerButtonState.SETTINGS -> {
-                                state.value = PlayerButtonState.NORMAL
+                        viewModel.onSettingsButtonClicked()
+                        when (state.buttonState) { //TODO: move this out
+                            PBState.SETTINGS -> {
                                 backStack.clear()
                             }
-
-                            PlayerButtonState.NORMAL -> {
-                                state.value = PlayerButtonState.SETTINGS
-                                backStack.add { state.value = PlayerButtonState.NORMAL }
+                            PBState.NORMAL -> {
+                                backStack.add { viewModel.setPlayerButtonState(PBState.NORMAL) }
                             }
-
                             else -> throw Exception("Invalid state for settingsButtonOnClick")
                         }
                     }
@@ -577,12 +560,6 @@ fun PlayerButton(
     }
 }
 
-/**
- * Monarchy indicator composable
- * @param modifier Modifier to apply to the layout
- * @param monarch Whether or not the player is the monarch
- * @param content The content to display
- */
 @Composable
 fun MonarchyIndicator(
     modifier: Modifier = Modifier, monarch: Boolean = false, content: @Composable () -> Unit = {}
@@ -640,22 +617,18 @@ fun MonarchyIndicator(
     }
 }
 
-/**
- * Possible states for the [Counters] composable
- */
 private enum class CounterMenuState {
     DEFAULT, ADD_COUNTER
 }
-
-/**
- * Settings menu composable
- * @param modifier Modifier to apply to the layout
- * @param player The player to display
- * @param backStack The back stack for the settings menu
- */
 @Composable
 fun Counters(
-    modifier: Modifier = Modifier, player: Player, backStack: SnapshotStateList<() -> Unit>
+    modifier: Modifier = Modifier,
+    textColor: Color,
+    activeCounters: List<CounterType>,
+    getCounterValue: (CounterType) -> Int,
+    incrementCounterValue: (CounterType, Int) -> Unit,
+    setActiveCounter: (CounterType, Boolean) -> Unit,
+    addToBackStack: (() -> Unit) -> Unit
 ) {
     var state by remember { mutableStateOf(CounterMenuState.DEFAULT) }
     val haptic = LocalHapticFeedback.current
@@ -672,7 +645,7 @@ fun Counters(
                     bottom = smallPadding / 2f
                 ),
                 text = if (state == CounterMenuState.DEFAULT) "Counters" else "Select Counters",
-                color = player.textColor,
+                color = textColor,
                 fontSize = smallTextSize,
                 textAlign = TextAlign.Center
             )
@@ -682,7 +655,7 @@ fun Counters(
                     shape = RoundedCornerShape(25.dp)
                 ).border(
                     0.5.dp,
-                    player.textColor.copy(alpha = 0.9f),
+                    textColor.copy(alpha = 0.9f),
                     RoundedCornerShape(25.dp)
                 ).clip(RoundedCornerShape(25.dp))
             ) {
@@ -692,18 +665,19 @@ fun Counters(
                             Modifier.fillMaxSize().padding(5.dp),
                             horizontalArrangement = Arrangement.Center,
                         ) {
-                            items(player.activeCounters) { counterType ->
-                                Counter(player = player,
+                            items(activeCounters) { counterType ->
+                                Counter(
+                                    textColor = textColor,
                                     iconResource = counterType.resource,
-                                    value = player.getCounterValue(counterType),
+                                    value = getCounterValue(counterType),
                                     onIncrement = {
-                                        player.incrementCounterValue(
+                                        incrementCounterValue(
                                             counterType,
                                             1
                                         )
                                     },
                                     onDecrement = {
-                                        player.incrementCounterValue(
+                                        incrementCounterValue(
                                             counterType,
                                             -1
                                         )
@@ -711,10 +685,10 @@ fun Counters(
                             }
                             item {
                                 AddCounter(
-                                    player = player,
+                                    textColor = textColor,
                                     onTap = {
                                         state = CounterMenuState.ADD_COUNTER
-                                        backStack.add { state = CounterMenuState.DEFAULT }
+                                        addToBackStack { state = CounterMenuState.DEFAULT }
                                     },
                                 )
                             }
@@ -732,20 +706,20 @@ fun Counters(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                items(CounterType.values()) { counterType ->
+                                items(CounterType.entries.toTypedArray()) { counterType ->
                                     Box(modifier = Modifier.fillMaxSize().aspectRatio(1.0f).padding(0.5.dp).background(
-                                        if (counterType in player.activeCounters) {
+                                        if (counterType in activeCounters) {
                                             Color.Green.copy(alpha = 0.5f)
                                         } else {
                                             Color.Transparent
                                         }
                                     ).pointerInput(Unit) {
                                         detectTapGestures {
-                                            if (counterType in player.activeCounters) {
-                                                player.activeCounters.remove(counterType)
+                                            if (counterType in activeCounters) {
+                                                setActiveCounter(counterType, false)
                                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             } else {
-                                                player.activeCounters.add(counterType)
+                                                setActiveCounter(counterType, true)
                                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             }
                                         }
@@ -753,7 +727,7 @@ fun Counters(
                                         SettingsButton(
                                             imageVector = vectorResource(counterType.resource),
                                             modifier = Modifier.fillMaxSize().padding(5.dp),
-                                            mainColor = player.textColor,
+                                            mainColor = textColor,
                                             backgroundColor = Color.Transparent,
                                             shadowEnabled = true,
                                             enabled = false
@@ -769,14 +743,9 @@ fun Counters(
     }
 }
 
-/**
- * Add counter composable
- * @param player The player to modify
- * @param onTap The callback for when the button is tapped
- */
 @Composable
 fun AddCounter(
-    player: Player,
+    textColor: Color,
     onTap: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -785,7 +754,7 @@ fun AddCounter(
         shape = RoundedCornerShape(20.dp)
     ).border(
         0.5.dp,
-        player.textColor.copy(alpha = 0.9f),
+        textColor.copy(alpha = 0.9f),
         RoundedCornerShape(20.dp)
     ).pointerInput(Unit) {
         detectTapGestures {
@@ -798,24 +767,21 @@ fun AddCounter(
             modifier = Modifier.align(Alignment.Center).size(iconSize),
             imageVector = vectorResource(Res.drawable.add_icon),
             backgroundColor = Color.Transparent,
-            mainColor = player.textColor,
+            mainColor = textColor,
             shadowEnabled = false,
             enabled = false
         )
     }
 }
 
-/**
- * Counter composable
- * @param player The player to modify
- * @param icon The icon to display
- * @param value The value of the counter
- * @param onIncrement The callback for when the increment button is pressed
- * @param onDecrement The callback for when the decrement button is pressed
- */
 @Composable
 fun Counter(
-    player: Player, iconResource: DrawableResource, value: Int, onIncrement: () -> Unit, onDecrement: () -> Unit
+//    player: Player,
+    textColor: Color,
+    iconResource: DrawableResource,
+    value: Int,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(
@@ -824,7 +790,7 @@ fun Counter(
             shape = RoundedCornerShape(20.dp)
         ).border(
             0.5.dp,
-            player.textColor.copy(alpha = 0.9f),
+            textColor.copy(alpha = 0.9f),
             RoundedCornerShape(20.dp)
         ).clip(RoundedCornerShape(20.dp))
     ) {
@@ -857,7 +823,7 @@ fun Counter(
             Spacer(modifier = Modifier.height(topPadding))
             Text(
                 text = value.toString(),
-                color = player.textColor,
+                color = textColor,
                 fontSize = textSize,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
@@ -867,7 +833,7 @@ fun Counter(
             SettingsButton(
                 imageVector = vectorResource(iconResource),
                 modifier = Modifier.fillMaxSize(0.35f).aspectRatio(1.0f).padding(bottom = 15.dp),
-                mainColor = player.textColor,
+                mainColor = textColor,
                 backgroundColor = Color.Transparent,
                 shadowEnabled = true,
                 enabled = false
@@ -876,23 +842,23 @@ fun Counter(
     }
 }
 
-/**
- * Player Button Background composable
- * @param player The player to display
- * @param state The state of the button
- */
 @Composable
-fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
-    if (player.imageUri == null) {
+fun PlayerButtonBackground(
+    state: PBState,
+    imageUri: String?,
+    color: Color,
+    isDead: Boolean
+) {
+    if (imageUri == null) {
         var c = when (state) {
-            PlayerButtonState.NORMAL -> player.color
-            PlayerButtonState.COMMANDER_RECEIVER -> player.color.saturateColor(0.2f).brightenColor(0.3f)
+            PBState.NORMAL -> color
+            PBState.COMMANDER_RECEIVER -> color.saturateColor(0.2f).brightenColor(0.3f)
 
-            PlayerButtonState.COMMANDER_DEALER -> player.color.saturateColor(0.5f).brightenColor(0.6f)
+            PBState.COMMANDER_DEALER -> color.saturateColor(0.5f).brightenColor(0.6f)
 
-            PlayerButtonState.SETTINGS -> player.color
+            PBState.SETTINGS -> color
         }
-        if (player.isDead) {
+        if (isDead) {
             c = c.ghostify()
         }
         Surface(
@@ -901,24 +867,24 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
         ) {}
     } else {
         val colorMatrix = when (state) {
-            PlayerButtonState.NORMAL -> {
-                if (player.isDead) deadNormalColorMatrix else normalColorMatrix
+            PBState.NORMAL -> {
+                if (isDead) deadNormalColorMatrix else normalColorMatrix
             }
 
-            PlayerButtonState.COMMANDER_RECEIVER -> {
-                if (player.isDead) deadReceiverColorMatrix else receiverColorMatrix
+            PBState.COMMANDER_RECEIVER -> {
+                if (isDead) deadReceiverColorMatrix else receiverColorMatrix
             }
 
-            PlayerButtonState.COMMANDER_DEALER -> {
-                if (player.isDead) deadDealerColorMatrix else dealerColorMatrix
+            PBState.COMMANDER_DEALER -> {
+                if (isDead) deadDealerColorMatrix else dealerColorMatrix
             }
 
-            PlayerButtonState.SETTINGS -> {
-                if (player.isDead) deadSettingsColorMatrix else settingsColorMatrix
+            PBState.SETTINGS -> {
+                if (isDead) deadSettingsColorMatrix else settingsColorMatrix
             }
         }
         AsyncImage(
-            model = player.imageUri!!,
+            model = imageUri,
             contentDescription = "Player uploaded image",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
@@ -928,16 +894,6 @@ fun PlayerButtonBackground(player: Player, state: PlayerButtonState) {
         )
     }
 }
-
-/**
- * State button composable
- * @param modifier Modifier to apply to the layout
- * @param size The size of the button
- * @param visible Whether or not the button is visible
- * @param icon The icon to display
- * @param color The color of the icon
- * @param onPress The callback for when the button is pressed
- */
 @Composable
 fun PlayerStateButton(
     modifier: Modifier = Modifier,
@@ -957,16 +913,13 @@ fun PlayerStateButton(
     )
 }
 
-/**
- * Commander damage number composable
- * @param modifier Modifier to apply to the layout
- * @param player The player to display
- * @param currentDealer The current dealer
- * @param partnerMode Whether or not the player is in partner mode
- */
 @Composable
 fun CommanderDamageNumber(
-    modifier: Modifier = Modifier, player: Player, currentDealer: Player?, partnerMode: Boolean
+    modifier: Modifier = Modifier,
+    name: String,
+    textColor: Color,
+    firstValue: String,
+    secondValue: String?,
 ) {
     BoxWithConstraints(modifier = modifier) {
         val dividerOffset = maxHeight / 12f
@@ -977,82 +930,78 @@ fun CommanderDamageNumber(
             verticalAlignment = Alignment.CenterVertically
         ) {
             SingleCommanderDamageNumber(
-                modifier = Modifier.padding(horizontal = 10.dp).then(if (partnerMode) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()),
-                player = player,
-                currentDealer = currentDealer,
-                partner = false
+                modifier = Modifier.padding(horizontal = 10.dp).then(if (secondValue != null) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()),
+                name = name,
+                textColor = textColor,
+                value = firstValue,
+                recentChange = 0 //TODO: add this
             )
-            if (partnerMode) {
+            if (secondValue != null) {
                 VerticalDivider(
                     modifier = Modifier.fillMaxHeight(0.6f).width(2.dp).offset(y = dividerOffset),
-                    color = player.textColor
+                    color = textColor
                 )
 
                 SingleCommanderDamageNumber(
                     modifier = Modifier.padding(horizontal = 10.dp).fillMaxWidth(),
-                    player = player,
-                    currentDealer = currentDealer,
-                    partner = true
+                    name = name,
+                    textColor = textColor,
+                    value = secondValue,
+                    recentChange = 0
                 )
             }
         }
     }
 }
 
-/**
- * Single commander damage number composable
- * @param modifier Modifier to apply to the layout
- * @param player The player to display
- * @param currentDealer The current dealer
- * @param partner Whether or not the player is in partner mode
- */
 @Composable
 fun SingleCommanderDamageNumber(
-    modifier: Modifier = Modifier, player: Player, currentDealer: Player?, partner: Boolean = false
+    modifier: Modifier = Modifier,
+    name: String,
+    textColor: Color,
+    value: String,
+    recentChange: Int
 ) {
     val iconResource = Res.drawable.commander_solid_icon
 
-    NumericValue(modifier = modifier,
-        player = player,
+    NumericValue(
+        modifier = modifier,
         iconResource = iconResource,
-        getValue = { p ->
-            p.getCommanderDamage(
-                currentDealer!!,
-                partner
-            ).toString()
-        },
-        getRecentChangeText = { "" })
+        name = name,
+        textColor = textColor,
+        largeText = value,
+        recentChangeText = if (recentChange == 0) "" else if (recentChange > 0) "+$recentChange" else "$recentChange"
+    )
 }
 
-/**
- * Life number composable
- * @param modifier Modifier to apply to the layout
- * @param player The player to display
- */
 @Composable
 fun LifeNumber(
-    modifier: Modifier = Modifier, player: Player
-) {
+    modifier: Modifier = Modifier,
+    textColor: Color,
+    name: String,
+    largeText: String,
+    recentChangeText: String,
+
+    ) {
     val iconResource = Res.drawable.heart_solid_icon
 
-    NumericValue(modifier = modifier,
-        player = player,
-        iconResource = iconResource,
-        getValue = { p -> p.life.toString() },
-        getRecentChangeText = { if (player.recentChange == 0) "" else if (player.recentChange > 0) "+${player.recentChange}" else "${player.recentChange}" })
+    NumericValue(
+        modifier = modifier,
+        textColor = textColor,
+        name = name,
+        largeText = largeText,
+        recentChangeText = recentChangeText,
+        iconResource = iconResource
+    )
 }
-
-/**
- * Generic numeric value composable
- * @param modifier Modifier to apply to the layout
- * @param player The player to display
- * @param iconID The icon to display
- * @param getValue The callback for getting the value
- * @param getRecentChangeText The callback for getting the recent change text
- */
 @Composable
 fun NumericValue(
-    modifier: Modifier = Modifier, player: Player, iconResource: DrawableResource, getValue: (Player) -> String, getRecentChangeText: (Player) -> String
+    modifier: Modifier = Modifier,
+    textColor: Color,
+    name: String,
+    largeText: String,
+    recentChangeText: String,
+    iconResource: DrawableResource,
 ) {
     BoxWithConstraints(
         modifier = modifier.fillMaxSize(),
@@ -1060,7 +1009,6 @@ fun NumericValue(
     ) {
         var largeTextSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30)
         val largeTextPadding = (largeTextSize / 6f).dp
-        val largeText = getValue(player)
 
         if (largeText.length >= 3) {
             for (i in 0 until largeText.length - 2) {
@@ -1070,7 +1018,6 @@ fun NumericValue(
         val smallTextSize = maxHeight.value / 14f + 4
 
         val recentChangeSize = (maxHeight / 7f).value
-        val recentChangeText = getRecentChangeText(player)
 
         val iconSize = maxHeight / 7f
 
@@ -1081,8 +1028,8 @@ fun NumericValue(
         ) {
             Text(
                 modifier = Modifier.padding(top = 5.dp).offset(y = (largeTextSize / 24f).dp),
-                text = player.name,
-                color = player.textColor,
+                text = name,
+                color = textColor,
                 fontSize = smallTextSize.scaledSp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -1097,7 +1044,7 @@ fun NumericValue(
                 Text(
                     modifier = Modifier.wrapContentHeight(unbounded = true),
                     text = largeText,
-                    color = player.textColor,
+                    color = textColor,
                     fontSize = largeTextSize.scaledSp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
@@ -1107,7 +1054,7 @@ fun NumericValue(
                 Text(
                     modifier = Modifier.weight(0.8f).padding(start = 20.dp).wrapContentSize(unbounded = true),
                     text = recentChangeText,
-                    color = player.textColor,
+                    color = textColor,
                     fontSize = recentChangeSize.scaledSp,
                     style = textShadowStyle()
                 )
@@ -1115,44 +1062,42 @@ fun NumericValue(
             SettingsButton(
                 modifier = Modifier.size(iconSize),
                 backgroundColor = Color.Transparent,
-                mainColor = player.textColor,
+                mainColor = textColor,
                 imageVector = vectorResource(iconResource),
                 enabled = false
             )
         }
     }
 }
-
-/**
- * Settings menu possible states
- */
 private enum class SettingsState { Default, Customize, BackgroundColorPicker, TextColorPicker, ChangeName, LoadPlayer, Counters }
 
-/**
- * Settings menu composable
- * @param modifier Modifier to apply to the layout
- * @param player The player to display
- * @param backStack The back stack for the settings menu
- * @param onMonarchyButtonClick The callback for when the monarchy button is pressed
- * @param onFromCameraRollButtonClick The callback for when the camera roll button is pressed
- * @param onScryfallButtonClick The callback for when the scryfall button is pressed
- * @param closeSettingsMenu The callback for when the settings menu is closed
- * @param onResetPrefsClick The callback for when the reset button is pressed
- * @param setBlurBackground The callback for when the blur background setting is changed
- */
 @Composable
 fun SettingsMenu(
     modifier: Modifier = Modifier,
     player: Player,
-    backStack: SnapshotStateList<() -> Unit>,
+    addToBackStack: (() -> Unit) -> Unit,
+    clearBackStack: () -> Unit,
     onMonarchyButtonClick: () -> Unit,
     onFromCameraRollButtonClick: () -> Unit,
     onScryfallButtonClick: () -> Unit,
     closeSettingsMenu: () -> Unit,
     onResetPrefsClick: () -> Unit,
-    setBlurBackground: (Boolean) -> Unit
+    setBlurBackground: (Boolean) -> Unit,
+    copyPlayerPrefs: (Player) -> Unit,
+    savePlayerPref: () -> Unit,
+    loadPlayerPrefs: () -> List<Player>,
+    deletePlayerPref: (Player) -> Unit,
+    getCounterValue: (CounterType) -> Int,
+    incrementCounterValue: (CounterType, Int) -> Unit,
+    setActiveCounter: (CounterType, Boolean) -> Unit,
+    toggleSetDead: () -> Unit,
+    onChangeName: (String) -> Unit,
+    onChangeBackgroundColor: (Color) -> Unit,
+    onChangeTextColor: (Color) -> Unit,
+    onChangeImageUri: (String?) -> Unit,
 ) {
     var state by remember { mutableStateOf(SettingsState.Default) }
+    val textColor = player.textColor
 
     BoxWithConstraints(modifier.fillMaxSize()) {
         var settingsButtonSize = if (maxHeight / 2 * 3 < maxWidth) {
@@ -1197,10 +1142,7 @@ fun SettingsMenu(
                         FormattedSettingsButton(
                             imageResource = Res.drawable.transparent,
                             text = ""
-                        ) {
-//                            state = SettingsState.LoadPlayer
-//                            backStack.add { state = SettingsState.Default }
-                        }
+                        ) { }
                     }
 
                     item {
@@ -1209,37 +1151,37 @@ fun SettingsMenu(
                             text = "Counters"
                         ) {
                             state = SettingsState.Counters
-                            backStack.add { state = SettingsState.Default }
+                            addToBackStack { state = SettingsState.Default }
                         }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource =Res.drawable.change_background_icon,
+                            imageResource = Res.drawable.change_background_icon,
                             text = "Customize"
                         ) {
                             state = SettingsState.Customize
-                            backStack.add { state = SettingsState.Default }
+                            addToBackStack { state = SettingsState.Default }
                         }
                     }
                     item {
                         FormattedSettingsButton(
-                            imageResource =Res.drawable.skull_icon,
+                            imageResource = Res.drawable.skull_icon,
                             text = "KO Player"
                         ) {
-                            player.setDead = !player.isDead
+                            toggleSetDead()
                             closeSettingsMenu()
-                            backStack.clear()
+                            clearBackStack()
                         }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource =Res.drawable.change_name_icon,
+                            imageResource = Res.drawable.change_name_icon,
                             text = "Change Name"
                         ) {
                             state = SettingsState.ChangeName
-                            backStack.add { state = SettingsState.Default }
+                            addToBackStack { state = SettingsState.Default }
                         }
                     }
                 }
@@ -1248,8 +1190,12 @@ fun SettingsMenu(
             SettingsState.Counters -> {
                 Counters(
                     modifier = modifier.padding(5.dp),
-                    player = player,
-                    backStack = backStack
+                    textColor = player.textColor,
+                    activeCounters = player.activeCounters,
+                    getCounterValue = getCounterValue,
+                    incrementCounterValue = incrementCounterValue,
+                    setActiveCounter = setActiveCounter,
+                    addToBackStack = addToBackStack
                 )
             }
 
@@ -1262,46 +1208,44 @@ fun SettingsMenu(
                 ) {
                     item {
                         FormattedSettingsButton(
-                            imageResource =Res.drawable.color_picker_icon,
+                            imageResource = Res.drawable.color_picker_icon,
                             text = "Background Color"
                         ) {
                             state = SettingsState.BackgroundColorPicker
-                            backStack.add { state = SettingsState.Customize }
+                            addToBackStack { state = SettingsState.Customize }
                         }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource =Res.drawable.text_icon,
+                            imageResource = Res.drawable.text_icon,
                             text = "Text Color"
                         ) {
                             state = SettingsState.TextColorPicker
-                            backStack.add { state = SettingsState.Customize }
+                            addToBackStack { state = SettingsState.Customize }
                         }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource =Res.drawable.change_background_icon,
+                            imageResource = Res.drawable.change_background_icon,
                             text = "Upload Image"
                         ) { onFromCameraRollButtonClick() }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource =Res.drawable.download_icon,
+                            imageResource = Res.drawable.download_icon,
                             text = "Load Profile"
                         ) {
                             state = SettingsState.LoadPlayer
-                            backStack.add { state = SettingsState.Customize }
-//                            player.imageUri = null
-//                            SettingsManager.savePlayerPref(player)
+                            addToBackStack { state = SettingsState.Customize }
                         }
                     }
 
                     item {
                         FormattedSettingsButton(
-                            imageResource =Res.drawable.search_icon,
+                            imageResource = Res.drawable.search_icon,
                             text = "Search Image",
                             onPress = onScryfallButtonClick
                         )
@@ -1309,7 +1253,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource =Res.drawable.reset_icon,
+                            imageResource = Res.drawable.reset_icon,
                             text = "Reset",
                             onPress = onResetPrefsClick
                         )
@@ -1325,13 +1269,14 @@ fun SettingsMenu(
                         add(Color.White)
                         addAll(allPlayerColors)
                     },
-                    player = player,
+                    textColor = player.textColor,
                     initialColor = player.color,
-                    setBlurBackground = { setBlurBackground(it) }) { color ->
-                    player.imageUri = null
-                    player.color = color
-                    SettingsManager.savePlayerPref(player)
-                }
+                    setBlurBackground = { setBlurBackground(it) },
+                    onPress = { color ->
+                        onChangeImageUri(null)
+                        onChangeBackgroundColor(color)
+                        savePlayerPref()
+                    })
             }
 
             SettingsState.TextColorPicker -> {
@@ -1342,19 +1287,20 @@ fun SettingsMenu(
                         add(Color.White)
                         addAll(allPlayerColors)
                     },
-                    player = player,
+                    textColor = player.textColor,
                     initialColor = player.textColor,
-                    setBlurBackground = { setBlurBackground(it) }) { color ->
-                    player.textColor = color
-                    SettingsManager.savePlayerPref(player)
-                }
+                    setBlurBackground = { setBlurBackground(it) },
+                    onPress = { color ->
+                        onChangeTextColor(color)
+                        savePlayerPref()
+                    })
             }
 
 
             SettingsState.LoadPlayer -> {
                 val playerList = remember {
                     mutableStateListOf<Player>().apply {
-                        addAll(SettingsManager.loadPlayerPrefs())
+                        addAll(loadPlayerPrefs())
                     }
                 }
 
@@ -1383,7 +1329,7 @@ fun SettingsMenu(
                     ) {
                         LazyHorizontalGrid(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(Color.Black.copy(alpha = 0.15f)).border(
                             0.5.dp,
-                            player.textColor.copy(alpha = 0.9f),
+                            textColor.copy(alpha = 0.9f),
                             RoundedCornerShape(20.dp)
                         ).padding(smallPadding),
                             rows = GridCells.Fixed(2),
@@ -1391,11 +1337,21 @@ fun SettingsMenu(
                             horizontalArrangement = Arrangement.spacedBy(smallPadding),
                             verticalArrangement = Arrangement.spacedBy(smallPadding),
                             content = {
-                                items(playerList) { p ->
+                                items(playerList) { pInfo ->
                                     MiniPlayerButton(
-                                        currPlayer = player,
-                                        player = p,
-                                        playerList = playerList
+                                        imageUri = pInfo.imageUri,
+                                        name = pInfo.name,
+                                        backgroundColor = pInfo.color,
+                                        textColor = pInfo.textColor,
+                                        copyPrefsToCurrentPlayer = {
+                                            copyPlayerPrefs(pInfo)
+                                            savePlayerPref()
+                                            closeSettingsMenu()
+                                        },
+                                        removePlayerProfile = {
+                                            deletePlayerPref(pInfo)
+                                            playerList.remove(pInfo)
+                                        },
                                     )
                                 }
                             })
@@ -1428,26 +1384,28 @@ fun SettingsMenu(
             SettingsState.ChangeName -> {
                 ChangeNameField(
                     modifier = modifier,
+                    name = player.name,
+                    onChangeName = onChangeName,
+                    backgroundColor = player.color,
+                    playerTextColor = player.textColor,
                     closeSettingsMenu = closeSettingsMenu,
-                    player = player
+                    savePlayerPref = savePlayerPref
                 )
             }
         }
     }
 }
 
-/**
- * Color picker composable
- * @param modifier Modifier to apply to the layout
- * @param text The text to display
- * @param colorList The list of colors to display
- * @param player The player to modify
- * @param initialColor The initial color
- * @param setBlurBackground The callback for when the blur background setting is changed
- * @param onPress The callback for when a color is pressed
- */
 @Composable
-fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Color>, player: Player, initialColor: Color, setBlurBackground: (Boolean) -> Unit, onPress: (Color) -> Unit) {
+fun ColorPicker(
+    modifier: Modifier = Modifier,
+    text: String,
+    colorList: List<Color>,
+    textColor: Color,
+    initialColor: Color,
+    setBlurBackground: (Boolean) -> Unit,
+    onPress: (Color) -> Unit
+) {
     BoxWithConstraints(modifier) {
         val colorPickerPadding = maxWidth / 200f
         val containerPadding = maxWidth / 50f
@@ -1463,13 +1421,13 @@ fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Col
                     top = textPadding * 2
                 ),
                 text = text,
-                color = player.textColor,
+                color = textColor,
                 fontSize = smallTextSize / 1.25f,
                 textAlign = TextAlign.Center
             )
             LazyHorizontalGrid(modifier = Modifier.wrapContentSize().weight(0.5f).clip(RoundedCornerShape(20.dp)).background(Color.Black.copy(alpha = 0.15f)).border(
                 0.5.dp,
-                player.textColor.copy(alpha = 0.9f),
+                textColor.copy(alpha = 0.9f),
                 RoundedCornerShape(20.dp)
             ).padding(containerPadding * 2),
                 rows = GridCells.Fixed(2),
@@ -1479,7 +1437,7 @@ fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Col
                 content = {
                     item {
                         CustomColorPickerButton(modifier = Modifier.padding(colorPickerPadding),
-                            player = player,
+                            textColor = textColor,
                             initialColor = initialColor,
                             setBlurBackground = { setBlurBackground(it) },
                             setColor = { color ->
@@ -1500,22 +1458,19 @@ fun ColorPicker(modifier: Modifier = Modifier, text: String, colorList: List<Col
     }
 }
 
-/**
- * Change name field composable
- * @param modifier Modifier to apply to the layout
- * @param closeSettingsMenu The callback for when the settings menu is closed
- * @param player The player to modify
- */
 @Composable
 fun ChangeNameField(
-    modifier: Modifier = Modifier, closeSettingsMenu: () -> Unit, player: Player
+    modifier: Modifier = Modifier,
+    closeSettingsMenu: () -> Unit,
+    name: String,
+    onChangeName: (String) -> Unit,
+    backgroundColor: Color,
+    playerTextColor: Color,
+    savePlayerPref: () -> Unit
 ) {
-    var newName by remember { mutableStateOf(player.name) }
-    val textColor = player.textColor.invert().copy(alpha = 1.0f)
     fun onDone() {
-        player.name = newName
         closeSettingsMenu()
-        SettingsManager.savePlayerPref(player)
+        savePlayerPref()
     }
     Box(modifier.fillMaxSize()) {
         Column(
@@ -1527,25 +1482,25 @@ fun ChangeNameField(
                 modifier = Modifier.wrapContentSize()
             ) {
                 TextField(
-                    value = newName,
-                    onValueChange = { newName = it },
+                    value = name,
+                    onValueChange = onChangeName,
                     label = {
                         Text(
                             "New Name",
-                            color = player.color,
+                            color = backgroundColor,
                             fontSize = 12.scaledSp
                         )
                     },
                     textStyle = TextStyle(fontSize = 15.scaledSp),
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = textColor,
-                        unfocusedTextColor = textColor,
-                        focusedContainerColor = player.textColor,
-                        unfocusedContainerColor = player.textColor,
-                        cursorColor = player.color,
-                        unfocusedIndicatorColor = player.textColor,
-                        focusedIndicatorColor = player.color
+                        focusedTextColor = backgroundColor,
+                        unfocusedTextColor = backgroundColor,
+                        focusedContainerColor = playerTextColor,
+                        unfocusedContainerColor = playerTextColor,
+                        cursorColor = backgroundColor,
+                        unfocusedIndicatorColor = backgroundColor,
+                        focusedIndicatorColor = backgroundColor
                     ),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         capitalization = KeyboardCapitalization.None,
@@ -1560,20 +1515,19 @@ fun ChangeNameField(
                 ),
                     imageVector = vectorResource(Res.drawable.enter_icon),
                     shadowEnabled = false,
-                    mainColor = player.color,
-                    backgroundColor = player.textColor,
+                    mainColor = backgroundColor,
+                    backgroundColor = playerTextColor,
                     onPress = { onDone() })
             }
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 onClick = {
-                    player.name = newName
                     closeSettingsMenu()
-                    SettingsManager.savePlayerPref(player)
+                    savePlayerPref()
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = player.textColor,
-                    contentColor = player.color
+                    containerColor = playerTextColor,
+                    contentColor = backgroundColor
                 ),
                 modifier = Modifier.wrapContentHeight().fillMaxWidth(0.7f).padding(horizontal = 10.dp).padding(bottom = 20.dp)
 
@@ -1585,43 +1539,41 @@ fun ChangeNameField(
     }
 }
 
-/**
- * Mini player button composable
- * @param currPlayer The current player
- * @param player The player to display
- * @param playerList The list of players
- */
 @Composable
 fun MiniPlayerButton(
-    currPlayer: Player, player: Player, playerList: MutableList<Player>
+    imageUri: String?,
+    backgroundColor: Color,
+    name: String,
+    textColor: Color,
+    copyPrefsToCurrentPlayer: () -> Unit,
+    removePlayerProfile: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(modifier = Modifier.fillMaxHeight().aspectRatio(2.5f).clip(RoundedCornerShape(15.dp)).pointerInput(Unit) {
         detectTapGestures(onTap = {
-            currPlayer.copySettings(player)
+            copyPrefsToCurrentPlayer()
         },
             onLongPress = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                SettingsManager.deletePlayerPref(player)
-                playerList.remove(player)
+                removePlayerProfile()
             })
     }) {
-        if (player.imageUri == null) {
+        if (imageUri == null) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = player.color
+                color = backgroundColor
             ) {}
         } else {
             AsyncImage(
-                model = player.imageUri!!,
+                model = imageUri,
                 contentDescription = "Player uploaded image",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
             )
         }
         Text(
-            text = player.name,
-            color = player.textColor,
+            text = name,
+            color = textColor,
             fontSize = maxHeight.value.scaledSp / 2f,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -1630,12 +1582,6 @@ fun MiniPlayerButton(
     }
 }
 
-/**
- * Color picker button composable
- * @param modifier Modifier to apply to the layout
- * @param onClick The callback for when the button is pressed
- * @param color The color to display
- */
 @Composable
 fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color: Color) {
     Box(modifier = modifier.fillMaxHeight().aspectRatio(1f).background(color).pointerInput(Unit) {
@@ -1647,16 +1593,14 @@ fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color:
     }) {}
 }
 
-/**
- * Custom color picker button composable
- * @param modifier Modifier to apply to the layout
- *  @param player The player to modify
- *  @param initialColor The initial color
- *  @param setBlurBackground The callback for when the blur background setting is changed
- *  @param setColor The callback for when a color is selected
- */
 @Composable
-fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initialColor: Color, setBlurBackground: (Boolean) -> Unit, setColor: (Color) -> Unit) {
+fun CustomColorPickerButton(
+    modifier: Modifier = Modifier,
+    textColor: Color,
+    initialColor: Color,
+    setBlurBackground: (Boolean) -> Unit,
+    setColor: (Color) -> Unit
+) {
     var showColorDialog by remember { mutableStateOf(false) }
 
     if (showColorDialog) {
@@ -1685,20 +1629,16 @@ fun CustomColorPickerButton(modifier: Modifier = Modifier, player: Player, initi
             imageVector = vectorResource(Res.drawable.custom_color_icon),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            tint = player.textColor
+            tint = textColor
         )
     }
 }
 
-/**
- * Life change buttons composable
- * @param modifier Modifier to apply to the layout
- * @param onIncrementLife The callback for when the increment button is pressed
- * @param onDecrementLife The callback for when the decrement button is pressed
- */
 @Composable
 fun LifeChangeButtons(
-    modifier: Modifier = Modifier, onIncrementLife: () -> Unit, onDecrementLife: () -> Unit
+    modifier: Modifier = Modifier,
+    onIncrementLife: () -> Unit,
+    onDecrementLife: () -> Unit
 ) {
     Column(modifier = modifier) {
         CustomIncrementButton(

@@ -25,7 +25,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,7 +43,6 @@ import composable.flippable.FlipAnimationType
 import composable.flippable.Flippable
 import composable.flippable.FlippableState
 import composable.flippable.rememberFlipController
-import data.SettingsManager.fastCoinFlip
 import getAnimationCorrectionFactor
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.heads
@@ -73,10 +71,20 @@ import kotlin.random.Random
  * @param history the list of coin flips
  */
 @Composable
-fun CoinFlipDialogContent(modifier: Modifier = Modifier, history: SnapshotStateList<String>) {
+fun CoinFlipDialogContent(
+    modifier: Modifier = Modifier,
+    history: List<String>,
+    addToHistory: (String) -> Unit,
+    resetHistory: () -> Unit,
+    fastCoinFlip: Boolean
+) {
     Column(modifier = modifier.fillMaxSize()) {
         Spacer(Modifier.weight(0.5f))
-        CoinFlippable(Modifier.align(Alignment.CenterHorizontally), history = history)
+        CoinFlippable(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            addToHistory = addToHistory,
+            fastCoinFlip = fastCoinFlip
+        )
         Text(
             text = "Tap to flip",
             color = MaterialTheme.colorScheme.onPrimary,
@@ -86,7 +94,7 @@ fun CoinFlipDialogContent(modifier: Modifier = Modifier, history: SnapshotStateL
                 .align(Alignment.CenterHorizontally)
                 .padding(bottom = 15.dp)
         )
-        FlipCounter(Modifier.align(Alignment.CenterHorizontally), history)
+        FlipCounter(Modifier.align(Alignment.CenterHorizontally), history, resetHistory)
         Spacer(Modifier.weight(2.0f))
         FlipHistory(
             Modifier
@@ -97,14 +105,12 @@ fun CoinFlipDialogContent(modifier: Modifier = Modifier, history: SnapshotStateL
     }
 }
 
-/**
- * A button that visually flips a coin
- * @param modifier the modifier for this composable
- * @param history the list of coin flips
- */
+
 @Composable
 fun CoinFlippable(
-    modifier: Modifier = Modifier, history: MutableList<String>
+    modifier: Modifier = Modifier,
+    addToHistory: (String) -> Unit,
+    fastCoinFlip: Boolean
 ) {
     val flipEnabled by remember { mutableStateOf(true) }
     var initialDuration = 150
@@ -121,10 +127,6 @@ fun CoinFlippable(
     var flipCount by remember { mutableIntStateOf(totalFlips) }
     val flipController = rememberFlipController()
     val haptic = LocalHapticFeedback.current
-
-    fun addToHistory(v: String) {
-        history.add(v)
-    }
 
     fun decrementFlipCount() {
         flipCount--
@@ -218,7 +220,11 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
  * @param history the list of coin flips
  */
 @Composable
-fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
+fun FlipCounter(
+    modifier: Modifier = Modifier,
+    history: List<String>,
+    clearHistory: () -> Unit
+) {
     val hPadding = 10.dp
     val textSize = 20.scaledSp
 
@@ -262,7 +268,7 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
         )
         Spacer(modifier.width(10.dp))
         ResetButton(onReset = {
-            history.clear()
+            clearHistory()
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         })
     }
@@ -275,7 +281,7 @@ fun FlipCounter(modifier: Modifier = Modifier, history: MutableList<String>) {
  * @param maxHistoryLength the maximum number of flips to display
  */
 @Composable
-fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: MutableList<String>, maxHistoryLength: Int = 18) {
+fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: List<String>, maxHistoryLength: Int = 18) {
     val hPadding = 10.dp
     val vPadding = 5.dp
 
