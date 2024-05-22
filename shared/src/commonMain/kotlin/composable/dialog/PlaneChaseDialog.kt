@@ -66,6 +66,7 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
+//TODO: THIS IS BROKEN RIGHT NOW
 private enum class PlanarDieResult(
     val toString: String,
     val drawableResource: DrawableResource
@@ -237,7 +238,8 @@ class ChoosePlanesActions(
 
 @Composable
 fun ChoosePlanesDialogContent(
-    modifier: Modifier = Modifier, actions: ChoosePlanesActions
+    modifier: Modifier = Modifier,
+    actions: ChoosePlanesActions
 ) {
     val haptic = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
