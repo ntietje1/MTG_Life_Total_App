@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -321,7 +320,7 @@ fun ScryfallButton(
 
         ) {
         Surface(
-            modifier = Modifier.wrapContentSize().clip(RoundedCornerShape(10.dp)), color = animatedColor
+            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(30)), color = animatedColor
         ) {
             Text(
                 text = text,
@@ -454,19 +453,19 @@ fun CardPreview(
                     )
                     Row() {
                         if (rulingsButtonEnabled) {
-                            ScryfallButton(modifier = Modifier.width(80.dp).wrapContentHeight(), text = "Rulings", onTap = {
+                            ScryfallButton(modifier = Modifier.width(80.dp).height(25.dp).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Rulings", onTap = {
                                 onRulings()
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
                         }
                         if (selectButtonEnabled) {
-                            ScryfallButton(modifier = Modifier.width(80.dp).wrapContentHeight(), text = "Select", onTap = {
+                            ScryfallButton(modifier = Modifier.width(80.dp).height(25.dp).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Select", onTap = {
                                 onSelect()
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
                         }
                         if (printingsButtonEnabled) {
-                            ScryfallButton(modifier = Modifier.width(80.dp).wrapContentHeight(), text = "Printings", onTap = {
+                            ScryfallButton(modifier = Modifier.width(80.dp).height(25.dp).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Printings", onTap = {
                                 onPrintings()
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
