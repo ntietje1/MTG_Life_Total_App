@@ -7,6 +7,15 @@ plugins {
 }
 
 kotlin {
+
+    targets.all {
+        compilations.all {
+            compilerOptions.configure {
+                freeCompilerArgs.add("-Xexpect-actual-classes")
+            }
+        }
+    }
+
     androidTarget {
         compilations.all {
             kotlinOptions {
@@ -15,8 +24,6 @@ kotlin {
         }
     }
 
-
-    
     listOf(
         iosX64(),
         iosArm64(),
@@ -47,6 +54,9 @@ kotlin {
             implementation(compose.animation)
             implementation(compose.components.resources)
 
+            val nav_version = "2.7.0-alpha03"
+//            implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
+//            implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
             implementation(libs.navigation.compose)
 
             implementation(libs.androidx.lifecycle.viewmodel.ktx)
@@ -57,6 +67,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel.savedstate)
 
             api(libs.koin.core)
+            implementation(libs.koin.compose)
 
             implementation(libs.kotlinx.serialization.json)
 
@@ -64,9 +75,6 @@ kotlin {
 
             implementation("org.slf4j:slf4j-simple:2.0.11") // needed because some other dependency was causing error during bundle generating
             implementation(libs.kotlinx.datetime)
-
-            implementation(libs.decompose)
-            implementation(libs.decompose.extensions.compose.jetbrains)
 
             implementation(libs.mpfilepicker)
 
