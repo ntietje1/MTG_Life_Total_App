@@ -1,4 +1,4 @@
-package composable.dialog
+package composable.dialog.planechase
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,13 +25,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,10 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
-import data.ScryfallApiRetriever
-import data.SettingsManager
+import composable.dialog.ScryfallSearchBar
+import composable.dialog.SettingsButton
 import data.serializable.Card
-import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
 import lifelinked.shared.generated.resources.chaos_icon
@@ -64,9 +61,9 @@ import lifelinked.shared.generated.resources.visible_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
+import org.koin.compose.koinInject
 import theme.scaledSp
 
-//TODO: THIS IS BROKEN RIGHT NOW
 private enum class PlanarDieResult(
     val toString: String,
     val drawableResource: DrawableResource
@@ -77,11 +74,10 @@ private enum class PlanarDieResult(
 @Composable
 fun PlaneChaseDialogContent(
     modifier: Modifier = Modifier,
-    currentPlane: () -> Card?,
-    backPlane: () -> Unit,
-    planeswalk: () -> Unit,
-    goToChoosePlanes: () -> Unit
+    goToChoosePlanes: () -> Unit,
+    viewModel: PlaneChaseViewModel = koinInject()
 ) {
+    val state by viewModel.state.collectAsState()
     var rotated by remember { mutableStateOf(false) }
     var planarDieResultVisible by remember { mutableStateOf(false) }
     var planarDieResult by remember { mutableStateOf(PlanarDieResult.NO_EFFECT) }
@@ -142,20 +138,20 @@ fun PlaneChaseDialogContent(
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
             PlaneChaseCardPreview(
                 modifier = Modifier.graphicsLayer { rotationZ = if (rotated) 180f else 0f }.fillMaxHeight(0.9f).padding(bottom = previewPadding),
-                card = currentPlane(),
+                card = state.planarDeck.lastOrNull(),
                 allowEnlarge = false
             )
             Row(
                 Modifier.fillMaxWidth().wrapContentHeight(), horizontalArrangement = Arrangement.SpaceAround
             ) {
                 SettingsButton(modifier = buttonModifier, text = "Previous", shadowEnabled = false, imageVector = vectorResource(Res.drawable.back_icon_alt), onPress = {
-                    backPlane()
+                    viewModel.backPlane()
                 })
                 SettingsButton(modifier = buttonModifier, text = "Flip Image", shadowEnabled = false, imageVector = vectorResource(Res.drawable.reset_icon), onPress = {
                     rotated = !rotated
                 })
                 SettingsButton(modifier = buttonModifier, text = "Planeswalk", shadowEnabled = false, imageVector = vectorResource(Res.drawable.planeswalker_icon), onPress = {
-                    planeswalk()
+                    viewModel.planeswalk()
                 })
                 SettingsButton(modifier = buttonModifier, text = "Planar Die", shadowEnabled = false, imageVector = vectorResource(Res.drawable.chaos_icon), onPress = {
                     rollPlanarDie()
@@ -169,98 +165,31 @@ fun PlaneChaseDialogContent(
     }
 }
 
-class ChoosePlanesActions(
-    private val settingsManager: SettingsManager,
-    private val planarDeck: List<Card>,
-    private val backStack: List<() -> Unit>,
-    private val planarBackStack: List<Card>,
-    val selectPlane: (Card) -> Unit,
-    val deselectPlane: (Card) -> Unit,
-    val addAllPlanarDeck: (List<Card>) -> Unit,
-    val removeAllPlanarDeck: (List<Card>) -> Unit,
-    val addToBackStack: (() -> Unit) -> Unit,
-) {
-    private val initialBackStackSize = backStack.size
-
-    private val allPlanes = mutableStateListOf<Card>().apply {
-        addAll(settingsManager.loadAllPlanes())
-    }
-    private val searchedPlanes = mutableStateListOf<Card>()
-    private val scryfallApiRetriever = ScryfallApiRetriever()
-
-    var hideUnselected by mutableStateOf(false)
-
-    val filteredPlanes by derivedStateOf {
-        if (searchedPlanes.isNotEmpty()) {
-            searchedPlanes.filter { card -> planarDeck.contains(card) || !hideUnselected }
-        } else {
-            allPlanes.filter { card -> planarDeck.contains(card) || !hideUnselected }
-        }
-    }
-
-    fun updateAllPlanes(cards: List<Card>) {
-        cards.forEach { card ->
-            if (card !in allPlanes) {
-                allPlanes.add(card)
-            }
-        }
-        settingsManager.saveAllPlanes(allPlanes)
-    }
-
-    var query = mutableStateOf("")
-
-    suspend fun search(qry: String = query.value): List<Card> {
-        return scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall("t:plane $qry"))
-    }
-
-    fun onSearchResult(cards: List<Card>) {
-        searchedPlanes.clear()
-        searchedPlanes.addAll(cards)
-        if (initialBackStackSize == backStack.size) {
-            addToBackStack {
-                query.value = ""
-                searchedPlanes.clear()
-            }
-        }
-    }
-
-    fun isInPlanarDeck(card: Card): Boolean {
-        return planarDeck.contains(card)
-    }
-
-    val selectedText: String
-        get() = "${planarDeck.size}/${filteredPlanes.size} Planes Selected (${allPlanes.size - filteredPlanes.size} Hidden)"
-
-    fun toggleHideUnselected() {
-        hideUnselected = !hideUnselected
-    }
-}
-
 @Composable
 fun ChoosePlanesDialogContent(
     modifier: Modifier = Modifier,
-    actions: ChoosePlanesActions
+    addToBackStack: (() -> Unit) -> Unit,
+    viewModel: PlaneChaseViewModel = koinInject()
 ) {
+    val state by viewModel.state.collectAsState()
+
     val haptic = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
-    val coroutineScope = rememberCoroutineScope()
-    var searchInProgress by remember { mutableStateOf(false) }
 
-    fun searchPlanes(onResult: (List<Card>) -> Unit) {
-        searchInProgress = true
-        coroutineScope.launch {
-            val newCards = actions.search()
-            onResult(newCards)
-            searchInProgress = false
+    val filteredPlanes by derivedStateOf {
+        if (state.searchedPlanes.isNotEmpty()) {
+            state.searchedPlanes.filter { card -> state.planarDeck.contains(card) || !state.hideUnselected }
+        } else {
+            state.allPlanes.filter { card -> state.planarDeck.contains(card) || !state.hideUnselected }
         }
     }
 
-    LaunchedEffect(Unit) {
-        searchPlanes {
-            actions.updateAllPlanes(it)
-            focusManager.clearFocus()
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        searchPlanes {
+//            actions.updateAllPlanes(it)
+//            focusManager.clearFocus()
+//        }
+//    }
 
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = maxWidth
@@ -269,28 +198,50 @@ fun ChoosePlanesDialogContent(
         Column(Modifier.fillMaxSize()) {
             ScryfallSearchBar(
                 Modifier.padding(top = 10.dp).padding(start = 20.dp, end = 20.dp).clip(RoundedCornerShape(10.dp)),
-                query = actions.query.value,
-                onQueryChange = { actions.query.value = it },
-                searchInProgress = searchInProgress,
+                query = state.query,
+                onQueryChange = { viewModel.setQuery(it) },
+                searchInProgress = state.searchInProgress,
             ) {
-                searchPlanes { actions.onSearchResult(it) }
+                viewModel.searchPlanes {
+                    focusManager.clearFocus()
+                    if (state.query.isNotEmpty()) { //TODO: if backstack = initialbackstacksize
+                        addToBackStack {
+                            viewModel.onBackPress()
+                        }
+                    }
+                }
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
             Text(
-                modifier = Modifier.fillMaxWidth(), text = actions.selectedText, fontSize = 15.scaledSp, color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center
+                modifier = Modifier.fillMaxWidth(),
+                text = "${state.planarDeck.size}/${filteredPlanes.size} Planes Selected (${state.allPlanes.size - filteredPlanes.size} Hidden)",
+                fontSize = 15.scaledSp,
+                color = MaterialTheme.colorScheme.onPrimary,
+                textAlign = TextAlign.Center
             )
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize().padding(bottom = maxWidth / 15f).weight(0.5f).border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
                 columns = GridCells.Fixed(2),
             ) {
-                items(actions.filteredPlanes, key = { card -> card.hashCode() }) { card ->
+                items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
+//                    val selected by remember { derivedStateOf { card in state.planarDeck } }
                     PlaneChaseCardPreview(modifier = Modifier.width(maxWidth / 2),
                         card = card,
-                        addToPlanarDeck = { actions.selectPlane(it) }, //TODO: why it here??
-                        removeFromPlanarDeck = { actions.deselectPlane(it) },
+                        onTap = {
+                            if (!state.planarDeck.contains(card)) {
+                                println("Adding ${card.name} to planar deck")
+                                viewModel.selectPlane(card)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            } else {
+                                println("Removing ${card.name} from planar deck")
+                                viewModel.deselectPlane(card)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                        },
                         onPress = focusManager::clearFocus,
                         allowSelection = true,
-                        selected = { actions.isInPlanarDeck(card) })
+                        selected = card in state.planarDeck
+                    )
                 }
             }
             Row(
@@ -298,17 +249,17 @@ fun ChoosePlanesDialogContent(
 
             ) {
                 SettingsButton(modifier = buttonModifier, text = "Select All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.checkmark), onPress = {
-                    actions.addAllPlanarDeck(actions.filteredPlanes)
+                    viewModel.addAllPlanarDeck(filteredPlanes)
                 })
                 SettingsButton(modifier = buttonModifier, text = "Unselect All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.x_icon), onPress = {
-                    actions.removeAllPlanarDeck(actions.filteredPlanes)
+                    viewModel.removeAllPlanarDeck(filteredPlanes)
                 })
                 SettingsButton(modifier = buttonModifier,
-                    text = if (!actions.hideUnselected) "Hide Unselected" else "Show Unselected",
+                    text = if (!state.hideUnselected) "Hide Unselected" else "Show Unselected",
                     shadowEnabled = false,
-                    imageVector = if (!actions.hideUnselected) vectorResource(Res.drawable.invisible_icon) else vectorResource(Res.drawable.visible_icon),
+                    imageVector = if (!state.hideUnselected) vectorResource(Res.drawable.invisible_icon) else vectorResource(Res.drawable.visible_icon),
                     onPress = {
-                        actions.toggleHideUnselected()
+                        viewModel.toggleHideUnselected()
                     })
             }
         }
@@ -320,11 +271,10 @@ fun PlaneChaseCardPreview(
     modifier: Modifier = Modifier,
     card: Card?,
     allowSelection: Boolean = false,
-    addToPlanarDeck: (Card) -> Unit = {},
-    removeFromPlanarDeck: (Card) -> Unit = {},
     onPress: () -> Unit = {},
+    onTap: () -> Unit = {},
     allowEnlarge: Boolean = true,
-    selected: () -> Boolean = { false }
+    selected: Boolean = false
 ) {
     var showLargeImage by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
@@ -355,20 +305,14 @@ fun PlaneChaseCardPreview(
                 onPress()
             }, onTap = {
                 if (allowSelection) {
-                    if (!selected.invoke()) {
-                        addToPlanarDeck(card)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    } else {
-                        removeFromPlanarDeck(card)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
+                    onTap()
                 }
             })
         }) {
             val clipSize = maxWidth / 20f
             Box(
                 Modifier.fillMaxSize().then(
-                    if (selected.invoke() && allowSelection) {
+                    if (selected) {
                         Modifier.background(Color.Green.copy(alpha = 0.2f))
                     } else {
                         Modifier
@@ -377,7 +321,7 @@ fun PlaneChaseCardPreview(
             ) {
                 AsyncImage(
                     modifier = Modifier.fillMaxSize().then(
-                        if (selected.invoke() && allowSelection) {
+                        if (selected) {
                             Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
                         } else {
                             Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
