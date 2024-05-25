@@ -37,11 +37,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
 import composable.dialog.MiddleButtonDialog
 import composable.lifecounter.playerbutton.PlayerButton
 import composable.lifecounter.playerbutton.PlayerButtonViewModel
@@ -63,27 +61,33 @@ fun LifeCounterScreen(
     val state by viewModel.state.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+//    val lifecycleOwner = LocalLifecycleOwner.current
+//    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
 
-    LaunchedEffect(lifecycleState) {
-        when (lifecycleState) {
-            Lifecycle.State.DESTROYED -> {
-                viewModel.savePlayerStates()
-            }
-
-            Lifecycle.State.INITIALIZED -> {
-//                viewModel.generatePlayers()
-            }
-
-            Lifecycle.State.CREATED -> {}
-            Lifecycle.State.STARTED -> {
-                viewModel.savePlayerStates()
-            }
-
-            Lifecycle.State.RESUMED -> {}
-        }
-    }
+//    DisposableEffect(key1 = viewModel) {
+//        onDispose {
+//            viewModel.savePlayerStates()
+//        }
+//    }
+//
+//    LaunchedEffect(lifecycleState) {
+//        when (lifecycleState) {
+//            Lifecycle.State.DESTROYED -> {
+////                viewModel.savePlayerStates()
+//            }
+//
+//            Lifecycle.State.INITIALIZED -> {
+////                viewModel.generatePlayers()
+//            }
+//
+//            Lifecycle.State.CREATED -> {}
+//            Lifecycle.State.STARTED -> {
+//                viewModel.savePlayerStates()
+//            }
+//
+//            Lifecycle.State.RESUMED -> {}
+//        }
+//    }
 
     LaunchedEffect(showDialog) {
         if (!showDialog) viewModel.setBlurBackground(false)

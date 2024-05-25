@@ -242,7 +242,6 @@ fun PlayerButton(
                     viewModel.showScryfallSearch(false)
                     onOpenDialog(false)
                 },
-                backStack = scryfallBackStack,
                 addToBackStack = {
                     scryfallBackStack.add(it)
                 },

@@ -2,7 +2,6 @@ package composable.lifecounter
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import composable.dialog.COUNTER_DIALOG_ENTRIES
 import composable.lifecounter.playerbutton.PBState
 import composable.lifecounter.playerbutton.PlayerButtonViewModel
@@ -10,12 +9,9 @@ import data.ImageManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
 import data.SettingsManager
-import data.serializable.Card
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import theme.allPlayerColors
 
 class LifeCounterViewModel(
@@ -31,8 +27,8 @@ class LifeCounterViewModel(
     lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
 
     init {
-        startTimer()
-        generatePlayers()
+//        startTimer()
+        generatePlayers() //TODO: broken when pressing back
         savePlayerStates()
     }
 
@@ -49,8 +45,8 @@ class LifeCounterViewModel(
         savePlayerStates()
     }
 
-    private val _timer = MutableStateFlow(0)
-    val timer = _timer.asStateFlow()
+//    private val _timer = MutableStateFlow(0)
+//    val timer = _timer.asStateFlow()
 
     private val currentDealer: PlayerButtonViewModel?
         get() = playerButtonViewModels.find { it.state.value.buttonState == PBState.COMMANDER_DEALER }
@@ -64,7 +60,8 @@ class LifeCounterViewModel(
             setAllMonarchy = { setAllMonarchy(it) },
             getCurrentDealer = { currentDealer },
             updateCurrentDealerMode = { setDealerMode(it) },
-            currentDealerIsPartnered = currentDealerIsPartnered
+            currentDealerIsPartnered = currentDealerIsPartnered,
+            triggerSave = { savePlayerStates() }
         )
     }
 
@@ -158,94 +155,15 @@ class LifeCounterViewModel(
         setCoinFlipHistory(emptyList())
     }
 
-    private fun pushPlanarDeck(value: Card) {
-        _state.value = _state.value.copy(planarDeck = state.value.planarDeck.apply {
-            remove(value)
-            addLast(value)
-        })
-    }
-
-    private fun sendToBottomPlanarDeck(value: Card) {
-        _state.value = _state.value.copy(planarDeck = state.value.planarDeck.apply {
-            remove(value)
-            addFirst(value)
-        })
-    }
-
-    private fun popPlanarDeck(): Card? {
-        val card = _state.value.planarDeck.lastOrNull()
-        if (card != null) {
-            _state.value = _state.value.copy(planarDeck = _state.value.planarDeck.apply { remove(card) })
-        }
-        return card
-    }
-
-    private fun pushPlanarBackStack(value: Card) {
-        _state.value = _state.value.copy(planarBackStack = _state.value.planarBackStack.apply { addLast(value) })
-    }
-
-    private fun popPlanarBackStack(): Card? {
-        val card = _state.value.planarBackStack.lastOrNull()
-        if (card != null) {
-            _state.value = _state.value.copy(planarBackStack = _state.value.planarBackStack.apply { remove(card) })
-        }
-        return card
-    }
-
-    private fun clearPlanarBackStack() {
-        _state.value = _state.value.copy(planarBackStack = ArrayDeque())
-    }
-
-    fun selectPlane(card: Card) {
-        pushPlanarDeck(card)
-        clearPlanarBackStack()
-    }
-
-    fun deselectPlane(card: Card) {
-        pushPlanarBackStack(card)
-        clearPlanarBackStack()
-    }
-
-    fun addAllPlanarDeck(cards: List<Card>) {
-        _state.value = _state.value.copy(planarDeck = _state.value.planarDeck.apply { addAll(cards) })
-    }
-
-    fun removeAllPlanarDeck(cards: List<Card>) {
-        _state.value = _state.value.copy(planarDeck = _state.value.planarDeck.apply { removeAll(cards) })
-    }
-
-    private fun startTimer() {
-        viewModelScope.launch {
-            while (true) {
-                delay(1000 * 10)
-                savePlayerStates()
-                _timer.value++
-            }
-        }
-    }
-
-    fun backPlane() {
-        if (_state.value.planarBackStack.isNotEmpty()) {
-            val card = popPlanarBackStack()
-            card?.let { pushPlanarDeck(card) }
-        }
-    }
-
-    fun planeswalk(): Card? {
-        if (state.value.planarDeck.isNotEmpty()) {
-            val card = popPlanarDeck()
-            card?.let {
-                pushPlanarBackStack(card)
-                sendToBottomPlanarDeck(card)
-            }
-            return card
-        }
-        return null
-    }
-
-    fun currentPlane(): Card? {
-        return state.value.planarDeck.lastOrNull()
-    }
+//    private fun startTimer() {
+//        viewModelScope.launch {
+//            while (true) {
+//                delay(1000 * 10)
+//                savePlayerStates()
+//                _timer.value++
+//            }
+//        }
+//    }
 
     fun toggleDayNight() {
         setDayNight(

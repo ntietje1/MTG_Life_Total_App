@@ -27,6 +27,7 @@ class PlayerButtonViewModel(
     private val getCurrentDealer: () -> PlayerButtonViewModel?,
     private val updateCurrentDealerMode: (Boolean) -> Unit,
     val currentDealerIsPartnered: StateFlow<Boolean>,
+    private val triggerSave: () -> Unit
 ) : ViewModel() {
     private var _state = MutableStateFlow(PlayerButtonState(initialPlayer))
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
@@ -167,6 +168,7 @@ class PlayerButtonViewModel(
         setPlayerInfo(state.value.player.copy(counters = state.value.player.counters.toMutableList().apply {
             this[counterType.ordinal] += value
         }))
+        triggerSave()
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean?) {
@@ -177,6 +179,7 @@ class PlayerButtonViewModel(
                 this.remove(counterType)
             }
         }))
+        triggerSave()
     }
 
     fun getCommanderDamage(currentDealer: PlayerButtonViewModel? = getCurrentDealer(), partner: Boolean = false): Int {
@@ -189,6 +192,7 @@ class PlayerButtonViewModel(
         if (currentDealer == null) return
         val index = (currentDealer.state.value.player.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
         this.receiveCommanderDamage(index, value)
+        triggerSave()
     }
 
     private fun receiveCommanderDamage(index: Int, value: Int) {
@@ -216,6 +220,7 @@ class PlayerButtonViewModel(
             )
         )
         updateRecentChange()
+        triggerSave()
     }
 
     private fun updateRecentChange() {
