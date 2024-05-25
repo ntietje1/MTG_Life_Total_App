@@ -1,5 +1,6 @@
 package composable.dialog
 
+import BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.TweenSpec
@@ -25,9 +26,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import composable.dialog.planechase.ChoosePlanesDialogContent
+import composable.dialog.planechase.PlaneChaseDialogContent
 import composable.lifecounter.DayNightState
 import composable.lifecounter.LifeCounterViewModel
 import getAnimationCorrectionFactor
@@ -61,6 +64,7 @@ import lifelinked.shared.generated.resources.sun_and_moon_icon
 import lifelinked.shared.generated.resources.sun_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
+import org.koin.compose.koinInject
 import theme.scaledSp
 
 private enum class MiddleButtonDialogState {
@@ -76,15 +80,19 @@ fun MiddleButtonDialog(
     goToPlayerSelectScreen: () -> Unit,
     returnToLifeCounterScreen: () -> Unit,
     setNumPlayers: (Int) -> Unit,
-    goToTutorialScreen: () -> Unit
+    goToTutorialScreen: () -> Unit,
+    backHandler: BackHandler = koinInject()
 ) {
 
     val state by viewModel.state.collectAsState()
     var middleButtonDialogState by remember { mutableStateOf(MiddleButtonDialogState.Default) }
-    val backStack = remember { mutableStateListOf(onDismiss) }
     val haptic = LocalHapticFeedback.current
     val duration = (450 / getAnimationCorrectionFactor()).toInt()
     var showResetDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        backHandler.push { onDismiss() }
+    }
 
     val enterAnimation = slideInHorizontally(
         TweenSpec(
@@ -189,10 +197,9 @@ fun MiddleButtonDialog(
             ) {
                 ScryfallDialogContent(
                     Modifier.fillMaxSize(),
-                    backStack = backStack,
                     selectButtonEnabled = false,
                     rulingsButtonEnabled = true,
-                    addToBackStack = { backStack.add(it) },
+                    addToBackStack = { backHandler.push(it) },
                     onImageSelected = {}
                 )
             }
@@ -203,7 +210,7 @@ fun MiddleButtonDialog(
                 SettingsDialogContent(
                     Modifier.fillMaxSize(),
                     goToAboutMe = { middleButtonDialogState = MiddleButtonDialogState.AboutMe },
-                    addGoToSettingsToBackStack = { backStack.add { middleButtonDialogState = MiddleButtonDialogState.Settings } },
+                    addGoToSettingsToBackStack = { backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Settings } },
                     goToTutorialScreen = {
                         onDismiss()
                         goToTutorialScreen()
@@ -224,31 +231,15 @@ fun MiddleButtonDialog(
                     modifier = Modifier.fillMaxSize(),
                     goToChoosePlanes = {
                         middleButtonDialogState = MiddleButtonDialogState.PlanarDeck
-                        backStack.add { middleButtonDialogState = MiddleButtonDialogState.PlaneChase }
+                        backHandler.push { middleButtonDialogState = MiddleButtonDialogState.PlaneChase }
                     },
-                    backPlane = viewModel::backPlane,
-                    planeswalk = viewModel::planeswalk,
-                    currentPlane = viewModel::currentPlane,
                 )
             }
             FormattedAnimatedVisibility(
                 visible = middleButtonDialogState == MiddleButtonDialogState.PlanarDeck
             ) {
-                val choosePlanesActions = remember {
-                    ChoosePlanesActions(
-                        settingsManager = viewModel.settingsManager,
-                        planarDeck = state.planarDeck,
-                        backStack = backStack,
-                        planarBackStack = state.planarBackStack,
-                        selectPlane = viewModel::selectPlane,
-                        deselectPlane = viewModel::deselectPlane,
-                        addAllPlanarDeck = viewModel::addAllPlanarDeck,
-                        removeAllPlanarDeck = viewModel::removeAllPlanarDeck,
-                        addToBackStack = backStack::add,
-                    )
-                }
                 ChoosePlanesDialogContent(
-                    modifier = Modifier.fillMaxSize(), actions = choosePlanesActions
+                    modifier = Modifier.fillMaxSize(), addToBackStack = backHandler::push,
                 )
             }
 
@@ -269,7 +260,7 @@ fun MiddleButtonDialog(
                     }, {
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
                             middleButtonDialogState = MiddleButtonDialogState.StartingLife
-                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
                     }, {
                         SettingsButton(
@@ -284,22 +275,22 @@ fun MiddleButtonDialog(
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.player_count_icon), text = "Player Number", shadowEnabled = false, onPress = {
                             middleButtonDialogState = MiddleButtonDialogState.PlayerNumber
-                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.mana_icon), text = "Mana & Storm", shadowEnabled = false, onPress = {
                             middleButtonDialogState = MiddleButtonDialogState.Counter
-                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.six_icon), text = "Dice roll", shadowEnabled = false, onPress = {
                             middleButtonDialogState = MiddleButtonDialogState.DiceRoll
-                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.coin_icon), text = "Coin Flip", shadowEnabled = false, onPress = {
                             middleButtonDialogState = MiddleButtonDialogState.CoinFlip
-                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
@@ -319,17 +310,17 @@ fun MiddleButtonDialog(
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.search_icon), text = "Card Search", shadowEnabled = false, onPress = {
                             middleButtonDialogState = MiddleButtonDialogState.Scryfall
-                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.planeswalker_icon), text = "Planechase", shadowEnabled = false, onPress = {
                             middleButtonDialogState = MiddleButtonDialogState.PlaneChase
-                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.settings_icon_small), text = "Settings", shadowEnabled = false, onPress = {
                             middleButtonDialogState = MiddleButtonDialogState.Settings
-                            backStack.add { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
                     })
                 )
@@ -361,7 +352,8 @@ fun MiddleButtonDialog(
     SettingsDialog(onDismiss = {
         onDismiss()
     }, content = dialogContent, onBack = {
-        backStack.removeLast().invoke()
+        backHandler.pop()
+//        backStack.removeLast().invoke()
     })
 }
 
@@ -390,11 +382,16 @@ fun GridDialogContent(
 
 @Composable
 fun SettingsDialog(
-    modifier: Modifier = Modifier, onDismiss: () -> Unit = {}, onBack: () -> Unit = {}, exitButtonEnabled: Boolean = true, backButtonEnabled: Boolean = true, content: @Composable () -> Unit = {}
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit = {},
+    onBack: () -> Unit = {},
+    exitButtonEnabled: Boolean = true,
+    backButtonEnabled: Boolean = true,
+    content: @Composable () -> Unit = {}
 ) {
     Dialog(
         onDismissRequest = onDismiss, properties = DialogProperties(
-            dismissOnBackPress = true,
+            dismissOnBackPress = false, //TODO: once backhandler works on android, set this to false
             usePlatformDefaultWidth = false,
         )
     ) {

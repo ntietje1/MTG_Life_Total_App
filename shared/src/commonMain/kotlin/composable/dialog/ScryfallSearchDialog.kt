@@ -72,26 +72,14 @@ import theme.scaledSp
 fun ScryfallSearchDialog(
     modifier: Modifier = Modifier,
 //    playerButtonViewModel: PlayerButtonViewModel,
-    backStack: List<() -> Unit> = listOf(),
+//    backStack: List<() -> Unit> = listOf(),
     addToBackStack: (() -> Unit) -> Unit,
     onDismiss: () -> Unit,
     onImageSelected: (String) -> Unit
 ) {
     SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss) {
-//        BackHandler {
-//            backStack.removeLast().invoke()
-//        }
-//        val backDispatcher = BackDispatcher()
-//        backDispatcher.register(
-//            BackCallback (
-//                isEnabled = true,
-//                onBack = {
-//                    backStack.removeLast().invoke()
-//                    println("BACKSTACK POPPED")
-//                })
-//        )
         ScryfallDialogContent(
-            backStack = backStack,
+//            backStack = backStack,
             addToBackStack = addToBackStack,
             onImageSelected = onImageSelected
         )
@@ -101,7 +89,6 @@ fun ScryfallSearchDialog(
 @Composable
 fun ScryfallDialogContent(
     modifier: Modifier = Modifier,
-    backStack: List<() -> Unit>,
     addToBackStack: (() -> Unit) -> Unit,
     selectButtonEnabled: Boolean = true,
     printingsButtonEnabled: Boolean = true,
@@ -115,7 +102,7 @@ fun ScryfallDialogContent(
     val coroutineScope = rememberCoroutineScope()
     var lastSearchWasError by remember { mutableStateOf(false) }
     var rulingCard: Card? by remember { mutableStateOf(null) }
-    val initialBackStackSize by remember { mutableStateOf(backStack.size) }
+    var backStackDiff by remember { mutableStateOf(0) }
     var _printingsButtonEnabled by remember { mutableStateOf(printingsButtonEnabled) }
 
     var isSearchInProgress by remember { mutableStateOf(false) }
@@ -138,8 +125,10 @@ fun ScryfallDialogContent(
             _printingsButtonEnabled = !disablePrintingsButton
             isSearchInProgress = false
 
-            if (initialBackStackSize == backStack.size) {
+            if (backStackDiff == 0) {
+                backStackDiff += 1
                 addToBackStack {
+                    backStackDiff -= 1
                     query.value = ""
                     clearResults()
                 }
@@ -152,8 +141,10 @@ fun ScryfallDialogContent(
             clearResults()
             rulingsResults = scryfallApiRetriever.parseScryfallResponse<Ruling>(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError = false
-            if (initialBackStackSize == backStack.size) {
+            if (backStackDiff == 0) {
+                backStackDiff += 1
                 addToBackStack {
+                    backStackDiff -= 1
                     query.value = ""
                     clearResults()
                 }
@@ -183,7 +174,7 @@ fun ScryfallDialogContent(
                 detectTapGestures(onPress = { focusManager.clearFocus() })
             }, horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (initialBackStackSize == backStack.size || isSearchInProgress) return@LazyColumn
+            if (backStackDiff == 0 || isSearchInProgress) return@LazyColumn
             item {
                 Text(
                     "${cardResults.size + rulingsResults.size} results",
@@ -197,7 +188,9 @@ fun ScryfallDialogContent(
                 CardPreview(card, selectButtonEnabled = selectButtonEnabled, printingsButtonEnabled = _printingsButtonEnabled, rulingsButtonEnabled = rulingsButtonEnabled, onRulings = {
                     searchRulings(card.rulingsUri ?: "")
                     rulingCard = card
+                    backStackDiff += 1
                     addToBackStack {
+                        backStackDiff -= 1
                         searchCards(query.value)
                         rulingCard = null
                     }
@@ -205,7 +198,9 @@ fun ScryfallDialogContent(
                     onImageSelected(card.getUris().artCrop)
                 }, onPrintings = {
                     searchCards(card.printsSearchUri, disablePrintingsButton = true)
+                    backStackDiff += 1
                     addToBackStack {
+                        backStackDiff -= 1
                         searchCards(query.value)
                     }
                 })
@@ -453,19 +448,19 @@ fun CardPreview(
                     )
                     Row() {
                         if (rulingsButtonEnabled) {
-                            ScryfallButton(modifier = Modifier.width(80.dp).height(25.dp).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Rulings", onTap = {
+                            ScryfallButton(modifier = Modifier.width(85.dp).height(25.dp).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Rulings", onTap = {
                                 onRulings()
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
                         }
                         if (selectButtonEnabled) {
-                            ScryfallButton(modifier = Modifier.width(80.dp).height(25.dp).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Select", onTap = {
+                            ScryfallButton(modifier = Modifier.width(85.dp).height(25.dp).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Select", onTap = {
                                 onSelect()
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })
                         }
                         if (printingsButtonEnabled) {
-                            ScryfallButton(modifier = Modifier.width(80.dp).height(25.dp).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Printings", onTap = {
+                            ScryfallButton(modifier = Modifier.width(85.dp).height(25.dp).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Printings", onTap = {
                                 onPrintings()
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             })

@@ -47,6 +47,9 @@ fun LifeLinkedApp() {
                 }
             }
 
+            val backHandler: BackHandler by currentKoinScope().inject()
+            backHandler.attachNavigation(navController)
+
             NavHost(
                 navController = navController,
                 startDestination = getStartScreen()
