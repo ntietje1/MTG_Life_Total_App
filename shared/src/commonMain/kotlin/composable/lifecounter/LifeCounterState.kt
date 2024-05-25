@@ -3,7 +3,6 @@ package composable.lifecounter
 import composable.dialog.COUNTER_DIALOG_ENTRIES
 import composable.lifecounter.playerbutton.PlayerButtonViewModel
 import data.SettingsManager
-import data.serializable.Card
 
 data class LifeCounterState(
     val showButtons: Boolean = false,
@@ -12,9 +11,7 @@ data class LifeCounterState(
     val blurBackground: Boolean = false,
     val dayNight: DayNightState = DayNightState.NONE,
     val coinFlipHistory: List<String> = emptyList(),
-    val counters: List<Int> = List(COUNTER_DIALOG_ENTRIES) { 0 },
-    val planarDeck: ArrayDeque<Card> = ArrayDeque(),
-    val planarBackStack: ArrayDeque<Card> = ArrayDeque()
+    val counters: List<Int> = List(COUNTER_DIALOG_ENTRIES) { 0 }
     )
 
 enum class DayNightState {
