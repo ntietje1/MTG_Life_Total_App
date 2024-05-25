@@ -76,14 +76,17 @@ class SettingsManager private constructor() {
         settings.putString("allPlanes", allPrefString)
     }
 
-    fun savePlanarDeck(deck: List<Card>) {
-        val allPrefString = Json.encodeToString(deck)
+    fun savePlanechaseState(planarDeck: List<Card>, planarBackStack: List<Card>) {
+        val allPrefString = Json.encodeToString(planarDeck)
         settings.putString("planarDeck", allPrefString)
+        val backPrefString = Json.encodeToString(planarBackStack)
+        settings.putString("planarBackStack", backPrefString)
     }
 
-    fun loadPlanarDeck(): List<Card> {
-        val allPrefString = settings.getString("planarDeck", "[]")
-        return Json.decodeFromString(allPrefString)
+    fun loadPlanechaseState(): Pair<List<Card>, List<Card>> {
+        val deckPrefString = settings.getString("planarDeck", "[]")
+        val backPrefString = settings.getString("planarBackStack", "[]")
+        return Pair(Json.decodeFromString(deckPrefString), Json.decodeFromString(backPrefString))
     }
 
     fun savePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
