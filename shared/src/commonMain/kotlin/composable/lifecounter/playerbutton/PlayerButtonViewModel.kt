@@ -135,6 +135,14 @@ class PlayerButtonViewModel(
         return state.value.player.counters[counterType.ordinal]
     }
 
+    fun showBackgroundColorPicker(value: Boolean? = null) {
+        _state.value = state.value.copy(showBackgroundColorPicker = value ?: !state.value.showBackgroundColorPicker)
+    }
+
+    fun showTextColorPicker(value: Boolean? = null) {
+        _state.value = state.value.copy(showTextColorPicker = value ?: !state.value.showTextColorPicker)
+    }
+
     fun showScryfallSearch(value: Boolean? = null) {
         _state.value = state.value.copy(showScryfallSearch = value ?: !state.value.showScryfallSearch)
     }
@@ -199,6 +207,17 @@ class PlayerButtonViewModel(
         setPlayerInfo(state.value.player.copy(commanderDamage = state.value.player.commanderDamage.toMutableList().apply {
             this[index] += value
         }.toList()))
+    }
+
+    fun onChangeBackgroundColor(color: Color) {
+        setImageUri(null)
+        setBackgroundColor(color)
+        savePlayerPref()
+    }
+
+    fun onChangeTextColor(color: Color) {
+        setTextColor(color)
+        savePlayerPref()
     }
 
     fun copySettings(other: Player) {

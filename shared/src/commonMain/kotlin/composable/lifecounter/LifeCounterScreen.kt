@@ -61,36 +61,8 @@ fun LifeCounterScreen(
     val state by viewModel.state.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
 
-//    val lifecycleOwner = LocalLifecycleOwner.current
-//    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
-
-//    DisposableEffect(key1 = viewModel) {
-//        onDispose {
-//            viewModel.savePlayerStates()
-//        }
-//    }
-//
-//    LaunchedEffect(lifecycleState) {
-//        when (lifecycleState) {
-//            Lifecycle.State.DESTROYED -> {
-////                viewModel.savePlayerStates()
-//            }
-//
-//            Lifecycle.State.INITIALIZED -> {
-////                viewModel.generatePlayers()
-//            }
-//
-//            Lifecycle.State.CREATED -> {}
-//            Lifecycle.State.STARTED -> {
-//                viewModel.savePlayerStates()
-//            }
-//
-//            Lifecycle.State.RESUMED -> {}
-//        }
-//    }
-
     LaunchedEffect(showDialog) {
-        if (!showDialog) viewModel.setBlurBackground(false)
+        viewModel.setBlurBackground(showDialog)
     }
 
     LaunchedEffect(state.showButtons) {
@@ -128,23 +100,11 @@ fun LifeCounterScreen(
                                     playerButtonViewModel = viewModel.playerButtonViewModels[it.index],
                                     rotation = it.angle,
                                     width = it.width,
-                                    height = it.height
+                                    height = it.height,
+                                    setBlurBackground = { viewModel.setBlurBackground(it) }
                                 )
                             }
                         }
-//                        viewModel.playerButtonViewModels.forEachIndexed { index, playerButtonViewModel ->
-//                        val buttonPlacement = buttonPlacements[index]
-//                        item {
-////                            println("RENDERING BUTTON: $index")
-//                            AnimatedPlayerButton(
-//                                visible = state.showButtons,
-//                                playerButtonViewModel = playerButtonViewModel,
-//                                rotation = buttonPlacement.angle,
-//                                width = buttonPlacement.width,
-//                                height = buttonPlacement.height
-//                            )
-//                        }
-//                    }
                     })
                 }
             }
@@ -181,12 +141,11 @@ fun LifeCounterScreen(
             goToTutorialScreen = goToTutorialScreen
         )
     }
-
 }
 
 @Composable
 fun AnimatedPlayerButton(
-    visible: Boolean, playerButtonViewModel: PlayerButtonViewModel, rotation: Float, width: Dp, height: Dp
+    visible: Boolean, playerButtonViewModel: PlayerButtonViewModel, rotation: Float, width: Dp, height: Dp, setBlurBackground: (Boolean) -> Unit
 ) {
     val multiplesAway = 3
     val duration = (1250 / getAnimationCorrectionFactor()).toInt()
@@ -233,8 +192,8 @@ fun AnimatedPlayerButton(
 
     Box(modifier = Modifier.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }) {
         PlayerButton(
-            modifier = Modifier.width(width).height(height), viewModel = playerButtonViewModel, rotation = rotation, onOpenDialog = {
-                //TODO: toggle blur
+            modifier = Modifier.width(width).height(height), viewModel = playerButtonViewModel, rotation = rotation, setBlurBackground = {
+                setBlurBackground(it)
             }
         )
     }

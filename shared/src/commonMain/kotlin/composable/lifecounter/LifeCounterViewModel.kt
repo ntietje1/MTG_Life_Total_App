@@ -28,7 +28,7 @@ class LifeCounterViewModel(
 
     init {
 //        startTimer()
-        generatePlayers() //TODO: broken when pressing back
+        generatePlayers()
         savePlayerStates()
     }
 

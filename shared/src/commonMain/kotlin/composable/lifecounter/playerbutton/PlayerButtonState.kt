@@ -8,7 +8,9 @@ data class PlayerButtonState(
     val showScryfallSearch: Boolean = false,
     val showCameraWarning: Boolean = false,
     val showFilePicker: Boolean = false,
-    val showResetPrefsDialog: Boolean = false
+    val showResetPrefsDialog: Boolean = false,
+    val showBackgroundColorPicker: Boolean = false,
+    val showTextColorPicker: Boolean = false
 )
 
 enum class PBState {

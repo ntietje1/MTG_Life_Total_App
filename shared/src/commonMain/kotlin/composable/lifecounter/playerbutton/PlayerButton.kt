@@ -60,7 +60,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -129,7 +128,7 @@ fun PlayerButton(
     modifier: Modifier = Modifier,
     viewModel: PlayerButtonViewModel,
     rotation: Float = 0f,
-    onOpenDialog: (Boolean) -> Unit,
+    setBlurBackground: (Boolean) -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     val currentDealerIsPartnered by viewModel.currentDealerIsPartnered.collectAsState()
@@ -149,8 +148,11 @@ fun PlayerButton(
     val scryfallBackStack = remember {
         mutableStateListOf({
             viewModel.showScryfallSearch(false)
-            onOpenDialog(false)
         })
+    }
+
+    LaunchedEffect(state.showResetPrefsDialog, state.showCameraWarning, state.showFilePicker, state.showScryfallSearch, state.showBackgroundColorPicker, state.showTextColorPicker) {
+        setBlurBackground(state.showResetPrefsDialog || state.showCameraWarning || state.showFilePicker || state.showScryfallSearch || state.showBackgroundColorPicker || state.showTextColorPicker)
     }
 
     val fileType = listOf("jpg", "png")
@@ -213,6 +215,28 @@ fun PlayerButton(
         }
     }
 
+    if (state.showBackgroundColorPicker) {
+        ColorDialog(modifier = Modifier.fillMaxSize(),
+            onDismiss = {
+                viewModel.showBackgroundColorPicker(false)
+            },
+            initialColor = state.player.color,
+            setColor = { color ->
+                viewModel.onChangeBackgroundColor(color)
+            })
+    }
+
+    if (state.showTextColorPicker) {
+        ColorDialog(modifier = Modifier.fillMaxSize(),
+            onDismiss = {
+                viewModel.showTextColorPicker(false)
+            },
+            initialColor = state.player.textColor,
+            setColor = { color ->
+                viewModel.onChangeTextColor(color)
+            })
+    }
+
     LaunchedEffect(state.buttonState) {
         if (state.buttonState == PBState.COMMANDER_RECEIVER) backStack.clear()
     }
@@ -235,12 +259,8 @@ fun PlayerButton(
     ) {
         if (state.showScryfallSearch) {
             ScryfallSearchDialog(
-                modifier = Modifier.onGloballyPositioned { _ ->
-                    onOpenDialog(true)
-                },
                 onDismiss = {
                     viewModel.showScryfallSearch(false)
-                    onOpenDialog(false)
                 },
                 addToBackStack = {
                     scryfallBackStack.add(it)
@@ -429,15 +449,14 @@ fun PlayerButton(
                                 SettingsMenu(
                                     modifier = settingsPadding,
                                     player = state.player,
-                                    addToBackStack = { backStack.add(it) },
-                                    clearBackStack = { backStack.clear() },
+                                    addToBackStack = backStack::add,
+                                    clearBackStack = backStack::clear,
                                     onMonarchyButtonClick = { viewModel.onMonarchyButtonClicked(null) },
                                     onFromCameraRollButtonClick = { viewModel.showCameraWarning(true) },
                                     closeSettingsMenu = { viewModel.setPlayerButtonState(PBState.NORMAL) },
                                     onScryfallButtonClick = { viewModel.showScryfallSearch(!state.showScryfallSearch) },
                                     onResetPrefsClick = { viewModel.showResetPrefsDialog(true) },
-                                    setBlurBackground = onOpenDialog, //TODO: this is broken. Also add to all other dialog methods
-                                    savePlayerPref = { viewModel.savePlayerPref() },
+                                    savePlayerPref = viewModel::savePlayerPref,
                                     loadPlayerPrefs = viewModel.settingsManager::loadPlayerPrefs,
                                     deletePlayerPref = viewModel.settingsManager::deletePlayerPref,
                                     getCounterValue = viewModel::getCounterValue,
@@ -446,9 +465,10 @@ fun PlayerButton(
                                     toggleSetDead = viewModel::toggleSetDead,
                                     copyPlayerPrefs = viewModel::copySettings,
                                     onChangeName = viewModel::setName,
-                                    onChangeTextColor = viewModel::setTextColor,
-                                    onChangeImageUri = viewModel::setImageUri,
-                                    onChangeBackgroundColor = viewModel::setBackgroundColor,
+                                    onChangeTextColor = viewModel::onChangeTextColor,
+                                    onChangeBackgroundColor = viewModel::onChangeBackgroundColor,
+                                    showBackgroundColorPicker = viewModel::showBackgroundColorPicker,
+                                    showTextColorPicker = viewModel::showTextColorPicker,
                                 )
                             }
                         }
@@ -517,7 +537,7 @@ fun PlayerButton(
                         size = smallButtonSize
                     ) {
                         viewModel.onSettingsButtonClicked()
-                        when (state.buttonState) { //TODO: move this out
+                        when (state.buttonState) { //TODO: move this to viewmodel
                             PBState.SETTINGS -> {
                                 backStack.clear()
                             }
@@ -775,7 +795,6 @@ fun AddCounter(
 
 @Composable
 fun Counter(
-//    player: Player,
     textColor: Color,
     iconResource: DrawableResource,
     value: Int,
@@ -1081,7 +1100,6 @@ fun SettingsMenu(
     onScryfallButtonClick: () -> Unit,
     closeSettingsMenu: () -> Unit,
     onResetPrefsClick: () -> Unit,
-    setBlurBackground: (Boolean) -> Unit,
     copyPlayerPrefs: (Player) -> Unit,
     savePlayerPref: () -> Unit,
     loadPlayerPrefs: () -> List<Player>,
@@ -1093,7 +1111,8 @@ fun SettingsMenu(
     onChangeName: (String) -> Unit,
     onChangeBackgroundColor: (Color) -> Unit,
     onChangeTextColor: (Color) -> Unit,
-    onChangeImageUri: (String?) -> Unit,
+    showBackgroundColorPicker: (Boolean) -> Unit,
+    showTextColorPicker: (Boolean) -> Unit,
 ) {
     var state by remember { mutableStateOf(SettingsState.Default) }
     val textColor = player.textColor
@@ -1269,13 +1288,9 @@ fun SettingsMenu(
                         addAll(allPlayerColors)
                     },
                     textColor = player.textColor,
-                    initialColor = player.color,
-                    setBlurBackground = { setBlurBackground(it) },
-                    onPress = { color ->
-                        onChangeImageUri(null)
-                        onChangeBackgroundColor(color)
-                        savePlayerPref()
-                    })
+                    showColorPicker = showBackgroundColorPicker,
+                    onPress = onChangeBackgroundColor
+                )
             }
 
             SettingsState.TextColorPicker -> {
@@ -1287,12 +1302,9 @@ fun SettingsMenu(
                         addAll(allPlayerColors)
                     },
                     textColor = player.textColor,
-                    initialColor = player.textColor,
-                    setBlurBackground = { setBlurBackground(it) },
-                    onPress = { color ->
-                        onChangeTextColor(color)
-                        savePlayerPref()
-                    })
+                    showColorPicker = showTextColorPicker,
+                    onPress = onChangeTextColor
+                )
             }
 
 
@@ -1401,8 +1413,7 @@ fun ColorPicker(
     text: String,
     colorList: List<Color>,
     textColor: Color,
-    initialColor: Color,
-    setBlurBackground: (Boolean) -> Unit,
+    showColorPicker: (Boolean) -> Unit,
     onPress: (Color) -> Unit
 ) {
     BoxWithConstraints(modifier) {
@@ -1437,11 +1448,8 @@ fun ColorPicker(
                     item {
                         CustomColorPickerButton(modifier = Modifier.padding(colorPickerPadding),
                             textColor = textColor,
-                            initialColor = initialColor,
-                            setBlurBackground = { setBlurBackground(it) },
-                            setColor = { color ->
-                                onPress(color)
-                            })
+                            showColorPicker = showColorPicker,
+                        )
                     }
                     items(colorList) { color ->
                         ColorPickerButton(
@@ -1596,30 +1604,13 @@ fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color:
 fun CustomColorPickerButton(
     modifier: Modifier = Modifier,
     textColor: Color,
-    initialColor: Color,
-    setBlurBackground: (Boolean) -> Unit,
-    setColor: (Color) -> Unit
+    showColorPicker: (Boolean) -> Unit,
 ) {
-    var showColorDialog by remember { mutableStateOf(false) }
-
-    if (showColorDialog) {
-        ColorDialog(modifier = Modifier.fillMaxSize(),
-            onDismiss = {
-                showColorDialog = false
-                setBlurBackground(false)
-            },
-            initialColor = initialColor,
-            setColor = { color ->
-                setColor(color)
-            })
-    }
-
     Box(
         modifier = modifier.fillMaxHeight().aspectRatio(1f).pointerInput(Unit) {
             detectTapGestures(
                 onTap = {
-                    showColorDialog = true
-                    setBlurBackground(true)
+                    showColorPicker(true)
                 },
             )
         },
