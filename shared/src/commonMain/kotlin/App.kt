@@ -78,8 +78,7 @@ fun LifeLinkedApp() {
                         viewModel = viewModel,
                         goToLifeCounterScreen = {
                             navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
-                        },
-                        setNumPlayers = { } //TODO: Implement this
+                        }
                     )
                 }
 

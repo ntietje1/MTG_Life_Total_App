@@ -22,7 +22,7 @@ class LifeCounterViewModel(
     val state: StateFlow<LifeCounterState> = _state.asStateFlow()
 
     private val _currentDealerIsPartnered = MutableStateFlow(false)
-    val currentDealerIsPartnered = _currentDealerIsPartnered.asStateFlow()
+    private val currentDealerIsPartnered = _currentDealerIsPartnered.asStateFlow()
 
     lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
 
