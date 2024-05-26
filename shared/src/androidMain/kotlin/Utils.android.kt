@@ -1,14 +1,19 @@
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
 import android.provider.Settings
+import android.view.WindowManager
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+@SuppressLint("ComposableNaming")
 @Composable
 actual fun updateSystemBarsColors(isDarkTheme: Boolean) {
     val view = LocalView.current
@@ -33,6 +38,25 @@ actual fun getAnimationCorrectionFactor(): Float {
     )
 }
 
+
 actual fun legacyMonarchyIndicator(): Boolean {
     return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+}
+
+@SuppressLint("ComposableNaming")
+@Composable
+actual fun keepScreenOn(keepScreenOn: Boolean) {
+    val activity = LocalContext.current as Activity
+    val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+
+    DisposableEffect(keepScreenOn) {
+        if (keepScreenOn) {
+            activity.window.addFlags(flag)
+        } else {
+            activity.window.clearFlags(flag)
+        }
+        onDispose {
+            activity.window.clearFlags(flag)
+        }
+    }
 }

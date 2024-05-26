@@ -1,5 +1,6 @@
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 
 
 @Composable
@@ -14,4 +15,15 @@ actual fun getAnimationCorrectionFactor(): Float {
 
 actual fun legacyMonarchyIndicator(): Boolean {
     return false
+}
+
+@Composable
+actual fun keepScreenOn(keepScreenOn: Boolean) {
+    DisposableEffect(keepScreenOn) {
+        UIApplication.shared.isIdleTimerDisabled = keepScreenOn
+//        UIApplication.sharedApplication.idleTimerDisabled = true
+        onDispose {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
+    }
 }

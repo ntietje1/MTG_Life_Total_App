@@ -30,6 +30,8 @@ private enum class LifeLinkedScreen(val route: String) {
 fun LifeLinkedApp() {
     KoinContext {
         var darkTheme by remember { mutableStateOf(SettingsManager.instance.darkTheme) }
+        keepScreenOn(true)
+
         LifeLinkedTheme(darkTheme = darkTheme) {
             updateSystemBarsColors(true)
 
