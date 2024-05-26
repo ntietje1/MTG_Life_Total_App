@@ -10,12 +10,10 @@ import android.view.View
 import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowInsetsController
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.DisposableEffect
 import org.koin.android.ext.android.inject
 
 
@@ -48,12 +46,12 @@ class MainActivity : ComponentActivity() {
                         or View.SYSTEM_UI_FLAG_FULLSCREEN)
             }
 
-            fun generateCallback (): () -> Unit {
-                return {
-                    println("back button pressed!!")
-                    backHandler.pop()
-                }
-            }
+//            fun generateCallback (): () -> Unit {
+//                return {
+//                    println("back button pressed!!")
+//                    backHandler.pop()
+//                }
+//            }
 
             this.onBackPressedDispatcher.addCallback(this) {
                 println("back button pressed!1")
@@ -67,13 +65,6 @@ class MainActivity : ComponentActivity() {
             }
 
             LifeLinkedApp()
-            val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-            DisposableEffect(activity) {
-                activity.window.addFlags(flag)
-                onDispose {
-                    activity.window.clearFlags(flag)
-                }
-            }
         }
     }
 }
