@@ -40,6 +40,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.activity)
 
             implementation(libs.ktor.client.okhttp)
 
@@ -54,7 +55,7 @@ kotlin {
             implementation(compose.animation)
             implementation(compose.components.resources)
 
-            val nav_version = "2.7.0-alpha03"
+//            val nav_version = "2.7.0-alpha03"
 //            implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
 //            implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
             implementation(libs.navigation.compose)
