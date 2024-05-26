@@ -1,5 +1,6 @@
 package composable.dialog
 
+import Platform
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -59,7 +60,8 @@ fun SettingsDialogContent(
     goToAboutMe: () -> Unit,
     addGoToSettingsToBackStack: () -> Unit,
     goToTutorialScreen: () -> Unit,
-    settingsManager: SettingsManager = koinInject()
+    settingsManager: SettingsManager = koinInject(),
+    platform: Platform = koinInject(),
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -135,7 +137,7 @@ fun SettingsDialogContent(
                     SettingsDialogButton(
                         text = "Write a Review", additionalText = "", icon = vectorResource(Res.drawable.star_icon_small)
                     ) {
-                        val url = "https://play.google.com/store/apps/details?id=com.hypeapps.lifelinked"
+                        val url = platform.appStoreListing
                         uriHandler.openUri(url)
                     }
                     SettingsDialogButton(

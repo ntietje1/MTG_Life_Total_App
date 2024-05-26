@@ -12,7 +12,7 @@ val sharedModule = module {
 
 expect val platform: Platform
 
-enum class Platform(val platformString: String) {
-    ANDROID("android"),
-    IOS("ios"),
+enum class Platform(val platformString: String, val appStoreListing: String) {
+    ANDROID("android", "https://play.google.com/store/apps/details?id=com.hypeapps.lifelinked"),
+    IOS("ios", "NOT YET IMPLEMENTED"),
 }
