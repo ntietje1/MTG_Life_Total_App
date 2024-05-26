@@ -7,7 +7,6 @@ import platform.UIKit.UIViewController
 fun MainViewController(): UIViewController = ComposeUIViewController(
     configure = {
         KoinInitializer().init()
-        UIApplication.sharedApplication.idleTimerDisabled = true
     }
 ) {
     LifeLinkedApp()
