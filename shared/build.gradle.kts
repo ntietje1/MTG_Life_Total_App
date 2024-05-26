@@ -42,10 +42,16 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.activity)
 
+            implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+
             implementation(libs.ktor.client.okhttp)
 
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
+
+            implementation(libs.kotlinx.coroutines.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -55,17 +61,13 @@ kotlin {
             implementation(compose.animation)
             implementation(compose.components.resources)
 
-//            val nav_version = "2.7.0-alpha03"
-//            implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
-//            implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
             implementation(libs.navigation.compose)
 
+            implementation(libs.kotlinx.coroutines.core)
+
             implementation(libs.androidx.lifecycle.viewmodel.ktx)
-            implementation(libs.androidx.lifecycle.viewmodel.compose)
-            implementation(libs.androidx.lifecycle.livedata.ktx)
             implementation(libs.androidx.lifecycle.runtime.ktx)
-            implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+            implementation(libs.androidx.lifecycle.livedata.ktx)
 
             api(libs.koin.core)
             implementation(libs.koin.compose)
@@ -110,6 +112,7 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            resources.excludes += "DebugProbesKt.bin" // make sure this doesn't break anything
         }
     }
     buildTypes {
