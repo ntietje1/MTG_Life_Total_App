@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import platform.Foundation.*
 
 actual class ImageManager {
+    @OptIn(ExperimentalForeignApi::class)
     actual suspend fun copyImageToLocalStorage(uri: String, fileName: String): String {
         val documentsDir = NSSearchPathForDirectoriesInDomains(
             NSDocumentDirectory, NSUserDomainMask, true

@@ -1,6 +1,7 @@
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import platform.UIKit.UIApplication
 
 
 @Composable
@@ -20,10 +21,10 @@ actual fun legacyMonarchyIndicator(): Boolean {
 @Composable
 actual fun keepScreenOn(keepScreenOn: Boolean) {
     DisposableEffect(keepScreenOn) {
-        UIApplication.shared.isIdleTimerDisabled = keepScreenOn
+        UIApplication.sharedApplication.idleTimerDisabled = keepScreenOn
 //        UIApplication.sharedApplication.idleTimerDisabled = true
         onDispose {
-            UIApplication.shared.isIdleTimerDisabled = false
+            UIApplication.sharedApplication.idleTimerDisabled = false
         }
     }
 }
