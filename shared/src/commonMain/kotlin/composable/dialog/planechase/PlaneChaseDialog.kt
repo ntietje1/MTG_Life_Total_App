@@ -177,19 +177,9 @@ fun ChoosePlanesDialogContent(
     val focusManager = LocalFocusManager.current
 
     val filteredPlanes by derivedStateOf {
-        if (state.searchedPlanes.isNotEmpty()) {
-            state.searchedPlanes.filter { card -> state.planarDeck.contains(card) || !state.hideUnselected }
-        } else {
-            state.allPlanes.filter { card -> state.planarDeck.contains(card) || !state.hideUnselected }
-        }
+        state.searchedPlanes.filter { card -> state.planarDeck.contains(card) || !state.hideUnselected }
     }
-
-//    LaunchedEffect(Unit) {
-//        searchPlanes {
-//            actions.updateAllPlanes(it)
-//            focusManager.clearFocus()
-//        }
-//    }
+    var backStackDiff by remember { mutableStateOf(0) }
 
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = maxWidth
@@ -204,8 +194,10 @@ fun ChoosePlanesDialogContent(
             ) {
                 viewModel.searchPlanes {
                     focusManager.clearFocus()
-                    if (state.query.isNotEmpty()) { //TODO: if backstack = initialbackstacksize
+                    if (backStackDiff == 0) {
+                        backStackDiff += 1
                         addToBackStack {
+                            backStackDiff -= 1
                             viewModel.onBackPress()
                         }
                     }
@@ -214,7 +206,7 @@ fun ChoosePlanesDialogContent(
             }
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "${state.planarDeck.size}/${filteredPlanes.size} Planes Selected (${state.allPlanes.size - filteredPlanes.size} Hidden)",
+                text = "${state.planarDeck.intersect(filteredPlanes.toSet()).size}/${filteredPlanes.size} Planes Selected, ${state.allPlanes.size - filteredPlanes.size}/${state.allPlanes.size} Hidden",
                 fontSize = 15.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
@@ -224,7 +216,6 @@ fun ChoosePlanesDialogContent(
                 columns = GridCells.Fixed(2),
             ) {
                 items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
-//                    val selected by remember { derivedStateOf { card in state.planarDeck } }
                     PlaneChaseCardPreview(modifier = Modifier.width(maxWidth / 2),
                         card = card,
                         onTap = {

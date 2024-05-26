@@ -163,7 +163,7 @@ class PlaneChaseViewModel(
 
     fun onBackPress() {
         setQuery("")
-        setSearchedPlanes(emptyList())
+        setSearchedPlanes(state.value.allPlanes)
     }
 
     fun toggleHideUnselected(value: Boolean? = null) {
