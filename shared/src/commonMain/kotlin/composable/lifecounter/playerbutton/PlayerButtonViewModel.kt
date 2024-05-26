@@ -2,15 +2,13 @@ package composable.lifecounter.playerbutton
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import composable.lifecounter.CounterType
 import data.ImageManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
 import data.SettingsManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +30,7 @@ class PlayerButtonViewModel(
     private var _state = MutableStateFlow(PlayerButtonState(initialPlayer))
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
 
-    private var scope = CoroutineScope(Dispatchers.IO)
+    private var recentChangeJob: Job? = null
 
     fun setPlayerButtonState(buttonState: PBState) {
         _state.value = state.value.copy(buttonState = buttonState)
@@ -114,11 +112,11 @@ class PlayerButtonViewModel(
         setPlayerInfo(state.value.player.copy(imageUri = uri))
     }
 
-    fun setBackgroundColor(color: Color) {
+    private fun setBackgroundColor(color: Color) {
         setPlayerInfo(state.value.player.copy(color = color))
     }
 
-    fun setTextColor(color: Color) {
+    private fun setTextColor(color: Color) {
         setPlayerInfo(state.value.player.copy(textColor = color))
     }
 
@@ -243,9 +241,8 @@ class PlayerButtonViewModel(
     }
 
     private fun updateRecentChange() {
-        scope.cancel()
-        scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
+        recentChangeJob?.cancel()
+        recentChangeJob = viewModelScope.launch {
             delay(1500)
             setPlayerInfo(
                 state.value.player.copy(
