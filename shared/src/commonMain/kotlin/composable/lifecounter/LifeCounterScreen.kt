@@ -127,16 +127,11 @@ fun LifeCounterScreen(
         MiddleButtonDialog(modifier = Modifier.onGloballyPositioned { _ ->
             viewModel.setBlurBackground(showDialog)
         },
-            onDismiss = {
-                showDialog = false
-            },
+            onDismiss = { showDialog = false },
             viewModel = viewModel,
             toggleTheme = { toggleTheme() },
             goToPlayerSelectScreen = { goToPlayerSelectScreen() },
-            setNumPlayers = {
-                viewModel.setNumPlayers(it)
-                println("SETNUMOFPLAYERS: $it")
-            },
+            setNumPlayers = { viewModel.setNumPlayers(it) },
             returnToLifeCounterScreen = { returnToLifeCounterScreen() },
             goToTutorialScreen = goToTutorialScreen
         )

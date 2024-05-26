@@ -1,4 +1,3 @@
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,10 +28,9 @@ private enum class LifeLinkedScreen(val route: String) {
 
 @Composable
 fun LifeLinkedApp() {
-    var darkTheme by remember { mutableStateOf(SettingsManager.instance.darkTheme) }
-
-    LifeLinkedTheme(darkTheme = true) {
-        KoinContext {
+    KoinContext {
+        var darkTheme by remember { mutableStateOf(SettingsManager.instance.darkTheme) }
+        LifeLinkedTheme(darkTheme = darkTheme) {
             updateSystemBarsColors(true)
 
             val navController = rememberNavController()

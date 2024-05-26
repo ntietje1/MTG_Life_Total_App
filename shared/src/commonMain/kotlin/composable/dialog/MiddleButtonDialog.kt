@@ -266,7 +266,7 @@ fun MiddleButtonDialog(
                         SettingsButton(
                             buttonModifier,
                             imageVector = vectorResource(Res.drawable.star_icon_small),
-                            text = "Toggle Theme", //TODO: THIS IS BROKEN RIGHT NOW
+                            text = "Toggle Theme",
                             shadowEnabled = false,
                             onPress = {
                                 toggleTheme()
