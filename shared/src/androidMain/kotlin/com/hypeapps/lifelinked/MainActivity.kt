@@ -26,12 +26,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         this.requestWindowFeature(Window.FEATURE_NO_TITLE)
         val activity: ComponentActivity = this
+//        enableEdgeToEdge()
+
         setContent {
             window.decorView.setBackgroundColor(if (isSystemInDarkTheme()) Color.BLACK else Color.WHITE)
-
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-//                window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-//            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 window.setDecorFitsSystemWindows(false)
