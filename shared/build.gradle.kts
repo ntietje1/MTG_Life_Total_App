@@ -46,6 +46,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.androidx.lifecycle.viewmodel.savedstate)
 
+            implementation(libs.androidx.lifecycle.viewmodel.ktx)
+            implementation(libs.androidx.lifecycle.runtime.ktx)
+            implementation(libs.androidx.lifecycle.livedata.ktx)
+
             implementation(libs.ktor.client.okhttp)
 
             implementation(libs.koin.android)
@@ -64,10 +68,6 @@ kotlin {
             implementation(libs.navigation.compose)
 
             implementation(libs.kotlinx.coroutines.core)
-
-            implementation(libs.androidx.lifecycle.viewmodel.ktx)
-            implementation(libs.androidx.lifecycle.runtime.ktx)
-            implementation(libs.androidx.lifecycle.livedata.ktx)
 
             api(libs.koin.core)
             implementation(libs.koin.compose)
