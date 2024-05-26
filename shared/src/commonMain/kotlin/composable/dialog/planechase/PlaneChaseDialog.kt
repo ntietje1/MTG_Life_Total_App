@@ -136,6 +136,13 @@ fun PlaneChaseDialogContent(
         val previewPadding = maxWidth / 20f
         val buttonModifier = Modifier.size(maxWidth / 6f).padding(bottom = maxHeight / 15f, top = 5.dp)
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                modifier = Modifier.fillMaxWidth().padding(top=5.dp),
+                text = "Planar deck size: ${state.planarDeck.size}",
+                fontSize = 15.scaledSp,
+                color = MaterialTheme.colorScheme.onPrimary,
+                textAlign = TextAlign.Center
+            )
             PlaneChaseCardPreview(
                 modifier = Modifier.graphicsLayer { rotationZ = if (rotated) 180f else 0f }.fillMaxHeight(0.9f).padding(bottom = previewPadding),
                 card = state.planarDeck.lastOrNull(),
