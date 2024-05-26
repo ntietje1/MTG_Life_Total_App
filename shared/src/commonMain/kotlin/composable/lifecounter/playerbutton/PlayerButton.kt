@@ -87,6 +87,7 @@ import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.add_icon
 import lifelinked.shared.generated.resources.back_icon
+import lifelinked.shared.generated.resources.camera_icon
 import lifelinked.shared.generated.resources.change_background_icon
 import lifelinked.shared.generated.resources.change_name_icon
 import lifelinked.shared.generated.resources.color_picker_icon
@@ -1246,7 +1247,7 @@ fun SettingsMenu(
 
                     item {
                         FormattedSettingsButton(
-                            imageResource = Res.drawable.change_background_icon,
+                            imageResource = Res.drawable.camera_icon, //TODO: change to camera icon
                             text = "Upload Image"
                         ) { onFromCameraRollButtonClick() }
                     }
