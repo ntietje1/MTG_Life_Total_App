@@ -79,9 +79,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import com.darkrockstudios.libraries.mpfilepicker.FilePicker
+import composable.SettingsButton
 import composable.dialog.ColorDialog
 import composable.dialog.ScryfallSearchDialog
-import composable.SettingsButton
 import composable.dialog.WarningDialog
 import composable.lifecounter.CounterType
 import composable.modifier.VerticalRotation
@@ -257,7 +257,7 @@ fun PlayerButton(
     if (state.showChangeNameField) {
         Dialog(
             onDismissRequest = { viewModel.showChangeNameField(false) },
-            properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = true)
         ) {
             Column(Modifier.fillMaxSize()) {
                 Spacer(Modifier.weight(0.7f))
