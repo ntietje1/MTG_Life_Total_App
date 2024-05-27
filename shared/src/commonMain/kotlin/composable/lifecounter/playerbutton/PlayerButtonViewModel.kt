@@ -1,6 +1,7 @@
 package composable.lifecounter.playerbutton
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -148,10 +149,9 @@ class PlayerButtonViewModel(
 
     fun setChangeNameField(value: TextFieldValue) {
         _state.value = state.value.copy(changeNameTextField = value)
-        setName(value.text)
     }
 
-    private fun setName(name: String) {
+    fun setName(name: String) {
         setPlayerInfo(state.value.player.copy(name = name))
         savePlayerPref()
     }
@@ -272,6 +272,7 @@ class PlayerButtonViewModel(
                 name = other.name
             )
         )
+        setChangeNameField(TextFieldValue(other.name, selection = TextRange(other.name.length)))
     }
 
     fun incrementLife(value: Int) {
@@ -309,6 +310,7 @@ class PlayerButtonViewModel(
                 activeCounters = listOf()
             )
         }
+        setChangeNameField(TextFieldValue(state.value.player.name, selection = TextRange(state.value.player.name.length)))
         triggerSave()
     }
 }

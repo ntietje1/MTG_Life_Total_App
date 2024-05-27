@@ -275,6 +275,7 @@ fun PlayerButton(
                         backgroundColor = state.player.color,
                         playerTextColor = state.player.textColor,
                         onDone = {
+                            viewModel.setName(state.changeNameTextField.text)
                             viewModel.showChangeNameField(false)
                             viewModel.closeSettingsMenu()
                         }
@@ -687,7 +688,7 @@ fun PlayerButton(
                                                 horizontalArrangement = Arrangement.spacedBy(smallPadding),
                                                 verticalArrangement = Arrangement.spacedBy(smallPadding),
                                                 content = {
-                                                    items(playerList) { pInfo ->
+                                                    items(items = playerList, key = { p -> p.hashCode() }) { pInfo ->
                                                         MiniPlayerButton(
                                                             imageUri = pInfo.imageUri,
                                                             name = pInfo.name,
@@ -698,8 +699,9 @@ fun PlayerButton(
                                                                 viewModel.closeSettingsMenu()
                                                             },
                                                             removePlayerProfile = {
-                                                                viewModel.settingsManager.deletePlayerPref(pInfo)
+                                                                println("Removing player profile: ${pInfo.name}")
                                                                 playerList.remove(pInfo)
+                                                                viewModel.settingsManager.deletePlayerPref(pInfo)
                                                             },
                                                         )
                                                     }
