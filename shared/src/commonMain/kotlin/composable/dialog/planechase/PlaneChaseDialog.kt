@@ -137,7 +137,7 @@ fun PlaneChaseDialogContent(
         val buttonModifier = Modifier.size(maxWidth / 6f).padding(bottom = maxHeight / 15f, top = 5.dp)
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                modifier = Modifier.fillMaxWidth().padding(top=5.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 5.dp),
                 text = "Planar deck size: ${state.planarDeck.size}",
                 fontSize = 15.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -176,6 +176,7 @@ fun PlaneChaseDialogContent(
 fun ChoosePlanesDialogContent(
     modifier: Modifier = Modifier,
     addToBackStack: (() -> Unit) -> Unit,
+    popBackStack: () -> Unit,
     viewModel: PlaneChaseViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
@@ -223,7 +224,8 @@ fun ChoosePlanesDialogContent(
                 columns = GridCells.Fixed(2),
             ) {
                 items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
-                    PlaneChaseCardPreview(modifier = Modifier.width(maxWidth / 2),
+                    PlaneChaseCardPreview(
+                        modifier = Modifier.width(maxWidth / 2),
                         card = card,
                         onTap = {
                             if (!state.planarDeck.contains(card)) {
@@ -246,7 +248,7 @@ fun ChoosePlanesDialogContent(
                 Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = maxWidth / 10f), horizontalArrangement = Arrangement.SpaceAround
 
             ) {
-                SettingsButton(modifier = buttonModifier, text = "Select All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.checkmark), onPress = {
+                SettingsButton(modifier = buttonModifier, text = "Select All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.deck_icon), onPress = {
                     viewModel.addAllPlanarDeck(filteredPlanes)
                 })
                 SettingsButton(modifier = buttonModifier, text = "Unselect All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.x_icon), onPress = {
@@ -259,6 +261,17 @@ fun ChoosePlanesDialogContent(
                     onPress = {
                         viewModel.toggleHideUnselected()
                     })
+                SettingsButton(modifier = buttonModifier,
+                    text = "Done",
+                    shadowEnabled = false,
+                    imageVector = vectorResource(Res.drawable.checkmark),
+                    onPress = {
+                        if (backStackDiff != 0) {
+                            popBackStack()
+                        }
+                        popBackStack()
+                    }
+                )
             }
         }
     }

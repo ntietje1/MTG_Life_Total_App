@@ -241,7 +241,9 @@ fun MiddleButtonDialog(
                 visible = middleButtonDialogState == MiddleButtonDialogState.PlanarDeck
             ) {
                 ChoosePlanesDialogContent(
-                    modifier = Modifier.fillMaxSize(), addToBackStack = backHandler::push,
+                    modifier = Modifier.fillMaxSize(),
+                    addToBackStack = backHandler::push,
+                    popBackStack = backHandler::pop
                 )
             }
 
