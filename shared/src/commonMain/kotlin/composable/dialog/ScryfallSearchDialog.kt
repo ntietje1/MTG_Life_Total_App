@@ -26,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -139,8 +140,10 @@ fun ScryfallDialogContent(
     fun searchRulings(qry: String) {
         coroutineScope.launch {
             clearResults()
+            isSearchInProgress = true
             rulingsResults = scryfallApiRetriever.parseScryfallResponse<Ruling>(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError = false
+            isSearchInProgress = false
             if (backStackDiff == 0) {
                 backStackDiff += 1
                 addToBackStack {
@@ -209,9 +212,23 @@ fun ScryfallDialogContent(
                 item {
                     CardDetails(rulingCard!!)
                 }
+                if (rulingsResults.isNotEmpty()) {
+                    item {
+                        HorizontalDivider(
+                            modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 10.dp).align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+                        )
+                    }
+                }
             }
             items(rulingsResults) { ruling ->
                 RulingPreview(ruling)
+            }
+            item {
+                AnimatedVisibility(
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp), visible = rulingsResults.isEmpty() && !isSearchInProgress
+                ) {
+                    Text("No rulings found :(", color = Color.Red, fontSize = 15.scaledSp)
+                }
             }
         }
     }
@@ -344,7 +361,7 @@ fun CardDetails(
                 text = "Oracle Text", color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center,
                 fontSize = 15.scaledSp,
             )
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(0.4f).align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
             )
             Text(
