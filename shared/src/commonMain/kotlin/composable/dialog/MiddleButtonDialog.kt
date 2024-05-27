@@ -77,6 +77,7 @@ fun MiddleButtonDialog(
     onDismiss: () -> Unit,
     viewModel: LifeCounterViewModel,
     toggleTheme: () -> Unit,
+    toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: () -> Unit,
     returnToLifeCounterScreen: () -> Unit,
     setNumPlayers: (Int) -> Unit,
@@ -214,7 +215,8 @@ fun MiddleButtonDialog(
                     goToTutorialScreen = {
                         onDismiss()
                         goToTutorialScreen()
-                    }
+                    },
+                    toggleKeepScreenOn = toggleKeepScreenOn
                 )
             }
             FormattedAnimatedVisibility(

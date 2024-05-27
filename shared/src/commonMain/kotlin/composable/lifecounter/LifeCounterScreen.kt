@@ -54,6 +54,7 @@ import org.jetbrains.compose.resources.vectorResource
 fun LifeCounterScreen(
     viewModel: LifeCounterViewModel,
     toggleTheme: () -> Unit,
+    toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: () -> Unit,
     returnToLifeCounterScreen: () -> Unit,
     goToTutorialScreen: () -> Unit
@@ -130,6 +131,7 @@ fun LifeCounterScreen(
             onDismiss = { showDialog = false },
             viewModel = viewModel,
             toggleTheme = { toggleTheme() },
+            toggleKeepScreenOn = { toggleKeepScreenOn() },
             goToPlayerSelectScreen = { goToPlayerSelectScreen() },
             setNumPlayers = { viewModel.setNumPlayers(it) },
             returnToLifeCounterScreen = { returnToLifeCounterScreen() },

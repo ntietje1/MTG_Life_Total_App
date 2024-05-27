@@ -60,6 +60,7 @@ fun SettingsDialogContent(
     goToAboutMe: () -> Unit,
     addGoToSettingsToBackStack: () -> Unit,
     goToTutorialScreen: () -> Unit,
+    toggleKeepScreenOn: () -> Unit,
     settingsManager: SettingsManager = koinInject(),
     platform: Platform = koinInject(),
 ) {
@@ -105,9 +106,12 @@ fun SettingsDialogContent(
                         icon = vectorResource(Res.drawable.player_select_icon)
                     )
                     SettingsDialogButtonWithToggle(
-                        text = "Keep Screen On (requires restart)",
+                        text = "Keep Screen On",
                         initialState = settingsManager.keepScreenOn,
-                        toggle = { settingsManager.keepScreenOn = it },
+                        toggle = {
+                            toggleKeepScreenOn()
+                            settingsManager.keepScreenOn = it
+                                 },
                         icon = vectorResource(Res.drawable.sun_icon)
                     )
                     SettingsDialogButton(
