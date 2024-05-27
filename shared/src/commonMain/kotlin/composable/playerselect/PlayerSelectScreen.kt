@@ -52,6 +52,7 @@ import composable.playerselect.PlayerSelectScreenValues.pulseDuration2
 import composable.playerselect.PlayerSelectScreenValues.pulseFreq
 import composable.playerselect.PlayerSelectScreenValues.selectionDelay
 import composable.playerselect.PlayerSelectScreenValues.showHelperTextDelay
+import data.Player.Companion.allPlayerColors
 import getAnimationCorrectionFactor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -59,7 +60,6 @@ import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.skip_icon
 import org.jetbrains.compose.resources.vectorResource
-import theme.allPlayerColors
 import theme.scaledSp
 import kotlin.coroutines.coroutineContext
 import kotlin.math.pow

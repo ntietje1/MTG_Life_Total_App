@@ -82,6 +82,7 @@ import composable.modifier.bounceClick
 import composable.modifier.repeatingClickable
 import composable.modifier.rotateVertically
 import data.Player
+import data.Player.Companion.allPlayerColors
 import getAnimationCorrectionFactor
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
@@ -108,7 +109,6 @@ import lifelinked.shared.generated.resources.text_icon
 import lifelinked.shared.generated.resources.transparent
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
-import theme.allPlayerColors
 import theme.brightenColor
 import theme.deadDealerColorMatrix
 import theme.deadNormalColorMatrix
@@ -1312,7 +1312,7 @@ fun SettingsMenu(
             SettingsState.LoadPlayer -> {
                 val playerList = remember {
                     mutableStateListOf<Player>().apply {
-                        addAll(loadPlayerPrefs())
+                        addAll(loadPlayerPrefs().filter { !it.isDefaultOrEmptyName() })
                     }
                 }
 

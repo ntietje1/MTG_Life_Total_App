@@ -90,7 +90,6 @@ class SettingsManager private constructor() {
     }
 
     fun savePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
-        if (player.isDefaultOrEmptyName()) return
         deletePlayerPref(player, playerList)
         playerList.add(player)
         savePlayerPrefs(playerList)

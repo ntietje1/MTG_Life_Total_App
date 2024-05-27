@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import theme.allPlayerColors
 
 class PlayerButtonViewModel(
     initialPlayer: Player,
@@ -25,7 +24,8 @@ class PlayerButtonViewModel(
     private val getCurrentDealer: () -> PlayerButtonViewModel?,
     private val updateCurrentDealerMode: (Boolean) -> Unit,
     val currentDealerIsPartnered: StateFlow<Boolean>,
-    private val triggerSave: () -> Unit
+    private val triggerSave: () -> Unit,
+    private val resetPlayerColor: (Player) -> Player,
 ) : ViewModel() {
     private var _state = MutableStateFlow(PlayerButtonState(initialPlayer))
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
@@ -75,12 +75,10 @@ class PlayerButtonViewModel(
         when (state.value.buttonState) {
             PBState.SETTINGS -> {
                 setPlayerButtonState(PBState.NORMAL)
-//                backStack.clear()
             }
 
             PBState.NORMAL -> {
                 setPlayerButtonState(PBState.SETTINGS)
-//                backStack.add { viewModel.updateState(playerInfo.playerNum - 1, PlayerButtonState.NORMAL) }
             }
 
             else -> throw Exception("Invalid state for settingsButtonOnClick")
@@ -92,15 +90,15 @@ class PlayerButtonViewModel(
     }
 
     fun resetPlayerPref() {
-        println("RESETINGS PREFS FOR PLAYER P${state.value.player.playerNum}")
         updatePlayerInfo {
             state.value.player.copy(
                 name = "P${state.value.player.playerNum}",
-//                color = playerManager.getRandColor(),
-                color = allPlayerColors.random(),
                 textColor = Color.White,
                 imageUri = null
             )
+        }
+        updatePlayerInfo {
+            resetPlayerColor(state.value.player)
         }
     }
 

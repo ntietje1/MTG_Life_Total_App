@@ -8,11 +8,11 @@ import composable.lifecounter.playerbutton.PlayerButtonViewModel
 import data.ImageManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
+import data.Player.Companion.allPlayerColors
 import data.SettingsManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import theme.allPlayerColors
 
 class LifeCounterViewModel(
     val settingsManager: SettingsManager,
@@ -26,23 +26,33 @@ class LifeCounterViewModel(
 
     lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
 
+//    private var usedColors = listOf<Color>()
+
     init {
 //        startTimer()
         generatePlayers()
         savePlayerStates()
     }
 
+    private fun getUsedColors(): List<Color> {
+        return playerButtonViewModels.map { it.state.value.player.color }
+    }
+
     fun generatePlayers() {
-        val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
         val startingLife = settingsManager.startingLife
-        while (savedPlayers.size < MAX_PLAYERS) {
-//            val usedColors = savedPlayers.map { it.color }
-            val playerNum = savedPlayers.size + 1
-            println("playerNum: $playerNum")
-            savedPlayers += generatePlayer(startingLife, playerNum)
-        }
+        val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
         playerButtonViewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }
+        while (savedPlayers.size < MAX_PLAYERS) {
+            val playerNum = savedPlayers.size + 1
+            val newColor = allPlayerColors.filter { it !in getUsedColors() }.random()
+            savedPlayers += generatePlayer(startingLife, playerNum, newColor)
+            playerButtonViewModels += generatePlayerButtonViewModel(savedPlayers.last())
+        }
         savePlayerStates()
+    }
+
+    fun resetPlayerColor(player: Player): Player {
+        return player.copy(color = allPlayerColors.filter { it !in getUsedColors() }.random())
     }
 
 //    private val _timer = MutableStateFlow(0)
@@ -61,11 +71,12 @@ class LifeCounterViewModel(
             getCurrentDealer = { currentDealer },
             updateCurrentDealerMode = { setDealerMode(it) },
             currentDealerIsPartnered = currentDealerIsPartnered,
-            triggerSave = { savePlayerStates() }
+            triggerSave = { savePlayerStates() },
+            resetPlayerColor = { resetPlayerColor(it) }
         )
     }
 
-    fun savePlayerStates() {
+    private fun savePlayerStates() {
         settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
     }
 
@@ -89,10 +100,9 @@ class LifeCounterViewModel(
         playerButtonViewModels.forEach { it.toggleMonarch(value) }
     }
 
-    private fun generatePlayer(startingLife: Int, playerNum: Int): Player {
-        val playerColor = allPlayerColors.random()
+    private fun generatePlayer(startingLife: Int, playerNum: Int, color: Color): Player {
         val name = "P$playerNum"
-        return Player(color = playerColor, life = startingLife, name = name, playerNum = playerNum)
+        return Player(color = color, life = startingLife, name = name, playerNum = playerNum)
     }
 
     private fun getRandColor(usedColors: List<Color>): Color {

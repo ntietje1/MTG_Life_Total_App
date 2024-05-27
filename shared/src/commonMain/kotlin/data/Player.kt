@@ -15,6 +15,15 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
+import theme.PlayerColor1
+import theme.PlayerColor2
+import theme.PlayerColor3
+import theme.PlayerColor4
+import theme.PlayerColor5
+import theme.PlayerColor6
+import theme.PlayerColor7
+import theme.PlayerColor8
+import theme.PlayerColor9
 
 @Serializable(with = PlayerSerializer::class)
 data class Player(
@@ -38,6 +47,18 @@ data class Player(
 
     companion object {
         const val MAX_PLAYERS = 6
+
+        val allPlayerColors = listOf(
+            PlayerColor1,
+            PlayerColor2,
+            PlayerColor3,
+            PlayerColor4,
+            PlayerColor5,
+            PlayerColor6,
+            PlayerColor7,
+            PlayerColor8,
+            PlayerColor9
+        )
     }
 }
 

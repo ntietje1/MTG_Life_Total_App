@@ -19,18 +19,6 @@ val PlayerColor7 = Color(0xFF46e7db)
 val PlayerColor8 = Color(0xFF625FF7)
 val PlayerColor9 = Color(0xFFc28efc)
 
-val allPlayerColors = listOf(
-    PlayerColor1,
-    PlayerColor2,
-    PlayerColor3,
-    PlayerColor4,
-    PlayerColor5,
-    PlayerColor6,
-    PlayerColor7,
-    PlayerColor8,
-    PlayerColor9
-)
-
 val normalColorMatrix = ColorMatrix().generateColorMatrix(1.0f, 1.0f)
 
 val receiverColorMatrix = ColorMatrix().generateColorMatrix(0.0f, 0.3f)
