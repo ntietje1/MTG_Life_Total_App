@@ -27,7 +27,6 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,6 +40,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import composable.SettingsButton
+import data.Player.Companion.allPlayerColors
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.skip_icon
@@ -53,7 +53,6 @@ import lifelinked.shared.generated.resources.tut_6
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.vectorResource
-import theme.PlayerColor2
 import kotlin.math.absoluteValue
 
 enum class SingleTutorialScreen(
@@ -77,10 +76,9 @@ fun TutorialScreen(
         viewModel.setCurrentPage(pagerState.currentPage)
     }
 
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().background(Color.Black)) { // Background color has to be hard-coded since images have black background
         SettingsButton(modifier = Modifier.align(Alignment.BottomEnd).size(90.dp).padding(15.dp),
-            shape = RoundedCornerShape(30.dp),
-            mainColor = MaterialTheme.colorScheme.onPrimary,
+            mainColor = Color.White,
             backgroundColor = Color.Transparent,
             text = if (state.currentPage == state.totalPages - 1) "Close Tutorial" else "Skip Tutorial",
             shadowEnabled = false,
@@ -145,7 +143,7 @@ fun TutorialScreen(
                             .jumpingDotTransition(pagerState, 0.25f)
                             .size(20.dp)
                             .background(
-                                color = PlayerColor2.copy(alpha = 0.7f),
+                                color = allPlayerColors[state.currentPage].copy(alpha = 0.7f),
                                 shape = CircleShape,
                             )
                     )
