@@ -55,20 +55,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import composable.dialog.ColorDialog
@@ -84,7 +92,6 @@ import composable.modifier.rotateVertically
 import data.Player
 import data.Player.Companion.allPlayerColors
 import getAnimationCorrectionFactor
-import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.add_icon
 import lifelinked.shared.generated.resources.back_icon
@@ -122,7 +129,6 @@ import theme.saturateColor
 import theme.scaledSp
 import theme.settingsColorMatrix
 import theme.textShadowStyle
-import kotlin.math.min
 
 @Composable
 fun PlayerButton(
@@ -135,37 +141,47 @@ fun PlayerButton(
     val currentDealerIsPartnered by viewModel.currentDealerIsPartnered.collectAsState()
 
     val haptic = LocalHapticFeedback.current
-    val backStack = remember { mutableStateListOf<() -> Unit>() }
 
     val scope = rememberCoroutineScope()
 
-    val commanderButtonVisible by remember { derivedStateOf {
-        state.buttonState in listOf(PBState.NORMAL, PBState.COMMANDER_DEALER)
-    }}
-    val settingsButtonVisible by remember { derivedStateOf {
-        state.buttonState in listOf(PBState.NORMAL, PBState.SETTINGS)
-    }}
-
-    val scryfallBackStack = remember {
-        mutableStateListOf({
-            viewModel.showScryfallSearch(false)
-        })
+    val commanderButtonVisible by remember {
+        derivedStateOf {
+            state.buttonState in listOf(PBState.NORMAL, PBState.COMMANDER_DEALER)
+        }
+    }
+    val settingsButtonVisible by remember {
+        derivedStateOf {
+            state.buttonState !in listOf(PBState.COMMANDER_DEALER, PBState.COMMANDER_RECEIVER)
+        }
     }
 
-    LaunchedEffect(state.showResetPrefsDialog, state.showCameraWarning, state.showFilePicker, state.showScryfallSearch, state.showBackgroundColorPicker, state.showTextColorPicker) {
-        setBlurBackground(state.showResetPrefsDialog || state.showCameraWarning || state.showFilePicker || state.showScryfallSearch || state.showBackgroundColorPicker || state.showTextColorPicker)
+    @Composable
+    fun generateSizes(maxWidth: Dp, maxHeight: Dp): Triple<Dp, Dp, TextUnit> {
+        val settingsButtonSize = if (maxHeight / 2 * 3 < maxWidth) {
+            maxHeight / 2
+        } else {
+            maxWidth / 3
+        }
+        val smallPadding = settingsButtonSize / 10f
+        val smallTextSize = maxHeight.value.scaledSp / 12f
+        return Triple(settingsButtonSize, smallPadding, smallTextSize)
+    }
+
+    LaunchedEffect(
+        state.showResetPrefsDialog,
+        state.showCameraWarning,
+        state.showFilePicker,
+        state.showScryfallSearch,
+        state.showBackgroundColorPicker,
+        state.showTextColorPicker,
+        state.showChangeNameField
+    ) {
+        setBlurBackground(state.showResetPrefsDialog || state.showCameraWarning || state.showFilePicker || state.showScryfallSearch || state.showBackgroundColorPicker || state.showTextColorPicker || state.showChangeNameField)
     }
 
     val fileType = listOf("jpg", "png")
     FilePicker(show = state.showFilePicker, fileExtensions = fileType) { file ->
-        viewModel.showFilePicker(false)
-        if (file != null) {
-            scope.launch { //TODO: move to viewmodel
-                val copiedUri = viewModel.imageManager.copyImageToLocalStorage(file.path, state.player.name)
-                viewModel.setImageUri(copiedUri)
-                viewModel.savePlayerPref()
-            }
-        }
+        viewModel.onFileSelected(file)
     }
 
     if (state.showResetPrefsDialog) {
@@ -238,8 +254,54 @@ fun PlayerButton(
             })
     }
 
+    if (state.showChangeNameField) {
+        Dialog(
+            onDismissRequest = { viewModel.showChangeNameField(false) },
+            properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+        ) {
+            Column(Modifier.fillMaxSize()) {
+                Spacer(Modifier.weight(0.7f))
+                Box(
+                    modifier = Modifier
+                        .background(state.player.color, RoundedCornerShape(30.dp))
+                        .aspectRatio(2f)
+                        .clip(RoundedCornerShape(30.dp))
+                )
+                {
+                    ChangeNameField(
+                        modifier = modifier.fillMaxSize(),
+                        name = state.changeNameTextField,
+                        onChangeName = viewModel::setChangeNameField,
+                        backgroundColor = state.player.color,
+                        playerTextColor = state.player.textColor,
+                        onDone = {
+                            viewModel.showChangeNameField(false)
+                            viewModel.closeSettingsMenu()
+                        }
+                    )
+                }
+                Spacer(Modifier.weight(0.6f))
+            }
+        }
+    }
+
+    if (state.showScryfallSearch) {
+        val scryfallBackStack = remember { mutableStateListOf({ viewModel.showScryfallSearch(false) }) }
+        ScryfallSearchDialog(
+            onDismiss = {
+                viewModel.showScryfallSearch(false)
+            },
+            addToBackStack = {
+                scryfallBackStack.add(it)
+            },
+            onImageSelected = {
+                viewModel.setImageUri(it)
+            }
+        )
+    }
+
     LaunchedEffect(state.buttonState) {
-        if (state.buttonState == PBState.COMMANDER_RECEIVER) backStack.clear()
+        if (state.buttonState == PBState.COMMANDER_RECEIVER) viewModel.clearBackStack()
     }
 
     BoxWithConstraints(
@@ -258,21 +320,6 @@ fun PlayerButton(
             }
         )
     ) {
-        if (state.showScryfallSearch) {
-            ScryfallSearchDialog(
-                onDismiss = {
-                    viewModel.showScryfallSearch(false)
-                },
-                addToBackStack = {
-                    scryfallBackStack.add(it)
-                },
-                onImageSelected = {
-                    viewModel.setImageUri(it)
-                    viewModel.savePlayerPref()
-                }
-            )
-        }
-
         MonarchyIndicator(
             modifier = modifier,
             monarch = state.player.monarch
@@ -288,22 +335,21 @@ fun PlayerButton(
                     isDead = viewModel.isDead(),
                 )
 
-
                 val smallButtonSize = (maxWidth / 15f) + (maxHeight / 10f)
                 val settingsStateMargin = smallButtonSize / 7f
                 val commanderStateMargin = settingsStateMargin * 1.4f
 
                 val wideButton = maxWidth / maxHeight > 1.4
 
-                val playerInfoPadding = if (wideButton) Modifier.padding(bottom = smallButtonSize / 2) else Modifier.padding(
-                    top = smallButtonSize / 2
-                )
+                val playerInfoPadding = if (wideButton) {
+                    Modifier.padding(bottom = smallButtonSize / 2f).offset(y = -smallButtonSize / 8f)
+                } else Modifier.offset(y = smallButtonSize / 4f)
 
                 val settingsPadding = if (wideButton) Modifier.padding(
                     bottom = smallButtonSize / 4,
                     top = smallButtonSize / 8
                 ) else Modifier.padding(
-                    top = smallButtonSize / 2
+                    top = smallButtonSize / 4
                 )
                 if (!state.player.setDead) {
                     when (state.buttonState) {
@@ -376,6 +422,18 @@ fun PlayerButton(
                 }
 
                 @Composable
+                fun FormattedSettingsButton(modifier: Modifier, imageResource: DrawableResource, text: String, onPress: () -> Unit) {
+                    SettingsButton(
+                        modifier = modifier,
+                        imageVector = vectorResource(imageResource),
+                        text = text,
+                        onPress = onPress,
+                        mainColor = state.player.textColor,
+                        backgroundColor = Color.Transparent
+                    )
+                }
+
+                @Composable
                 fun PlayerButtonContent(modifier: Modifier = Modifier) {
                     Box(modifier.fillMaxSize()) {
                         when (state.buttonState) {
@@ -443,34 +501,367 @@ fun PlayerButton(
                                         textAlign = TextAlign.Center
                                     )
                                 }
-
                             }
 
-                            PBState.SETTINGS -> {
-                                SettingsMenu(
-                                    modifier = settingsPadding,
-                                    player = state.player,
-                                    addToBackStack = backStack::add,
-                                    clearBackStack = backStack::clear,
-                                    onMonarchyButtonClick = { viewModel.onMonarchyButtonClicked(null) },
-                                    onFromCameraRollButtonClick = { viewModel.showCameraWarning(true) },
-                                    closeSettingsMenu = { viewModel.setPlayerButtonState(PBState.NORMAL) },
-                                    onScryfallButtonClick = { viewModel.showScryfallSearch(!state.showScryfallSearch) },
-                                    onResetPrefsClick = { viewModel.showResetPrefsDialog(true) },
-                                    savePlayerPref = viewModel::savePlayerPref,
-                                    loadPlayerPrefs = viewModel.settingsManager::loadPlayerPrefs,
-                                    deletePlayerPref = viewModel.settingsManager::deletePlayerPref,
-                                    getCounterValue = viewModel::getCounterValue,
-                                    incrementCounterValue = viewModel::incrementCounterValue,
-                                    setActiveCounter = viewModel::setActiveCounter,
-                                    toggleSetDead = viewModel::toggleSetDead,
-                                    copyPlayerPrefs = viewModel::copySettings,
-                                    onChangeName = viewModel::setName,
-                                    onChangeTextColor = viewModel::onChangeTextColor,
-                                    onChangeBackgroundColor = viewModel::onChangeBackgroundColor,
-                                    showBackgroundColorPicker = viewModel::showBackgroundColorPicker,
-                                    showTextColorPicker = viewModel::showTextColorPicker,
-                                )
+                            PBState.SETTINGS_DEFAULT -> {
+                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
+                                    val (settingsButtonSize, _, _) = generateSizes(maxWidth, maxHeight)
+                                    LazyHorizontalGrid(
+                                        modifier = Modifier.fillMaxSize(),
+                                        rows = GridCells.Fixed(2),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.monarchy_icon,
+                                                text = "Monarchy"
+                                            ) { viewModel.onMonarchyButtonClicked() }
+                                        }
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.transparent,
+                                                text = ""
+                                            ) { }
+                                        }
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.mana_icon,
+                                                text = "Counters"
+                                            ) {
+                                                viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW)
+                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_DEFAULT) }
+                                            }
+                                        }
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.change_background_icon,
+                                                text = "Customize"
+                                            ) {
+                                                viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE)
+                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_DEFAULT) }
+                                            }
+                                        }
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.skull_icon,
+                                                text = "KO Player"
+                                            ) {
+                                                viewModel.toggleSetDead()
+                                                viewModel.closeSettingsMenu()
+                                                viewModel.clearBackStack()
+                                            }
+                                        }
+
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.change_name_icon,
+                                                text = "Change Name"
+                                            ) {
+                                                viewModel.showChangeNameField(true)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            PBState.SETTINGS_CUSTOMIZE -> {
+                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
+                                    val (settingsButtonSize, _, _) = generateSizes(maxWidth, maxHeight)
+                                    LazyHorizontalGrid(
+                                        modifier = Modifier.fillMaxSize(),
+                                        rows = GridCells.Fixed(2),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.color_picker_icon,
+                                                text = "Background Color"
+                                            ) {
+                                                viewModel.setPlayerButtonState(PBState.SETTINGS_BACKGROUND_COLOR_PICKER)
+                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE) }
+                                            }
+                                        }
+
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.text_icon,
+                                                text = "Text Color"
+                                            ) {
+                                                viewModel.setPlayerButtonState(PBState.SETTINGS_TEXT_COLOR_PICKER)
+                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE) }
+                                            }
+                                        }
+
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.camera_icon,
+                                                text = "Upload Image"
+                                            ) {
+                                                viewModel.showCameraWarning(true)
+                                            }
+                                        }
+
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.download_icon,
+                                                text = "Load Profile"
+                                            ) {
+                                                viewModel.setPlayerButtonState(PBState.SETTINGS_LOAD_PLAYER)
+                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE) }
+                                            }
+                                        }
+
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.search_icon,
+                                                text = "Search Image"
+                                            ) {
+                                                viewModel.showScryfallSearch(!state.showScryfallSearch)
+                                            }
+                                        }
+
+                                        item {
+                                            FormattedSettingsButton(
+                                                modifier = Modifier.size(settingsButtonSize),
+                                                imageResource = Res.drawable.reset_icon,
+                                                text = "Reset",
+                                            ) {
+                                                viewModel.showResetPrefsDialog(true)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            PBState.SETTINGS_LOAD_PLAYER -> {
+                                val playerList = remember {
+                                    mutableStateListOf<Player>().apply {
+                                        addAll(viewModel.settingsManager.loadPlayerPrefs().filter { !it.isDefaultOrEmptyName() })
+                                    }
+                                }
+                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
+                                    val (_, smallPadding, smallTextSize) = generateSizes(maxWidth, maxHeight)
+                                    Column(
+                                        Modifier.fillMaxSize().padding(bottom = smallPadding),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            modifier = Modifier.wrapContentSize(unbounded = true).padding(top = smallPadding / 2f),
+                                            text = "Saved profiles",
+                                            color = state.player.textColor,
+                                            fontSize = smallTextSize,
+                                            textAlign = TextAlign.Center
+                                        )
+
+                                        Text(
+                                            modifier = Modifier.wrapContentSize(unbounded = true).offset(y = -smallPadding / 2f),
+                                            text = "(hold to delete)",
+                                            color = state.player.textColor,
+                                            fontSize = smallTextSize / 2,
+                                            textAlign = TextAlign.Center
+                                        )
+
+                                        Box(
+                                            Modifier.fillMaxSize().weight(0.5f)
+                                        ) {
+                                            LazyHorizontalGrid(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(Color.Black.copy(alpha = 0.15f)).border(
+                                                0.5.dp,
+                                                state.player.textColor.copy(alpha = 0.9f),
+                                                RoundedCornerShape(20.dp)
+                                            ).padding(smallPadding),
+                                                rows = GridCells.Fixed(2),
+                                                state = rememberLazyGridState(),
+                                                horizontalArrangement = Arrangement.spacedBy(smallPadding),
+                                                verticalArrangement = Arrangement.spacedBy(smallPadding),
+                                                content = {
+                                                    items(playerList) { pInfo ->
+                                                        MiniPlayerButton(
+                                                            imageUri = pInfo.imageUri,
+                                                            name = pInfo.name,
+                                                            backgroundColor = pInfo.color,
+                                                            textColor = pInfo.textColor,
+                                                            copyPrefsToCurrentPlayer = {
+                                                                viewModel.copySettings(pInfo)
+                                                                viewModel.closeSettingsMenu()
+                                                            },
+                                                            removePlayerProfile = {
+                                                                viewModel.settingsManager.deletePlayerPref(pInfo)
+                                                                playerList.remove(pInfo)
+                                                            },
+                                                        )
+                                                    }
+                                                })
+                                            if (playerList.isEmpty()) {
+                                                Column(
+                                                    Modifier.align(Alignment.Center),
+                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                ) {
+                                                    Text(
+                                                        modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp).padding(bottom = 5.dp),
+                                                        text = "No saved profiles found",
+                                                        color = state.player.textColor,
+                                                        fontSize = smallTextSize * 0.7f,
+                                                        textAlign = TextAlign.Center
+                                                    )
+                                                    Text(
+                                                        modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp),
+                                                        text = "Changes to name/customization will be saved automatically",
+                                                        color = state.player.textColor,
+                                                        lineHeight = smallTextSize,
+                                                        fontSize = smallTextSize * 0.7f,
+                                                        textAlign = TextAlign.Center
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            PBState.SETTINGS_BACKGROUND_COLOR_PICKER -> {
+                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
+                                    ColorPicker(
+                                        Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = maxHeight / 10f),
+                                        text = "Choose a Background Color",
+                                        colorList = mutableListOf<Color>().apply {
+                                            add(Color.Black)
+                                            add(Color.White)
+                                            addAll(allPlayerColors)
+                                        },
+                                        textColor = state.player.textColor,
+                                        showColorPicker = viewModel::showBackgroundColorPicker,
+                                        onPress = viewModel::onChangeBackgroundColor
+                                    )
+                                }
+                            }
+
+                            PBState.SETTINGS_TEXT_COLOR_PICKER -> {
+                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
+                                    ColorPicker(
+                                        Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = maxHeight / 10f),
+                                        text = "Choose a Text Color",
+                                        colorList = mutableListOf<Color>().apply {
+                                            add(Color.Black)
+                                            add(Color.White)
+                                            addAll(allPlayerColors)
+                                        },
+                                        textColor = state.player.textColor,
+                                        showColorPicker = viewModel::showTextColorPicker,
+                                        onPress = viewModel::onChangeTextColor
+                                    )
+                                }
+                            }
+
+                            PBState.COUNTERS_VIEW -> {
+                                CounterWrapper(
+                                    modifier = settingsPadding.fillMaxSize(),
+                                    textColor = state.player.textColor,
+                                    text = "Counters"
+                                ) {
+                                    LazyRow(
+                                        Modifier.fillMaxSize().padding(5.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                    ) {
+                                        items(state.player.activeCounters) { counterType ->
+                                            Counter(
+                                                textColor = state.player.textColor,
+                                                iconResource = counterType.resource,
+                                                value = viewModel.getCounterValue(counterType),
+                                                onIncrement = {
+                                                    viewModel.incrementCounterValue(
+                                                        counterType,
+                                                        1
+                                                    )
+                                                },
+                                                onDecrement = {
+                                                    viewModel.incrementCounterValue(
+                                                        counterType,
+                                                        -1
+                                                    )
+                                                })
+                                        }
+                                        item {
+                                            AddCounter(
+                                                textColor = state.player.textColor,
+                                                onTap = {
+                                                    viewModel.setPlayerButtonState(PBState.COUNTERS_SELECT)
+                                                    viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW) }
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
+//                                Counters(
+//                                    modifier = settingsPadding.padding(horizontal = 5.dp).padding(bottom = 5.dp),
+//                                    textColor = state.player.textColor,
+//                                    activeCounters = state.player.activeCounters,
+//                                    getCounterValue = viewModel::getCounterValue,
+//                                    incrementCounterValue = viewModel::incrementCounterValue,
+//                                    setActiveCounter = viewModel::setActiveCounter,
+//                                    addToBackStack = viewModel::pushBackStack
+//                                )
+                            }
+
+                            PBState.COUNTERS_SELECT -> {
+                                CounterWrapper(
+                                    modifier = settingsPadding.fillMaxSize(),
+                                    textColor = state.player.textColor,
+                                    text = "Select Counters"
+                                ) {
+                                    Column(
+                                        Modifier.fillMaxSize(),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        LazyHorizontalGrid(
+                                            modifier = Modifier.fillMaxSize().padding(5.dp).clip(RoundedCornerShape(25.dp)),
+                                            rows = GridCells.Fixed(3),
+                                            horizontalArrangement = Arrangement.Center,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            items(CounterType.entries.toTypedArray()) { counterType ->
+                                                var selected by remember { mutableStateOf(counterType in state.player.activeCounters) }
+                                                Box(modifier = Modifier.fillMaxSize().aspectRatio(1.0f).padding(0.5.dp).background(
+                                                    if (selected) {
+                                                        Color.Green.copy(alpha = 0.5f)
+                                                    } else {
+                                                        Color.Transparent
+                                                    }
+                                                ).pointerInput(Unit) {
+                                                    detectTapGestures {
+                                                        selected = viewModel.setActiveCounter(counterType)
+                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    }
+                                                }) {
+                                                    SettingsButton(
+                                                        imageVector = vectorResource(counterType.resource),
+                                                        modifier = Modifier.fillMaxSize().padding(5.dp),
+                                                        mainColor = state.player.textColor,
+                                                        backgroundColor = Color.Transparent,
+                                                        shadowEnabled = true,
+                                                        enabled = false
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            else -> {
+                                Text("Oopsies")
                             }
                         }
                     }
@@ -478,15 +869,17 @@ fun PlayerButton(
 
                 @Composable
                 fun BackButton(modifier: Modifier = Modifier) {
-                    SettingsButton(modifier = modifier.size(smallButtonSize * 1.1f).padding(
-                        start = settingsStateMargin,
-                        bottom = settingsStateMargin
-                    ),
+                    SettingsButton(
+                        modifier = modifier.size(smallButtonSize * 1.1f).padding(
+                            start = settingsStateMargin,
+                            bottom = settingsStateMargin
+                        ),
                         backgroundColor = Color.Transparent,
                         mainColor = state.player.textColor,
-                        visible = backStack.isNotEmpty(),
+                        visible = state.backStack.isNotEmpty(),
                         imageVector = vectorResource(Res.drawable.back_icon),
-                        onPress = { backStack.removeLast().invoke() })
+                        onPress = viewModel::popBackStack
+                    )
                 }
 
                 @Composable
@@ -509,7 +902,7 @@ fun PlayerButton(
                 fun BackButtonOrCommanderButton(modifier: Modifier = Modifier) {
                     if (commanderButtonVisible) {
                         CommanderStateButton(modifier)
-                    } else if (backStack.isNotEmpty()) {
+                    } else if (state.backStack.isNotEmpty()) {
                         BackButton(modifier)
                     } else {
                         PlayerStateButton(
@@ -538,20 +931,11 @@ fun PlayerButton(
                         size = smallButtonSize
                     ) {
                         viewModel.onSettingsButtonClicked()
-                        when (state.buttonState) { //TODO: move this to viewmodel
-                            PBState.SETTINGS -> {
-                                backStack.clear()
-                            }
-                            PBState.NORMAL -> {
-                                backStack.add { viewModel.setPlayerButtonState(PBState.NORMAL) }
-                            }
-                            else -> throw Exception("Invalid state for settingsButtonOnClick")
-                        }
                     }
                 }
 
                 if (wideButton) {
-                    Row( // WIDE
+                    Row(
                         Modifier.fillMaxSize(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -637,21 +1021,13 @@ fun MonarchyIndicator(
     }
 }
 
-private enum class CounterMenuState {
-    DEFAULT, ADD_COUNTER
-}
 @Composable
-fun Counters(
+fun CounterWrapper(
     modifier: Modifier = Modifier,
     textColor: Color,
-    activeCounters: List<CounterType>,
-    getCounterValue: (CounterType) -> Int,
-    incrementCounterValue: (CounterType, Int) -> Unit,
-    setActiveCounter: (CounterType, Boolean) -> Unit,
-    addToBackStack: (() -> Unit) -> Unit
+    text: String,
+    content: @Composable () -> Unit
 ) {
-    var state by remember { mutableStateOf(CounterMenuState.DEFAULT) }
-    val haptic = LocalHapticFeedback.current
     BoxWithConstraints(modifier.fillMaxSize()) {
         val smallPadding = maxHeight / 20f
         val smallTextSize = maxHeight.value.scaledSp / 12f
@@ -661,16 +1037,16 @@ fun Counters(
         ) {
             Text(
                 modifier = Modifier.wrapContentSize(unbounded = true).padding(
-                    top = smallPadding,
-                    bottom = smallPadding / 2f
+                    top = 0.dp,
+                    bottom = smallPadding / 4f
                 ),
-                text = if (state == CounterMenuState.DEFAULT) "Counters" else "Select Counters",
+                text = text,
                 color = textColor,
                 fontSize = smallTextSize,
                 textAlign = TextAlign.Center
             )
             Box(
-                Modifier.fillMaxSize().weight(0.5f).background(
+                Modifier.fillMaxSize().background(
                     Color.Black.copy(alpha = 0.2f),
                     shape = RoundedCornerShape(25.dp)
                 ).border(
@@ -679,85 +1055,7 @@ fun Counters(
                     RoundedCornerShape(25.dp)
                 ).clip(RoundedCornerShape(25.dp))
             ) {
-                when (state) {
-                    CounterMenuState.DEFAULT -> {
-                        LazyRow(
-                            Modifier.fillMaxSize().padding(5.dp),
-                            horizontalArrangement = Arrangement.Center,
-                        ) {
-                            items(activeCounters) { counterType ->
-                                Counter(
-                                    textColor = textColor,
-                                    iconResource = counterType.resource,
-                                    value = getCounterValue(counterType),
-                                    onIncrement = {
-                                        incrementCounterValue(
-                                            counterType,
-                                            1
-                                        )
-                                    },
-                                    onDecrement = {
-                                        incrementCounterValue(
-                                            counterType,
-                                            -1
-                                        )
-                                    })
-                            }
-                            item {
-                                AddCounter(
-                                    textColor = textColor,
-                                    onTap = {
-                                        state = CounterMenuState.ADD_COUNTER
-                                        addToBackStack { state = CounterMenuState.DEFAULT }
-                                    },
-                                )
-                            }
-                        }
-                    }
-
-                    CounterMenuState.ADD_COUNTER -> {
-                        Column(
-                            Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            LazyHorizontalGrid(
-                                modifier = Modifier.fillMaxSize().padding(5.dp).clip(RoundedCornerShape(25.dp)),
-                                rows = GridCells.Fixed(3),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                items(CounterType.entries.toTypedArray()) { counterType ->
-                                    Box(modifier = Modifier.fillMaxSize().aspectRatio(1.0f).padding(0.5.dp).background(
-                                        if (counterType in activeCounters) {
-                                            Color.Green.copy(alpha = 0.5f)
-                                        } else {
-                                            Color.Transparent
-                                        }
-                                    ).pointerInput(Unit) {
-                                        detectTapGestures {
-                                            if (counterType in activeCounters) {
-                                                setActiveCounter(counterType, false)
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            } else {
-                                                setActiveCounter(counterType, true)
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            }
-                                        }
-                                    }) {
-                                        SettingsButton(
-                                            imageVector = vectorResource(counterType.resource),
-                                            modifier = Modifier.fillMaxSize().padding(5.dp),
-                                            mainColor = textColor,
-                                            backgroundColor = Color.Transparent,
-                                            shadowEnabled = true,
-                                            enabled = false
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                content()
             }
         }
     }
@@ -788,7 +1086,7 @@ fun AddCounter(
             imageVector = vectorResource(Res.drawable.add_icon),
             backgroundColor = Color.Transparent,
             mainColor = textColor,
-            shadowEnabled = false,
+            shadowEnabled = true,
             enabled = false
         )
     }
@@ -875,7 +1173,7 @@ fun PlayerButtonBackground(
 
             PBState.COMMANDER_DEALER -> color.saturateColor(0.5f).brightenColor(0.6f)
 
-            PBState.SETTINGS -> color
+            else -> color
         }
         if (isDead) {
             c = c.ghostify()
@@ -898,7 +1196,7 @@ fun PlayerButtonBackground(
                 if (isDead) deadDealerColorMatrix else dealerColorMatrix
             }
 
-            PBState.SETTINGS -> {
+            else -> {
                 if (isDead) deadSettingsColorMatrix else settingsColorMatrix
             }
         }
@@ -913,6 +1211,7 @@ fun PlayerButtonBackground(
         )
     }
 }
+
 @Composable
 fun PlayerStateButton(
     modifier: Modifier = Modifier,
@@ -1013,6 +1312,7 @@ fun LifeNumber(
         iconResource = iconResource
     )
 }
+
 @Composable
 fun NumericValue(
     modifier: Modifier = Modifier,
@@ -1035,7 +1335,6 @@ fun NumericValue(
             }
         }
         val smallTextSize = maxHeight.value / 14f + 4
-
         val recentChangeSize = (maxHeight / 7f).value
 
         val iconSize = maxHeight / 7f
@@ -1046,7 +1345,7 @@ fun NumericValue(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                modifier = Modifier.padding(top = 5.dp).offset(y = (largeTextSize / 24f).dp),
+                modifier = Modifier.padding(top = 5.dp, bottom = 15.dp).offset(y = (largeTextSize / 12f).dp),
                 text = name,
                 color = textColor,
                 fontSize = smallTextSize.scaledSp,
@@ -1079,331 +1378,12 @@ fun NumericValue(
                 )
             }
             SettingsButton(
-                modifier = Modifier.size(iconSize),
+                modifier = Modifier.size(iconSize).padding(top = 2.dp).offset(y = (largeTextSize / 48f).dp),
                 backgroundColor = Color.Transparent,
                 mainColor = textColor,
                 imageVector = vectorResource(iconResource),
                 enabled = false
             )
-        }
-    }
-}
-private enum class SettingsState { Default, Customize, BackgroundColorPicker, TextColorPicker, ChangeName, LoadPlayer, Counters }
-
-@Composable
-fun SettingsMenu(
-    modifier: Modifier = Modifier,
-    player: Player,
-    addToBackStack: (() -> Unit) -> Unit,
-    clearBackStack: () -> Unit,
-    onMonarchyButtonClick: () -> Unit,
-    onFromCameraRollButtonClick: () -> Unit,
-    onScryfallButtonClick: () -> Unit,
-    closeSettingsMenu: () -> Unit,
-    onResetPrefsClick: () -> Unit,
-    copyPlayerPrefs: (Player) -> Unit,
-    savePlayerPref: () -> Unit,
-    loadPlayerPrefs: () -> List<Player>,
-    deletePlayerPref: (Player) -> Unit,
-    getCounterValue: (CounterType) -> Int,
-    incrementCounterValue: (CounterType, Int) -> Unit,
-    setActiveCounter: (CounterType, Boolean) -> Unit,
-    toggleSetDead: () -> Unit,
-    onChangeName: (String) -> Unit,
-    onChangeBackgroundColor: (Color) -> Unit,
-    onChangeTextColor: (Color) -> Unit,
-    showBackgroundColorPicker: (Boolean) -> Unit,
-    showTextColorPicker: (Boolean) -> Unit,
-) {
-    var state by remember { mutableStateOf(SettingsState.Default) }
-    val textColor = player.textColor
-
-    BoxWithConstraints(modifier.fillMaxSize()) {
-        var settingsButtonSize = if (maxHeight / 2 * 3 < maxWidth) {
-            maxHeight / 2
-        } else {
-            maxWidth / 3
-        }
-        settingsButtonSize = min(
-            115F,
-            settingsButtonSize.value
-        ).dp
-        val smallPadding = settingsButtonSize / 10f
-        val smallTextSize = maxHeight.value.scaledSp / 12f
-
-        @Composable
-        fun FormattedSettingsButton(imageResource: DrawableResource, text: String, onPress: () -> Unit) {
-            SettingsButton(
-                Modifier.size(settingsButtonSize),
-                imageVector = vectorResource(imageResource),
-                text = text,
-                onPress = onPress,
-                mainColor = player.textColor,
-                backgroundColor = Color.Transparent
-            )
-        }
-
-        when (state) {
-            SettingsState.Default -> {
-                LazyHorizontalGrid(
-                    modifier = Modifier.fillMaxSize(),
-                    rows = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.monarchy_icon,
-                            text = "Monarchy"
-                        ) { onMonarchyButtonClick() }
-                    }
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.transparent,
-                            text = ""
-                        ) { }
-                    }
-
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.mana_icon,
-                            text = "Counters"
-                        ) {
-                            state = SettingsState.Counters
-                            addToBackStack { state = SettingsState.Default }
-                        }
-                    }
-
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.change_background_icon,
-                            text = "Customize"
-                        ) {
-                            state = SettingsState.Customize
-                            addToBackStack { state = SettingsState.Default }
-                        }
-                    }
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.skull_icon,
-                            text = "KO Player"
-                        ) {
-                            toggleSetDead()
-                            closeSettingsMenu()
-                            clearBackStack()
-                        }
-                    }
-
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.change_name_icon,
-                            text = "Change Name"
-                        ) {
-                            state = SettingsState.ChangeName
-                            addToBackStack { state = SettingsState.Default }
-                        }
-                    }
-                }
-            }
-
-            SettingsState.Counters -> {
-                Counters(
-                    modifier = modifier.padding(5.dp),
-                    textColor = player.textColor,
-                    activeCounters = player.activeCounters,
-                    getCounterValue = getCounterValue,
-                    incrementCounterValue = incrementCounterValue,
-                    setActiveCounter = setActiveCounter,
-                    addToBackStack = addToBackStack
-                )
-            }
-
-            SettingsState.Customize -> {
-                LazyHorizontalGrid(
-                    modifier = Modifier.fillMaxSize(),
-                    rows = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.color_picker_icon,
-                            text = "Background Color"
-                        ) {
-                            state = SettingsState.BackgroundColorPicker
-                            addToBackStack { state = SettingsState.Customize }
-                        }
-                    }
-
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.text_icon,
-                            text = "Text Color"
-                        ) {
-                            state = SettingsState.TextColorPicker
-                            addToBackStack { state = SettingsState.Customize }
-                        }
-                    }
-
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.camera_icon, //TODO: change to camera icon
-                            text = "Upload Image"
-                        ) { onFromCameraRollButtonClick() }
-                    }
-
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.download_icon,
-                            text = "Load Profile"
-                        ) {
-                            state = SettingsState.LoadPlayer
-                            addToBackStack { state = SettingsState.Customize }
-                        }
-                    }
-
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.search_icon,
-                            text = "Search Image",
-                            onPress = onScryfallButtonClick
-                        )
-                    }
-
-                    item {
-                        FormattedSettingsButton(
-                            imageResource = Res.drawable.reset_icon,
-                            text = "Reset",
-                            onPress = onResetPrefsClick
-                        )
-                    }
-                }
-            }
-
-            SettingsState.BackgroundColorPicker -> {
-                ColorPicker(Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = maxHeight / 5f),
-                    text = "Choose a Background Color",
-                    colorList = mutableListOf<Color>().apply {
-                        add(Color.Black)
-                        add(Color.White)
-                        addAll(allPlayerColors)
-                    },
-                    textColor = player.textColor,
-                    showColorPicker = showBackgroundColorPicker,
-                    onPress = onChangeBackgroundColor
-                )
-            }
-
-            SettingsState.TextColorPicker -> {
-                ColorPicker(Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = maxHeight / 5f),
-                    text = "Choose a Text Color",
-                    colorList = mutableListOf<Color>().apply {
-                        add(Color.Black)
-                        add(Color.White)
-                        addAll(allPlayerColors)
-                    },
-                    textColor = player.textColor,
-                    showColorPicker = showTextColorPicker,
-                    onPress = onChangeTextColor
-                )
-            }
-
-
-            SettingsState.LoadPlayer -> {
-                val playerList = remember {
-                    mutableStateListOf<Player>().apply {
-                        addAll(loadPlayerPrefs().filter { !it.isDefaultOrEmptyName() })
-                    }
-                }
-
-                Column(
-                    modifier.fillMaxSize().padding(bottom = smallPadding),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        modifier = Modifier.wrapContentSize(unbounded = true).padding(top = smallPadding),
-                        text = "Saved profiles",
-                        color = player.textColor,
-                        fontSize = smallTextSize,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Text(
-                        modifier = Modifier.wrapContentSize(unbounded = true).padding(bottom = smallPadding),
-                        text = "(hold to delete)",
-                        color = player.textColor,
-                        fontSize = smallTextSize / 2,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Box(
-                        Modifier.fillMaxSize().weight(0.5f)
-                    ) {
-                        LazyHorizontalGrid(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(Color.Black.copy(alpha = 0.15f)).border(
-                            0.5.dp,
-                            textColor.copy(alpha = 0.9f),
-                            RoundedCornerShape(20.dp)
-                        ).padding(smallPadding),
-                            rows = GridCells.Fixed(2),
-                            state = rememberLazyGridState(),
-                            horizontalArrangement = Arrangement.spacedBy(smallPadding),
-                            verticalArrangement = Arrangement.spacedBy(smallPadding),
-                            content = {
-                                items(playerList) { pInfo ->
-                                    MiniPlayerButton(
-                                        imageUri = pInfo.imageUri,
-                                        name = pInfo.name,
-                                        backgroundColor = pInfo.color,
-                                        textColor = pInfo.textColor,
-                                        copyPrefsToCurrentPlayer = {
-                                            copyPlayerPrefs(pInfo)
-                                            savePlayerPref()
-                                            closeSettingsMenu()
-                                        },
-                                        removePlayerProfile = {
-                                            deletePlayerPref(pInfo)
-                                            playerList.remove(pInfo)
-                                        },
-                                    )
-                                }
-                            })
-                        if (playerList.isEmpty()) {
-                            Column(
-                                Modifier.align(Alignment.Center),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp).padding(bottom = 5.dp),
-                                    text = "No saved profiles found",
-                                    color = player.textColor,
-                                    fontSize = smallTextSize * 0.7f,
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp),
-                                    text = "Changes to name/customization will be saved automatically",
-                                    color = player.textColor,
-                                    lineHeight = smallTextSize,
-                                    fontSize = smallTextSize * 0.7f,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            SettingsState.ChangeName -> {
-                ChangeNameField(
-                    modifier = modifier,
-                    name = player.name,
-                    onChangeName = onChangeName,
-                    backgroundColor = player.color,
-                    playerTextColor = player.textColor,
-                    closeSettingsMenu = closeSettingsMenu,
-                    savePlayerPref = savePlayerPref
-                )
-            }
         }
     }
 }
@@ -1447,7 +1427,8 @@ fun ColorPicker(
                 verticalArrangement = Arrangement.spacedBy(colorPickerPadding),
                 content = {
                     item {
-                        CustomColorPickerButton(modifier = Modifier.padding(colorPickerPadding),
+                        CustomColorPickerButton(
+                            modifier = Modifier.padding(colorPickerPadding),
                             textColor = textColor,
                             showColorPicker = showColorPicker,
                         )
@@ -1469,18 +1450,21 @@ fun ColorPicker(
 @Composable
 fun ChangeNameField(
     modifier: Modifier = Modifier,
-    closeSettingsMenu: () -> Unit,
-    name: String,
-    onChangeName: (String) -> Unit,
+    name: TextFieldValue,
+    onChangeName: (TextFieldValue) -> Unit,
     backgroundColor: Color,
     playerTextColor: Color,
-    savePlayerPref: () -> Unit
+    onDone: () -> Unit,
 ) {
-    fun onDone() {
-        closeSettingsMenu()
-        savePlayerPref()
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(focusRequester) {
+        focusRequester.requestFocus()
+        keyboardController?.show()
     }
-    Box(modifier.fillMaxSize()) {
+
+    Box(modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -1489,7 +1473,7 @@ fun ChangeNameField(
             Box(
                 modifier = Modifier.wrapContentSize()
             ) {
-                TextField(
+                TextField( //toggle onCursorFocus
                     value = name,
                     onValueChange = onChangeName,
                     label = {
@@ -1507,15 +1491,29 @@ fun ChangeNameField(
                         focusedContainerColor = playerTextColor,
                         unfocusedContainerColor = playerTextColor,
                         cursorColor = backgroundColor,
+                        errorCursorColor = backgroundColor,
                         unfocusedIndicatorColor = backgroundColor,
-                        focusedIndicatorColor = backgroundColor
+                        focusedIndicatorColor = backgroundColor,
+                        disabledIndicatorColor = backgroundColor,
+                        errorIndicatorColor = backgroundColor,
                     ),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         capitalization = KeyboardCapitalization.None,
                         imeAction = ImeAction.Done
                     ),
                     keyboardActions = KeyboardActions(onDone = { onDone() }),
-                    modifier = Modifier.fillMaxWidth(0.8f).height(80.dp).padding(top = 20.dp).padding(horizontal = 5.dp)
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                        .height(80.dp)
+                        .padding(top = 20.dp)
+                        .padding(horizontal = 5.dp)
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            if (focusState.isFocused) {
+                                keyboardController?.show()
+                            } else {
+                                keyboardController?.hide()
+                            }
+                        }
                 )
                 SettingsButton(Modifier.size(50.dp).align(Alignment.CenterEnd).padding(
                     top = 20.dp,
@@ -1529,10 +1527,7 @@ fun ChangeNameField(
             }
             Spacer(modifier = Modifier.height(10.dp))
             Button(
-                onClick = {
-                    closeSettingsMenu()
-                    savePlayerPref()
-                },
+                onClick = onDone,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = playerTextColor,
                     contentColor = backgroundColor
@@ -1644,11 +1639,6 @@ fun LifeChangeButtons(
     }
 }
 
-/**
- * Custom increment button composable
- * @param modifier Modifier to apply to the layout
- * @param onIncrementLife The callback for when the button is pressed
- */
 @Composable
 private fun CustomIncrementButton(
     modifier: Modifier = Modifier, onIncrementLife: () -> Unit = {}
