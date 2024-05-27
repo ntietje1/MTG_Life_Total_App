@@ -40,7 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import composable.dialog.SettingsButton
+import composable.SettingsButton
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.skip_icon
@@ -82,7 +82,7 @@ fun TutorialScreen(
             shape = RoundedCornerShape(30.dp),
             mainColor = MaterialTheme.colorScheme.onPrimary,
             backgroundColor = Color.Transparent,
-            text = if (state.currentPage == state.totalPages - 1) "Close" else "Skip",
+            text = if (state.currentPage == state.totalPages - 1) "Close Tutorial" else "Skip Tutorial",
             shadowEnabled = false,
             imageVector = vectorResource(Res.drawable.skip_icon),
             onTap = {

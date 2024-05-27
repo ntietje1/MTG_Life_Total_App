@@ -39,7 +39,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import composable.dialog.SettingsButton
+import composable.SettingsButton
 import composable.modifier.routePointerChangesTo
 import composable.playerselect.PlayerSelectScreenValues.deselectDuration
 import composable.playerselect.PlayerSelectScreenValues.finalDeselectDuration

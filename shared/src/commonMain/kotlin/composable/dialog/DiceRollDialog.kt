@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import composable.SettingsButton
 import composable.modifier.ShakeConfig
 import composable.modifier.bounceClick
 import composable.modifier.rememberShakeController

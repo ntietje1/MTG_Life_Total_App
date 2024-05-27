@@ -81,7 +81,7 @@ import coil3.compose.AsyncImage
 import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import composable.dialog.ColorDialog
 import composable.dialog.ScryfallSearchDialog
-import composable.dialog.SettingsButton
+import composable.SettingsButton
 import composable.dialog.WarningDialog
 import composable.lifecounter.CounterType
 import composable.modifier.VerticalRotation

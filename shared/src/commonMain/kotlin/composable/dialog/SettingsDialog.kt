@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import composable.SettingsButton
 import data.SettingsManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.change_name_icon

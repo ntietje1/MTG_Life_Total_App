@@ -46,7 +46,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import composable.dialog.ScryfallSearchBar
-import composable.dialog.SettingsButton
+import composable.SettingsButton
 import data.serializable.Card
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt

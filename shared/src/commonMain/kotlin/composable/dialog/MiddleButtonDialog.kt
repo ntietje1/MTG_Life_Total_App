@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import composable.SettingsButton
 import composable.dialog.planechase.ChoosePlanesDialogContent
 import composable.dialog.planechase.PlaneChaseDialogContent
 import composable.lifecounter.DayNightState
