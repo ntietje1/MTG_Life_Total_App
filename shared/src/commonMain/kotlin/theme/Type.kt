@@ -2,6 +2,7 @@ package theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalDensity
@@ -90,13 +91,15 @@ val Float.scaledSp: TextUnit
  * Text style with shadow effect
  */
 @Composable
-fun textShadowStyle() = TextStyle(
-    fontFamily = FontFamily(Font(Res.font.roboto_regular)),
+fun textShadowStyle() = remember {
+    TextStyle(
+//        fontFamily = FontFamily(Font(Res.font.roboto_regular)),
 //    fontWeight = FontWeight.Normal
-).copy(
-    shadow = Shadow(
-        color = generateShadow(),
-        offset = Offset(2f, 2f),
-        blurRadius = 8f
+    ).copy(
+        shadow = Shadow(
+            color = generateShadow(),
+            offset = Offset(2f, 2f),
+            blurRadius = 8f
+        )
     )
-)
+}
