@@ -66,13 +66,13 @@ kotlin {
             implementation(compose.components.resources)
 
             implementation(libs.navigation.compose)
+//            implementation(libs.androidx.navigation.compose)
+            implementation(libs.kotlinx.serialization.json)
 
             implementation(libs.kotlinx.coroutines.core)
 
             api(libs.koin.core)
             implementation(libs.koin.compose)
-
-            implementation(libs.kotlinx.serialization.json)
 
             implementation(libs.ktor.client.core)
 
