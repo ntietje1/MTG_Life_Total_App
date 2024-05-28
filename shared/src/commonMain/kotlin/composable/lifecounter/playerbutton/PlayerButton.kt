@@ -1382,6 +1382,8 @@ fun NumericValue(
                 fontSize = smallTextSize.scaledSp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 style = textShadowStyle()
             )
             Row(
