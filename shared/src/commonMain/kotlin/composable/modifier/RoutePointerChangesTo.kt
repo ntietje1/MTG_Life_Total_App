@@ -31,7 +31,7 @@ suspend fun PointerInputScope.routePointerChangesTo(
                         }
                     }
                 }
-                pointerInputChange.consume()
+//                pointerInputChange.consume()
             }
         } while (event.changes.any { it.pressed })
     }

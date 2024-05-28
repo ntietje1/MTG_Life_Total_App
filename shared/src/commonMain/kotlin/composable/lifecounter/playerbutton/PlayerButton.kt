@@ -4,7 +4,6 @@ package composable.lifecounter.playerbutton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -344,7 +343,12 @@ fun PlayerButton(
             }
         ).then(
             if (state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) {
-                Modifier.bounceClick()
+                Modifier.bounceClick(
+                    bounceAmount = 0.0075f,
+                    bounceDuration = 60L,
+                    repeatEnabled = true
+                )
+//                Modifier
             } else {
                 Modifier
             }
@@ -1403,7 +1407,7 @@ fun NumericValue(
                 )
                 Spacer(modifier = Modifier.weight(0.2f))
                 Text(
-                    modifier = Modifier.weight(0.8f).padding(start = 20.dp).wrapContentSize(unbounded = true),
+                    modifier = Modifier.weight(0.8f).padding(start = 25.dp).wrapContentSize(unbounded = true),
                     text = recentChangeText,
                     color = textColor,
                     fontSize = recentChangeSize.scaledSp,
@@ -1672,15 +1676,24 @@ private fun CustomIncrementButton(
     modifier: Modifier = Modifier, onIncrementLife: () -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val ripple = rememberRipple(color = Color.Black)
     Box(
-        modifier = modifier.indication(
+        modifier = modifier
+            .repeatingClickable(
             interactionSource = interactionSource,
-            indication = rememberRipple(color = Color.Black)
-        ).repeatingClickable(
-            interactionSource = interactionSource,
+                indication = ripple,
             enabled = true,
             onPress = onIncrementLife
         )
+//            .clickable(
+//                onClick = onIncrementLife,
+//                interactionSource = interactionSource,
+//                indication = ripple
+//            )
+//            .indication(
+//                interactionSource = interactionSource,
+//                indication = ripple
+//            )
     )
 }
 

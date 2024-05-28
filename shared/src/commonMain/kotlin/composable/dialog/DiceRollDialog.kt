@@ -109,7 +109,7 @@ fun DiceRollDialogContent(
             modifier = Modifier.weight(0.35f).aspectRatio(1.0f).align(Alignment.CenterHorizontally).background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
                 .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
         ) {
-            SettingsButton(modifier = Modifier.fillMaxSize().bounceClick(amount = 0.02f).graphicsLayer(scaleX = animatedSize, scaleY = animatedSize).then(
+            SettingsButton(modifier = Modifier.fillMaxSize().bounceClick(bounceAmount = 0.02f).graphicsLayer(scaleX = animatedSize, scaleY = animatedSize).then(
                 if (lastResult == null) {
                     Modifier.alpha(0.001f)
                 } else {
@@ -189,7 +189,7 @@ fun DiceRollButton(
         }
     }
 
-    SettingsButton(modifier = modifier.bounceClick(amount = 0.04f).shake(shakeController),
+    SettingsButton(modifier = modifier.bounceClick(bounceAmount = 0.04f).shake(shakeController),
         shape = shape,
         backgroundColor = backgroundColor,
         imageVector = imageVector,
