@@ -57,7 +57,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -1471,7 +1470,7 @@ fun ChangeNameField(
 
     LaunchedEffect(focusRequester) {
         focusRequester.requestFocus()
-        keyboardController?.show()
+//        keyboardController?.show()
     }
 
     Box(modifier) {
@@ -1517,13 +1516,13 @@ fun ChangeNameField(
                         .padding(top = 20.dp)
                         .padding(horizontal = 5.dp)
                         .focusRequester(focusRequester)
-                        .onFocusChanged { focusState ->
-                            if (focusState.isFocused) {
-                                keyboardController?.show()
-                            } else {
-                                keyboardController?.hide()
-                            }
-                        }
+//                        .onFocusChanged { focusState ->
+//                            if (focusState.isFocused) {
+////                                keyboardController?.show()
+//                            } else {
+////                                keyboardController?.hide()
+//                            }
+//                        }
                 )
                 SettingsButton(Modifier.size(50.dp).align(Alignment.CenterEnd).padding(
                     top = 20.dp,
