@@ -87,13 +87,19 @@ val Int.scaledSp: TextUnit
 val Float.scaledSp: TextUnit
     @Composable get() =  scaledSp()
 
+@Composable
+private fun RobotoFontFamily(): FontFamily {
+    return FontFamily(Font(Res.font.roboto_regular))
+}
+
+
 /**
  * Text style with shadow effect
  */
 @Composable
-fun textShadowStyle() = remember {
+fun textShadowStyle(fontFamily: FontFamily = RobotoFontFamily()) = remember {
     TextStyle(
-//        fontFamily = FontFamily(Font(Res.font.roboto_regular)),
+        fontFamily = fontFamily,
 //    fontWeight = FontWeight.Normal
     ).copy(
         shadow = Shadow(
