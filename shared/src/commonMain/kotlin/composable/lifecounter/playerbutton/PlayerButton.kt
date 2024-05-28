@@ -252,12 +252,14 @@ fun PlayerButton(
             })
     }
 
+    val focusRequester = remember { FocusRequester() }
+
     if (state.showChangeNameField) {
         Dialog(
             onDismissRequest = { viewModel.showChangeNameField(false) },
             properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = true)
         ) {
-            Column(Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(Modifier.weight(0.7f))
                 Box(
                     modifier = Modifier
@@ -267,8 +269,10 @@ fun PlayerButton(
                 )
                 {
                     ChangeNameField(
-                        modifier = modifier.fillMaxSize(),
+                        modifier = modifier.fillMaxSize().align(Alignment.Center),
                         name = state.changeNameTextField,
+                        focusRequester = focusRequester,
+                        showChangeNameField = state.showChangeNameField,
                         onChangeName = viewModel::setChangeNameField,
                         backgroundColor = state.player.color,
                         playerTextColor = state.player.textColor,
@@ -1459,20 +1463,23 @@ fun ColorPicker(
 fun ChangeNameField(
     modifier: Modifier = Modifier,
     name: TextFieldValue,
+    showChangeNameField: Boolean,
+    focusRequester: FocusRequester,
     onChangeName: (TextFieldValue) -> Unit,
     backgroundColor: Color,
     playerTextColor: Color,
     onDone: () -> Unit,
 ) {
-    val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(focusRequester) {
-        focusRequester.requestFocus()
+    LaunchedEffect(Unit) {
+        if (showChangeNameField) {
+            focusRequester.requestFocus()
+        }
     }
 
     Box(modifier.focusRequester(focusRequester)) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().align(Alignment.Center),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -1527,7 +1534,7 @@ fun ChangeNameField(
             }
             Spacer(modifier = Modifier.height(10.dp))
             Button(
-                onClick = onDone,
+                onClick = { onDone() },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = playerTextColor,
                     contentColor = backgroundColor
