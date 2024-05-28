@@ -275,9 +275,17 @@ fun PlayerButton(
                         backgroundColor = state.player.color,
                         playerTextColor = state.player.textColor,
                         onDone = {
-                            viewModel.setName(state.changeNameTextField.text)
-                            viewModel.showChangeNameField(false)
-                            viewModel.closeSettingsMenu()
+                            try {
+                                println("1")
+                                viewModel.setName(state.changeNameTextField.text)
+                                println("2")
+                                viewModel.showChangeNameField(false)
+                                println("3")
+                                viewModel.closeSettingsMenu()
+                                println("4")
+                            } catch(e: Exception) {
+                                println("Error changing name: $e")
+                            }
                         }
                     )
                 }
