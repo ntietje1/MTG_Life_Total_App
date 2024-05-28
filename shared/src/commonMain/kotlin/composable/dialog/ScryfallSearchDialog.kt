@@ -223,13 +223,13 @@ fun ScryfallDialogContent(
             items(rulingsResults) { ruling ->
                 RulingPreview(ruling)
             }
-            item {
-                AnimatedVisibility(
-                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp), visible = rulingsResults.isEmpty() && !isSearchInProgress
-                ) {
-                    Text("No rulings found :(", color = Color.Red, fontSize = 15.scaledSp)
-                }
-            }
+//            item {
+//                AnimatedVisibility(
+//                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp), visible = rulingsResults.isEmpty() && !isSearchInProgress
+//                ) {
+//                    Text("No rulings found :(", color = Color.Red, fontSize = 15.scaledSp)
+//                }
+//            }
         }
     }
 }
