@@ -33,8 +33,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -252,8 +250,6 @@ fun PlayerButton(
             })
     }
 
-    val focusRequester = remember { FocusRequester() }
-
     if (state.showChangeNameField) {
         Dialog(
             onDismissRequest = { viewModel.showChangeNameField(false) },
@@ -263,31 +259,54 @@ fun PlayerButton(
                 Spacer(Modifier.weight(0.7f))
                 Box(
                     modifier = Modifier
-                        .background(state.player.color, RoundedCornerShape(30.dp))
+                        .wrapContentSize()
                         .aspectRatio(2f)
-                        .clip(RoundedCornerShape(30.dp))
+                        .clip(RoundedCornerShape(30.dp)),
                 )
                 {
+                    PlayerButtonBackground(
+                        state = state.buttonState,
+                        imageUri = state.player.imageUri,
+                        color = state.player.color,
+                        isDead = viewModel.isDead(),
+                    )
+                    SettingsButton(
+                        modifier = Modifier.size(45.dp).padding(
+                            start = 5.dp,
+                            bottom = 5.dp
+                        ).align(Alignment.BottomStart),
+                        backgroundColor = Color.Transparent,
+                        mainColor = state.player.textColor,
+                        visible = true,
+                        imageVector = vectorResource(Res.drawable.back_icon),
+                        onPress = {
+                            viewModel.showChangeNameField(false)
+                            viewModel.closeSettingsMenu()
+                        }
+                    )
+                    Spacer(Modifier.size(25.dp))
+                    Text(
+                        modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(top = 10.dp).padding(horizontal = 5.dp),
+                        text = "${state.player.name} -> ${state.changeNameTextField.text}",
+                        color = state.player.textColor,
+                        fontSize = 20.scaledSp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        style = textShadowStyle()
+                    )
                     ChangeNameField(
-                        modifier = modifier.fillMaxSize().align(Alignment.Center),
+                        modifier = modifier.fillMaxWidth().wrapContentHeight().padding(bottom = 35.dp),
                         name = state.changeNameTextField,
-                        focusRequester = focusRequester,
                         showChangeNameField = state.showChangeNameField,
                         onChangeName = viewModel::setChangeNameField,
                         backgroundColor = state.player.color,
                         playerTextColor = state.player.textColor,
                         onDone = {
-                            try {
-                                println("1")
-                                viewModel.setName(state.changeNameTextField.text)
-                                println("2")
-                                viewModel.showChangeNameField(false)
-                                println("3")
-                                viewModel.closeSettingsMenu()
-                                println("4")
-                            } catch(e: Exception) {
-                                println("Error changing name: $e")
-                            }
+                            viewModel.setName(state.changeNameTextField.text)
+                            viewModel.showChangeNameField(false)
+                            viewModel.closeSettingsMenu()
                         }
                     )
                 }
@@ -1464,89 +1483,89 @@ fun ChangeNameField(
     modifier: Modifier = Modifier,
     name: TextFieldValue,
     showChangeNameField: Boolean,
-    focusRequester: FocusRequester,
     onChangeName: (TextFieldValue) -> Unit,
     backgroundColor: Color,
     playerTextColor: Color,
     onDone: () -> Unit,
 ) {
+    val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(focusRequester) {
         if (showChangeNameField) {
             focusRequester.requestFocus()
         }
     }
 
-    Box(modifier.focusRequester(focusRequester)) {
-        Column(
-            modifier = Modifier.fillMaxSize().align(Alignment.Center),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier.wrapContentSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                TextField( //toggle onCursorFocus
-                    value = name,
-                    onValueChange = onChangeName,
-                    label = {
-                        Text(
-                            "New Name",
-                            color = backgroundColor,
-                            fontSize = 12.scaledSp
-                        )
-                    },
-                    textStyle = TextStyle(fontSize = 15.scaledSp),
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedTextColor = backgroundColor,
-                        unfocusedTextColor = backgroundColor,
-                        focusedContainerColor = playerTextColor,
-                        unfocusedContainerColor = playerTextColor,
-                        cursorColor = backgroundColor,
-                        errorCursorColor = backgroundColor,
-                        unfocusedIndicatorColor = backgroundColor,
-                        focusedIndicatorColor = backgroundColor,
-                        disabledIndicatorColor = backgroundColor,
-                        errorIndicatorColor = backgroundColor,
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        capitalization = KeyboardCapitalization.None,
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { onDone() }),
-                    modifier = Modifier.fillMaxWidth(0.8f)
-                        .height(80.dp)
-                        .padding(top = 20.dp)
-                        .padding(horizontal = 5.dp)
-//                        .focusRequester(focusRequester)
+//    Box(modifier.focusRequester(focusRequester)) {
+//        Column(
+//            modifier = Modifier.fillMaxSize().align(Alignment.Center),
+//            verticalArrangement = Arrangement.Center,
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+    Box(
+        modifier = modifier.focusRequester(focusRequester).wrapContentSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        TextField( //toggle onCursorFocus
+            value = name,
+            onValueChange = onChangeName,
+            label = {
+                Text(
+                    "New Name",
+                    color = backgroundColor,
+                    fontSize = 12.scaledSp
                 )
-                SettingsButton(Modifier.size(50.dp).align(Alignment.CenterEnd).padding(
-                    top = 20.dp,
-                    end = 5.dp
-                ),
-                    imageVector = vectorResource(Res.drawable.enter_icon),
-                    shadowEnabled = false,
-                    mainColor = backgroundColor,
-                    backgroundColor = playerTextColor,
-                    onPress = { onDone() })
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Button(
-                onClick = { onDone() },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = playerTextColor,
-                    contentColor = backgroundColor
-                ),
-                modifier = Modifier.wrapContentHeight().fillMaxWidth(0.7f).padding(horizontal = 10.dp).padding(bottom = 20.dp)
-
-            ) {
-                Text("Save Name")
-            }
-        }
-
+            },
+            textStyle = TextStyle(fontSize = 15.scaledSp),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = backgroundColor,
+                unfocusedTextColor = backgroundColor,
+                focusedContainerColor = playerTextColor,
+                unfocusedContainerColor = playerTextColor,
+                cursorColor = backgroundColor,
+                errorCursorColor = backgroundColor,
+                unfocusedIndicatorColor = backgroundColor,
+                focusedIndicatorColor = backgroundColor,
+                disabledIndicatorColor = backgroundColor,
+                errorIndicatorColor = backgroundColor,
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                capitalization = KeyboardCapitalization.None,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(onDone = { onDone() }),
+            modifier = Modifier.fillMaxWidth(0.8f)
+                .height(80.dp)
+                .padding(top = 20.dp)
+                .padding(horizontal = 5.dp)
+//                        .focusRequester(focusRequester)
+        )
+        SettingsButton(Modifier.size(50.dp).align(Alignment.CenterEnd).padding(
+            top = 20.dp,
+            end = 5.dp
+        ),
+            imageVector = vectorResource(Res.drawable.enter_icon),
+            shadowEnabled = false,
+            mainColor = backgroundColor,
+            backgroundColor = playerTextColor,
+            onPress = { onDone() })
     }
+//            Spacer(modifier = Modifier.height(10.dp))
+//            Button(
+//                onClick = { onDone() },
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = playerTextColor,
+//                    contentColor = backgroundColor
+//                ),
+//                modifier = Modifier.wrapContentHeight().fillMaxWidth(0.7f).padding(horizontal = 10.dp).padding(bottom = 20.dp)
+//
+//            ) {
+//                Text("Save Name")
+//            }
+//        }
+//
+//    }
 }
 
 @Composable
