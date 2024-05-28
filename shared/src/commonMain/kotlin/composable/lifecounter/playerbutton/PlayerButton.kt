@@ -63,7 +63,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -1466,21 +1465,20 @@ fun ChangeNameField(
     onDone: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(focusRequester) {
         focusRequester.requestFocus()
-//        keyboardController?.show()
     }
 
-    Box(modifier) {
+    Box(modifier.focusRequester(focusRequester)) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
-                modifier = Modifier.wrapContentSize()
+                modifier = Modifier.wrapContentSize(),
+                contentAlignment = Alignment.Center
             ) {
                 TextField( //toggle onCursorFocus
                     value = name,
@@ -1515,14 +1513,7 @@ fun ChangeNameField(
                         .height(80.dp)
                         .padding(top = 20.dp)
                         .padding(horizontal = 5.dp)
-                        .focusRequester(focusRequester)
-//                        .onFocusChanged { focusState ->
-//                            if (focusState.isFocused) {
-////                                keyboardController?.show()
-//                            } else {
-////                                keyboardController?.hide()
-//                            }
-//                        }
+//                        .focusRequester(focusRequester)
                 )
                 SettingsButton(Modifier.size(50.dp).align(Alignment.CenterEnd).padding(
                     top = 20.dp,
