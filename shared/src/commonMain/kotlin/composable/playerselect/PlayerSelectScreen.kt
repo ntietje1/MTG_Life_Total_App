@@ -68,6 +68,7 @@ import kotlin.native.concurrent.ThreadLocal
 @Composable
 fun PlayerSelectScreen(
     viewModel: PlayerSelectViewModel,
+    allowChangeNumPlayers: Boolean,
     goToLifeCounterScreen: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -78,7 +79,7 @@ fun PlayerSelectScreen(
         PlayerSelectScreenBase(
             setHelperText = { viewModel.setHelperText(it) },
             goToLifeCounterScreen = goToLifeCounterScreen,
-            setNumPlayers = viewModel::setNumPlayers
+            setNumPlayers = { viewModel.setNumPlayers(allowChangeNumPlayers, it) }
         )
 
         if (state.showHelperText) {

@@ -17,7 +17,9 @@ class PlayerSelectViewModel(
         _state.value = _state.value.copy(showHelperText = value ?: !_state.value.showHelperText)
     }
 
-    fun setNumPlayers(numPlayers: Int) {
-       settingsManager.numPlayers = numPlayers
+    fun setNumPlayers(allowChangeNumPlayers: Boolean, numPlayers: Int) {
+        if (allowChangeNumPlayers) {
+            settingsManager.numPlayers = numPlayers
+        }
     }
 }
