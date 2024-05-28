@@ -268,7 +268,7 @@ fun PlayerButton(
                         state = state.buttonState,
                         imageUri = state.player.imageUri,
                         color = state.player.color,
-                        isDead = viewModel.isDead(),
+                        isDead = viewModel.isDead(autoKo = true),
                     )
                     SettingsButton(
                         modifier = Modifier.size(45.dp).padding(
@@ -362,7 +362,7 @@ fun PlayerButton(
                     state = state.buttonState,
                     imageUri = state.player.imageUri,
                     color = state.player.color,
-                    isDead = viewModel.isDead(),
+                    isDead = viewModel.isDead(autoKo = true),
                 )
 
                 val smallButtonSize = (maxWidth / 15f) + (maxHeight / 10f)

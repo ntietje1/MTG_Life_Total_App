@@ -156,9 +156,9 @@ class PlayerButtonViewModel(
         savePlayerPref()
     }
 
-    fun isDead(): Boolean {
-        val playerInfo = state.value.player
-        return (settingsManager.autoKo && (playerInfo.life <= 0 || playerInfo.commanderDamage.any { it >= 21 }) || playerInfo.setDead)
+    fun isDead(autoKo: Boolean = settingsManager.autoKo): Boolean {
+        val playerInfo = state.value .player
+        return ((autoKo && (playerInfo.life <= 0 || playerInfo.commanderDamage.any { it >= 21 })) || playerInfo.setDead)
     }
 
     fun getCounterValue(counterType: CounterType): Int {
