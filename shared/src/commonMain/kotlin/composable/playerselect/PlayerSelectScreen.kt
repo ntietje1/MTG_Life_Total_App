@@ -189,9 +189,9 @@ fun PlayerSelectScreenBase(
         circles[event.id]?.updatePosition(event.position.x, event.position.y)
     }
 
-    fun onUp(event: PointerInputChange) {
+    fun onUp(id: PointerId) {
         CoroutineScope(scope.coroutineContext).launch {
-            val circle = circles[event.id]
+            val circle = circles[id]
             if (circles.size == 1 && selectedId != null) {
                 launch {
                     circle?.growToScreen {
@@ -199,14 +199,25 @@ fun PlayerSelectScreenBase(
                     }
                 }
             } else {
-                disappearCircle(event.id)
+                disappearCircle(id)
             }
         }
     }
 
+    fun onUp(event: PointerInputChange) {
+        onUp(event.id)
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
-        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) })
-    }) {
+        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
+            for (id in circles.keys) {
+                if (!it.contains(id)) {
+                    onUp(id) // secondary check to remove circles that should be removed
+                }
+            }
+        })
+    })
+    {
         LaunchedEffect(circles.size) {
             val selectionScope = CoroutineScope(coroutineContext)
             val pulseScope = CoroutineScope(coroutineContext)
