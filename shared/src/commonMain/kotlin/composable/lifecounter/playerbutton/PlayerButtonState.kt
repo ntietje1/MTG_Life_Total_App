@@ -9,7 +9,6 @@ data class PlayerButtonState(
     val buttonState: PBState = PBState.NORMAL,
     val showScryfallSearch: Boolean = false,
     val showCameraWarning: Boolean = false,
-    val showFilePicker: Boolean = false,
     val showResetPrefsDialog: Boolean = false,
     val showBackgroundColorPicker: Boolean = false,
     val showTextColorPicker: Boolean = false,

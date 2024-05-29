@@ -5,7 +5,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.darkrockstudios.libraries.mpfilepicker.MPFile
 import composable.lifecounter.CounterType
 import data.ImageManager
 import data.Player
@@ -64,11 +63,9 @@ class PlayerButtonViewModel(
         )
     }
 
-    fun onFileSelected(file: MPFile<Any>?) {
-        showFilePicker(false)
-        if (file == null) return
+    fun onFileSelected(file: ByteArray) {
         viewModelScope.launch {
-            val copiedUri = imageManager.copyImageToLocalStorage(file.path, state.value.player.name)
+            val copiedUri = imageManager.copyImageToLocalStorage(file, state.value.player.name)
             setImageUri(copiedUri)
         }
     }
@@ -183,10 +180,6 @@ class PlayerButtonViewModel(
 
     fun showCameraWarning(value: Boolean? = null) {
         _state.value = state.value.copy(showCameraWarning = value ?: !state.value.showCameraWarning)
-    }
-
-    fun showFilePicker(value: Boolean? = null) {
-        _state.value = state.value.copy(showFilePicker = value ?: !state.value.showFilePicker)
     }
 
     fun showResetPrefsDialog(value: Boolean? = null) {

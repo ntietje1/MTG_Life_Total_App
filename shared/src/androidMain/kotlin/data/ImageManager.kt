@@ -35,4 +35,7 @@ actual class ImageManager(private val context: Context) {
         return saveImage(bytes = imageBytes, name = fileName, extension = ".png")
     }
 
+    actual suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
+        return saveImage(bytes = bytes, name = fileName, extension = ".png")
+    }
 }

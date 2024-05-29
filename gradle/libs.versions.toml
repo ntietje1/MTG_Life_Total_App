@@ -15,7 +15,7 @@ kotlinx-datetime = "0.6.0"
 kotlinx-serialization-json = "1.6.3"
 kotlinx-coroutines = "1.8.1"
 ktor = "2.3.8"
-mpfilepicker = "3.1.0"
+peekaboo = "0.5.2"
 multiplatformSettings = "1.1.1"
 koin = "3.6.0-alpha3"
 koinCompose = "3.6.0-alpha3"
@@ -52,7 +52,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
-mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepicker" }
+peekaboo-image-picker = { module = "io.github.onseok:peekaboo-image-picker", version.ref = "peekaboo" }
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 

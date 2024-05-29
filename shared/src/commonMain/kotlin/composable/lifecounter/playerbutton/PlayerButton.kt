@@ -3,6 +3,7 @@ package composable.lifecounter.playerbutton
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -73,7 +74,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
-import com.darkrockstudios.libraries.mpfilepicker.FilePicker
+import com.preat.peekaboo.image.picker.SelectionMode
+import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import composable.SettingsButton
 import composable.dialog.ColorDialog
 import composable.dialog.ScryfallSearchDialog
@@ -165,19 +167,23 @@ fun PlayerButton(
     LaunchedEffect(
         state.showResetPrefsDialog,
         state.showCameraWarning,
-        state.showFilePicker,
         state.showScryfallSearch,
         state.showBackgroundColorPicker,
         state.showTextColorPicker,
         state.showChangeNameField
     ) {
-        setBlurBackground(state.showResetPrefsDialog || state.showCameraWarning || state.showFilePicker || state.showScryfallSearch || state.showBackgroundColorPicker || state.showTextColorPicker || state.showChangeNameField)
+        setBlurBackground(state.showResetPrefsDialog || state.showCameraWarning || state.showScryfallSearch || state.showBackgroundColorPicker || state.showTextColorPicker || state.showChangeNameField)
     }
 
-    val fileType = listOf("jpg", "png")
-    FilePicker(show = state.showFilePicker, fileExtensions = fileType) { file ->
-        viewModel.onFileSelected(file)
-    }
+    val singleImagePicker = rememberImagePickerLauncher(
+        selectionMode = SelectionMode.Single,
+        scope = scope,
+        onResult = { byteArrays ->
+            byteArrays.firstOrNull()?.let {
+                viewModel.onFileSelected(it)
+            }
+        }
+    )
 
     if (state.showResetPrefsDialog) {
         WarningDialog(
@@ -217,8 +223,8 @@ fun PlayerButton(
                 optionOneMessage = "Proceed",
                 optionTwoMessage = "Cancel",
                 onOptionOne = {
-                    viewModel.showFilePicker(true)
                     viewModel.showCameraWarning(false)
+                    singleImagePicker.launch()
                 },
                 onDismiss = {
                     viewModel.showCameraWarning(false)
@@ -252,9 +258,17 @@ fun PlayerButton(
     if (state.showChangeNameField) {
         Dialog(
             onDismissRequest = { viewModel.showChangeNameField(false) },
-            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = true)
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = true,
+                usePlatformDefaultWidth = false,
+            )
         ) {
-            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                Modifier.fillMaxSize().clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
+                    viewModel.showChangeNameField(false)
+                },
+                verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(Modifier.weight(0.7f))
                 Box(
                     modifier = Modifier

@@ -79,7 +79,7 @@ kotlin {
             implementation("org.slf4j:slf4j-simple:2.0.11") // needed because some other dependency was causing error during bundle generating
             implementation(libs.kotlinx.datetime)
 
-            implementation(libs.mpfilepicker)
+            implementation(libs.peekaboo.image.picker)
 
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)

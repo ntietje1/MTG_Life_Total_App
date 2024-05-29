@@ -22,4 +22,9 @@ actual class ImageManager {
         return if (copyResult) destinationPath else throw IllegalStateException("Failed to copy image to local storage.")
 
     }
+
+    actual suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
+        //TODO:
+        return "yo"
+    }
 }
