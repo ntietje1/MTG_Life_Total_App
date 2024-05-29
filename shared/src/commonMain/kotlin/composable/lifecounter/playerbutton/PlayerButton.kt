@@ -272,6 +272,7 @@ fun PlayerButton(
                 Spacer(Modifier.weight(0.7f))
                 Box(
                     modifier = Modifier
+                        .padding(20.dp)
                         .wrapContentSize()
                         .aspectRatio(2f)
                         .clip(RoundedCornerShape(30.dp)),
@@ -310,7 +311,7 @@ fun PlayerButton(
                         style = textShadowStyle()
                     )
                     ChangeNameField(
-                        modifier = modifier.fillMaxWidth().wrapContentHeight().padding(bottom = 35.dp),
+                        modifier = modifier.align(Alignment.Center).fillMaxWidth().wrapContentHeight().padding(bottom = 35.dp),
                         name = state.changeNameTextField,
                         showChangeNameField = state.showChangeNameField,
                         onChangeName = viewModel::setChangeNameField,
