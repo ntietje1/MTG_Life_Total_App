@@ -33,9 +33,11 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -141,6 +143,7 @@ fun PlayerSelectScreenBase(
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
     var selectedId: PointerId? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
 
     fun applyRandomColor(circle: Circle) {
         do {
@@ -175,7 +178,7 @@ fun PlayerSelectScreenBase(
     fun onDown(event: PointerInputChange) {
         if (circles.size < 6 && selectedId == null) {
             circles[event.id] = Circle(
-                x = event.position.x, y = event.position.y
+                x = event.position.x, y = event.position.y, triggerHaptic = { haptic.performHapticFeedback(HapticFeedbackType.LongPress) }
             ).apply {
                 applyRandomColor(this)
                 CoroutineScope(scope.coroutineContext).launch {
@@ -238,6 +241,7 @@ fun PlayerSelectScreenBase(
                     delay(selectionDelay)
                     selectedId = circles.keys.random()
                     setNumPlayers(circles.size)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     for (id in circles.keys) {
                         if (selectedId != id) launch {
                             disappearCircle(id, finalDeselectDuration)
@@ -264,7 +268,7 @@ fun PlayerSelectScreenBase(
 }
 
 private class Circle(
-    x: Float, y: Float, color: Color = Color.Magenta, val predictor: CirclePredictor = CirclePredictor()
+    x: Float, y: Float, color: Color = Color.Magenta, val predictor: CirclePredictor = CirclePredictor(), private val triggerHaptic: () -> Unit
 ) {
     companion object {
         private const val baseRadius = 130f
@@ -289,6 +293,7 @@ private class Circle(
     }
 
     suspend fun popIn() {
+        triggerHaptic()
         radius.animateTo(
             targetValue = baseRadius, animationSpec = spring(
                 dampingRatio = 0.5f, stiffness = popInStiffness
@@ -312,6 +317,7 @@ private class Circle(
                 durationMillis = pulseDuration1, delayMillis = 0, easing = LinearOutSlowInEasing
             )
         )
+        triggerHaptic()
         radius.animateTo(
             targetValue = baseRadius, animationSpec = tween(
                 durationMillis = pulseDuration2, delayMillis = 50, easing = FastOutLinearInEasing
