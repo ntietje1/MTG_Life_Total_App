@@ -358,11 +358,10 @@ fun PlayerButton(
         ).then(
             if (state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) {
                 Modifier.bounceClick(
-                    bounceAmount = 0.0075f,
+                    bounceAmount = 0.01f,
                     bounceDuration = 60L,
                     repeatEnabled = true
                 )
-//                Modifier
             } else {
                 Modifier
             }
