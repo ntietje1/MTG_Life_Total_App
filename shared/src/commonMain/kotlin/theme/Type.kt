@@ -15,7 +15,7 @@ import org.jetbrains.compose.resources.Font
 @Composable
 fun Typography() = Typography(
     bodyLarge = TextStyle(
-        fontFamily = RobotoFontFamily(),
+        fontFamily = RobotoFontFamily(), //TODO: gets overridden by phone's set font
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
