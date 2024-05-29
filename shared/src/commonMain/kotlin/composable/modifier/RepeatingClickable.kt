@@ -74,7 +74,7 @@ fun Modifier.repeatingClickable(
     var currentlyRepeating by remember { mutableStateOf(false) }
     var bounceJob: Job? by remember { mutableStateOf (null) }
 
-    val scale by animateFloatAsState(
+    val scale by animateFloatAsState( //TODO: looks a little janky on ios
         targetValue = if (buttonState == PressState.Pressed) {
             1.0f + (if (currentlyRepeating) bounceAmount * 0.5f else bounceAmount)
         } else 1.0f,
