@@ -62,7 +62,10 @@ fun LifeLinkedApp() {
                         viewModel = viewModel,
                         onFinishTutorial = {
                             settingsManager.tutorialSkip = true
-                            if (navController.currentBackStack.value.all { !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route) }) {
+                            if (navController.currentBackStack.value.all {
+                                it.destination.route == null ||
+                                !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route)
+                            }) {
                                 navController.navigate(getStartScreen())
                             } else {
                                 navController.popBackStack()
