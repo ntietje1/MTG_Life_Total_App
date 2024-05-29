@@ -2,9 +2,6 @@ package theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -15,13 +12,10 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.roboto_regular
 import org.jetbrains.compose.resources.Font
 
-/**
- * Typography for the application
- */
 @Composable
 fun Typography() = Typography(
     bodyLarge = TextStyle(
-        fontFamily = FontFamily(Font(Res.font.roboto_regular)),
+        fontFamily = RobotoFontFamily(),
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
@@ -45,10 +39,6 @@ fun Typography() = Typography(
     */
 )
 
-/**
- * Scaled Sp that ignores system font scaling
- * @return scaled Sp value
- */
 @Composable
 fun Int.scaledSp(): TextUnit {
     val value = this.toFloat()
@@ -59,10 +49,6 @@ fun Int.scaledSp(): TextUnit {
     }
 }
 
-/**
- * Scaled Sp that ignores system font scaling
- * @return scaled Sp value
- */
 @Composable
 fun Float.scaledSp(): TextUnit {
     val value = this
@@ -73,39 +59,16 @@ fun Float.scaledSp(): TextUnit {
     }
 }
 
-/**
- * Convert int to scaled Sp
- * @return scaled Sp value
- */
 val Int.scaledSp: TextUnit
     @Composable get() =  scaledSp()
 
-/**
- * Convert float to scaled Sp
- * @return scaled Sp value
- */
 val Float.scaledSp: TextUnit
     @Composable get() =  scaledSp()
 
 @Composable
-private fun RobotoFontFamily(): FontFamily {
+fun RobotoFontFamily(): FontFamily {
     return FontFamily(Font(Res.font.roboto_regular))
 }
 
-
-/**
- * Text style with shadow effect
- */
 @Composable
-fun textShadowStyle(fontFamily: FontFamily = RobotoFontFamily()) = remember {
-    TextStyle(
-        fontFamily = fontFamily,
-//    fontWeight = FontWeight.Normal
-    ).copy(
-        shadow = Shadow(
-            color = generateShadow(),
-            offset = Offset(2f, 2f),
-            blurRadius = 8f
-        )
-    )
-}
+expect fun textShadowStyle(fontFamily: FontFamily = RobotoFontFamily()): TextStyle
