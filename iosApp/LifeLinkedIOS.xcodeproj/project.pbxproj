@@ -14,7 +14,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		F21BA9112B9BDB050048A025 /* LifeLinkedIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LifeLinkedIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F21BA9112B9BDB050048A025 /* LifeLinked.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LifeLinked.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F21BA9142B9BDB050048A025 /* LifeLinkedIOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeLinkedIOSApp.swift; sourceTree = "<group>"; };
 		F21BA9162B9BDB050048A025 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F21BA9182B9BDB070048A025 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -45,7 +45,7 @@
 		F21BA9122B9BDB050048A025 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F21BA9112B9BDB050048A025 /* LifeLinkedIOS.app */,
+				F21BA9112B9BDB050048A025 /* LifeLinked.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -74,9 +74,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F21BA9102B9BDB050048A025 /* LifeLinkedIOS */ = {
+		F21BA9102B9BDB050048A025 /* LifeLinked */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F21BA9202B9BDB070048A025 /* Build configuration list for PBXNativeTarget "LifeLinkedIOS" */;
+			buildConfigurationList = F21BA9202B9BDB070048A025 /* Build configuration list for PBXNativeTarget "LifeLinked" */;
 			buildPhases = (
 				F21BA9232B9BDBA80048A025 /* ShellScript */,
 				F21BA90D2B9BDB050048A025 /* Sources */,
@@ -87,9 +87,9 @@
 			);
 			dependencies = (
 			);
-			name = LifeLinkedIOS;
+			name = LifeLinked;
 			productName = LifeLinkedIOS;
-			productReference = F21BA9112B9BDB050048A025 /* LifeLinkedIOS.app */;
+			productReference = F21BA9112B9BDB050048A025 /* LifeLinked.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -120,7 +120,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F21BA9102B9BDB050048A025 /* LifeLinkedIOS */,
+				F21BA9102B9BDB050048A025 /* LifeLinked */,
 			);
 		};
 /* End PBXProject section */
@@ -290,6 +290,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LifeLinkedIOS/LifeLinkedIOS.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"LifeLinkedIOS/Preview Content\"";
@@ -318,7 +319,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hypeapps.LifeLinkedIOS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hypeapps.LifeLinked;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
@@ -334,6 +335,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LifeLinkedIOS/LifeLinkedIOS.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"LifeLinkedIOS/Preview Content\"";
@@ -362,7 +364,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hypeapps.LifeLinkedIOS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hypeapps.LifeLinked;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
@@ -384,7 +386,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F21BA9202B9BDB070048A025 /* Build configuration list for PBXNativeTarget "LifeLinkedIOS" */ = {
+		F21BA9202B9BDB070048A025 /* Build configuration list for PBXNativeTarget "LifeLinked" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F21BA9212B9BDB070048A025 /* Debug */,
