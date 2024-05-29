@@ -181,7 +181,7 @@ fun DiceRollButton(
                 isEnabled = false
                 val result = (1..value).random()
                 faceValue = result
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 delay(60)
             }
             resultCallBack(faceValue)

@@ -404,11 +404,11 @@ fun PlayerButton(
                             LifeChangeButtons(Modifier.fillMaxWidth(),
                                 onIncrementLife = {
                                     viewModel.incrementLife(1)
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 },
                                 onDecrementLife = {
                                     viewModel.incrementLife(-1)
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 })
                         }
 
@@ -420,14 +420,14 @@ fun PlayerButton(
                                             value = 1
                                         )
                                         viewModel.incrementLife(-1)
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     },
                                     onDecrementLife = {
                                         viewModel.incrementCommanderDamage(
                                             value = -1
                                         )
                                         viewModel.incrementLife(1)
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     })
                                 if (currentDealerIsPartnered) {
                                     LifeChangeButtons(Modifier.fillMaxWidth(),
@@ -437,7 +437,7 @@ fun PlayerButton(
                                                 partner = true
                                             )
                                             viewModel.incrementLife(-1)
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                         },
                                         onDecrementLife = {
                                             viewModel.incrementCommanderDamage(
@@ -446,7 +446,7 @@ fun PlayerButton(
                                                 partner = true
                                             )
                                             viewModel.incrementLife(1)
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                         })
                                 }
                             }
