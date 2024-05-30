@@ -31,13 +31,15 @@ class LifeCounterMeasurements(
                 maxWidth/2  to (unit4alt) + (middleButtonSize / 5)
             }
             5 -> maxWidth/2  to (maxHeight / 2 - unit5)
-            6 -> maxWidth/2  to maxHeight/2
+            6 -> maxWidth/2  to maxHeight/3
             else -> throw IllegalArgumentException("invalid number of players: $numPlayers")
         }
         return offset.copy(first = offset.first - middleButtonSize/2, second = offset.second - middleButtonSize/2)
     }
 
-    val rows: List<List<ButtonPlacement>> = when (numPlayers) {
+    fun buttonPlacements(): List<List<ButtonPlacement>> = rows
+
+    private val rows: List<List<ButtonPlacement>> = when (numPlayers) {
         1 -> listOf(
             listOf(
                 ButtonPlacement(
@@ -156,22 +158,5 @@ class LifeCounterMeasurements(
         )
 
         else -> throw IllegalArgumentException("invalid number of players")
-    }
-
-    fun middleOffset(): Float {
-            return when (numPlayers) {
-        1 -> 0.065f
-        2 -> 0.5f
-        3 -> 0.615f
-        4 -> if (alt4Layout) {
-            0.264f
-        } else {
-            0.5f
-        }
-
-        5 -> 0.364f
-        6 -> 0.323f
-        else -> throw IllegalArgumentException("invalid number of players: $numPlayers")
-    }
     }
 }

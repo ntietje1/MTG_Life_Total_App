@@ -10,8 +10,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
@@ -33,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -124,8 +121,11 @@ fun LifeCounterScreen(
         val m = LifeCounterMeasurements(
             maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = state.numPlayers, alt4Layout = viewModel.settingsManager.alt4PlayerLayout
         )
+
+        val buttonPlacements =  m.buttonPlacements()
+
         LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
-            items(m.rows, key = { it.hashCode() }) { buttonPlacements ->
+            items(buttonPlacements, key = { it.hashCode() }) { buttonPlacements ->
                 LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
                     items(buttonPlacements, key = { it.index }) { placement ->
                         AnimatedPlayerButton(
@@ -147,18 +147,10 @@ fun LifeCounterScreen(
         AnimatedMiddleButton(
             modifier = Modifier
                 .offset(middleButtonOffset.first, middleButtonOffset.second)
-                .size(middleButtonSize).background(Color.Green.copy(alpha = 0.5f)),
+                .size(middleButtonSize),
             visible = state.showButtons, onMiddleButtonClick = {
             showDialog = true
         })
-
-        Column(Modifier.fillMaxSize()) {
-            Spacer(modifier = Modifier.weight(0 + m.middleOffset()))
-            AnimatedMiddleButton(modifier = Modifier.align(Alignment.CenterHorizontally).background(Color.Red.copy(alpha = 0.5f)).size(50.dp), visible = state.showButtons, onMiddleButtonClick = {
-                showDialog = true
-            })
-            Spacer(modifier = Modifier.weight(1 - m.middleOffset()))
-        }
 
         if (!state.showButtons || state.showLoadingScreen) {
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
