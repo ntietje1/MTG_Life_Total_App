@@ -11,24 +11,24 @@ class BackHandler() {
     )
 
     fun attachNavigation(nav: NavHostController) {
-        println("backhandler.attachNavigation()")
+//        println("backhandler.attachNavigation()")
         this.nav = nav
 //        nav.addOnDestinationChangedListener() {
 //        }
     }
 
     fun push(block: () -> Unit) {
-        println("backhandler.push()")
+//        println("backhandler.push()")
         backStack.add(block)
     }
 
     fun pop() {
-        println("backhandler.pop()")
+//        println("backhandler.pop()")
         if (backStack.isNotEmpty()) {
-            println("backstack removeLast()")
+//            println("backstack removeLast()")
             backStack.removeLast().invoke()
         } else {
-            println("nav.navigateUp()")
+//            println("nav.navigateUp()")
             nav.popBackStack()
         }
     }
