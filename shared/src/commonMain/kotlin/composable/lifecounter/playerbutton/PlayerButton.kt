@@ -706,78 +706,85 @@ fun PlayerButton(
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
                                     val (_, smallPadding, smallTextSize) = generateSizes(maxWidth, maxHeight)
                                     Column(
-                                        Modifier.fillMaxSize().padding(bottom = smallPadding),
+                                        Modifier.fillMaxSize().padding(bottom = smallPadding/2f),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Text(
-                                            modifier = Modifier.wrapContentSize(unbounded = true).padding(top = smallPadding / 2f),
-                                            text = "Saved profiles",
-                                            color = state.player.textColor,
-                                            fontSize = smallTextSize,
-                                            textAlign = TextAlign.Center
-                                        )
-
-                                        Text(
-                                            modifier = Modifier.wrapContentSize(unbounded = true).offset(y = -smallPadding / 2f),
-                                            text = "(hold to delete)",
-                                            color = state.player.textColor,
-                                            fontSize = smallTextSize / 2,
-                                            textAlign = TextAlign.Center
-                                        )
-
                                         Box(
-                                            Modifier.fillMaxSize().weight(0.5f)
+                                            Modifier.fillMaxWidth().wrapContentHeight().padding(bottom = smallPadding),
+                                            contentAlignment = Alignment.Center
                                         ) {
-                                            LazyHorizontalGrid(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(Color.Black.copy(alpha = 0.15f)).border(
-                                                0.5.dp,
-                                                state.player.textColor.copy(alpha = 0.9f),
-                                                RoundedCornerShape(20.dp)
-                                            ).padding(smallPadding),
-                                                rows = GridCells.Fixed(2),
-                                                state = rememberLazyGridState(),
-                                                horizontalArrangement = Arrangement.spacedBy(smallPadding),
-                                                verticalArrangement = Arrangement.spacedBy(smallPadding),
-                                                content = {
-                                                    items(items = playerList, key = { p -> p.hashCode() }) { pInfo ->
-                                                        MiniPlayerButton(
-                                                            imageUri = pInfo.imageUri,
-                                                            name = pInfo.name,
-                                                            backgroundColor = pInfo.color,
-                                                            textColor = pInfo.textColor,
-                                                            copyPrefsToCurrentPlayer = {
-                                                                viewModel.copySettings(pInfo)
-                                                                viewModel.closeSettingsMenu()
-                                                            },
-                                                            removePlayerProfile = {
-                                                                println("Removing player profile: ${pInfo.name}")
-                                                                playerList.remove(pInfo)
-                                                                viewModel.settingsManager.deletePlayerPref(pInfo)
-                                                            },
+                                            Text(
+                                                modifier = Modifier.wrapContentSize(unbounded = true),
+                                                text = "Saved profiles",
+                                                color = state.player.textColor,
+                                                fontSize = smallTextSize,
+                                                textAlign = TextAlign.Center
+                                            )
+                                            Text(
+                                                modifier = Modifier.wrapContentSize(unbounded = true).offset(y = smallPadding*1.5f),
+                                                text = "(hold to delete)",
+                                                color = state.player.textColor,
+                                                fontSize = smallTextSize / 2,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                        Box(
+                                            Modifier
+                                                .fillMaxSize()
+                                                .padding(horizontal = smallPadding)
+                                                .background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                                                .border(0.5.dp, state.player.textColor.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
+                                        ) {
+                                                LazyHorizontalGrid(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .padding(smallPadding)
+                                                        .clip(RoundedCornerShape(10.dp)),
+                                                    rows = GridCells.Fixed(2),
+                                                    state = rememberLazyGridState(),
+                                                    horizontalArrangement = Arrangement.spacedBy(smallPadding),
+                                                    verticalArrangement = Arrangement.spacedBy(smallPadding),
+                                                    content = {
+                                                        items(items = playerList, key = { p -> p.hashCode() }) { pInfo ->
+                                                            MiniPlayerButton(
+                                                                imageUri = pInfo.imageUri,
+                                                                name = pInfo.name,
+                                                                backgroundColor = pInfo.color,
+                                                                textColor = pInfo.textColor,
+                                                                copyPrefsToCurrentPlayer = {
+                                                                    viewModel.copySettings(pInfo)
+                                                                    viewModel.closeSettingsMenu()
+                                                                },
+                                                                removePlayerProfile = {
+                                                                    println("Removing player profile: ${pInfo.name}")
+                                                                    playerList.remove(pInfo)
+                                                                    viewModel.settingsManager.deletePlayerPref(pInfo)
+                                                                },
+                                                            )
+                                                        }
+                                                    })
+                                                if (playerList.isEmpty()) {
+                                                    Column(
+                                                        Modifier.align(Alignment.Center),
+                                                        horizontalAlignment = Alignment.CenterHorizontally
+                                                    ) {
+                                                        Text(
+                                                            modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp).padding(bottom = 5.dp),
+                                                            text = "No saved profiles found",
+                                                            color = state.player.textColor,
+                                                            fontSize = smallTextSize * 0.7f,
+                                                            textAlign = TextAlign.Center
+                                                        )
+                                                        Text(
+                                                            modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp),
+                                                            text = "Changes to name/customization will be saved automatically",
+                                                            color = state.player.textColor,
+                                                            lineHeight = smallTextSize,
+                                                            fontSize = smallTextSize * 0.7f,
+                                                            textAlign = TextAlign.Center
                                                         )
                                                     }
-                                                })
-                                            if (playerList.isEmpty()) {
-                                                Column(
-                                                    Modifier.align(Alignment.Center),
-                                                    horizontalAlignment = Alignment.CenterHorizontally
-                                                ) {
-                                                    Text(
-                                                        modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp).padding(bottom = 5.dp),
-                                                        text = "No saved profiles found",
-                                                        color = state.player.textColor,
-                                                        fontSize = smallTextSize * 0.7f,
-                                                        textAlign = TextAlign.Center
-                                                    )
-                                                    Text(
-                                                        modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp),
-                                                        text = "Changes to name/customization will be saved automatically",
-                                                        color = state.player.textColor,
-                                                        lineHeight = smallTextSize,
-                                                        fontSize = smallTextSize * 0.7f,
-                                                        textAlign = TextAlign.Center
-                                                    )
                                                 }
-                                            }
                                         }
                                     }
                                 }
