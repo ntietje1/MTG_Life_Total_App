@@ -2,6 +2,7 @@ package composable.lifecounter
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import composable.dialog.COUNTER_DIALOG_ENTRIES
 import composable.lifecounter.playerbutton.PBState
 import composable.lifecounter.playerbutton.PlayerButtonViewModel
@@ -10,9 +11,11 @@ import data.Player
 import data.Player.Companion.MAX_PLAYERS
 import data.Player.Companion.allPlayerColors
 import data.SettingsManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class LifeCounterViewModel(
     val settingsManager: SettingsManager,
@@ -121,6 +124,10 @@ class LifeCounterViewModel(
         }
     }
 
+    fun showLoadingScreen(value: Boolean) {
+        _state.value = _state.value.copy(showLoadingScreen = value)
+    }
+
     fun setNumPlayers(value: Int) {
         _state.value = _state.value.copy(numPlayers = value)
         settingsManager.numPlayers = value
@@ -128,6 +135,10 @@ class LifeCounterViewModel(
 
     fun resetPlayerStates() {
         setShowButtons(false)
+        viewModelScope.launch {
+            delay(10)
+            setShowButtons(true)
+        }
         setAllButtonStates(PBState.NORMAL)
         resetAllPlayerStates()
         savePlayerStates()

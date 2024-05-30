@@ -7,6 +7,7 @@ import data.SettingsManager
 data class LifeCounterState(
     val showButtons: Boolean = false,
     val numPlayers: Int = SettingsManager.instance.numPlayers,
+    val showLoadingScreen: Boolean = true,
     val currentDealer: PlayerButtonViewModel? = null,
     val blurBackground: Boolean = false,
     val dayNight: DayNightState = DayNightState.NONE,

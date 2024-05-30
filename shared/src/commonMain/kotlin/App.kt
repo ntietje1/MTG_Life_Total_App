@@ -52,6 +52,8 @@ fun LifeLinkedApp() {
             val backHandler: BackHandler by currentKoinScope().inject()
             backHandler.attachNavigation(navController)
 
+            var firstLifeCounterNavigation by remember { mutableStateOf(true) }
+
             NavHost(
                 navController = navController,
                 startDestination = getStartScreen()
@@ -100,13 +102,12 @@ fun LifeLinkedApp() {
                         },
                         goToPlayerSelectScreen = {
                             navController.navigate("${LifeLinkedScreen.PLAYER_SELECT.route}/false")
-                        },
-                        returnToLifeCounterScreen = {
-                            navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
+                            firstLifeCounterNavigation = false
                         },
                         goToTutorialScreen = {
                             navController.navigate(LifeLinkedScreen.TUTORIAL.route)
-                        }
+                        },
+                        firstNavigation = firstLifeCounterNavigation
                     )
                 }
             }

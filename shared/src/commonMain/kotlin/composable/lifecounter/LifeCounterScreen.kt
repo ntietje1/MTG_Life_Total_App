@@ -14,12 +14,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,13 +26,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -42,14 +39,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import composable.dialog.MiddleButtonDialog
-import composable.lifecounter.playerbutton.MonarchyIndicator
-import composable.lifecounter.playerbutton.PBState
 import composable.lifecounter.playerbutton.PlayerButton
-import composable.lifecounter.playerbutton.PlayerButtonBackground
 import composable.lifecounter.playerbutton.PlayerButtonViewModel
-import composable.modifier.VerticalRotation
-import composable.modifier.rotateVertically
 import getAnimationCorrectionFactor
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
@@ -61,11 +54,12 @@ fun LifeCounterScreen(
     toggleTheme: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: () -> Unit,
-    returnToLifeCounterScreen: () -> Unit,
-    goToTutorialScreen: () -> Unit
+    goToTutorialScreen: () -> Unit,
+    firstNavigation: Boolean
 ) {
     val state by viewModel.state.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     if (showDialog) {
         MiddleButtonDialog(
@@ -76,15 +70,40 @@ fun LifeCounterScreen(
             viewModel = viewModel,
             toggleTheme = { toggleTheme() },
             toggleKeepScreenOn = { toggleKeepScreenOn() },
-            goToPlayerSelectScreen = { goToPlayerSelectScreen() },
+            goToPlayerSelectScreen = {
+                viewModel.setShowButtons(false)
+                goToPlayerSelectScreen()
+            },
             setNumPlayers = { viewModel.setNumPlayers(it) },
-            returnToLifeCounterScreen = { returnToLifeCounterScreen() },
+            returnToLifeCounterScreen = {
+                scope.launch {
+                    showDialog = false
+                    viewModel.setShowButtons(false)
+                    delay(10)
+                    viewModel.setShowButtons(true)
+                }
+            },
             goToTutorialScreen = goToTutorialScreen
         )
     }
 
     LaunchedEffect(Unit) {
         if (viewModel.settingsManager.loadPlayerStates().isEmpty()) viewModel.generatePlayers()
+        if (!state.showButtons) {
+            if (firstNavigation) {
+                scope.launch {
+                    viewModel.setShowButtons(true)
+                    delay(1000)
+                    viewModel.showLoadingScreen(false)
+                    viewModel.setShowButtons(false)
+                    delay(10)
+                    viewModel.setShowButtons(true)
+                }
+            } else {
+                viewModel.showLoadingScreen(false)
+                viewModel.setShowButtons(true)
+            }
+        }
     }
 
     LaunchedEffect(showDialog) {
@@ -98,11 +117,7 @@ fun LifeCounterScreen(
             } else {
                 Modifier
             }
-        ).onGloballyPositioned {
-            if (!state.showButtons) {
-                viewModel.setShowButtons(true)
-            }
-        }
+        )
     ) {
         val m = LifeCounterMeasurements(
             maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = state.numPlayers, alt4Layout = viewModel.settingsManager.alt4PlayerLayout
@@ -132,7 +147,7 @@ fun LifeCounterScreen(
             Spacer(modifier = Modifier.weight(1 - m.middleOffset()))
         }
 
-        if (!state.showButtons) {
+        if (!state.showButtons || state.showLoadingScreen) {
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
         }
     }
@@ -142,7 +157,7 @@ fun LifeCounterScreen(
 fun AnimatedPlayerButton(
     visible: Boolean, playerButtonViewModel: PlayerButtonViewModel, rotation: Float, width: Dp, height: Dp, setBlurBackground: (Boolean) -> Unit
 ) {
-    val multiplesAway = 3
+    val multiplesAway = 3f
     val duration = (1250 / getAnimationCorrectionFactor()).toInt()
     val targetOffsetY = remember(visible, rotation) {
         if (visible) 0f else {
@@ -189,49 +204,16 @@ fun AnimatedPlayerButton(
         }
     }
 
-    val player = playerButtonViewModel.state.value.player
-
     Box(modifier = Modifier.graphicsLayer {
         translationX = offsetX.value
         translationY = offsetY.value
     }
-//    offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }
     ) {
-        if (targetOffsetX == offsetX.value && targetOffsetY == offsetY.value) {
-            PlayerButton(
-                modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation, setBlurBackground = {
-                    setBlurBackground(it)
-                }
-            )
-        } else {
-            BoxWithConstraints(
-                modifier = Modifier.wrapContentSize().then(
-                    when (rotation) {
-                        90f -> Modifier.rotateVertically(rotation = VerticalRotation.CLOCKWISE)
-                        270f -> Modifier.rotateVertically(rotation = VerticalRotation.COUNTER_CLOCKWISE)
-                        180f -> Modifier.rotate(180f)
-                        else -> Modifier
-                    }
-                )
-            ) {
-                MonarchyIndicator(
-                    modifier = Modifier.size(width, height),
-                    monarch = player.monarch
-                ) {
-                    BoxWithConstraints(
-                        modifier = Modifier.fillMaxSize().background(Color.Transparent).clip(RoundedCornerShape(30.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        PlayerButtonBackground(
-                            state = PBState.NORMAL,
-                            imageUri = player.imageUri,
-                            color = player.color,
-                            isDead = playerButtonViewModel.isDead(autoKo = true),
-                        )
-                    }
-                }
+        PlayerButton(
+            modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation, setBlurBackground = {
+                setBlurBackground(it)
             }
-        }
+        )
     }
 }
 

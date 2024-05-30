@@ -268,7 +268,8 @@ fun PlayerButton(
                 Modifier.fillMaxSize().clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
                     viewModel.showChangeNameField(false)
                 },
-                verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Spacer(Modifier.weight(0.7f))
                 Box(
                     modifier = Modifier
@@ -348,15 +349,16 @@ fun PlayerButton(
         if (state.buttonState == PBState.COMMANDER_RECEIVER) viewModel.clearBackStack()
     }
 
+    val rotationModifier = remember(rotation) {
+        when (rotation) {
+            90f -> Modifier.rotateVertically(rotation = VerticalRotation.CLOCKWISE)
+            270f -> Modifier.rotateVertically(rotation = VerticalRotation.COUNTER_CLOCKWISE)
+            180f -> Modifier.rotate(180f)
+            else -> Modifier
+        }
+    }
     BoxWithConstraints(
-        modifier = Modifier.wrapContentSize().then(
-            when (rotation) {
-                90f -> Modifier.rotateVertically(rotation = VerticalRotation.CLOCKWISE)
-                270f -> Modifier.rotateVertically(rotation = VerticalRotation.COUNTER_CLOCKWISE)
-                180f -> Modifier.rotate(180f)
-                else -> Modifier
-            }
-        ).then(
+        modifier = Modifier.wrapContentSize().then(rotationModifier).then(
             if (state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) {
                 Modifier.bounceClick(
                     bounceAmount = 0.01f,
@@ -368,6 +370,7 @@ fun PlayerButton(
             }
         )
     ) {
+
         MonarchyIndicator(
             modifier = modifier,
             monarch = state.player.monarch
@@ -1694,11 +1697,11 @@ private fun CustomIncrementButton(
     Box(
         modifier = modifier
             .repeatingClickable(
-            interactionSource = interactionSource,
+                interactionSource = interactionSource,
                 indication = ripple,
-            enabled = true,
-            onPress = onIncrementLife
-        )
+                enabled = true,
+                onPress = onIncrementLife
+            )
 //            .clickable(
 //                onClick = onIncrementLife,
 //                interactionSource = interactionSource,
