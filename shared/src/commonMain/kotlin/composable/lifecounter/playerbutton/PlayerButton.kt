@@ -740,7 +740,7 @@ fun PlayerButton(
                                                         .fillMaxSize()
                                                         .padding(smallPadding)
                                                         .clip(RoundedCornerShape(10.dp)),
-                                                    rows = GridCells.Fixed(2),
+                                                    rows = GridCells.Fixed(if (wideButton) 3 else 2),
                                                     state = rememberLazyGridState(),
                                                     horizontalArrangement = Arrangement.spacedBy(smallPadding),
                                                     verticalArrangement = Arrangement.spacedBy(smallPadding),
@@ -792,8 +792,12 @@ fun PlayerButton(
 
                             PBState.SETTINGS_BACKGROUND_COLOR_PICKER -> {
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
+                                    val (_, smallPadding, _) = generateSizes(maxWidth, maxHeight)
                                     ColorPicker(
-                                        Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = maxHeight / 10f),
+                                        Modifier
+                                            .wrapContentSize()
+                                            .align(Alignment.Center)
+                                            .padding(bottom = if (wideButton) smallPadding*2 else smallPadding / 4f),
                                         text = "Choose a Background Color",
                                         colorList = mutableListOf<Color>().apply {
                                             add(Color.Black)
@@ -809,8 +813,12 @@ fun PlayerButton(
 
                             PBState.SETTINGS_TEXT_COLOR_PICKER -> {
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
+                                    val (_, smallPadding, _) = generateSizes(maxWidth, maxHeight)
                                     ColorPicker(
-                                        Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = maxHeight / 10f),
+                                        Modifier
+                                            .wrapContentSize()
+                                            .align(Alignment.Center)
+                                            .padding(bottom = if (wideButton) smallPadding*2 else smallPadding / 4f),
                                         text = "Choose a Text Color",
                                         colorList = mutableListOf<Color>().apply {
                                             add(Color.Black)
@@ -1468,42 +1476,50 @@ fun ColorPicker(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                modifier = Modifier.wrapContentSize().padding(
+                modifier = Modifier
+                    .wrapContentSize(unbounded = true)
+                    .padding(
                     bottom = textPadding,
-                    top = textPadding * 2
-                ),
+                    top = textPadding * 2),
                 text = text,
                 color = textColor,
                 fontSize = smallTextSize / 1.25f,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
-            LazyHorizontalGrid(modifier = Modifier.wrapContentSize().weight(0.5f).clip(RoundedCornerShape(20.dp)).background(Color.Black.copy(alpha = 0.15f)).border(
-                0.5.dp,
-                textColor.copy(alpha = 0.9f),
-                RoundedCornerShape(20.dp)
-            ).padding(containerPadding * 2),
-                rows = GridCells.Fixed(2),
-                state = rememberLazyGridState(),
-                horizontalArrangement = Arrangement.spacedBy(colorPickerPadding),
-                verticalArrangement = Arrangement.spacedBy(colorPickerPadding),
-                content = {
-                    item {
-                        CustomColorPickerButton(
-                            modifier = Modifier.padding(colorPickerPadding),
-                            textColor = textColor,
-                            showColorPicker = showColorPicker,
-                        )
-                    }
-                    items(colorList) { color ->
-                        ColorPickerButton(
-                            modifier = Modifier.padding(colorPickerPadding),
-                            onClick = {
-                                onPress(color)
-                            },
-                            color = color
-                        )
-                    }
-                })
+            Box(
+                Modifier
+                    .wrapContentSize()
+                    .weight(0.5f)
+                    .background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                    .border(0.5.dp, textColor.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
+            ) {
+                LazyHorizontalGrid(
+                    modifier = Modifier
+                        .padding(containerPadding * 2)
+                        .clip(RoundedCornerShape(10.dp)),
+                    rows = GridCells.Fixed(2),
+                    state = rememberLazyGridState(),
+                    horizontalArrangement = Arrangement.spacedBy(colorPickerPadding),
+                    verticalArrangement = Arrangement.spacedBy(colorPickerPadding),
+                    content = {
+                        item {
+                            CustomColorPickerButton(
+                                modifier = Modifier.padding(colorPickerPadding),
+                                textColor = textColor,
+                                showColorPicker = showColorPicker,
+                            )
+                        }
+                        items(colorList) { color ->
+                            ColorPickerButton(
+                                modifier = Modifier.padding(colorPickerPadding),
+                                onClick = {
+                                    onPress(color)
+                                },
+                                color = color
+                            )
+                        }
+                    })
+            }
         }
     }
 }
