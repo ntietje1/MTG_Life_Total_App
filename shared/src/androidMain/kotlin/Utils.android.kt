@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -33,9 +34,11 @@ actual fun updateSystemBarsColors(isDarkTheme: Boolean) {
 @Composable
 actual fun getAnimationCorrectionFactor(): Float {
     val context = LocalView.current.context
-    return Settings.Global.getFloat(
-        context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f
-    )
+    return remember {
+        Settings.Global.getFloat(
+            context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f
+        )
+    }
 }
 
 
