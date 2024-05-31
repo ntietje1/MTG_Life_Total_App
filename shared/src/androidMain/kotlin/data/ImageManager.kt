@@ -12,7 +12,8 @@ import java.util.UUID
 actual class ImageManager(private val context: Context) {
     private suspend fun saveImage(bytes: ByteArray, name: String, extension: String): String {
         return withContext(context = Dispatchers.IO) {
-            val fileName = "$name${UUID.randomUUID()}.$extension"
+            val fileName = "$name${UUID.randomUUID()}.$extension" // generating a new "random" name prevents an issue with updating the loaded image
+            //TODO: come up with better solution for this
             context.openFileOutput(fileName, Context.MODE_PRIVATE).use {
                 it.write(bytes)
             }
@@ -35,6 +36,6 @@ actual class ImageManager(private val context: Context) {
 //    }
 
     actual suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
-        return saveImage(bytes = bytes, name = fileName, extension = ".png")
+        return saveImage(bytes = bytes, name = fileName, extension = ".png") //TODO: does this work for jpeg?
     }
 }
