@@ -33,7 +33,7 @@ fun LifeLinkedTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-//        typography = Typography(),
+        typography = Typography(),
         content = content
     )
 }

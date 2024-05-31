@@ -17,29 +17,21 @@ import org.jetbrains.compose.resources.Font
 
 @Composable
 fun Typography() = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = RobotoFontFamily(), //TODO: gets overridden by phone's set font
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
+    displayLarge = defaultTextStyle(),
+    displayMedium = defaultTextStyle(),
+    displaySmall = defaultTextStyle(),
+    headlineLarge = defaultTextStyle(),
+    headlineMedium = defaultTextStyle(),
+    headlineSmall = defaultTextStyle(),
+    titleLarge = defaultTextStyle(),
+    titleMedium = defaultTextStyle(),
+    titleSmall = defaultTextStyle(),
+    bodyLarge = defaultTextStyle(),
+    bodyMedium = defaultTextStyle(),
+    bodySmall = defaultTextStyle(),
+    labelLarge = defaultTextStyle(),
+    labelMedium = defaultTextStyle(),
+    labelSmall = defaultTextStyle(),
 )
 
 @Composable
