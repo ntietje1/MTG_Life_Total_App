@@ -16,19 +16,18 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -45,6 +44,7 @@ import lifelinked.shared.generated.resources.placeholder_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.generateShadow
 import theme.scaledSp
+import theme.textShadowStyle
 
 @Composable
 fun SettingsButton(
@@ -65,17 +65,14 @@ fun SettingsButton(
     onDoubleTap: () -> Unit = {},
     overlay: @Composable () -> Unit = {}
 ) {
-    val matrix = ColorMatrix().apply {
-        setToScale(
-            mainColor.red, mainColor.green, mainColor.blue, mainColor.alpha
-        )
+    val matrix = remember(mainColor) {
+        ColorMatrix().apply {
+            setToScale(
+                mainColor.red, mainColor.green, mainColor.blue, mainColor.alpha
+            )
+        }
     }
     val haptic = LocalHapticFeedback.current
-    val shadowTextStyle = MaterialTheme.typography.bodyMedium.copy(
-        shadow = Shadow(
-            color = generateShadow(), offset = Offset(2f, 2f), blurRadius = 4f
-        )
-    )
 
     BoxWithConstraints(modifier = modifier
         .alpha(if (visible) 1f else 0f)
@@ -130,7 +127,7 @@ fun SettingsButton(
                     maxLines = 1,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    style = if (shadowEnabled) shadowTextStyle else TextStyle(),
+                    style = if (shadowEnabled) textShadowStyle() else TextStyle(),
                 )
             }
 
