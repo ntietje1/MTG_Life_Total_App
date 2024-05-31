@@ -11,23 +11,6 @@ import platform.UIKit.UIImage
 import platform.UIKit.UIImagePNGRepresentation
 
 actual class ImageManager {
-    @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun copyImageToLocalStorage(uri: String, fileName: String): String {
-        val documentsDir = NSSearchPathForDirectoriesInDomains(
-            NSDocumentDirectory, NSUserDomainMask, true
-        ).firstOrNull() ?: throw IllegalStateException("Document directory not found.")
-
-        val destinationPath = "$documentsDir/$fileName"
-
-        val fileManager = NSFileManager.defaultManager
-        val sourceURL = NSURL.fileURLWithPath(uri)
-        val destinationURL = NSURL.fileURLWithPath(destinationPath)
-        val copyResult = fileManager.copyItemAtURL(sourceURL, destinationURL, null)
-
-        return if (copyResult) destinationPath else throw IllegalStateException("Failed to copy image to local storage.")
-
-    }
-
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
     actual suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
         val documentsDir = NSSearchPathForDirectoriesInDomains(

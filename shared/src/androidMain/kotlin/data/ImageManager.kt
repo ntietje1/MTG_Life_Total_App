@@ -1,7 +1,6 @@
 package data
 
 import android.content.Context
-import android.net.Uri
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.hypeapps.lifelinked.R
@@ -23,17 +22,17 @@ actual class ImageManager(private val context: Context) {
         }
     }
 
-    private fun getByteArrayFromLocalUri(uri: String): ByteArray {
-        val inputStream = context.contentResolver.openInputStream(Uri.parse(uri))
-        val res = inputStream?.readBytes() ?: ByteArray(0)
-        inputStream?.close()
-        return res
-    }
+//    private fun getByteArrayFromLocalUri(uri: String): ByteArray {
+//        val inputStream = context.contentResolver.openInputStream(Uri.parse(uri))
+//        val res = inputStream?.readBytes() ?: ByteArray(0)
+//        inputStream?.close()
+//        return res
+//    }
 
-    actual suspend fun copyImageToLocalStorage(uri: String, fileName: String): String {
-        val imageBytes = getByteArrayFromLocalUri(uri)
-        return saveImage(bytes = imageBytes, name = fileName, extension = ".png")
-    }
+//    actual suspend fun copyImageToLocalStorage(uri: String, fileName: String): String {
+//        val imageBytes = getByteArrayFromLocalUri(uri)
+//        return saveImage(bytes = imageBytes, name = fileName, extension = ".png")
+//    }
 
     actual suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
         return saveImage(bytes = bytes, name = fileName, extension = ".png")
