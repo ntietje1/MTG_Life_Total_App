@@ -5,10 +5,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.roboto_bold
+import lifelinked.shared.generated.resources.roboto_medium
 import lifelinked.shared.generated.resources.roboto_regular
 import org.jetbrains.compose.resources.Font
 
@@ -16,7 +19,7 @@ import org.jetbrains.compose.resources.Font
 fun Typography() = Typography(
     bodyLarge = TextStyle(
         fontFamily = RobotoFontFamily(), //TODO: gets overridden by phone's set font
-        fontWeight = FontWeight.Normal,
+//        fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
@@ -67,7 +70,11 @@ val Float.scaledSp: TextUnit
 
 @Composable
 fun RobotoFontFamily(): FontFamily {
-    return FontFamily(Font(Res.font.roboto_regular))
+    return FontFamily(
+        Font(resource = Res.font.roboto_regular, weight = FontWeight.Normal, style = FontStyle.Normal),
+        Font(resource = Res.font.roboto_medium, weight = FontWeight.Medium, style = FontStyle.Normal),
+        Font(resource = Res.font.roboto_bold, weight = FontWeight.Bold, style = FontStyle.Normal),
+    )
 }
 
 @Composable
