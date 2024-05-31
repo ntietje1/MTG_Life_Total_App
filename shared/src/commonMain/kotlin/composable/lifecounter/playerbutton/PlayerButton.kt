@@ -282,7 +282,7 @@ fun PlayerButton(
                 {
                     PlayerButtonBackground(
                         state = state.buttonState,
-                        imageUri = state.player.imageUri,
+                        imageUri = viewModel.locateImage(),
                         color = state.player.color,
                         isDead = viewModel.isDead(autoKo = true),
                     )
@@ -382,7 +382,7 @@ fun PlayerButton(
             ) {
                 PlayerButtonBackground(
                     state = state.buttonState,
-                    imageUri = state.player.imageUri,
+                    imageUri = viewModel.locateImage(),
                     color = state.player.color,
                     isDead = viewModel.isDead(autoKo = true),
                 )
@@ -752,7 +752,7 @@ fun PlayerButton(
                                                     content = {
                                                         items(items = playerList, key = { p -> p.hashCode() }) { pInfo ->
                                                             MiniPlayerButton(
-                                                                imageUri = pInfo.imageUri,
+                                                                imageUri = viewModel.locateImage(pInfo.imageString),
                                                                 name = pInfo.name,
                                                                 backgroundColor = pInfo.color,
                                                                 textColor = pInfo.textColor,

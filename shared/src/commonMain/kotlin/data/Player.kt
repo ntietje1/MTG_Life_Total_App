@@ -29,7 +29,8 @@ import theme.PlayerColor9
 data class Player(
     val life: Int = -1,
     val recentChange: Int = 0,
-    val imageUri: String? = null,
+    val imageString: String? = null, // represents a local file name or scryfall url
+    //TODO: make a PlayerBackground interface/sealed class that can be a local file, scryfall url, or a color
     val color: Color = Color.LightGray,
     val textColor: Color = Color.White,
     val playerNum: Int = -1,
@@ -82,7 +83,7 @@ object PlayerSerializer : KSerializer<Player> {
     override fun serialize(encoder: Encoder, value: Player) {
         encoder.encodeStructure(descriptor) {
             encodeStringElement(descriptor, 0, value.name)
-            encodeStringElement(descriptor, 1, value.imageUri.toString())
+            encodeStringElement(descriptor, 1, value.imageString.toString())
             encodeIntElement(descriptor, 2, value.color.toArgb())
             encodeIntElement(descriptor, 3, value.textColor.toArgb())
             encodeIntElement(descriptor, 4, value.life)
@@ -135,7 +136,7 @@ object PlayerSerializer : KSerializer<Player> {
             Player(
                 life = life,
                 recentChange = recentChange,
-                imageUri = if (imageUri == "null") null else imageUri,
+                imageString = if (imageUri == "null") null else imageUri,
                 color = Color(color),
                 textColor = Color(textColor),
                 playerNum = playerNum,

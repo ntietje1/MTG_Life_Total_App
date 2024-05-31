@@ -11,7 +11,7 @@ import platform.UIKit.UIImage
 import platform.UIKit.UIImagePNGRepresentation
 
 actual class ImageManager {
-    fun getPathForImage(fileName: String): String {
+    actual fun getImagePath(fileName: String): String {
         val documentsDir = NSSearchPathForDirectoriesInDomains(
             NSDocumentDirectory, NSUserDomainMask, true
         ).firstOrNull() ?: throw IllegalStateException("Document directory not found.")

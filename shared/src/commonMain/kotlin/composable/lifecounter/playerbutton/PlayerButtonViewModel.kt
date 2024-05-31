@@ -116,7 +116,7 @@ class PlayerButtonViewModel(
             state.value.player.copy(
                 name = "P${state.value.player.playerNum}",
                 textColor = Color.White,
-                imageUri = null
+                imageString = null
             )
         }
         updatePlayerInfo {
@@ -128,8 +128,19 @@ class PlayerButtonViewModel(
         settingsManager.savePlayerPref(state.value.player)
     }
 
+    fun locateImage(imageString: String? = state.value.player.imageString): String? {
+        return imageString?.let {
+            if (it.startsWith("http")) {
+                return it
+                }
+            else {
+                return imageManager.getImagePath(it)
+            }
+        }
+    }
+
     fun setImageUri(uri: String?) {
-        setPlayerInfo(state.value.player.copy(imageUri = uri))
+        setPlayerInfo(state.value.player.copy(imageString = uri))
         savePlayerPref()
     }
 
@@ -259,7 +270,7 @@ class PlayerButtonViewModel(
     fun copySettings(other: Player) {
         setPlayerInfo(
             state.value.player.copy(
-                imageUri = other.imageUri,
+                imageString = other.imageString,
                 color = other.color,
                 textColor = other.textColor,
                 name = other.name
