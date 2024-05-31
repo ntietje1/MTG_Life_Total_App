@@ -11,6 +11,13 @@ import platform.UIKit.UIImage
 import platform.UIKit.UIImagePNGRepresentation
 
 actual class ImageManager {
+    fun getPathForImage(fileName: String): String {
+        val documentsDir = NSSearchPathForDirectoriesInDomains(
+            NSDocumentDirectory, NSUserDomainMask, true
+        ).firstOrNull() ?: throw IllegalStateException("Document directory not found.")
+        return "$documentsDir/$fileName"
+    }
+
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
     actual suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
         val documentsDir = NSSearchPathForDirectoriesInDomains(
@@ -29,6 +36,6 @@ actual class ImageManager {
         imageData?.writeToFile(destinationPath, atomically = true)
             ?: throw IllegalStateException("Failed to write image data to file.")
 
-        return destinationPath
+        return fileName
     }
 }
