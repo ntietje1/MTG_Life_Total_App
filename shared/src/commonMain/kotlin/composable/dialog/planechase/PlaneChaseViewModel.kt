@@ -25,12 +25,15 @@ class PlaneChaseViewModel(
     init {
         println("Platform!!!: $platform")
         loadPlanechaseState()
-        val currentPlanes = loadAllPlanes()
-        searchPlanes { cards ->
-            val newPlanes = cards.filter { card -> card.name !in currentPlanes.map { it.name } }
-            _state.value = _state.value.copy(allPlanes = newPlanes + cards)
-            settingsManager.saveAllPlanes(newPlanes + cards)
+        searchPlanes {
+            _state.value = _state.value.copy(allPlanes = it)
         }
+//        val currentPlanes = loadAllPlanes()
+//        searchPlanes { cards ->
+//            val newPlanes = cards.filter { card -> card.name !in currentPlanes.map { it.name } }
+//            _state.value = _state.value.copy(allPlanes = newPlanes + cards)
+//            settingsManager.saveAllPlanes(newPlanes + cards)
+//        }
     }
 
     private fun savePlanechaseState() {

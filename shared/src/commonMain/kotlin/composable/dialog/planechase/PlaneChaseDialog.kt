@@ -45,8 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
-import composable.dialog.ScryfallSearchBar
 import composable.SettingsButton
+import composable.dialog.ScryfallSearchBar
 import data.serializable.Card
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
@@ -185,7 +185,7 @@ fun ChoosePlanesDialogContent(
     val focusManager = LocalFocusManager.current
 
     val filteredPlanes by derivedStateOf {
-        state.searchedPlanes.filter { card -> state.planarDeck.contains(card) || !state.hideUnselected }
+        state.searchedPlanes.filter { card -> state.planarDeck.map{ it.name }.contains(card.name) || !state.hideUnselected }
     }
     var backStackDiff by remember { mutableStateOf(0) }
 
