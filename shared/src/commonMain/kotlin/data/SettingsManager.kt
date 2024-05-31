@@ -107,7 +107,7 @@ class SettingsManager private constructor() {
 
     fun loadPlayerPrefs(): ArrayList<Player> {
         val allPrefString = settings.getString("playerPrefs", "[]")
-        return Json.decodeFromString<List<Player>>(allPrefString).toCollection(ArrayList())
+        return Json.decodeFromString<List<Player>>(allPrefString).reversed().toCollection(ArrayList())
     }
 
     private fun savePlayerPrefs(players: ArrayList<Player>) {
