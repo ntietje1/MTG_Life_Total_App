@@ -31,7 +31,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import composable.SettingsButton
@@ -53,6 +52,7 @@ import lifelinked.shared.generated.resources.visible_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.blendWith
+import theme.defaultTextStyle
 import theme.scaledSp
 
 @Composable
@@ -178,9 +178,10 @@ fun SettingsDialogContent(
                         .fillMaxWidth()
                         .padding(start = 10.dp, end = 10.dp, top = 10.dp),
                     text = "LifeLinked v1.4 by Nicholas Tietje",
-                    textAlign = TextAlign.Center, style = TextStyle(
-                        fontSize = 14.scaledSp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                    )
+                    fontSize = 14.scaledSp,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center,
+                    style = defaultTextStyle()
                 )
             }
             item {
@@ -189,10 +190,10 @@ fun SettingsDialogContent(
                         .fillMaxWidth()
                         .padding(start = 10.dp, end = 10.dp, top = 2.5.dp, bottom = 15.dp),
                     text = "Card art & information powered by the Scryfall API",
+                    fontSize = 14.scaledSp,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
-                    style = TextStyle(
-                        fontSize = 14.scaledSp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                    )
+                    style = defaultTextStyle()
                 )
             }
 
@@ -212,9 +213,11 @@ fun SettingsDialogHeader(
             .background(Color.White.copy(alpha = 0.0f)), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.Start
     ) {
         Text(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp), text = text, style = TextStyle(
-                fontSize = 14.scaledSp, color = MaterialTheme.colorScheme.onPrimary
-            )
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
+            text = text,
+            fontSize = 14.scaledSp,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = defaultTextStyle()
         )
     }
 }
@@ -250,10 +253,9 @@ fun SettingsDialogButtonWithToggle(
         Text(
             modifier = Modifier.fillMaxWidth(0.8f),
             text = text,
-            style = TextStyle(
-                fontSize = 16.scaledSp,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+            fontSize = 16.scaledSp,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = defaultTextStyle()
         )
         Spacer(modifier = Modifier.weight(1f))
         Switch(
@@ -305,15 +307,19 @@ fun SettingsDialogButton(
                 .size(50.dp), shadowEnabled = false, imageVector = icon, enabled = false
         )
         Text(
-            modifier = Modifier, text = text, style = TextStyle(
-                fontSize = 16.scaledSp, color = MaterialTheme.colorScheme.onPrimary
-            )
+            modifier = Modifier,
+            text = text,
+            fontSize = 16.scaledSp,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = defaultTextStyle()
         )
         Spacer(modifier = Modifier.weight(1f))
         Text(
-            modifier = Modifier.padding(end = 30.dp), text = additionalText, style = TextStyle(
-                fontSize = 16.scaledSp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-            )
+            modifier = Modifier.padding(end = 30.dp),
+            text = additionalText,
+            fontSize = 16.scaledSp,
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+            style = defaultTextStyle()
         )
     }
 }

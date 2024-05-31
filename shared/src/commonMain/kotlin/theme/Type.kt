@@ -19,7 +19,7 @@ import org.jetbrains.compose.resources.Font
 fun Typography() = Typography(
     bodyLarge = TextStyle(
         fontFamily = RobotoFontFamily(), //TODO: gets overridden by phone's set font
-//        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
@@ -79,3 +79,6 @@ fun RobotoFontFamily(): FontFamily {
 
 @Composable
 expect fun textShadowStyle(fontFamily: FontFamily = RobotoFontFamily()): TextStyle
+
+@Composable
+expect fun defaultTextStyle(fontFamily: FontFamily = RobotoFontFamily()): TextStyle

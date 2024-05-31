@@ -17,3 +17,10 @@ actual fun textShadowStyle(fontFamily: FontFamily): TextStyle {
         )
     )
 }
+
+@Composable
+actual fun defaultTextStyle(fontFamily: FontFamily): TextStyle {
+    return TextStyle(
+        fontFamily = fontFamily
+    )
+}

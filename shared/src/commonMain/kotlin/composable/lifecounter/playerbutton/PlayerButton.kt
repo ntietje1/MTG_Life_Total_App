@@ -119,6 +119,7 @@ import theme.deadNormalColorMatrix
 import theme.deadReceiverColorMatrix
 import theme.deadSettingsColorMatrix
 import theme.dealerColorMatrix
+import theme.defaultTextStyle
 import theme.ghostify
 import theme.normalColorMatrix
 import theme.receiverColorMatrix
@@ -534,7 +535,8 @@ fun PlayerButton(
                                         color = state.player.textColor,
                                         fontSize = 20.scaledSp,
                                         lineHeight = 20.scaledSp,
-                                        textAlign = TextAlign.Center
+                                        textAlign = TextAlign.Center,
+                                        style = defaultTextStyle()
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
                                     SettingsButton(modifier = Modifier.size(smallButtonSize),
@@ -549,7 +551,8 @@ fun PlayerButton(
                                         text = "Toggle Partner Mode",
                                         color = state.player.textColor,
                                         fontSize = 10.scaledSp,
-                                        textAlign = TextAlign.Center
+                                        textAlign = TextAlign.Center,
+                                        style = defaultTextStyle()
                                     )
                                 }
                             }
@@ -718,14 +721,16 @@ fun PlayerButton(
                                                 text = "Saved profiles",
                                                 color = state.player.textColor,
                                                 fontSize = smallTextSize,
-                                                textAlign = TextAlign.Center
+                                                textAlign = TextAlign.Center,
+                                                style = defaultTextStyle()
                                             )
                                             Text(
                                                 modifier = Modifier.wrapContentSize(unbounded = true).offset(y = smallPadding*1.5f),
                                                 text = "(hold to delete)",
                                                 color = state.player.textColor,
                                                 fontSize = smallTextSize / 2,
-                                                textAlign = TextAlign.Center
+                                                textAlign = TextAlign.Center,
+                                                style = defaultTextStyle()
                                             )
                                         }
                                         Box(
@@ -773,7 +778,8 @@ fun PlayerButton(
                                                             text = "No saved profiles found",
                                                             color = state.player.textColor,
                                                             fontSize = smallTextSize * 0.7f,
-                                                            textAlign = TextAlign.Center
+                                                            textAlign = TextAlign.Center,
+                                                            style = defaultTextStyle()
                                                         )
                                                         Text(
                                                             modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp),
@@ -781,7 +787,8 @@ fun PlayerButton(
                                                             color = state.player.textColor,
                                                             lineHeight = smallTextSize,
                                                             fontSize = smallTextSize * 0.7f,
-                                                            textAlign = TextAlign.Center
+                                                            textAlign = TextAlign.Center,
+                                                            style = defaultTextStyle()
                                                         )
                                                     }
                                                 }
@@ -1110,7 +1117,8 @@ fun CounterWrapper(
                 text = text,
                 color = textColor,
                 fontSize = smallTextSize,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                style = defaultTextStyle()
             )
             Box(
                 Modifier.fillMaxSize().background(
@@ -1485,6 +1493,7 @@ fun ColorPicker(
                 color = textColor,
                 fontSize = smallTextSize / 1.25f,
                 textAlign = TextAlign.Center,
+                style = defaultTextStyle()
             )
             Box(
                 Modifier
@@ -1559,7 +1568,8 @@ fun ChangeNameField(
                 Text(
                     "New Name",
                     color = backgroundColor,
-                    fontSize = 12.scaledSp
+                    fontSize = 12.scaledSp,
+                    style = defaultTextStyle()
                 )
             },
             textStyle = TextStyle(fontSize = 15.scaledSp),
@@ -1652,7 +1662,8 @@ fun MiniPlayerButton(
             fontSize = maxHeight.value.scaledSp / 2f,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center),
+            style = textShadowStyle()
         )
     }
 }

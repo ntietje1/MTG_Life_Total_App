@@ -34,7 +34,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -42,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.placeholder_icon
 import org.jetbrains.compose.resources.vectorResource
+import theme.defaultTextStyle
 import theme.generateShadow
 import theme.scaledSp
 import theme.textShadowStyle
@@ -127,7 +127,7 @@ fun SettingsButton(
                     maxLines = 1,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    style = if (shadowEnabled) textShadowStyle() else TextStyle(),
+                    style = if (shadowEnabled) textShadowStyle() else defaultTextStyle(),
                 )
             }
 

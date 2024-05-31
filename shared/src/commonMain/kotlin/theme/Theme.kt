@@ -32,6 +32,8 @@ fun LifeLinkedTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme, typography = Typography(), content = content
+        colorScheme = colorScheme,
+//        typography = Typography(),
+        content = content
     )
 }
