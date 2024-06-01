@@ -401,9 +401,12 @@ fun SettingsDialog(
         )
     ) {
         BoxWithConstraints(
-            modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)), contentAlignment = Alignment.Center
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
         ) {
-            val buttonSize = maxHeight / 15f
+            val buttonSize = 65.dp
 
             Column(Modifier.fillMaxSize()) {
                 if (exitButtonEnabled) {
@@ -440,7 +443,13 @@ fun SettingsDialog(
 @Composable
 fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Unit) {
     SettingsButton(
-        modifier = modifier, backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageVector = vectorResource(Res.drawable.back_icon_alt), onTap = onBack
+        modifier = modifier,
+        backgroundColor = Color.Transparent,
+        text = "",
+        visible = visible,
+        shadowEnabled = false,
+        imageVector = vectorResource(Res.drawable.back_icon_alt),
+        onTap = onBack
     )
 }
 
@@ -448,8 +457,12 @@ fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Un
 fun ExitButton(modifier: Modifier = Modifier, visible: Boolean, onDismiss: () -> Unit) {
     SettingsButton(
         modifier = modifier,
-
-        backgroundColor = Color.Transparent, text = "", visible = visible, shadowEnabled = false, imageVector = vectorResource(Res.drawable.x_icon), onTap = onDismiss
+        backgroundColor = Color.Transparent,
+        text = "",
+        visible = visible,
+        shadowEnabled = false,
+        imageVector = vectorResource(Res.drawable.x_icon),
+        onTap = onDismiss
     )
 }
 
