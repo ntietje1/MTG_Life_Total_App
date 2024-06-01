@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import composable.SettingsButton
+import composable.dialog.WarningDialog
 import data.Player.Companion.allPlayerColors
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
@@ -76,6 +77,22 @@ fun TutorialScreen(
         viewModel.setCurrentPage(pagerState.currentPage)
     }
 
+    if (state.showWarningDialog) {
+        WarningDialog(
+            title = "Warning",
+            message = "Are you sure you want to skip the tutorial?",
+            optionOneMessage = "Skip",
+            onOptionOne = {
+                onFinishTutorial()
+            },
+            optionTwoMessage = "Cancel",
+            onOptionTwo = {},
+            onDismiss = {
+                viewModel.showWarningDialog(false)
+            }
+        )
+    }
+
     Box(Modifier.fillMaxSize().background(Color.Black)) { // Background color has to be hard-coded since images have black background
         SettingsButton(modifier = Modifier.align(Alignment.BottomEnd).size(90.dp).padding(15.dp),
             mainColor = Color.White,
@@ -84,7 +101,11 @@ fun TutorialScreen(
             shadowEnabled = false,
             imageVector = vectorResource(Res.drawable.skip_icon),
             onTap = {
-                onFinishTutorial()
+                if (viewModel.settingsManager.tutorialSkip) {
+                    onFinishTutorial()
+                } else {
+                    viewModel.showWarningDialog()
+                }
             })
         Column(
             modifier = Modifier.fillMaxSize().align(Alignment.TopCenter),
