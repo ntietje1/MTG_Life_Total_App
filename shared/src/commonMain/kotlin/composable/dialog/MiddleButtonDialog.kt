@@ -402,8 +402,7 @@ fun SettingsDialog(
     ) {
         BoxWithConstraints(
             modifier = modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+                .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             val buttonSize = 65.dp

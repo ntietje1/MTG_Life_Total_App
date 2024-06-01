@@ -155,6 +155,15 @@ fun LifeCounterScreen(
         if (!state.showButtons || state.showLoadingScreen) {
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
         }
+
+        Box(Modifier.fillMaxSize().then(
+            if (state.blurBackground) {
+                Modifier
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
+            } else {
+                Modifier
+            }
+        ))
     }
 }
 
