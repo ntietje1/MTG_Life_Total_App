@@ -80,7 +80,7 @@ fun MiddleButtonDialog(
     toggleTheme: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: () -> Unit,
-    returnToLifeCounterScreen: () -> Unit,
+    triggerEnterAnimation: () -> Unit,
     setNumPlayers: (Int) -> Unit,
     goToTutorialScreen: () -> Unit,
     backHandler: BackHandler = koinInject()
@@ -152,10 +152,10 @@ fun MiddleButtonDialog(
                 PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
                     viewModel.resetPlayerStates()
-                    returnToLifeCounterScreen()
+                    triggerEnterAnimation()
                 }, resetPlayers = {
                     viewModel.resetPlayerStates()
-                    returnToLifeCounterScreen()
+                    triggerEnterAnimation()
                 }, show4PlayerDialog = { middleButtonDialogState = MiddleButtonDialogState.FourPlayerLayout })
             }
 
@@ -165,7 +165,7 @@ fun MiddleButtonDialog(
                 FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
                     viewModel.resetPlayerStates()
-                    returnToLifeCounterScreen()
+                    triggerEnterAnimation()
                 }, setAlt4PlayerLayout = { viewModel.settingsManager.alt4PlayerLayout = it })
             }
 
@@ -175,7 +175,7 @@ fun MiddleButtonDialog(
                 StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setStartingLife = {
                     viewModel.settingsManager.startingLife = it
                     viewModel.resetPlayerStates()
-                    returnToLifeCounterScreen()
+                    triggerEnterAnimation()
                 })
             }
 

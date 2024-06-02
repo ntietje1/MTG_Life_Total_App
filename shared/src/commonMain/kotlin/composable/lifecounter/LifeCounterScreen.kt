@@ -74,7 +74,7 @@ fun LifeCounterScreen(
                 goToPlayerSelectScreen()
             },
             setNumPlayers = { viewModel.setNumPlayers(it) },
-            returnToLifeCounterScreen = {
+            triggerEnterAnimation = {
                 scope.launch {
                     showDialog = false
                     viewModel.setShowButtons(false)
