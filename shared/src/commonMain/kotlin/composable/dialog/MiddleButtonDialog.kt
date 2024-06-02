@@ -448,7 +448,7 @@ fun BackButton(modifier: Modifier = Modifier, visible: Boolean, onBack: () -> Un
         visible = visible,
         shadowEnabled = false,
         imageVector = vectorResource(Res.drawable.back_icon_alt),
-        onTap = onBack
+        onPress = onBack
     )
 }
 
@@ -461,7 +461,7 @@ fun ExitButton(modifier: Modifier = Modifier, visible: Boolean, onDismiss: () ->
         visible = visible,
         shadowEnabled = false,
         imageVector = vectorResource(Res.drawable.x_icon),
-        onTap = onDismiss
+        onPress = onDismiss
     )
 }
 
