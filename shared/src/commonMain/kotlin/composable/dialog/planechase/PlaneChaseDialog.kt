@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -132,9 +133,10 @@ fun PlaneChaseDialogContent(
         planarDieResultVisible = true
     }
 
-    BoxWithConstraints(modifier = modifier) {
-        val previewPadding = maxWidth / 20f
-        val buttonModifier = Modifier.size(maxWidth / 6f).padding(bottom = maxHeight / 15f, top = 5.dp)
+    BoxWithConstraints(modifier = modifier.padding(bottom = 20.dp)) {
+        val buttonSize = maxWidth / 6f
+        val previewPadding = buttonSize / 2f
+        val buttonModifier = Modifier.size(buttonSize).padding(bottom = buttonSize)
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 modifier = Modifier.fillMaxWidth().padding(top = 5.dp),
@@ -143,13 +145,15 @@ fun PlaneChaseDialogContent(
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )
+            Spacer(Modifier.height(previewPadding / 4))
             PlaneChaseCardPreview(
-                modifier = Modifier.graphicsLayer { rotationZ = if (rotated) 180f else 0f }.fillMaxHeight(0.9f).padding(bottom = previewPadding),
+                modifier = Modifier.graphicsLayer { rotationZ = if (rotated) 180f else 0f }.fillMaxHeight(0.9f),
                 card = state.planarDeck.lastOrNull(),
                 allowEnlarge = false
             )
+            Spacer(Modifier.height(previewPadding))
             Row(
-                Modifier.fillMaxWidth().wrapContentHeight(), horizontalArrangement = Arrangement.SpaceAround
+                Modifier.fillMaxWidth().height(buttonSize), horizontalArrangement = Arrangement.SpaceAround, verticalAlignment = Alignment.Top
             ) {
                 SettingsButton(modifier = buttonModifier, text = "Previous", shadowEnabled = false, imageVector = vectorResource(Res.drawable.back_icon_alt), onPress = {
                     viewModel.backPlane()
@@ -167,7 +171,6 @@ fun PlaneChaseDialogContent(
                     goToChoosePlanes()
                 })
             }
-            Spacer(Modifier.weight(1.0f))
         }
     }
 }
@@ -337,7 +340,8 @@ fun PlaneChaseCardPreview(
                         } else {
                             Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
                         }
-                    ), model = card.getUris().normal, contentDescription = ""
+                    ), model = card.getUris().normal, contentDescription = "",
+                    alignment = Alignment.TopCenter
 
                 )
             }

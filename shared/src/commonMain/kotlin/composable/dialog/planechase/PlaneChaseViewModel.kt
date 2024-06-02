@@ -1,6 +1,7 @@
 package composable.dialog.planechase
 
 import Platform
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,6 +35,16 @@ class PlaneChaseViewModel(
 //            _state.value = _state.value.copy(allPlanes = newPlanes + cards)
 //            settingsManager.saveAllPlanes(newPlanes + cards)
 //        }
+    }
+
+    private fun shuffleDeck() {
+        _state.value.planarDeck.shuffle()
+    }
+
+    fun onResetGame() {
+        _state.value = _state.value.copy(planarBackStack = mutableStateListOf())
+        shuffleDeck()
+        savePlanechaseState()
     }
 
     private fun savePlanechaseState() {
@@ -83,12 +94,14 @@ class PlaneChaseViewModel(
     fun selectPlane(card: Card) {
         addToTopDeck(card)
         clearBackStack()
+        shuffleDeck()
         savePlanechaseState()
     }
 
     fun deselectPlane(card: Card) {
         removeFromDeck(card)
         clearBackStack()
+        shuffleDeck()
         savePlanechaseState()
     }
 
@@ -97,6 +110,7 @@ class PlaneChaseViewModel(
             addToTopDeck(it)
         }
         clearBackStack()
+        shuffleDeck()
         savePlanechaseState()
     }
 
@@ -105,13 +119,12 @@ class PlaneChaseViewModel(
             removeFromDeck(it)
         }
         clearBackStack()
+        shuffleDeck()
         savePlanechaseState()
     }
 
     fun backPlane() {
         if (_state.value.planarDeck.isNotEmpty()) {
-            println("backPlane()")
-            println("backstack: ${_state.value.planarBackStack.map { it.name }}")
             val card = popBackStack()
             card?.let { addToTopDeck(card) }
             savePlanechaseState()
@@ -131,11 +144,11 @@ class PlaneChaseViewModel(
         return null
     }
 
-    private fun loadAllPlanes(): List<Card> {
-        val allPlanes = settingsManager.loadAllPlanes()
-        _state.value = _state.value.copy(allPlanes = allPlanes)
-        return allPlanes
-    }
+//    private fun loadAllPlanes(): List<Card> {
+//        val allPlanes = settingsManager.loadAllPlanes()
+//        _state.value = _state.value.copy(allPlanes = allPlanes)
+//        return allPlanes
+//    }
 
 
     private suspend fun search(qry: String = state.value.query): List<Card> {

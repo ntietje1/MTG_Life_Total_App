@@ -12,7 +12,7 @@ actual val platformModule = module {
     single { PlaneChaseViewModel(get(), get()) }
     single { TutorialViewModel(get()) }
     single { PlayerSelectViewModel(get()) }
-    single { LifeCounterViewModel(get(), get()) }
+    single { LifeCounterViewModel(get(), get(), get()) }
 }
 
 actual val platform: Platform

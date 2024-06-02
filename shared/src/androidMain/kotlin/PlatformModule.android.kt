@@ -13,7 +13,7 @@ actual val platformModule = module {
     single { PlaneChaseViewModel(get(), get()) } //TODO: workaround for odd lifecycle behavior?
     viewModel { TutorialViewModel(get()) }
     viewModel { PlayerSelectViewModel(get()) }
-    viewModel { LifeCounterViewModel(get(), get()) }
+    viewModel { LifeCounterViewModel(get(), get(), get()) }
 }
 
 actual val platform: Platform

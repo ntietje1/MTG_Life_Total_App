@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import composable.dialog.COUNTER_DIALOG_ENTRIES
+import composable.dialog.planechase.PlaneChaseViewModel
 import composable.lifecounter.playerbutton.PBState
 import composable.lifecounter.playerbutton.PlayerButtonViewModel
 import data.ImageManager
@@ -19,7 +20,8 @@ import kotlinx.coroutines.launch
 
 class LifeCounterViewModel(
     val settingsManager: SettingsManager,
-    private val imageManager: ImageManager
+    private val imageManager: ImageManager,
+    private val planeChaseViewModel: PlaneChaseViewModel
 ) : ViewModel() {
     private val _state = MutableStateFlow(LifeCounterState())
     val state: StateFlow<LifeCounterState> = _state.asStateFlow()
@@ -29,10 +31,7 @@ class LifeCounterViewModel(
 
     lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
 
-//    private var usedColors = listOf<Color>()
-
     init {
-//        startTimer()
         generatePlayers()
         savePlayerStates()
     }
@@ -54,7 +53,7 @@ class LifeCounterViewModel(
         savePlayerStates()
     }
 
-    fun resetPlayerColor(player: Player): Player {
+    private fun resetPlayerColor(player: Player): Player {
         return player.copy(color = allPlayerColors.filter { it !in getUsedColors() }.random())
     }
 
@@ -108,22 +107,6 @@ class LifeCounterViewModel(
         return Player(color = color, life = startingLife, name = name, playerNum = playerNum)
     }
 
-    private fun getRandColor(usedColors: List<Color>): Color {
-//        do {
-//            val color = allPlayerColors.random()
-//            if (usedColors.none { it.toArgb() == color.toArgb() }) return color
-//        } while (true)
-//        println("usedColors: $usedColors")
-        //TODO: this is broken??
-        val availableColors = allPlayerColors.filter { color -> color !in usedColors }
-//        println("availableColors: $availableColors")
-        return if (availableColors.isNotEmpty()) {
-            availableColors.random()
-        } else {
-            Color.Gray
-        }
-    }
-
     fun showLoadingScreen(value: Boolean) {
         _state.value = _state.value.copy(showLoadingScreen = value)
     }
@@ -135,6 +118,7 @@ class LifeCounterViewModel(
 
     fun resetPlayerStates() {
         setShowButtons(false)
+        planeChaseViewModel.onResetGame()
         viewModelScope.launch {
             delay(10)
             setShowButtons(true)
