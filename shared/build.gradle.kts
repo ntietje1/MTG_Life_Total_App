@@ -106,7 +106,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         compileSdk = libs.versions.android.compileSdk.get().toInt()
-        versionCode = 5
+        versionCode = 6
         versionName = "1.5"
     }
     packaging {
