@@ -1,13 +1,14 @@
 package composable.dialog
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,7 +29,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import composable.SettingsButton
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.enter_icon
@@ -45,10 +45,11 @@ fun StartingLifeDialogContent(
     setStartingLife: (Int) -> Unit
 ) {
     var customLife by remember { mutableStateOf("") }
-    Box(modifier) {
+    BoxWithConstraints(modifier) {
+        val textFieldHeight = maxHeight / 7f
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Spacer(Modifier.weight(1.0f))
-            GridDialogContent(Modifier.wrapContentSize().weight(0.9f), title = "Set starting life total", items = listOf({
+            Spacer(Modifier.height(textFieldHeight))
+            GridDialogContent(Modifier.wrapContentSize().weight(1.0f), title = "Set starting life total", items = listOf({
                 SettingsButton(imageVector = vectorResource(Res.drawable.forty_icon), text = "", shadowEnabled = false, onPress = {
                     setStartingLife(40)
                     onDismiss()
@@ -64,56 +65,85 @@ fun StartingLifeDialogContent(
                     onDismiss()
                 })
             }))
-            Box(
-                modifier = Modifier.wrapContentSize()
-            ) {
-                fun customSetStartLife() {
-                    val life = customLife.toIntOrNull()
-                    if (life != null) {
-                        setStartingLife(life)
-                        onDismiss()
-                    }
+            fun customSetStartLife() {
+                val life = customLife.toIntOrNull()
+                if (life != null) {
+                    setStartingLife(life)
+                    onDismiss()
                 }
-                TextField(value = customLife, onValueChange = { customLife = it }, label = {
-                    Text(
-                        "Custom Starting Life", color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.scaledSp
-                    )
-                }, textStyle = TextStyle(fontSize = 20.scaledSp), singleLine = true, colors = TextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledTextColor = MaterialTheme.colorScheme.onPrimary,
-                    focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    cursorColor = MaterialTheme.colorScheme.onPrimary,
-                    selectionColors = TextSelectionColors(
-                        handleColor = MaterialTheme.colorScheme.onPrimary,
-                        backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                    ),
-                    focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                    unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                    disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                ), keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
-                ), keyboardActions = KeyboardActions(onDone = { customSetStartLife() }), modifier = Modifier
+            }
+
+            TextFieldWithButton(
+                modifier = Modifier
+                    .weight(0.2f)
                     .fillMaxWidth(0.8f)
-                    .height(80.dp)
-                    .padding(top = 20.dp)
-                    .padding(horizontal = 5.dp)
-                )
+                    .height(textFieldHeight),
+                value = customLife,
+                onValueChange = { customLife = it },
+                label = "Custom Starting Life",
+                keyboardType = KeyboardType.Number,
+                onDone = { customSetStartLife() }
+            ) {
                 SettingsButton(
-                    Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(top = 20.dp, end = 5.dp)
-                        .size(50.dp),
+                    modifier = Modifier.fillMaxSize(),
                     imageVector = vectorResource(Res.drawable.enter_icon),
                     shadowEnabled = false,
-                    onPress = { customSetStartLife() })
+                    onPress = { customSetStartLife() }
+                )
             }
-            Spacer(Modifier.weight(1.0f))
+            Spacer(Modifier.weight(0.5f))
+        }
+    }
+}
+
+@Composable
+fun TextFieldWithButton(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    keyboardType: KeyboardType,
+    onDone: () -> Unit,
+    button: @Composable () -> Unit,
+) {
+    BoxWithConstraints(
+        modifier = modifier
+    ) {
+        val textSize = (maxHeight / 3.25f).value.scaledSp
+        TextField(value = value, onValueChange = onValueChange, label = {
+            Text(
+                modifier = Modifier.wrapContentSize(),
+                text = label, color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize
+            )
+        }, textStyle = TextStyle(fontSize = textSize*1.25f), singleLine = true, colors = TextFieldDefaults.colors(
+            focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+            unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
+            disabledTextColor = MaterialTheme.colorScheme.onPrimary,
+            focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
+            cursorColor = MaterialTheme.colorScheme.onPrimary,
+            selectionColors = TextSelectionColors(
+                handleColor = MaterialTheme.colorScheme.onPrimary,
+                backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+            ),
+            focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+            unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+            disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        ), keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = keyboardType, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
+        ), keyboardActions = KeyboardActions(onDone = { onDone() }), modifier = Modifier.fillMaxSize()
+        )
+        Box(
+            Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+                .aspectRatio(1.0f)
+        ) {
+            button()
         }
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -36,7 +37,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import composable.dialog.MiddleButtonDialog
 import composable.lifecounter.playerbutton.PlayerButton
 import composable.lifecounter.playerbutton.PlayerButtonViewModel
@@ -110,65 +110,74 @@ fun LifeCounterScreen(
     }
 
     BoxWithConstraints(
-        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).then(
-            if (state.blurBackground) {
-                Modifier.blur(radius = 20.dp)
-            } else {
-                Modifier
-            }
-        )
+        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ) {
         val m = LifeCounterMeasurements(
             maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = state.numPlayers, alt4Layout = viewModel.settingsManager.alt4PlayerLayout
         )
+        val buttonPadding = maxWidth / 750f + maxHeight / 750f
+        val buttonPlacements = m.buttonPlacements()
+        val blurRadius = maxHeight / 50f
+        val middleButtonSize = maxWidth / 15f + maxHeight / 30f
+        Box(
+            Modifier.fillMaxSize().then(
+                if (state.blurBackground) {
+                    Modifier.blur(radius = blurRadius)
+                } else {
+                    Modifier
+                }
+            )
+        ) {
+            LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
+                items(buttonPlacements, key = { it.hashCode() }) { buttonPlacements ->
+                    LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
+                        items(buttonPlacements, key = { it.index }) { placement ->
+                            AnimatedPlayerButton(
+                                modifier = Modifier.padding(buttonPadding),
+                                visible = state.showButtons,
+                                borderWidth = buttonPadding,
+                                playerButtonViewModel = viewModel.playerButtonViewModels[placement.index],
+                                rotation = placement.angle,
+                                width = placement.width - buttonPadding * 4,
+                                height = placement.height - buttonPadding * 4,
+                                setBlurBackground = { viewModel.setBlurBackground(it) }
+                            )
+                        }
+                    })
+                }
+            })
+            val middleButtonOffset = m.middleButtonOffset(middleButtonSize)
 
-        val buttonPlacements =  m.buttonPlacements()
-
-        LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
-            items(buttonPlacements, key = { it.hashCode() }) { buttonPlacements ->
-                LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
-                    items(buttonPlacements, key = { it.index }) { placement ->
-                        AnimatedPlayerButton(
-                            visible = state.showButtons,
-                            playerButtonViewModel = viewModel.playerButtonViewModels[placement.index],
-                            rotation = placement.angle,
-                            width = placement.width,
-                            height = placement.height,
-                            setBlurBackground = { viewModel.setBlurBackground(it) }
-                        )
-                    }
+            AnimatedMiddleButton(
+                modifier = Modifier
+                    .offset(middleButtonOffset.first, middleButtonOffset.second)
+                    .size(middleButtonSize),
+                visible = state.showButtons, onMiddleButtonClick = {
+                    showDialog = true
                 })
+
+            if (!state.showButtons || state.showLoadingScreen) {
+                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
             }
-        })
 
-        val middleButtonSize = 50.dp
-        val middleButtonOffset = m.middleButtonOffset(middleButtonSize)
-
-        AnimatedMiddleButton(
-            modifier = Modifier
-                .offset(middleButtonOffset.first, middleButtonOffset.second)
-                .size(middleButtonSize),
-            visible = state.showButtons, onMiddleButtonClick = {
-            showDialog = true
-        })
-
-        if (!state.showButtons || state.showLoadingScreen) {
-            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+            Box(
+                Modifier.fillMaxSize().then(
+                    if (state.blurBackground) {
+                        Modifier
+                            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
+                    } else {
+                        Modifier
+                    }
+                )
+            )
         }
-
-        Box(Modifier.fillMaxSize().then(
-            if (state.blurBackground) {
-                Modifier
-                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
-            } else {
-                Modifier
-            }
-        ))
     }
 }
 
 @Composable
 fun AnimatedPlayerButton(
+    modifier: Modifier = Modifier,
+    borderWidth: Dp,
     visible: Boolean, playerButtonViewModel: PlayerButtonViewModel, rotation: Float, width: Dp, height: Dp, setBlurBackground: (Boolean) -> Unit
 ) {
     val multiplesAway = 3f
@@ -218,13 +227,15 @@ fun AnimatedPlayerButton(
         }
     }
 
-    Box(modifier = Modifier.graphicsLayer {
+    Box(modifier = modifier.graphicsLayer {
         translationX = offsetX.value
         translationY = offsetY.value
     }
     ) {
         PlayerButton(
-            modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation, setBlurBackground = {
+            modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation,
+            borderWidth = borderWidth,
+            setBlurBackground = {
                 setBlurBackground(it)
             }
         )

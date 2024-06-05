@@ -54,10 +54,12 @@ class PlayerButtonViewModel(
                     setAllButtonStates(PBState.COMMANDER_RECEIVER)
                     PBState.COMMANDER_DEALER
                 }
+
                 PBState.COMMANDER_DEALER -> {
                     setAllButtonStates(PBState.NORMAL)
                     PBState.NORMAL
                 }
+
                 else -> throw Exception("Invalid state for commanderButtonOnClick")
             }
         )
@@ -128,11 +130,21 @@ class PlayerButtonViewModel(
         settingsManager.savePlayerPref(state.value.player)
     }
 
-    fun locateImage(imageString: String? = state.value.player.imageString): String? {
-        return imageString?.let {
+    fun locateImage(player: Player): String? {
+        println("Locating image for player: ${player.name}")
+        return player.imageString?.let {
             if (it.startsWith("http")) {
                 return it
+            }
+            else if (it.startsWith("content://")) {
+                val playerNameAndUUID = it.substringAfter("content://lifelinked.multiplatform.provider/lifelinked_multiplatform_saved_images/").substringBefore("..png")
+                val uuid = playerNameAndUUID.substringAfterLast(player.name)
+                val newImageString = "${player.name}-${uuid}"
+                setImageUri(newImageString)
+                savePlayerPref()
+                return imageManager.getImagePath(player.name).apply {
                 }
+            }
             else {
                 return imageManager.getImagePath(it)
             }
@@ -165,7 +177,7 @@ class PlayerButtonViewModel(
     }
 
     fun isDead(autoKo: Boolean = settingsManager.autoKo): Boolean {
-        val playerInfo = state.value .player
+        val playerInfo = state.value.player
         return ((autoKo && (playerInfo.life <= 0 || playerInfo.commanderDamage.any { it >= 21 })) || playerInfo.setDead)
     }
 

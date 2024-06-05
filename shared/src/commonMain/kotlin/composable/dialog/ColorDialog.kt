@@ -55,87 +55,100 @@ fun ColorDialog(
 
 @Composable
 fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {}, onDismiss: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
-    ) {
+    BoxWithConstraints(Modifier.wrapContentSize()) {
+        val largePanelSize = maxWidth * 0.75f
+        val padding = maxWidth /15f
+        val buttonSize = maxWidth / 3.5f
+        val barHeight = maxWidth / 12f
 
-        val hsv = remember {
-            val hsv = initialColor.toHsv()
-
-            mutableStateOf(
-                Triple(hsv[0].coerceIn(0.0f, 360f), hsv[1], hsv[2])
-            )
-        }
-
-        val backgroundColor = remember {
-            derivedStateOf {
-                Color.hsv(hsv.value.first.coerceIn(0.0f, 360f), hsv.value.second.coerceIn(0.0f, 1.0f), hsv.value.third.coerceIn(0.0f, 1.0f))
-            }
-        }
-
-        SatValPanel(hue = hsv.value.first.coerceIn(0.0f, 360f)) { sat, value ->
-            hsv.value = Triple(hsv.value.first.coerceIn(0.0f, 360f), sat.coerceIn(0.0f, 1.0f), value.coerceIn(0.0f, 1.0f))
-            println("hue = ${hsv.value.first}, sat = $sat, value = $value")
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        HueBar { hue ->
-            hsv.value = Triple(hue.coerceIn(0.0f, 360f), hsv.value.second.coerceIn(0.0f, 1.0f), hsv.value.third.coerceIn(0.0f, 1.0f))
-            println("hue = $hue, sat = ${hsv.value.second}, value = ${hsv.value.third}")
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Row(
-            modifier = Modifier.wrapContentSize(), horizontalArrangement = Arrangement.Center
+        Column(
+            modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
         ) {
-            Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                SettingsButton(
-                    modifier = Modifier.size(100.dp),
-                    imageVector = vectorResource(Res.drawable.x_icon),
-                    shape = RoundedCornerShape(10),
-                    shadowEnabled = false,
-                    backgroundColor = initialColor,
-                    mainColor = if (initialColor.luminance() > 0.5f) Color.Black else Color.White,
-                    textSizeMultiplier = 1.5f,
-                    onTap = {
-                        setColor(initialColor)
-                        onDismiss()
-                    }
+
+            val hsv = remember {
+                val hsv = initialColor.toHsv()
+
+                mutableStateOf(
+                    Triple(hsv[0].coerceIn(0.0f, 360f), hsv[1], hsv[2])
                 )
-                Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimary)
             }
 
-            Spacer(modifier = Modifier.width(32.dp))
-            Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                SettingsButton(
-                    modifier = Modifier.size(100.dp),
-                    imageVector = vectorResource(Res.drawable.checkmark),
-                    shape = RoundedCornerShape(10),
-                    shadowEnabled = false,
-                    backgroundColor = backgroundColor.value,
-                    mainColor = if (backgroundColor.value.luminance() > 0.5f) Color.Black else Color.White,
-                    textSizeMultiplier = 1.5f,
-                    onTap = {
-                        setColor(backgroundColor.value)
-                        onDismiss()
-                    }
-                )
-                Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimary)
+            val backgroundColor = remember {
+                derivedStateOf {
+                    Color.hsv(hsv.value.first.coerceIn(0.0f, 360f), hsv.value.second.coerceIn(0.0f, 1.0f), hsv.value.third.coerceIn(0.0f, 1.0f))
+                }
+            }
+
+            SatValPanel(
+                modifier = Modifier.size(largePanelSize),
+                hue = hsv.value.first.coerceIn(0.0f, 360f)
+            ) { sat, value ->
+                hsv.value = Triple(hsv.value.first.coerceIn(0.0f, 360f), sat.coerceIn(0.0f, 1.0f), value.coerceIn(0.0f, 1.0f))
+                println("hue = ${hsv.value.first}, sat = $sat, value = $value")
+            }
+
+            Spacer(modifier = Modifier.height(padding))
+
+            HueBar(
+                modifier = Modifier.width(largePanelSize).height(barHeight),
+            ) { hue ->
+                hsv.value = Triple(hue.coerceIn(0.0f, 360f), hsv.value.second.coerceIn(0.0f, 1.0f), hsv.value.third.coerceIn(0.0f, 1.0f))
+                println("hue = $hue, sat = ${hsv.value.second}, value = ${hsv.value.third}")
+            }
+
+            Spacer(modifier = Modifier.height(padding))
+
+            Row(
+                modifier = Modifier.wrapContentSize(), horizontalArrangement = Arrangement.Center
+            ) {
+                Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    SettingsButton(
+                        modifier = Modifier.size(buttonSize),
+                        imageVector = vectorResource(Res.drawable.x_icon),
+                        shape = RoundedCornerShape(10),
+                        shadowEnabled = false,
+                        backgroundColor = initialColor,
+                        mainColor = if (initialColor.luminance() > 0.5f) Color.Black else Color.White,
+                        textSizeMultiplier = 1.5f,
+                        onTap = {
+                            setColor(initialColor)
+                            onDismiss()
+                        }
+                    )
+                    Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimary)
+                }
+
+                Spacer(modifier = Modifier.width(padding))
+                Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    SettingsButton(
+                        modifier = Modifier.size(buttonSize),
+                        imageVector = vectorResource(Res.drawable.checkmark),
+                        shape = RoundedCornerShape(10),
+                        shadowEnabled = false,
+                        backgroundColor = backgroundColor.value,
+                        mainColor = if (backgroundColor.value.luminance() > 0.5f) Color.Black else Color.White,
+                        textSizeMultiplier = 1.5f,
+                        onTap = {
+                            setColor(backgroundColor.value)
+                            onDismiss()
+                        }
+                    )
+                    Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimary)
+                }
             }
         }
     }
 }
 
 @Composable
-fun HueBar(setColor: (Float) -> Unit) {
+fun HueBar(
+    modifier: Modifier = Modifier,
+    setColor: (Float) -> Unit
+) {
     val pressOffset = remember { mutableStateOf(Offset.Zero) }
 
     BoxWithConstraints(
-        modifier = Modifier
-            .width(300.dp)
-            .height(40.dp)
+        modifier = modifier
     ) {
         Box(
             modifier = Modifier
@@ -183,6 +196,7 @@ fun HueBar(setColor: (Float) -> Unit) {
 
 @Composable
 fun SatValPanel(
+    modifier: Modifier = Modifier,
     hue: Float, setSatVal: (Float, Float) -> Unit
 ) {
     BoxWithConstraints(
@@ -190,13 +204,14 @@ fun SatValPanel(
     ) {
         val maxWidth = maxWidth
         val maxHeight = maxHeight
+//        val size = Size(maxWidth.value, maxHeight.value)
         val pressPosn = remember {
             mutableStateOf(Offset.Zero)
         }
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .wrapContentSize()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(5))
                 .pointerInput(Unit) {
                     detectDragGestures { position, _ ->
                         val x = position.position.x
@@ -221,16 +236,13 @@ fun SatValPanel(
             )
 
             Canvas(
-                modifier = Modifier
-                    .size(300.dp)
+                modifier = modifier
             ) {
-
                 drawRect(
                     color = Color.White,
                     topLeft = Offset.Zero,
                     size = size
                 )
-
                 drawRect(
                     brush = valShader,
                     topLeft = Offset.Zero,

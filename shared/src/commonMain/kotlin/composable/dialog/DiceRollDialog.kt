@@ -85,56 +85,58 @@ fun DiceRollDialogContent(
         faceValue = fv
         size = pressedSize
     }
-    Column(modifier = modifier, verticalArrangement = Arrangement.Center) {
-        Spacer(modifier = Modifier.weight(0.1f))
-        GridDialogContent(modifier = Modifier.weight(0.8f), title = "Tap to roll", items = listOf({
-            DiceRollButton(value = 4, imageVector = vectorResource(Res.drawable.d4_icon), resultCallBack = { setLastResult(it, 4) })
-        }, {
-            DiceRollButton(value = 6, imageVector = vectorResource(Res.drawable.d6_icon), resultCallBack = { setLastResult(it, 6) })
-        }, {
-            DiceRollButton(value = 8, imageVector = vectorResource(Res.drawable.d8_icon), resultCallBack = { setLastResult(it, 8) })
-        }, {
-            DiceRollButton(value = 10, imageVector = vectorResource(Res.drawable.d10_icon), resultCallBack = { setLastResult(it, 10) })
-        }, {
-            DiceRollButton(value = 12, imageVector = vectorResource(Res.drawable.d12_icon), resultCallBack = { setLastResult(it, 12) })
-        }, {
-            DiceRollButton(value = 20, imageVector = vectorResource(Res.drawable.d20_icon), resultCallBack = { setLastResult(it, 20) })
-        }))
+    BoxWithConstraints(modifier = modifier) {
+        val resultTextSize = (maxWidth / 30f).value.scaledSp()
+        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+            Spacer(modifier = Modifier.weight(0.1f))
+            GridDialogContent(modifier = Modifier.weight(1.0f), title = "Tap to roll", items = listOf({
+                DiceRollButton(value = 4, imageVector = vectorResource(Res.drawable.d4_icon), resultCallBack = { setLastResult(it, 4) })
+            }, {
+                DiceRollButton(value = 6, imageVector = vectorResource(Res.drawable.d6_icon), resultCallBack = { setLastResult(it, 6) })
+            }, {
+                DiceRollButton(value = 8, imageVector = vectorResource(Res.drawable.d8_icon), resultCallBack = { setLastResult(it, 8) })
+            }, {
+                DiceRollButton(value = 10, imageVector = vectorResource(Res.drawable.d10_icon), resultCallBack = { setLastResult(it, 10) })
+            }, {
+                DiceRollButton(value = 12, imageVector = vectorResource(Res.drawable.d12_icon), resultCallBack = { setLastResult(it, 12) })
+            }, {
+                DiceRollButton(value = 20, imageVector = vectorResource(Res.drawable.d20_icon), resultCallBack = { setLastResult(it, 20) })
+            }))
 
-        Text(
-            text = "Last result", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.scaledSp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(5.dp))
-        Box(
-            modifier = Modifier.weight(0.35f).aspectRatio(1.0f).align(Alignment.CenterHorizontally).background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
-                .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-        ) {
-            SettingsButton(modifier = Modifier.fillMaxSize().bounceClick(bounceAmount = 0.02f).graphicsLayer(scaleX = animatedSize, scaleY = animatedSize).then(
-                if (lastResult == null) {
-                    Modifier.alpha(0.001f)
-                } else {
-                    Modifier
-                }
-            ),
-                imageVector = if (faceValue != null) resources[faceValue]!! else vectorResource(Res.drawable.d20_icon),
-                text = "",
-                mainColor = MaterialTheme.colorScheme.onPrimary,
-                shadowEnabled = false,
-                enabled = false,
-                overlay = {
-                    BoxWithConstraints(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text(
-                            text = if (lastResult != null) lastResult.toString() else "",
-                            color = MaterialTheme.colorScheme.background,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = maxHeight.value.scaledSp / 5,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
-                        )
+            Text(
+                text = "Last result", color = MaterialTheme.colorScheme.onPrimary, fontSize = resultTextSize, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(5.dp).weight(0.05f))
+            Box(
+                modifier = Modifier.weight(0.35f).aspectRatio(1.0f).align(Alignment.CenterHorizontally).background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f), RoundedCornerShape(15))
+                    .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(15))
+            ) {
+                SettingsButton(modifier = Modifier.fillMaxSize().bounceClick(bounceAmount = 0.02f).graphicsLayer(scaleX = animatedSize, scaleY = animatedSize).then(
+                    if (lastResult == null) {
+                        Modifier.alpha(0.001f)
+                    } else {
+                        Modifier
                     }
-                })
+                ),
+                    imageVector = if (faceValue != null) resources[faceValue]!! else vectorResource(Res.drawable.d20_icon),
+                    text = "",
+                    mainColor = MaterialTheme.colorScheme.onPrimary,
+                    shadowEnabled = false,
+                    enabled = false,
+                    overlay = {
+                        BoxWithConstraints(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                text = if (lastResult != null) lastResult.toString() else "",
+                                color = MaterialTheme.colorScheme.background,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = maxHeight.value.scaledSp / 5,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
+                            )
+                        }
+                    })
 //                DiceRollButton(value = lastResult!!, modifier = Modifier.fillMaxSize(), imageResource = resources[faceValue]!!)
 
 //            if (lastResult != null && faceValue != null) {
@@ -148,8 +150,9 @@ fun DiceRollDialogContent(
 //                    textAlign = TextAlign.Center,
 //                )
 //            }
+            }
+            Spacer(modifier = Modifier.weight(0.05f))
         }
-        Spacer(modifier = Modifier.weight(0.05f))
     }
 }
 
@@ -189,32 +192,37 @@ fun DiceRollButton(
         }
     }
 
-    SettingsButton(modifier = modifier.bounceClick(bounceAmount = 0.04f).shake(shakeController),
-        shape = shape,
-        backgroundColor = backgroundColor,
-        imageVector = imageVector,
-        text = "D$value",
-        mainColor = mainColor,
-        shadowEnabled = false,
-        enabled = isEnabled,
-        visible = visible,
-        onPress = {
-            roll()
-            shakeController.shake(ShakeConfig(6, translateX = 7.5f, rotate = 0.5f, rotateY = 12.5f))
-        },
-        overlay = {
-            BoxWithConstraints(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Text(
-                    text = faceValue.toString(),
-                    color = MaterialTheme.colorScheme.background,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = maxHeight.value.scaledSp / 5,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
-                )
-            }
-        })
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        SettingsButton(modifier = modifier.bounceClick(bounceAmount = 0.04f).shake(shakeController),
+            shape = shape,
+            backgroundColor = backgroundColor,
+            imageVector = imageVector,
+            text = "D$value",
+            mainColor = mainColor,
+            shadowEnabled = false,
+            enabled = isEnabled,
+            visible = visible,
+            onPress = {
+                roll()
+                shakeController.shake(ShakeConfig(6, translateX = 7.5f, rotate = 0.5f, rotateY = 12.5f))
+            },
+            overlay = {
+                BoxWithConstraints(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = faceValue.toString(),
+                        color = MaterialTheme.colorScheme.background,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = maxHeight.value.scaledSp / 5,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
+                    )
+                }
+            })
+    }
 }
 

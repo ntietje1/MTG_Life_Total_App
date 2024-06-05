@@ -11,20 +11,20 @@ class LifeCounterMeasurements(
 
     data class ButtonPlacement(val index: Int, val width: Dp, val height: Dp, val angle: Float)
 
-    private val offset3 = 0.8f
-    private val unit3 = maxWidth * offset3
+    private val offset3 = 0.37f
+    private val unit3 = maxHeight * offset3
 
     private val offset4alt = 0.80f
     private val unit4alt = maxHeight / 3 * offset4alt
 
-    private val offset5 = 0.265f
-    private val unit5 = maxWidth * offset5
+    private val offset5 = 0.14f
+    private val unit5 = maxHeight * offset5
 
     fun middleButtonOffset(middleButtonSize: Dp): Pair<Dp, Dp> {
         val offset = when (numPlayers) {
             1 -> maxWidth/2 to maxHeight/4
             2 -> maxWidth/2  to maxHeight/2
-            3 -> maxWidth / 2  to (maxHeight - unit3) - (middleButtonSize / 10)
+            3 -> maxWidth / 2  to (maxHeight - unit3) - (middleButtonSize / 5)
             4 -> if (!alt4Layout) {
                 maxWidth/2  to maxHeight/2
             } else {

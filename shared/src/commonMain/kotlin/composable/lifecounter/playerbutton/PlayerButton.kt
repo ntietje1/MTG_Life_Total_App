@@ -95,7 +95,6 @@ import lifelinked.shared.generated.resources.back_icon
 import lifelinked.shared.generated.resources.camera_icon
 import lifelinked.shared.generated.resources.change_background_icon
 import lifelinked.shared.generated.resources.change_name_icon
-import lifelinked.shared.generated.resources.color_picker_icon
 import lifelinked.shared.generated.resources.commander_solid_icon
 import lifelinked.shared.generated.resources.custom_color_icon
 import lifelinked.shared.generated.resources.download_icon
@@ -107,6 +106,7 @@ import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
 import lifelinked.shared.generated.resources.settings_icon
 import lifelinked.shared.generated.resources.skull_icon
+import lifelinked.shared.generated.resources.star_icon
 import lifelinked.shared.generated.resources.sword_icon
 import lifelinked.shared.generated.resources.sword_icon_double
 import lifelinked.shared.generated.resources.text_icon
@@ -133,6 +133,7 @@ fun PlayerButton(
     modifier: Modifier = Modifier,
     viewModel: PlayerButtonViewModel,
     rotation: Float = 0f,
+    borderWidth: Dp,
     setBlurBackground: (Boolean) -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
@@ -272,24 +273,26 @@ fun PlayerButton(
                 verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(Modifier.weight(0.7f))
-                Box(
+                BoxWithConstraints(
                     modifier = Modifier
-                        .padding(20.dp)
-                        .wrapContentSize()
+                        .fillMaxWidth(0.8f)
                         .aspectRatio(2f)
-                        .clip(RoundedCornerShape(30.dp)),
-                )
-                {
+                        .clip(RoundedCornerShape(12)),
+                ) {
+                    val buttonSize = maxWidth / 8f
+                    val padding = buttonSize / 5
+                    val textSize = (maxWidth / 20f).value.scaledSp
+                    val textFieldHeight = maxWidth / 5f
                     PlayerButtonBackground(
                         state = state.buttonState,
-                        imageUri = viewModel.locateImage(),
+                        imageUri = viewModel.locateImage(state.player),
                         color = state.player.color,
                         isDead = viewModel.isDead(autoKo = true),
                     )
                     SettingsButton(
-                        modifier = Modifier.size(45.dp).padding(
-                            start = 5.dp,
-                            bottom = 5.dp
+                        modifier = Modifier.size(buttonSize).padding(
+                            start = padding,
+                            bottom = padding
                         ).align(Alignment.BottomStart),
                         backgroundColor = Color.Transparent,
                         mainColor = state.player.textColor,
@@ -300,20 +303,24 @@ fun PlayerButton(
                             viewModel.closeSettingsMenu()
                         }
                     )
-                    Spacer(Modifier.size(25.dp))
                     Text(
-                        modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(top = 10.dp).padding(horizontal = 5.dp),
-                        text = "${state.player.name} -> ${state.changeNameTextField.text}",
+                        modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(top = padding * 2).padding(horizontal = padding),
+                        text = "Previous name: ${state.player.name}",
                         color = state.player.textColor,
-                        fontSize = 20.scaledSp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = textSize,
+                        fontWeight = FontWeight.Medium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
                         style = textShadowStyle()
                     )
+
                     ChangeNameField(
-                        modifier = modifier.align(Alignment.Center).fillMaxWidth().wrapContentHeight().padding(bottom = 35.dp),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fillMaxWidth(0.8f)
+                            .height(textFieldHeight)
+                            .padding(bottom = padding),
                         name = state.changeNameTextField,
                         showChangeNameField = state.showChangeNameField,
                         onChangeName = viewModel::setChangeNameField,
@@ -334,6 +341,7 @@ fun PlayerButton(
     if (state.showScryfallSearch) {
         val scryfallBackStack = remember { mutableStateListOf({ viewModel.showScryfallSearch(false) }) }
         ScryfallSearchDialog(
+            modifier = Modifier.fillMaxSize(),
             onDismiss = {
                 viewModel.showScryfallSearch(false)
             },
@@ -374,15 +382,16 @@ fun PlayerButton(
 
         MonarchyIndicator(
             modifier = modifier,
-            monarch = state.player.monarch
+            monarch = state.player.monarch,
+            borderWidth = borderWidth,
         ) {
             BoxWithConstraints(
-                modifier = Modifier.fillMaxSize().background(Color.Transparent).clip(RoundedCornerShape(30.dp)),
+                modifier = Modifier.fillMaxSize().background(Color.Transparent).clip(RoundedCornerShape(12)),
                 contentAlignment = Alignment.Center
             ) {
                 PlayerButtonBackground(
                     state = state.buttonState,
-                    imageUri = viewModel.locateImage(),
+                    imageUri = viewModel.locateImage(state.player),
                     color = state.player.color,
                     isDead = viewModel.isDead(autoKo = true),
                 )
@@ -487,7 +496,8 @@ fun PlayerButton(
 
                 @Composable
                 fun PlayerButtonContent(modifier: Modifier = Modifier) {
-                    Box(modifier.fillMaxSize()) {
+                    BoxWithConstraints(modifier.fillMaxSize()) {
+                        val textSize = (maxWidth / 15f).value.scaledSp
                         when (state.buttonState) {
                             PBState.NORMAL -> {
                                 if (viewModel.isDead()) {
@@ -528,18 +538,17 @@ fun PlayerButton(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    Spacer(modifier = Modifier.height(40.dp))
                                     Text(
                                         modifier = Modifier,
                                         text = "Deal damage with your commander",
                                         color = state.player.textColor,
-                                        fontSize = 20.scaledSp,
-                                        lineHeight = 20.scaledSp,
+                                        fontSize = textSize*0.8f,
+                                        lineHeight = textSize*0.8f,
                                         textAlign = TextAlign.Center,
                                         style = defaultTextStyle()
                                     )
-                                    Spacer(modifier = Modifier.height(10.dp))
-                                    SettingsButton(modifier = Modifier.size(smallButtonSize),
+                                    Spacer(modifier = Modifier.height(smallButtonSize/4f))
+                                    SettingsButton(modifier = Modifier.size(smallButtonSize*1.5f),
                                         imageVector = vectorResource(iconResource),
                                         backgroundColor = Color.Transparent,
                                         mainColor = state.player.textColor,
@@ -550,7 +559,7 @@ fun PlayerButton(
                                         modifier = Modifier.wrapContentSize(unbounded = true),
                                         text = "Toggle Partner Mode",
                                         color = state.player.textColor,
-                                        fontSize = 10.scaledSp,
+                                        fontSize = textSize*0.6f,
                                         textAlign = TextAlign.Center,
                                         style = defaultTextStyle()
                                     )
@@ -593,7 +602,7 @@ fun PlayerButton(
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = Modifier.size(settingsButtonSize),
-                                                imageResource = Res.drawable.change_background_icon,
+                                                imageResource = Res.drawable.star_icon,
                                                 text = "Customize"
                                             ) {
                                                 viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE)
@@ -637,7 +646,7 @@ fun PlayerButton(
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = Modifier.size(settingsButtonSize),
-                                                imageResource = Res.drawable.color_picker_icon,
+                                                imageResource = Res.drawable.change_background_icon,
                                                 text = "Background Color"
                                             ) {
                                                 viewModel.setPlayerButtonState(PBState.SETTINGS_BACKGROUND_COLOR_PICKER)
@@ -737,14 +746,14 @@ fun PlayerButton(
                                             Modifier
                                                 .fillMaxSize()
                                                 .padding(horizontal = smallPadding)
-                                                .background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                                                .border(0.5.dp, state.player.textColor.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
+                                                .background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(10))
+                                                .border(0.5.dp, state.player.textColor.copy(alpha = 0.9f), RoundedCornerShape(10))
                                         ) {
                                                 LazyHorizontalGrid(
                                                     modifier = Modifier
                                                         .fillMaxSize()
                                                         .padding(smallPadding)
-                                                        .clip(RoundedCornerShape(10.dp)),
+                                                        .clip(RoundedCornerShape(7)),
                                                     rows = GridCells.Fixed(if (wideButton) 3 else 2),
                                                     state = rememberLazyGridState(),
                                                     horizontalArrangement = Arrangement.spacedBy(smallPadding),
@@ -752,7 +761,7 @@ fun PlayerButton(
                                                     content = {
                                                         items(items = playerList, key = { p -> p.hashCode() }) { pInfo ->
                                                             MiniPlayerButton(
-                                                                imageUri = viewModel.locateImage(pInfo.imageString),
+                                                                imageUri = viewModel.locateImage(pInfo),
                                                                 name = pInfo.name,
                                                                 backgroundColor = pInfo.color,
                                                                 textColor = pInfo.textColor,
@@ -845,48 +854,42 @@ fun PlayerButton(
                                     textColor = state.player.textColor,
                                     text = "Counters"
                                 ) {
-                                    LazyRow(
-                                        Modifier.fillMaxSize().padding(5.dp),
-                                        horizontalArrangement = Arrangement.Center,
-                                    ) {
-                                        items(state.player.activeCounters) { counterType ->
-                                            Counter(
-                                                textColor = state.player.textColor,
-                                                iconResource = counterType.resource,
-                                                value = viewModel.getCounterValue(counterType),
-                                                onIncrement = {
-                                                    viewModel.incrementCounterValue(
-                                                        counterType,
-                                                        1
-                                                    )
-                                                },
-                                                onDecrement = {
-                                                    viewModel.incrementCounterValue(
-                                                        counterType,
-                                                        -1
-                                                    )
-                                                })
-                                        }
-                                        item {
-                                            AddCounter(
-                                                textColor = state.player.textColor,
-                                                onTap = {
-                                                    viewModel.setPlayerButtonState(PBState.COUNTERS_SELECT)
-                                                    viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW) }
-                                                },
-                                            )
+                                    BoxWithConstraints(Modifier.wrapContentSize()) {
+                                        val padding = maxWidth / 30f
+                                        LazyRow(
+                                            Modifier.fillMaxSize().padding(padding),
+                                            horizontalArrangement = Arrangement.spacedBy(padding),
+                                        ) {
+                                            items(state.player.activeCounters) { counterType ->
+                                                Counter(
+                                                    textColor = state.player.textColor,
+                                                    iconResource = counterType.resource,
+                                                    value = viewModel.getCounterValue(counterType),
+                                                    onIncrement = {
+                                                        viewModel.incrementCounterValue(
+                                                            counterType,
+                                                            1
+                                                        )
+                                                    },
+                                                    onDecrement = {
+                                                        viewModel.incrementCounterValue(
+                                                            counterType,
+                                                            -1
+                                                        )
+                                                    })
+                                            }
+                                            item {
+                                                AddCounter(
+                                                    textColor = state.player.textColor,
+                                                    onTap = {
+                                                        viewModel.setPlayerButtonState(PBState.COUNTERS_SELECT)
+                                                        viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW) }
+                                                    },
+                                                )
+                                            }
                                         }
                                     }
                                 }
-//                                Counters(
-//                                    modifier = settingsPadding.padding(horizontal = 5.dp).padding(bottom = 5.dp),
-//                                    textColor = state.player.textColor,
-//                                    activeCounters = state.player.activeCounters,
-//                                    getCounterValue = viewModel::getCounterValue,
-//                                    incrementCounterValue = viewModel::incrementCounterValue,
-//                                    setActiveCounter = viewModel::setActiveCounter,
-//                                    addToBackStack = viewModel::pushBackStack
-//                                )
                             }
 
                             PBState.COUNTERS_SELECT -> {
@@ -895,38 +898,41 @@ fun PlayerButton(
                                     textColor = state.player.textColor,
                                     text = "Select Counters"
                                 ) {
-                                    Column(
-                                        Modifier.fillMaxSize(),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        LazyHorizontalGrid(
-                                            modifier = Modifier.fillMaxSize().padding(5.dp).clip(RoundedCornerShape(25.dp)),
-                                            rows = GridCells.Fixed(3),
-                                            horizontalArrangement = Arrangement.Center,
-                                            verticalArrangement = Arrangement.Center
+                                    BoxWithConstraints(Modifier.wrapContentSize()) {
+                                        val padding = maxWidth / 50f + maxHeight / 60f
+                                        Column(
+                                            Modifier.fillMaxSize(),
+                                            horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
-                                            items(CounterType.entries.toTypedArray()) { counterType ->
-                                                var selected by remember { mutableStateOf(counterType in state.player.activeCounters) }
-                                                Box(modifier = Modifier.fillMaxSize().aspectRatio(1.0f).padding(0.5.dp).background(
-                                                    if (selected) {
-                                                        Color.Green.copy(alpha = 0.5f)
-                                                    } else {
-                                                        Color.Transparent
+                                            LazyHorizontalGrid(
+                                                modifier = Modifier.fillMaxSize().padding(padding).clip(RoundedCornerShape(12)),
+                                                rows = GridCells.Fixed(3),
+                                                horizontalArrangement = Arrangement.Center,
+                                                verticalArrangement = Arrangement.Center
+                                            ) {
+                                                items(CounterType.entries.toTypedArray()) { counterType ->
+                                                    var selected by remember { mutableStateOf(counterType in state.player.activeCounters) }
+                                                    Box(modifier = Modifier.fillMaxSize().aspectRatio(1.0f).background(
+                                                        if (selected) {
+                                                            Color.Green.copy(alpha = 0.5f)
+                                                        } else {
+                                                            Color.Transparent
+                                                        }
+                                                    ).pointerInput(Unit) {
+                                                        detectTapGestures {
+                                                            selected = viewModel.setActiveCounter(counterType)
+                                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        }
+                                                    }) {
+                                                        SettingsButton(
+                                                            imageVector = vectorResource(counterType.resource),
+                                                            modifier = Modifier.fillMaxSize().padding(padding),
+                                                            mainColor = state.player.textColor,
+                                                            backgroundColor = Color.Transparent,
+                                                            shadowEnabled = true,
+                                                            enabled = false
+                                                        )
                                                     }
-                                                ).pointerInput(Unit) {
-                                                    detectTapGestures {
-                                                        selected = viewModel.setActiveCounter(counterType)
-                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    }
-                                                }) {
-                                                    SettingsButton(
-                                                        imageVector = vectorResource(counterType.resource),
-                                                        modifier = Modifier.fillMaxSize().padding(5.dp),
-                                                        mainColor = state.player.textColor,
-                                                        backgroundColor = Color.Transparent,
-                                                        shadowEnabled = true,
-                                                        enabled = false
-                                                    )
                                                 }
                                             }
                                         }
@@ -1040,9 +1046,11 @@ fun PlayerButton(
 
 @Composable
 fun MonarchyIndicator(
-    modifier: Modifier = Modifier, monarch: Boolean = false, content: @Composable () -> Unit = {}
+    modifier: Modifier = Modifier,
+    monarch: Boolean = false,
+    borderWidth: Dp,
+    content: @Composable () -> Unit = {}
 ) {
-    val width = 2.5.dp
     val duration = (7500 / getAnimationCorrectionFactor()).toInt()
 //    val colors = if (viewModel.getAnimationScale(context) != 0.0f) {
 //        listOf(
@@ -1076,22 +1084,23 @@ fun MonarchyIndicator(
             8
         ),
     )
-
-    Box(
-        modifier = modifier.clip(RoundedCornerShape(30.dp)).then(
-            if (monarch) {
-                Modifier.animatedBorderCard(
-                    shape = RoundedCornerShape(30.dp),
-                    borderWidth = width,
-                    colors = colors,
-                    animationDuration = duration
-                ).clip(RoundedCornerShape(30.dp))
-            } else {
-                Modifier.padding(width)
-            }
-        )
-    ) {
-        content()
+    BoxWithConstraints(Modifier.wrapContentSize()) {
+        Box(
+            modifier = modifier.clip(RoundedCornerShape(12)).then(
+                if (monarch) {
+                    Modifier.animatedBorderCard(
+                        shape = RoundedCornerShape(12),
+                        borderWidth = borderWidth,
+                        colors = colors,
+                        animationDuration = duration
+                    ).clip(RoundedCornerShape(12))
+                } else {
+                    Modifier.padding(borderWidth)
+                }
+            )
+        ) {
+            content()
+        }
     }
 }
 
@@ -1123,12 +1132,12 @@ fun CounterWrapper(
             Box(
                 Modifier.fillMaxSize().background(
                     Color.Black.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(25.dp)
+                    shape = RoundedCornerShape(12)
                 ).border(
                     0.5.dp,
                     textColor.copy(alpha = 0.9f),
-                    RoundedCornerShape(25.dp)
-                ).clip(RoundedCornerShape(25.dp))
+                    RoundedCornerShape(12)
+                ).clip(RoundedCornerShape(12))
             ) {
                 content()
             }
@@ -1144,11 +1153,11 @@ fun AddCounter(
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(Modifier.fillMaxHeight().aspectRatio(0.70f).padding(5.dp).bounceClick(0.0125f).background(
         Color.Black.copy(0.2f),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(15)
     ).border(
         0.5.dp,
         textColor.copy(alpha = 0.9f),
-        RoundedCornerShape(20.dp)
+        RoundedCornerShape(15)
     ).pointerInput(Unit) {
         detectTapGestures {
             onTap()
@@ -1177,14 +1186,14 @@ fun Counter(
 ) {
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(
-        Modifier.fillMaxHeight().aspectRatio(0.70f).padding(5.dp).bounceClick(0.0125f).background(
+        Modifier.fillMaxHeight().aspectRatio(0.70f).bounceClick(0.0125f).background(
             Color.Black.copy(0.2f),
-            shape = RoundedCornerShape(20.dp)
+            shape = RoundedCornerShape(15)
         ).border(
             0.5.dp,
             textColor.copy(alpha = 0.9f),
-            RoundedCornerShape(20.dp)
-        ).clip(RoundedCornerShape(20.dp))
+            RoundedCornerShape(15)
+        ).clip(RoundedCornerShape(15))
     ) {
         val textSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).scaledSp / 1.5f
         val topPadding = maxHeight / 10f
@@ -1224,7 +1233,7 @@ fun Counter(
             )
             SettingsButton(
                 imageVector = vectorResource(iconResource),
-                modifier = Modifier.fillMaxSize(0.35f).aspectRatio(1.0f).padding(bottom = 15.dp),
+                modifier = Modifier.fillMaxSize(0.35f).aspectRatio(1.0f).padding(bottom = topPadding*0.85f),
                 mainColor = textColor,
                 backgroundColor = Color.Transparent,
                 shadowEnabled = true,
@@ -1410,6 +1419,7 @@ fun NumericValue(
             }
         }
         val smallTextSize = maxHeight.value / 14f + 4
+        val smallTextPadding = (smallTextSize / 4f).dp
         val recentChangeSize = (maxHeight / 7f).value
 
         val iconSize = maxHeight / 7f
@@ -1420,7 +1430,7 @@ fun NumericValue(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                modifier = Modifier.padding(top = 5.dp, bottom = 15.dp).offset(y = (largeTextSize / 12f).dp),
+                modifier = Modifier.padding(top = smallTextPadding, bottom = smallTextPadding * 3).offset(y = smallTextPadding*4),
                 text = name,
                 color = textColor,
                 fontSize = smallTextSize.scaledSp,
@@ -1499,13 +1509,13 @@ fun ColorPicker(
                 Modifier
                     .wrapContentSize()
                     .weight(0.5f)
-                    .background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                    .border(0.5.dp, textColor.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
+                    .background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(10))
+                    .border(0.5.dp, textColor.copy(alpha = 0.9f), RoundedCornerShape(10))
             ) {
                 LazyHorizontalGrid(
                     modifier = Modifier
                         .padding(containerPadding * 2)
-                        .clip(RoundedCornerShape(10.dp)),
+                        .clip(RoundedCornerShape(5)),
                     rows = GridCells.Fixed(2),
                     state = rememberLazyGridState(),
                     horizontalArrangement = Arrangement.spacedBy(colorPickerPadding),
@@ -1551,28 +1561,23 @@ fun ChangeNameField(
         }
     }
 
-//    Box(modifier.focusRequester(focusRequester)) {
-//        Column(
-//            modifier = Modifier.fillMaxSize().align(Alignment.Center),
-//            verticalArrangement = Arrangement.Center,
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-    Box(
-        modifier = modifier.focusRequester(focusRequester).wrapContentSize(),
+    BoxWithConstraints(
+        modifier = modifier.focusRequester(focusRequester),
         contentAlignment = Alignment.Center
     ) {
-        TextField( //toggle onCursorFocus
+        val textSize = (maxHeight / 3.5f).value.scaledSp
+        TextField(
             value = name,
             onValueChange = onChangeName,
             label = {
                 Text(
                     "New Name",
                     color = backgroundColor,
-                    fontSize = 12.scaledSp,
+                    fontSize = textSize * 0.8f,
                     style = defaultTextStyle()
                 )
             },
-            textStyle = TextStyle(fontSize = 15.scaledSp),
+            textStyle = TextStyle(fontSize = textSize),
             singleLine = true,
             colors = TextFieldDefaults.colors(
                 focusedTextColor = backgroundColor,
@@ -1591,37 +1596,16 @@ fun ChangeNameField(
                 imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(onDone = { onDone() }),
-            modifier = Modifier.fillMaxWidth(0.8f)
-                .height(80.dp)
-                .padding(top = 20.dp)
-                .padding(horizontal = 5.dp)
-//                        .focusRequester(focusRequester)
+            modifier = Modifier.fillMaxSize()
         )
-        SettingsButton(Modifier.size(50.dp).align(Alignment.CenterEnd).padding(
-            top = 20.dp,
-            end = 5.dp
-        ),
+        SettingsButton(Modifier.align(Alignment.CenterEnd)
+            .fillMaxHeight()
+            .aspectRatio(1.0f),
             imageVector = vectorResource(Res.drawable.enter_icon),
             shadowEnabled = false,
             mainColor = backgroundColor,
-            backgroundColor = playerTextColor,
             onPress = { onDone() })
     }
-//            Spacer(modifier = Modifier.height(10.dp))
-//            Button(
-//                onClick = { onDone() },
-//                colors = ButtonDefaults.buttonColors(
-//                    containerColor = playerTextColor,
-//                    contentColor = backgroundColor
-//                ),
-//                modifier = Modifier.wrapContentHeight().fillMaxWidth(0.7f).padding(horizontal = 10.dp).padding(bottom = 20.dp)
-//
-//            ) {
-//                Text("Save Name")
-//            }
-//        }
-//
-//    }
 }
 
 @Composable
@@ -1634,7 +1618,7 @@ fun MiniPlayerButton(
     removePlayerProfile: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
-    BoxWithConstraints(modifier = Modifier.fillMaxHeight().aspectRatio(2.5f).clip(RoundedCornerShape(15.dp)).pointerInput(Unit) {
+    BoxWithConstraints(modifier = Modifier.fillMaxHeight().aspectRatio(2.5f).clip(RoundedCornerShape(10)).pointerInput(Unit) {
         detectTapGestures(onTap = {
             copyPrefsToCurrentPlayer()
         },
