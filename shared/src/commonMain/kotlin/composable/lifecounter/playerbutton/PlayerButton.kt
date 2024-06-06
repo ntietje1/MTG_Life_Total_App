@@ -284,7 +284,7 @@ fun PlayerButton(
                     val textFieldHeight = maxWidth / 5f
                     PlayerButtonBackground(
                         state = state.buttonState,
-                        imageUri = viewModel.locateImage(),
+                        imageUri = viewModel.locateImage(state.player),
                         color = state.player.color,
                         isDead = viewModel.isDead(autoKo = true),
                     )
@@ -388,7 +388,7 @@ fun PlayerButton(
             ) {
                 PlayerButtonBackground(
                     state = state.buttonState,
-                    imageUri = viewModel.locateImage(),
+                    imageUri = viewModel.locateImage(state.player),
                     color = state.player.color,
                     isDead = viewModel.isDead(autoKo = true),
                 )
@@ -758,7 +758,7 @@ fun PlayerButton(
                                                     content = {
                                                         items(items = playerList, key = { p -> p.hashCode() }) { pInfo ->
                                                             MiniPlayerButton(
-                                                                imageUri = viewModel.locateImage(pInfo.imageString),
+                                                                imageUri = viewModel.locateImage(pInfo),
                                                                 name = pInfo.name,
                                                                 backgroundColor = pInfo.color,
                                                                 textColor = pInfo.textColor,

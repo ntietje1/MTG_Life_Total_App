@@ -130,13 +130,22 @@ class PlayerButtonViewModel(
         settingsManager.savePlayerPref(state.value.player)
     }
 
-    fun locateImage(imageString: String? = state.value.player.imageString): String? {
-        return imageString?.let {
+    fun locateImage(player: Player): String? {
+        return player.imageString?.let {
             if (it.startsWith("http")) {
                 return it
-            } else if (it.startsWith("content://")) {
+            }
+            else if (it.startsWith("content://")) {
+                setImageUri(null)
+                savePlayerPref()
+//                val playerNameAndUUID = it.substringAfter("content://lifelinked.multiplatform.provider/lifelinked_multiplatform_saved_images/").substringBefore("..png")
+////                val uuid = playerNameAndUUID.substringAfterLast(player.name)
+////                val newImageString = "${player.name}-${uuid}"
+//                val newImageString = player.name
+//                return imageManager.getImagePath(newImageString)
                 return null
-            } else {
+            }
+            else {
                 return imageManager.getImagePath(it)
             }
         }
