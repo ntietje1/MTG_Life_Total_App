@@ -54,10 +54,12 @@ class PlayerButtonViewModel(
                     setAllButtonStates(PBState.COMMANDER_RECEIVER)
                     PBState.COMMANDER_DEALER
                 }
+
                 PBState.COMMANDER_DEALER -> {
                     setAllButtonStates(PBState.NORMAL)
                     PBState.NORMAL
                 }
+
                 else -> throw Exception("Invalid state for commanderButtonOnClick")
             }
         )
@@ -132,8 +134,9 @@ class PlayerButtonViewModel(
         return imageString?.let {
             if (it.startsWith("http")) {
                 return it
-                }
-            else {
+            } else if (it.startsWith("content://")) {
+                return null
+            } else {
                 return imageManager.getImagePath(it)
             }
         }
@@ -165,7 +168,7 @@ class PlayerButtonViewModel(
     }
 
     fun isDead(autoKo: Boolean = settingsManager.autoKo): Boolean {
-        val playerInfo = state.value .player
+        val playerInfo = state.value.player
         return ((autoKo && (playerInfo.life <= 0 || playerInfo.commanderDamage.any { it >= 21 })) || playerInfo.setDead)
     }
 
