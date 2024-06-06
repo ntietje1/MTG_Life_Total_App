@@ -1,20 +1,21 @@
 package composable.dialog
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -72,30 +73,51 @@ fun CoinFlipDialogContent(
     resetHistory: () -> Unit,
     fastCoinFlip: Boolean
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
-        Spacer(Modifier.weight(0.5f))
-        CoinFlippable(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            addToHistory = addToHistory,
-            fastCoinFlip = fastCoinFlip
-        )
-        Text(
-            text = "Tap to flip",
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontWeight = FontWeight.Bold,
-            style = TextStyle(fontSize = 20.scaledSp),
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(bottom = 15.dp)
-        )
-        FlipCounter(Modifier.align(Alignment.CenterHorizontally), history, resetHistory)
-        Spacer(Modifier.weight(2.0f))
-        FlipHistory(
-            Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(bottom = 0.dp), coinFlipHistory = history
-        )
-        Spacer(Modifier.weight(0.7f))
+    BoxWithConstraints(Modifier.wrapContentSize()) {
+        val padding = maxWidth / 25f + maxHeight / 30f
+        val counterHeight = maxHeight / 20f
+        val textSize = (maxWidth / 30f).value.scaledSp
+        Column(modifier = modifier.fillMaxSize()) {
+            Spacer(Modifier.weight(0.8f))
+            CoinFlippable(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = padding / 2f, start = padding, end = padding)
+                    .fillMaxWidth(0.9f)
+                ,
+                addToHistory = addToHistory,
+                fastCoinFlip = fastCoinFlip
+            )
+            Spacer(Modifier.weight(0.1f))
+            Text(
+                text = "Tap to flip",
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                fontWeight = FontWeight.Bold,
+                fontSize = textSize,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = padding / 10f, bottom = padding / 8f)
+            )
+            Spacer(Modifier.weight(1.25f))
+            FlipCounter(Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(counterHeight), history, resetHistory)
+            Spacer(Modifier.weight(0.5f))
+            Text(
+                text = "Flip History",
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                fontWeight = FontWeight.Bold,
+                fontSize = textSize,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = padding / 4f, bottom = padding / 12f)
+            )
+            FlipHistory(
+                Modifier.align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(0.8f)
+                    .height(counterHeight), coinFlipHistory = history
+            )
+            Spacer(Modifier.height(padding / 2f))
+            Spacer(Modifier.weight(0.7f))
+        }
     }
 }
 
@@ -154,8 +176,7 @@ fun CoinFlippable(
     }
 
     BoxWithConstraints(modifier = modifier) {
-        Flippable(modifier = Modifier.fillMaxWidth().aspectRatio(1f)
-            .padding(bottom = 50.dp, top = 0.dp, start = 30.dp, end = 30.dp),
+        Flippable(modifier = Modifier.fillMaxWidth().aspectRatio(1f),
             flipController = flipController,
             flipDurationMs = duration,
             flipEnabled = flipEnabled,
@@ -178,16 +199,17 @@ fun CoinFlippable(
 
 @Composable
 fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
-    Box(
+    BoxWithConstraints(
         modifier = modifier
-            .width(50.dp)
-            .height(25.dp)
+            .aspectRatio(2.5f)
             .clip(RoundedCornerShape(5.dp))
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { _ -> onReset() })
             },
 
         ) {
+        val textSize = (maxWidth / 4f).value.scaledSp
+        val textPadding = maxHeight / 10f
         Surface(
             modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
         ) {
@@ -196,8 +218,8 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                style = TextStyle(fontSize = 16.scaledSp),
-                modifier = Modifier.padding(top = 2.5.dp)
+                style = TextStyle(fontSize = textSize),
+                modifier = Modifier.align(Alignment.BottomCenter).padding(top = textPadding)
             )
         }
     }
@@ -209,104 +231,81 @@ fun FlipCounter(
     history: List<String>,
     clearHistory: () -> Unit
 ) {
-    val hPadding = 10.dp
-    val textSize = 20.scaledSp
-
     val numberOfHeads = history.count { it == "H" }
     val numberOfTails = history.count { it == "T" }
     val haptic = LocalHapticFeedback.current
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight(), horizontalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = buildAnnotatedString {
-                withStyle(style = SpanStyle(color = Color.Green, fontWeight = FontWeight.Bold)) {
-                    append("Heads   ")
-                }
-                withStyle(
-                    style = SpanStyle(
-                        color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Normal
-                    )
-                ) {
-                    append("$numberOfHeads")
-                }
-            }, style = TextStyle(fontSize = textSize), modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
-        )
-        Spacer(modifier.width(10.dp))
-        Text(
-            text = buildAnnotatedString {
-                withStyle(style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
-                    append("Tails   ")
-                }
-                withStyle(
-                    style = SpanStyle(
-                        color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Normal
-                    )
-                ) {
-                    append("$numberOfTails")
-                }
-            }, style = TextStyle(fontSize = textSize), modifier = Modifier.padding(vertical = 0.dp, horizontal = hPadding)
-        )
-        Spacer(modifier.width(10.dp))
-        ResetButton(onReset = {
-            clearHistory()
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        })
+    BoxWithConstraints(Modifier.wrapContentSize()) {
+        val padding = maxWidth / 100f
+        val textSize = (maxWidth / 25f).value.scaledSp
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = Color.Green, fontWeight = FontWeight.Bold)) {
+                        append("Heads   ")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Normal
+                        )
+                    ) {
+                        append("$numberOfHeads")
+                    }
+                }, style = TextStyle(fontSize = textSize), modifier = Modifier.padding(vertical = 0.dp, horizontal = padding)
+            )
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
+                        append("Tails   ")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Normal
+                        )
+                    ) {
+                        append("$numberOfTails")
+                    }
+                }, style = TextStyle(fontSize = textSize), modifier = Modifier.padding(vertical = 0.dp, horizontal = padding)
+            )
+            ResetButton(
+                modifier = Modifier.fillMaxHeight().padding(start = padding * 5),
+                onReset = {
+                    clearHistory()
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                })
+        }
     }
 }
 
 @Composable
-fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: List<String>, maxHistoryLength: Int = 18) {
-    val hPadding = 10.dp
-    val vPadding = 5.dp
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: List<String>, maxHistoryLength: Int = 19) {
+    BoxWithConstraints(
+        modifier
+            .clip(RoundedCornerShape(30))
+            .background(color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), shape = RoundedCornerShape(30))
     ) {
+        val textSize = (maxWidth / 18f).value.scaledSp
+        val hPadding = maxWidth / 50f
         Text(
-            text = "Flip History",
-            color = MaterialTheme.colorScheme.onPrimary,
+            text = buildAnnotatedString {
+                coinFlipHistory.takeLast(maxHistoryLength).forEach { result ->
+                    withStyle(style = SpanStyle(color = if (result == "H") Color.Green else Color.Red)) {
+                        append("$result ")
+                    }
+                }
+            },
+            maxLines = 1,
+            textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
-            style = TextStyle(fontSize = 20.scaledSp),
+            fontSize = textSize,
             modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(vertical = vPadding)
+                .align(Alignment.Center)
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(vertical = 0.dp, horizontal = hPadding)
         )
-
-        Surface(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .fillMaxWidth(0.8f)
-                .height(35.dp)
-                .clip(RoundedCornerShape(30.dp)), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = vPadding)
-            ) {
-
-                Text(
-                    text = buildAnnotatedString {
-                        coinFlipHistory.takeLast(maxHistoryLength).forEach { result ->
-                            withStyle(style = SpanStyle(color = if (result == "H") Color.Green else Color.Red)) {
-                                append("$result ")
-                            }
-                        }
-                    },
-                    maxLines = 1,
-                    fontWeight = FontWeight.Bold,
-                    style = TextStyle(fontSize = 16.scaledSp),
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(vertical = 0.dp, horizontal = hPadding)
-                )
-            }
-        }
     }
 }

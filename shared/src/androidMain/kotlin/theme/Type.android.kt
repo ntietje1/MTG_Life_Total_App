@@ -12,7 +12,7 @@ actual fun textShadowStyle(fontFamily: FontFamily): TextStyle {
         shadow = Shadow(
             color = generateShadow(),
             offset = Offset(2f, 2f),
-            blurRadius = 8f
+            blurRadius = 6f
         )
     )
 }

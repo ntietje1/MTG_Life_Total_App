@@ -101,7 +101,7 @@ fun TutorialScreen(
             shadowEnabled = false,
             imageVector = vectorResource(Res.drawable.skip_icon),
             onTap = {
-                if (viewModel.settingsManager.tutorialSkip) {
+                if (viewModel.settingsManager.tutorialSkip || state.currentPage == state.totalPages - 1) {
                     onFinishTutorial()
                 } else {
                     viewModel.showWarningDialog()

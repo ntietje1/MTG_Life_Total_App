@@ -14,13 +14,14 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import composable.SettingsButton
@@ -129,10 +129,17 @@ fun MiddleButtonDialog(
         BoxWithConstraints(
             modifier = modifier.fillMaxSize(),
         ) {
-            val buttonModifier = Modifier.size(
-                min(
-                    maxWidth / 3, maxHeight / 4
-                )
+//            val buttonModifier = Modifier.size(
+//                min(
+//                    maxWidth / 4f, maxHeight / 5f
+//                )
+//            )
+            val buttonModifier = Modifier.then(
+                if (maxWidth / 3f < maxHeight / 4f) {
+                    Modifier.fillMaxHeight(0.8f)
+                } else {
+                    Modifier.fillMaxWidth(0.8f)
+                }
             )
             FormattedAnimatedVisibility(
                 visible = middleButtonDialogState == MiddleButtonDialogState.CoinFlip
@@ -366,21 +373,35 @@ fun MiddleButtonDialog(
 fun GridDialogContent(
     modifier: Modifier = Modifier, title: String, items: List<@Composable () -> Unit> = emptyList()
 ) {
-    Box(modifier = modifier) {
+    BoxWithConstraints(modifier = modifier) {
+        val padding = maxHeight / 60f
+        val titleSize = (maxWidth / 20f).value.scaledSp
         Column(
             Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.weight(0.05f))
+            Spacer(modifier = Modifier.height(padding))
             Text(
-                modifier = Modifier.wrapContentHeight().wrapContentWidth(), text = title, fontSize = 25.scaledSp, color = MaterialTheme.colorScheme.onPrimary
+                modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize, color = MaterialTheme.colorScheme.onPrimary
             )
-            Spacer(modifier = Modifier.weight(0.025f))
-            LazyVerticalGrid(modifier = Modifier.padding(horizontal = 10.dp).wrapContentSize(), columns = GridCells.Fixed(3), content = {
-                items(items.size) { index ->
-                    items[index]()
-                }
-            })
-            Spacer(modifier = Modifier.weight(0.075f))
+            Spacer(modifier = Modifier.height(padding/2))
+//            Box(Modifier.fillMaxSize().background(color = Color.Red),
+//                contentAlignment = Alignment.Center) {
+                LazyVerticalGrid(
+                    modifier = Modifier.padding(horizontal = 10.dp).fillMaxSize(),
+                    columns = GridCells.Fixed(3),
+                    userScrollEnabled = false,
+                    verticalArrangement = Arrangement.Center,
+                    horizontalArrangement = Arrangement.Center,
+                    content = {
+                    items(items.size) { index ->
+                        Box(modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            items[index]()
+                        }
+                    }
+                })
+            Spacer(modifier = Modifier.height(padding / 2f))
         }
     }
 }
@@ -405,7 +426,7 @@ fun SettingsDialog(
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            val buttonSize = 65.dp
+            val buttonSize = maxWidth / 8f
 
             Column(Modifier.fillMaxSize()) {
                 if (exitButtonEnabled) {

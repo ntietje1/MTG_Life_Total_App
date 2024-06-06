@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -36,7 +38,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.placeholder_icon
@@ -98,6 +99,7 @@ fun SettingsButton(
             Modifier
         })) {
         val fontSize = (maxWidth / 9f).value.scaledSp
+        val fontPadding = (maxWidth / 5.5f)
         Column(
             modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -129,8 +131,8 @@ fun SettingsButton(
                     textAlign = TextAlign.Center,
                     style = if (shadowEnabled) textShadowStyle() else defaultTextStyle(),
                 )
+                Spacer(Modifier.height(fontPadding))
             }
-
         }
     }
 }
@@ -146,12 +148,9 @@ fun ImageWithShadow(
     colorFilter: ColorFilter? = null,
     shadowEnabled: Boolean = false,
     shadowColor: Color = Color.Black,
-    shadowOffsetX: Dp = 1.dp,
-    shadowOffsetY: Dp = 1.dp,
-    shadowRadius: Dp = 2.dp,
     shadowAlpha: Float = 0.7f,
 ) {
-    Box(modifier = modifier.padding(shadowRadius)) {
+    Box(modifier = modifier.padding(2.dp)) {
         if (shadowEnabled) {
             Image(
                 imageVector = imageVector,
@@ -162,8 +161,8 @@ fun ImageWithShadow(
                 colorFilter = ColorFilter.tint(shadowColor),
                 modifier = Modifier
                     .fillMaxSize()
-                    .offset(shadowOffsetX, shadowOffsetY)
-                    .blur(shadowRadius, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                    .offset(1.dp, 1.dp)
+                    .blur(2.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
             )
         }
 

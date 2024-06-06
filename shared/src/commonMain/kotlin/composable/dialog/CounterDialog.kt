@@ -5,12 +5,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -68,46 +72,59 @@ fun CounterDialogContent(
         Triple(vectorResource(Res.drawable.storm_icon), Color(0xFFffd84c), Color(0xFF2b2515))
     )
 
-    LazyColumn(
-        modifier = modifier, verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally
+    BoxWithConstraints(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
     ) {
-        item {
-            Text(
-                modifier = Modifier.alpha(0.9f), text = "Floating Mana", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.scaledSp
-            )
-        }
+        val counterSize = maxHeight / 11f
+        val padding = (counterSize / 5f)
+        val textSize = (maxWidth / 25f).value.scaledSp
+        LazyColumn(
+            modifier = Modifier, verticalArrangement = Arrangement.spacedBy(padding, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                Spacer(Modifier.height(0.dp))
+            }
+            item {
+                Text(
+                    modifier = Modifier.alpha(0.9f), text = "Floating Mana", color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize
+                )
+            }
 
-        items(counters.size - 1) { index ->
-            SingleCounter(
-                imageVector = counterResources[index].first,
-                backgroundColor = counterResources[index].second,
-                buttonColor = counterResources[index].third,
-                counter = counters[index],
-                incrementCounter = { incrementCounter(index, it) }
-            )
-        }
+            items(counters.size - 1) { index ->
+                SingleCounter(
+                    modifier = Modifier.height(counterSize).fillMaxWidth(0.8f),
+                    imageVector = counterResources[index].first,
+                    backgroundColor = counterResources[index].second,
+                    buttonColor = counterResources[index].third,
+                    counter = counters[index],
+                    incrementCounter = { incrementCounter(index, it) }
+                )
+            }
 
-        item {
-            Text(
-                modifier = Modifier.alpha(0.9f).padding(top = 2.dp), text = "Storm Count", color = MaterialTheme.colorScheme.onPrimary, fontSize = 20.scaledSp
-            )
-        }
+            item {
+                Text(
+                    modifier = Modifier.alpha(0.9f).padding(top = 2.dp), text = "Storm Count", color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize
+                )
+            }
 
-        item {
-            SingleCounter(
-                imageVector = counterResources.last().first,
-                backgroundColor = counterResources.last().second,
-                buttonColor = counterResources.last().third,
-                counter = counters.last(),
-                incrementCounter = { incrementCounter(counters.lastIndex, it) }
-            )
-        }
+            item {
+                SingleCounter(
+                    modifier = Modifier.height(counterSize).fillMaxWidth(0.8f),
+                    imageVector = counterResources.last().first,
+                    backgroundColor = counterResources.last().second,
+                    buttonColor = counterResources.last().third,
+                    counter = counters.last(),
+                    incrementCounter = { incrementCounter(counters.lastIndex, it) }
+                )
+            }
 
-        item {
-            ResetButton(modifier = Modifier.padding(top = 20.dp), onReset = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                resetCounters()
-            })
+            item {
+                ResetButton(modifier = Modifier.height(counterSize / 2f).padding(top = 5.dp), onReset = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    resetCounters()
+                })
+            }
         }
     }
 }
@@ -135,47 +152,61 @@ fun SingleCounter(
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
-    Row(
-        modifier = modifier.bounceClick(0.01f).background(backgroundColor, RoundedCornerShape(10.dp)),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Box(
-            modifier = Modifier.size(60.dp).repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onDecrement() }),
+    BoxWithConstraints(Modifier.wrapContentSize()) {
+        val textSize = (maxWidth /15f).value.scaledSp
+        val padding = (maxWidth / 30f)
+        Row(
+            modifier = modifier.bounceClick(0.01f).background(backgroundColor, RoundedCornerShape(20)),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Image(
-                modifier = Modifier.fillMaxSize(0.7f).align(Alignment.CenterEnd),
-                imageVector = vectorResource(Res.drawable.minus_icon),
-                contentScale = ContentScale.Crop,
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(buttonColor)
-            )
-        }
+            Box(
+                modifier = Modifier.aspectRatio(1.0f).fillMaxSize().repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onDecrement() }),
+            ) {
+                Image(
+                    modifier = Modifier.fillMaxSize(0.7f).align(Alignment.CenterEnd),
+                    imageVector = vectorResource(Res.drawable.minus_icon),
+                    contentScale = ContentScale.Crop,
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(buttonColor)
+                )
+            }
 
-        Spacer(modifier = Modifier.width(25.dp))
+            Row(
+                modifier = Modifier.fillMaxSize().weight(0.5f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    imageVector = imageVector, contentDescription = null, modifier = Modifier.aspectRatio(1.0f).fillMaxHeight().padding(vertical = padding / 2f)
+                )
 
-        Image(
-            imageVector = imageVector, contentDescription = null, modifier = Modifier.size(55.dp)
-        )
+                Box(
+                    modifier = Modifier.aspectRatio(1.0f).fillMaxHeight(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        modifier = Modifier.wrapContentSize(unbounded = true),
+                        text = "$counter",
+                        textAlign = TextAlign.Justify,
+                        color = buttonColor,
+                        fontSize = textSize,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
 
-        Spacer(modifier = Modifier.width(5.dp))
-
-        Text(
-            modifier = Modifier.width(50.dp), text = "$counter", textAlign = TextAlign.Justify, color = buttonColor, fontSize = 28.scaledSp, fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.width(0.dp))
-
-        Box(
-            modifier = Modifier.size(60.dp).repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onIncrement() }),
-        ) {
-            Image(
-                modifier = Modifier.fillMaxSize(0.7f).align(Alignment.CenterStart),
-                imageVector = vectorResource(Res.drawable.plus_icon),
-                contentScale = ContentScale.Crop,
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(buttonColor)
-            )
+            Box(
+                modifier = Modifier.aspectRatio(1.0f).fillMaxSize().repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onIncrement() }),
+            ) {
+                Image(
+                    modifier = Modifier.fillMaxSize(0.7f).align(Alignment.CenterStart),
+                    imageVector = vectorResource(Res.drawable.plus_icon),
+                    contentScale = ContentScale.Crop,
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(buttonColor)
+                )
+            }
         }
     }
 }

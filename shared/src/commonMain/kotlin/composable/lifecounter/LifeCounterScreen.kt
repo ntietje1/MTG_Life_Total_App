@@ -141,7 +141,7 @@ fun LifeCounterScreen(
             }
         })
 
-        val middleButtonSize = 50.dp
+        val middleButtonSize = maxWidth / 15f + maxHeight / 30f
         val middleButtonOffset = m.middleButtonOffset(middleButtonSize)
 
         AnimatedMiddleButton(
