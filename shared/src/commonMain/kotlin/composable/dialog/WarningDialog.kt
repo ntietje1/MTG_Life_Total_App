@@ -70,7 +70,7 @@ fun WarningDialog(
                     )
                     Text(
                         text = message,
-                        fontSize = textSize,
+                        fontSize = textSize*0.9f,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.90f),
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth().padding(horizontal = padding*2)
@@ -91,7 +91,8 @@ fun WarningDialog(
                                     text = optionTwoMessage,
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = textSize,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(bottom = padding*2)
                                 )
                             }
                         }
@@ -105,7 +106,8 @@ fun WarningDialog(
                                     text = optionOneMessage,
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = textSize,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(bottom = padding*2)
                                 )
                             }
                         }
