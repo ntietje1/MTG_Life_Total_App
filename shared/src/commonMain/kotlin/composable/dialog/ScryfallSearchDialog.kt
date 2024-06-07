@@ -70,6 +70,7 @@ fun ScryfallSearchDialog(
 ) {
     SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss) {
         ScryfallDialogContent(
+            modifier = Modifier.fillMaxSize(),
             addToBackStack = addToBackStack,
             onImageSelected = onImageSelected
         )

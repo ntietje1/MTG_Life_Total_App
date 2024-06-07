@@ -340,6 +340,7 @@ fun PlayerButton(
     if (state.showScryfallSearch) {
         val scryfallBackStack = remember { mutableStateListOf({ viewModel.showScryfallSearch(false) }) }
         ScryfallSearchDialog(
+            modifier = Modifier.fillMaxSize(),
             onDismiss = {
                 viewModel.showScryfallSearch(false)
             },
