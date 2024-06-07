@@ -387,7 +387,7 @@ fun GridDialogContent(
 //            Box(Modifier.fillMaxSize().background(color = Color.Red),
 //                contentAlignment = Alignment.Center) {
                 LazyVerticalGrid(
-                    modifier = Modifier.padding(horizontal = 10.dp).fillMaxSize(),
+                    modifier = Modifier.padding(horizontal = padding/2f).fillMaxSize(),
                     columns = GridCells.Fixed(3),
                     userScrollEnabled = false,
                     verticalArrangement = Arrangement.Center,
