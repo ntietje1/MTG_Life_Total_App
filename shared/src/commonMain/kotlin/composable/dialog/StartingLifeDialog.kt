@@ -29,6 +29,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import composable.SettingsButton
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.enter_icon
@@ -46,7 +47,7 @@ fun StartingLifeDialogContent(
 ) {
     var customLife by remember { mutableStateOf("") }
     BoxWithConstraints(modifier) {
-        val textFieldHeight = maxWidth / 9f
+        val textFieldHeight = maxWidth / 9f + 40.dp
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.height(textFieldHeight))
             GridDialogContent(Modifier.wrapContentSize().weight(1.0f), title = "Set starting life total", items = listOf({
