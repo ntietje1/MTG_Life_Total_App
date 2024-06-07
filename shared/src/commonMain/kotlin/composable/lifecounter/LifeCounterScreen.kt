@@ -37,7 +37,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import composable.dialog.MiddleButtonDialog
 import composable.lifecounter.playerbutton.PlayerButton
 import composable.lifecounter.playerbutton.PlayerButtonViewModel
@@ -111,63 +110,67 @@ fun LifeCounterScreen(
     }
 
     BoxWithConstraints(
-        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).then(
-            if (state.blurBackground) {
-                Modifier.blur(radius = 20.dp)
-            } else {
-                Modifier
-            }
-        )
+        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ) {
         val m = LifeCounterMeasurements(
             maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = state.numPlayers, alt4Layout = viewModel.settingsManager.alt4PlayerLayout
         )
         val buttonPadding = maxWidth / 750f + maxHeight / 750f
-
-        val buttonPlacements =  m.buttonPlacements()
-
-        LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
-            items(buttonPlacements, key = { it.hashCode() }) { buttonPlacements ->
-                LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
-                    items(buttonPlacements, key = { it.index }) { placement ->
-                        AnimatedPlayerButton(
-                            modifier = Modifier.padding(buttonPadding),
-                            visible = state.showButtons,
-                            borderWidth = buttonPadding,
-                            playerButtonViewModel = viewModel.playerButtonViewModels[placement.index],
-                            rotation = placement.angle,
-                            width = placement.width - buttonPadding*4,
-                            height = placement.height - buttonPadding*4,
-                            setBlurBackground = { viewModel.setBlurBackground(it) }
-                        )
-                    }
-                })
-            }
-        })
-
+        val buttonPlacements = m.buttonPlacements()
+        val blurRadius = maxHeight / 50f
         val middleButtonSize = maxWidth / 15f + maxHeight / 30f
-        val middleButtonOffset = m.middleButtonOffset(middleButtonSize)
+        Box(
+            Modifier.fillMaxSize().then(
+                if (state.blurBackground) {
+                    Modifier.blur(radius = blurRadius)
+                } else {
+                    Modifier
+                }
+            )
+        ) {
+            LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
+                items(buttonPlacements, key = { it.hashCode() }) { buttonPlacements ->
+                    LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
+                        items(buttonPlacements, key = { it.index }) { placement ->
+                            AnimatedPlayerButton(
+                                modifier = Modifier.padding(buttonPadding),
+                                visible = state.showButtons,
+                                borderWidth = buttonPadding,
+                                playerButtonViewModel = viewModel.playerButtonViewModels[placement.index],
+                                rotation = placement.angle,
+                                width = placement.width - buttonPadding * 4,
+                                height = placement.height - buttonPadding * 4,
+                                setBlurBackground = { viewModel.setBlurBackground(it) }
+                            )
+                        }
+                    })
+                }
+            })
+            val middleButtonOffset = m.middleButtonOffset(middleButtonSize)
 
-        AnimatedMiddleButton(
-            modifier = Modifier
-                .offset(middleButtonOffset.first, middleButtonOffset.second)
-                .size(middleButtonSize),
-            visible = state.showButtons, onMiddleButtonClick = {
-            showDialog = true
-        })
+            AnimatedMiddleButton(
+                modifier = Modifier
+                    .offset(middleButtonOffset.first, middleButtonOffset.second)
+                    .size(middleButtonSize),
+                visible = state.showButtons, onMiddleButtonClick = {
+                    showDialog = true
+                })
 
-        if (!state.showButtons || state.showLoadingScreen) {
-            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
-        }
-
-        Box(Modifier.fillMaxSize().then(
-            if (state.blurBackground) {
-                Modifier
-                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
-            } else {
-                Modifier
+            if (!state.showButtons || state.showLoadingScreen) {
+                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
             }
-        ))
+
+            Box(
+                Modifier.fillMaxSize().then(
+                    if (state.blurBackground) {
+                        Modifier
+                            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
+                    } else {
+                        Modifier
+                    }
+                )
+            )
+        }
     }
 }
 
