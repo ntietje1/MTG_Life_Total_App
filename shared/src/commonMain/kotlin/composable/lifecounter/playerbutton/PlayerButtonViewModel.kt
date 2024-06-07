@@ -131,19 +131,25 @@ class PlayerButtonViewModel(
     }
 
     fun locateImage(player: Player): String? {
+        println("Locating image for player: ${player.name}")
         return player.imageString?.let {
             if (it.startsWith("http")) {
+                println("Image is a URL, returning it as is.")
                 return it
             }
             else if (it.startsWith("content://")) {
+                println("Image is a content URI, extracting player name and UUID.")
                 val playerNameAndUUID = it.substringAfter("content://lifelinked.multiplatform.provider/lifelinked_multiplatform_saved_images/").substringBefore("..png")
                 val uuid = playerNameAndUUID.substringAfterLast(player.name)
                 val newImageString = "${player.name}-${uuid}"
                 setImageUri(newImageString)
                 savePlayerPref()
-                return imageManager.getImagePath(newImageString)
+                return imageManager.getImagePath(player.name).apply {
+                    println("extracted and located: $this")
+                }
             }
             else {
+                println("Image is a local URI, returning it as is.")
                 return imageManager.getImagePath(it)
             }
         }
