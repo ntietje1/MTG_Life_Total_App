@@ -109,11 +109,11 @@ fun TextFieldWithButton(
     BoxWithConstraints(
         modifier = modifier
     ) {
-        val textSize = (maxHeight / 3.25f).value.scaledSp
+        val textSize = (maxHeight / 3.75f).value.scaledSp
         TextField(value = value, onValueChange = onValueChange, label = {
             Text(
                 modifier = Modifier.wrapContentSize(),
-                text = label, color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize
+                text = label, color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize * 0.9f
             )
         }, textStyle = TextStyle(fontSize = textSize*1.25f), singleLine = true, colors = TextFieldDefaults.colors(
             focusedTextColor = MaterialTheme.colorScheme.onPrimary,
