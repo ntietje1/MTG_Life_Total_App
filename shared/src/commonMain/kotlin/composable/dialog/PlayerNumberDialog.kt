@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -79,7 +80,7 @@ fun FourPlayerLayoutContent(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, setPlayerNum: (Int) -> Unit, setAlt4PlayerLayout: (value: Boolean) -> Unit
 ) {
     BoxWithConstraints(modifier) {
-        val buttonSize = maxWidth * 0.7f
+        val buttonSize = remember(Unit) { maxWidth * 0.7f }
         Column(
             modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {

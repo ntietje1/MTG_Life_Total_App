@@ -74,9 +74,9 @@ fun CoinFlipDialogContent(
     fastCoinFlip: Boolean
 ) {
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val padding = maxWidth / 25f + maxHeight / 30f
-        val counterHeight = maxHeight / 20f
-        val textSize = (maxWidth / 30f).value.scaledSp
+        val padding = remember(Unit) { maxWidth / 25f + maxHeight / 30f }
+        val counterHeight = remember(Unit) {  maxHeight / 20f }
+        val textSize = remember(Unit) {  (maxWidth / 30f).value }
         Column(modifier = modifier.fillMaxSize()) {
             Spacer(Modifier.weight(0.8f))
             CoinFlippable(
@@ -93,7 +93,7 @@ fun CoinFlipDialogContent(
                 text = "Tap to flip",
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
-                fontSize = textSize,
+                fontSize = textSize.scaledSp,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = padding / 10f, bottom = padding / 8f)
@@ -105,7 +105,7 @@ fun CoinFlipDialogContent(
                 text = "Flip History",
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
-                fontSize = textSize,
+                fontSize = textSize.scaledSp,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = padding / 4f, bottom = padding / 12f)
@@ -235,8 +235,8 @@ fun FlipCounter(
     val numberOfTails = history.count { it == "T" }
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val padding = maxWidth / 100f
-        val textSize = (maxWidth / 25f).value.scaledSp
+        val padding = remember(Unit) { maxWidth / 100f }
+        val textSize = remember(Unit) { (maxWidth / 25f).value }
         Row(
             modifier = modifier,
             horizontalArrangement = Arrangement.Center,
@@ -254,7 +254,7 @@ fun FlipCounter(
                     ) {
                         append("$numberOfHeads")
                     }
-                }, style = TextStyle(fontSize = textSize), modifier = Modifier.padding(vertical = 0.dp, horizontal = padding)
+                }, style = TextStyle(fontSize = textSize.scaledSp), modifier = Modifier.padding(vertical = 0.dp, horizontal = padding)
             )
             Text(
                 text = buildAnnotatedString {
@@ -268,7 +268,7 @@ fun FlipCounter(
                     ) {
                         append("$numberOfTails")
                     }
-                }, style = TextStyle(fontSize = textSize), modifier = Modifier.padding(vertical = 0.dp, horizontal = padding)
+                }, style = TextStyle(fontSize = textSize.scaledSp), modifier = Modifier.padding(vertical = 0.dp, horizontal = padding)
             )
             ResetButton(
                 modifier = Modifier.fillMaxHeight().padding(start = padding * 5),

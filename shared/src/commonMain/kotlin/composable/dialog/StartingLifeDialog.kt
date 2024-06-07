@@ -47,7 +47,7 @@ fun StartingLifeDialogContent(
 ) {
     var customLife by remember { mutableStateOf("") }
     BoxWithConstraints(modifier) {
-        val textFieldHeight = maxWidth / 9f + 30.dp
+        val textFieldHeight = remember(Unit) { maxWidth / 9f + 30.dp }
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.height(textFieldHeight))
             GridDialogContent(Modifier.wrapContentSize().weight(1.0f), title = "Set starting life total", items = listOf({
@@ -109,13 +109,13 @@ fun TextFieldWithButton(
     BoxWithConstraints(
         modifier = modifier
     ) {
-        val textSize = (maxHeight / 3.75f).value.scaledSp
+        val textSize = remember(Unit) { (maxHeight / 3.75f).value }
         TextField(value = value, onValueChange = onValueChange, label = {
             Text(
                 modifier = Modifier.wrapContentSize(),
-                text = label, color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize * 0.9f
+                text = label, color = MaterialTheme.colorScheme.onPrimary, fontSize = (textSize * 0.9f).scaledSp
             )
-        }, textStyle = TextStyle(fontSize = textSize*1.25f), singleLine = true, colors = TextFieldDefaults.colors(
+        }, textStyle = TextStyle(fontSize = (textSize*1.25f).scaledSp), singleLine = true, colors = TextFieldDefaults.colors(
             focusedTextColor = MaterialTheme.colorScheme.onPrimary,
             unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
             disabledTextColor = MaterialTheme.colorScheme.onPrimary,

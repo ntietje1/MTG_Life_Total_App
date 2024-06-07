@@ -136,20 +136,8 @@ fun DiceRollDialogContent(
                                 modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
                             )
                         }
-                    })
-//                DiceRollButton(value = lastResult!!, modifier = Modifier.fillMaxSize(), imageResource = resources[faceValue]!!)
-
-//            if (lastResult != null && faceValue != null) {
-//                Text(
-//                    modifier = Modifier.align(Alignment.Center).wrapContentSize(),
-//                    text = lastResult.toString(),
-//                    color = MaterialTheme.colorScheme.onPrimary,
-//                    fontSize = 50.scaledSp,
-//                    lineHeight = 50.scaledSp,
-//                    fontWeight = FontWeight.Bold,
-//                    textAlign = TextAlign.Center,
-//                )
-//            }
+                    }
+                )
             }
             Spacer(modifier = Modifier.weight(0.05f))
         }

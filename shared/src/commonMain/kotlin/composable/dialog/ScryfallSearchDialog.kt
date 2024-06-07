@@ -256,7 +256,7 @@ fun ScryfallSearchBar(
     onSearch: () -> Unit
 ) {
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val padding = maxHeight / 100f
+        val padding = remember(Unit) { maxHeight / 100f }
         TextFieldWithButton(
             modifier = modifier,
             value = query,
@@ -319,8 +319,8 @@ fun ScryfallButton(
             }
         },
         ) {
-        val textSize = (maxWidth / 4.5f).value.scaledSp
-        val textPadding = maxWidth / 12f
+        val textSize = remember(Unit) { (maxWidth / 4.5f).value }
+        val textPadding = remember(Unit) { maxWidth / 12f }
         Surface(
             modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(30)), color = animatedColor
         ) {
@@ -329,7 +329,7 @@ fun ScryfallButton(
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
-                fontSize = textSize,
+                fontSize = textSize.scaledSp,
                 modifier = Modifier.padding(top = textPadding).align(Alignment.Center)
             )
         }
@@ -366,13 +366,13 @@ private fun TextPreview(
             1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
         ).clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
     ) {
-        val textSize = (maxWidth / 30f).value.scaledSp
-        val padding = maxWidth / 60f
+        val textSize = remember(Unit) { (maxWidth / 30f).value }
+        val padding = remember(Unit) { maxWidth / 60f }
         Column(Modifier.fillMaxWidth()) {
             Text(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = padding * 2, vertical = padding),
                 text = largeText, color = MaterialTheme.colorScheme.onPrimary, textAlign = TextAlign.Center,
-                fontSize = textSize,
+                fontSize = textSize.scaledSp,
             )
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(0.4f).align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
@@ -382,8 +382,8 @@ private fun TextPreview(
                 text = bodyText,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Start,
-                fontSize = textSize,
-                lineHeight = textSize
+                fontSize = textSize.scaledSp,
+                lineHeight = textSize.scaledSp
             )
         }
     }
@@ -416,10 +416,10 @@ fun CardPreview(
     BoxWithConstraints(
         modifier = Modifier.wrapContentSize()
     ) {
-        val cardHeight = (maxWidth / 3.5f) + 50.dp
-        val padding = cardHeight / 11f
-        val buttonSize = (cardHeight / 6f)
-        val fontSize = (cardHeight / 9f).value.scaledSp
+        val cardHeight = remember(Unit) { (maxWidth / 3.5f) + 50.dp }
+        val padding = remember(Unit) { cardHeight / 11f }
+        val buttonSize = remember(Unit) { (cardHeight / 6f) }
+        val fontSize = remember(Unit) { (cardHeight / 9f).value }
         Box(Modifier.padding(horizontal = padding, vertical = padding / 2f)) {
             Surface(
                 modifier = Modifier.fillMaxSize().border(
@@ -433,18 +433,18 @@ fun CardPreview(
                         modifier = Modifier.fillMaxHeight().weight(2.0f), verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.Start
                     ) {
                         Text(
-                            card.name, color = MaterialTheme.colorScheme.onPrimary, fontSize = fontSize, lineHeight = fontSize, fontWeight = FontWeight.SemiBold
+                            card.name, color = MaterialTheme.colorScheme.onPrimary, fontSize = fontSize.scaledSp, lineHeight = fontSize.scaledSp, fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            card.setName, color = MaterialTheme.colorScheme.onPrimary, fontSize = fontSize * 0.8f, lineHeight = fontSize * 0.8f, fontWeight = FontWeight.Light
+                            card.setName, color = MaterialTheme.colorScheme.onPrimary, fontSize = (fontSize * 0.8f).scaledSp, lineHeight = (fontSize * 0.8f).scaledSp, fontWeight = FontWeight.Light
                         )
                         Text(
-                            card.artist, color = MaterialTheme.colorScheme.onPrimary, fontSize = fontSize * 0.8f, lineHeight = fontSize * 0.8f, fontWeight = FontWeight.Light
+                            card.artist, color = MaterialTheme.colorScheme.onPrimary, fontSize = (fontSize * 0.8f).scaledSp, lineHeight = (fontSize * 0.8f).scaledSp, fontWeight = FontWeight.Light
                         )
                         Text(
                             "© Wizards of the Coast",
-                            fontSize = fontSize * 0.6f,
-                            lineHeight = fontSize * 0.6f,
+                            fontSize = (fontSize * 0.6f).scaledSp,
+                            lineHeight = (fontSize * 0.6f).scaledSp,
                             fontWeight = FontWeight.ExtraLight,
                             color = MaterialTheme.colorScheme.onPrimary,
                         )

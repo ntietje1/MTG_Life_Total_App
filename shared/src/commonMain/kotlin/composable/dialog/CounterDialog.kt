@@ -76,9 +76,9 @@ fun CounterDialogContent(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        val counterSize = maxHeight / 11f
-        val padding = (counterSize / 5f)
-        val textSize = (maxWidth / 25f).value.scaledSp
+        val counterSize = remember(Unit) { maxHeight / 11f }
+        val padding = remember(Unit) { (counterSize / 5f) }
+        val textSize = remember(Unit) { (maxWidth / 25f).value }
         LazyColumn(
             modifier = Modifier, verticalArrangement = Arrangement.spacedBy(padding, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -87,7 +87,7 @@ fun CounterDialogContent(
             }
             item {
                 Text(
-                    modifier = Modifier.alpha(0.9f), text = "Floating Mana", color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize
+                    modifier = Modifier.alpha(0.9f), text = "Floating Mana", color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize.scaledSp
                 )
             }
 
@@ -104,7 +104,7 @@ fun CounterDialogContent(
 
             item {
                 Text(
-                    modifier = Modifier.alpha(0.9f).padding(top = 2.dp), text = "Storm Count", color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize
+                    modifier = Modifier.alpha(0.9f).padding(top = 2.dp), text = "Storm Count", color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize.scaledSp
                 )
             }
 
@@ -153,8 +153,8 @@ fun SingleCounter(
     }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val textSize = (maxWidth /15f).value.scaledSp
-        val padding = (maxWidth / 30f)
+        val textSize = remember(Unit) { (maxWidth /15f).value }
+        val padding = remember(Unit) { (maxWidth / 30f) }
         Row(
             modifier = modifier.bounceClick(0.01f).background(backgroundColor, RoundedCornerShape(20)),
             verticalAlignment = Alignment.CenterVertically,
@@ -190,7 +190,7 @@ fun SingleCounter(
                         text = "$counter",
                         textAlign = TextAlign.Justify,
                         color = buttonColor,
-                        fontSize = textSize,
+                        fontSize = textSize.scaledSp,
                         fontWeight = FontWeight.Bold
                     )
                 }

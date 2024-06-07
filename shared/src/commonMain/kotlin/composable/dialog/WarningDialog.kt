@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,8 +52,8 @@ fun WarningDialog(
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 1.0f), RoundedCornerShape(15))
                 .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f), RoundedCornerShape(15))
             ) {
-                val textSize = (maxWidth / 25f).value.scaledSp
-                val padding = maxWidth / 45f
+                val textSize = remember(Unit) { (maxWidth / 25f).value }
+                val padding = remember(Unit) { maxWidth / 45f }
                 Column(
                     modifier = Modifier
                         .wrapContentHeight()
@@ -62,7 +63,7 @@ fun WarningDialog(
                 ) {
                     Text(
                         text = title,
-                        fontSize = textSize * 1.1f,
+                        fontSize = (textSize * 1.1f).scaledSp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary,
                         textAlign = TextAlign.Start,
@@ -70,7 +71,7 @@ fun WarningDialog(
                     )
                     Text(
                         text = message,
-                        fontSize = textSize*0.9f,
+                        fontSize = (textSize*0.9f).scaledSp,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.90f),
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth().padding(horizontal = padding*2)
@@ -90,7 +91,7 @@ fun WarningDialog(
                                 Text(
                                     text = optionTwoMessage,
                                     color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = textSize,
+                                    fontSize = textSize.scaledSp,
                                     fontWeight = FontWeight.Medium,
                                     modifier = Modifier.padding(bottom = padding*2)
                                 )
@@ -105,7 +106,7 @@ fun WarningDialog(
                                 Text(
                                     text = optionOneMessage,
                                     color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = textSize,
+                                    fontSize = textSize.scaledSp,
                                     fontWeight = FontWeight.Medium,
                                     modifier = Modifier.padding(bottom = padding*2)
                                 )
@@ -114,53 +115,5 @@ fun WarningDialog(
                     }
                 }
             }
-
-//        AlertDialog(
-//            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = true, usePlatformDefaultWidth = false),
-//            onDismissRequest = {
-//                onDismiss()
-//            },
-//            title = {
-//                Text(
-//                    text = title,
-//                    fontSize = textSize
-//                )
-//            },
-//            text = {
-//                Text(
-//                    modifier = Modifier.width(width),
-//                    text = message,
-//                    fontSize = textSize * 0.9f
-//                )
-//            },
-//            confirmButton = {
-//                if (optionOneEnabled) {
-//                    TextButton(onClick = {
-//                        onDismiss()
-//                        onOptionOne()
-//                    }) {
-//                        Text(
-//                            text = optionOneMessage,
-//                            color = MaterialTheme.colorScheme.onPrimary,
-//                            fontSize = textSize
-//                        )
-//                    }
-//                }
-//            },
-//            dismissButton = {
-//                if (optionTwoEnabled) {
-//                    TextButton(onClick = {
-//                        onDismiss()
-//                        onOptionTwo()
-//                    }) {
-//                        Text(
-//                            text = optionTwoMessage,
-//                            color = MaterialTheme.colorScheme.onPrimary,
-//                            fontSize = textSize
-//                        )
-//                    }
-//                }
-//            }
-//        )
     }
 }

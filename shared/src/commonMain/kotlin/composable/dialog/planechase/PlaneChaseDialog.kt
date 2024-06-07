@@ -134,14 +134,14 @@ fun PlaneChaseDialogContent(
     }
 
     BoxWithConstraints(modifier = modifier.padding(bottom = 20.dp)) {
-        val buttonSize = maxWidth / 5f
-        val previewPadding = buttonSize / 2f
-        val textSize = (maxWidth / 35f).value.scaledSp
+        val buttonSize = remember(Unit) { maxWidth / 5f }
+        val previewPadding = remember(Unit) {  buttonSize / 2f }
+        val textSize = remember(Unit) {  (maxWidth / 35f).value }
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 modifier = Modifier.fillMaxWidth().padding(top = 5.dp),
                 text = "Planar deck size: ${state.planarDeck.size}",
-                fontSize = textSize,
+                fontSize = textSize.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )
@@ -171,39 +171,6 @@ fun PlaneChaseDialogContent(
                     goToChoosePlanes()
                 })
             }
-//            Row(
-//                Modifier.fillMaxWidth().height(buttonSize * 0.5f).padding(horizontal = maxWidth / 10f),
-//                horizontalArrangement = Arrangement.SpaceAround,
-//                verticalAlignment = Alignment.CenterVertically
-//
-//            ) {
-//                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
-//                    text = "Select All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.deck_icon), onPress = {
-//                        viewModel.addAllPlanarDeck(filteredPlanes)
-//                    })
-//                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
-//                    text = "Unselect All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.x_icon), onPress = {
-//                        viewModel.removeAllPlanarDeck(filteredPlanes)
-//                    })
-//                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
-//                    text = if (!state.hideUnselected) "Hide Unselected" else "Show Unselected",
-//                    shadowEnabled = false,
-//                    imageVector = if (!state.hideUnselected) vectorResource(Res.drawable.invisible_icon) else vectorResource(Res.drawable.visible_icon),
-//                    onPress = {
-//                        viewModel.toggleHideUnselected()
-//                    })
-//                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
-//                    text = "Done",
-//                    shadowEnabled = false,
-//                    imageVector = vectorResource(Res.drawable.checkmark),
-//                    onPress = {
-//                        if (backStackDiff != 0) {
-//                            popBackStack()
-//                        }
-//                        popBackStack()
-//                    }
-//                )
-//            }
         }
     }
 }
@@ -226,14 +193,14 @@ fun ChoosePlanesDialogContent(
     var backStackDiff by remember { mutableStateOf(0) }
 
     BoxWithConstraints(modifier = modifier) {
-        val maxWidth = maxWidth
-        val maxHeight = maxHeight
-        val buttonSize = maxWidth / 5f
+        val maxWidth = remember(Unit) {  maxWidth }
+        val maxHeight = remember(Unit) {  maxHeight }
+        val buttonSize = remember(Unit) {  maxWidth / 5f }
 
-        val searchBarHeight = maxWidth / 9f + 30.dp
-        val padding = searchBarHeight / 10f
-        val columnCount = if (maxWidth  / 3 > maxHeight / 4) 3 else 2
-        val textSize = (maxHeight / 50f).value.scaledSp
+        val searchBarHeight = remember(Unit) {  maxWidth / 9f + 30.dp }
+        val padding = remember(Unit) {  searchBarHeight / 10f }
+        val columnCount = remember(Unit) {  if (maxWidth  / 3 > maxHeight / 4) 3 else 2 }
+        val textSize = remember(Unit) {  (maxHeight / 50f).value }
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -267,7 +234,7 @@ fun ChoosePlanesDialogContent(
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = "${state.planarDeck.intersect(filteredPlanes.toSet()).size}/${filteredPlanes.size} Planes Selected, ${state.allPlanes.size - filteredPlanes.size}/${state.allPlanes.size} Hidden",
-                fontSize = textSize,
+                fontSize = textSize.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )

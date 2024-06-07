@@ -69,9 +69,9 @@ fun SettingsDialogContent(
     val uriHandler = LocalUriHandler.current
 
     BoxWithConstraints(modifier) {
-        val buttonHeight = maxWidth / 7f
-        val textSize = (maxWidth / 30f).value.scaledSp
-        val smallPadding = maxWidth / 50f
+        val buttonHeight = remember(Unit) { maxWidth / 7f }
+        val textSize = remember(Unit) { (maxWidth / 30f).value }
+        val smallPadding = remember(Unit) { maxWidth / 50f }
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -196,7 +196,7 @@ fun SettingsDialogContent(
                         .fillMaxWidth()
                         .padding(start = smallPadding, end = smallPadding, top = smallPadding),
                     text = "LifeLinked v1.6 by Nicholas Tietje",
-                    fontSize = textSize,
+                    fontSize = textSize.scaledSp,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
                     style = defaultTextStyle()
@@ -208,7 +208,7 @@ fun SettingsDialogContent(
                         .fillMaxWidth()
                         .padding(start = smallPadding, end = smallPadding, top = smallPadding / 4f, bottom = smallPadding * 1.5f),
                     text = "Card art & information powered by the Scryfall API",
-                    fontSize = textSize,
+                    fontSize = textSize.scaledSp,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
                     style = defaultTextStyle()
@@ -228,12 +228,12 @@ fun SettingsDialogHeader(
         modifier
             .background(Color.White.copy(alpha = 0.0f)), contentAlignment = Alignment.BottomStart
     ) {
-        val textSize = (maxWidth / 24f).value.scaledSp
-        val padding = maxWidth / 35f
+        val textSize = remember(Unit) { (maxWidth / 24f).value }
+        val padding = remember(Unit) { maxWidth / 35f }
         Text(
             modifier = Modifier.padding(padding),
             text = text,
-            fontSize = textSize,
+            fontSize = textSize.scaledSp,
             color = MaterialTheme.colorScheme.onPrimary,
             style = defaultTextStyle()
         )
@@ -272,10 +272,10 @@ fun SettingsDialogButtonWithToggle(
     val isChecked = remember { mutableStateOf(initialState) }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val iconSize = maxHeight / 2f
-        val padding = maxWidth / 25f
-        val textSize = (maxWidth / 24f).value.scaledSp
-        val toggleScale = maxWidth.value / 450.dp.value
+        val iconSize = remember(Unit) { maxHeight / 2f }
+        val padding = remember(Unit) { maxWidth / 25f }
+        val textSize = remember(Unit) { (maxWidth / 24f).value }
+        val toggleScale = remember(Unit) { maxWidth.value / 450.dp.value }
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -302,7 +302,7 @@ fun SettingsDialogButtonWithToggle(
             Text(
                 modifier = Modifier.fillMaxWidth(0.8f).padding(start = padding / 4f),
                 text = text,
-                fontSize = textSize,
+                fontSize = textSize.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 style = defaultTextStyle()
             )

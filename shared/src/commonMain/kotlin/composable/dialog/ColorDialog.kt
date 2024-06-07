@@ -56,10 +56,10 @@ fun ColorDialog(
 @Composable
 fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {}, onDismiss: () -> Unit) {
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val largePanelSize = maxWidth * 0.75f
-        val padding = maxWidth /15f
-        val buttonSize = maxWidth / 3.5f
-        val barHeight = maxWidth / 12f
+        val largePanelSize = remember(Unit) { maxWidth * 0.75f }
+        val padding = remember(Unit) { maxWidth /15f }
+        val buttonSize = remember(Unit) { maxWidth / 3.5f }
+        val barHeight = remember(Unit) { maxWidth / 12f }
 
         Column(
             modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center

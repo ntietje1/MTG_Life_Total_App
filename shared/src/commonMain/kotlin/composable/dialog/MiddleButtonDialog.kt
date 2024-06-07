@@ -129,11 +129,6 @@ fun MiddleButtonDialog(
         BoxWithConstraints(
             modifier = modifier.fillMaxSize(),
         ) {
-//            val buttonModifier = Modifier.size(
-//                min(
-//                    maxWidth / 4f, maxHeight / 5f
-//                )
-//            )
             val buttonModifier = remember(Unit) { Modifier.then(
                 if (maxWidth / 3f < maxHeight / 4f) {
                     Modifier.fillMaxHeight(0.8f)
@@ -374,14 +369,14 @@ fun GridDialogContent(
     modifier: Modifier = Modifier, title: String, items: List<@Composable () -> Unit> = emptyList()
 ) {
     BoxWithConstraints(modifier = modifier) {
-        val padding = maxHeight / 60f
-        val titleSize = (maxWidth / 20f).value.scaledSp
+        val padding = remember(Unit) { maxHeight / 60f }
+        val titleSize = remember(Unit) {  (maxWidth / 20f).value }
         Column(
             Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(padding))
             Text(
-                modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize, color = MaterialTheme.colorScheme.onPrimary
+                modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.height(padding/2))
 //            Box(Modifier.fillMaxSize().background(color = Color.Red),
@@ -426,7 +421,7 @@ fun SettingsDialog(
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            val buttonSize = maxWidth / 8f
+            val buttonSize = remember(Unit) { maxWidth / 8f }
 
             Column(Modifier.fillMaxSize()) {
                 if (exitButtonEnabled) {
