@@ -134,13 +134,13 @@ fun MiddleButtonDialog(
 //                    maxWidth / 4f, maxHeight / 5f
 //                )
 //            )
-            val buttonModifier = Modifier.then(
+            val buttonModifier = remember(Unit) { Modifier.then(
                 if (maxWidth / 3f < maxHeight / 4f) {
                     Modifier.fillMaxHeight(0.8f)
                 } else {
                     Modifier.fillMaxWidth(0.8f)
                 }
-            )
+            ) }
             FormattedAnimatedVisibility(
                 visible = middleButtonDialogState == MiddleButtonDialogState.CoinFlip
             ) {
