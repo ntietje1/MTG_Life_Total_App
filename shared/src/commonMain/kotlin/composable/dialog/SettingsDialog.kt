@@ -195,7 +195,7 @@ fun SettingsDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = smallPadding, end = smallPadding, top = smallPadding),
-                    text = "LifeLinked v1.5 by Nicholas Tietje",
+                    text = "LifeLinked v1.6 by Nicholas Tietje",
                     fontSize = textSize,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
