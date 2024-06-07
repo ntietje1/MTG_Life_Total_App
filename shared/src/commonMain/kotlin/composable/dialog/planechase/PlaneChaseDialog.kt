@@ -230,7 +230,7 @@ fun ChoosePlanesDialogContent(
         val maxHeight = maxHeight
         val buttonSize = maxWidth / 5f
 
-        val searchBarHeight = maxWidth / 9f + 40.dp
+        val searchBarHeight = maxWidth / 9f + 30.dp
         val padding = searchBarHeight / 10f
         val columnCount = if (maxWidth  / 3 > maxHeight / 4) 3 else 2
         val textSize = (maxHeight / 50f).value.scaledSp

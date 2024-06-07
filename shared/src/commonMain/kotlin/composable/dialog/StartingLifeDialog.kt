@@ -76,7 +76,6 @@ fun StartingLifeDialogContent(
 
             TextFieldWithButton(
                 modifier = Modifier
-                    .weight(0.2f)
                     .fillMaxWidth(0.8f)
                     .height(textFieldHeight),
                 value = customLife,
