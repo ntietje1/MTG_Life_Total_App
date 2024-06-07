@@ -4,7 +4,6 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import java.io.FileNotFoundException
 import java.util.UUID
 
 actual class ImageManager(private val context: Context) {
@@ -45,16 +44,18 @@ actual class ImageManager(private val context: Context) {
         return saveImage(bytes = bytes, name = fileName)
     }
 
-    actual fun getImagePath(fileName: String): String {
+    actual fun getImagePath(fileName: String): String? {
         val filesDir = context.filesDir
         val files = filesDir.listFiles()
         if (files != null) {
             for (file in files) {
+                println("GOT FILE: ${file.name}")
                 if (file.name.startsWith(fileName)) {
                     return file.absolutePath
                 }
             }
         }
-        throw FileNotFoundException("No file found with name starting with $fileName")
+        return null
+//        throw FileNotFoundException("No file found with name starting with $fileName")
     }
 }

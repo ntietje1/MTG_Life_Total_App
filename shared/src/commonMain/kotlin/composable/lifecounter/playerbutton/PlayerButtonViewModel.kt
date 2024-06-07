@@ -136,14 +136,12 @@ class PlayerButtonViewModel(
                 return it
             }
             else if (it.startsWith("content://")) {
-                setImageUri(null)
+                val playerNameAndUUID = it.substringAfter("content://lifelinked.multiplatform.provider/lifelinked_multiplatform_saved_images/").substringBefore("..png")
+                val uuid = playerNameAndUUID.substringAfterLast(player.name)
+                val newImageString = "${player.name}-${uuid}"
+                setImageUri(newImageString)
                 savePlayerPref()
-//                val playerNameAndUUID = it.substringAfter("content://lifelinked.multiplatform.provider/lifelinked_multiplatform_saved_images/").substringBefore("..png")
-////                val uuid = playerNameAndUUID.substringAfterLast(player.name)
-////                val newImageString = "${player.name}-${uuid}"
-//                val newImageString = player.name
-//                return imageManager.getImagePath(newImageString)
-                return null
+                return imageManager.getImagePath(newImageString)
             }
             else {
                 return imageManager.getImagePath(it)
