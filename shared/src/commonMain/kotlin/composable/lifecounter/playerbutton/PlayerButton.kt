@@ -133,6 +133,7 @@ fun PlayerButton(
     modifier: Modifier = Modifier,
     viewModel: PlayerButtonViewModel,
     rotation: Float = 0f,
+    borderWidth: Dp,
     setBlurBackground: (Boolean) -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
@@ -381,7 +382,8 @@ fun PlayerButton(
 
         MonarchyIndicator(
             modifier = modifier,
-            monarch = state.player.monarch
+            monarch = state.player.monarch,
+            borderWidth = borderWidth,
         ) {
             BoxWithConstraints(
                 modifier = Modifier.fillMaxSize().background(Color.Transparent).clip(RoundedCornerShape(12)),
@@ -1047,9 +1049,11 @@ fun PlayerButton(
 
 @Composable
 fun MonarchyIndicator(
-    modifier: Modifier = Modifier, monarch: Boolean = false, content: @Composable () -> Unit = {}
+    modifier: Modifier = Modifier,
+    monarch: Boolean = false,
+    borderWidth: Dp,
+    content: @Composable () -> Unit = {}
 ) {
-    val width = 2.5.dp
     val duration = (7500 / getAnimationCorrectionFactor()).toInt()
 //    val colors = if (viewModel.getAnimationScale(context) != 0.0f) {
 //        listOf(
@@ -1083,22 +1087,23 @@ fun MonarchyIndicator(
             8
         ),
     )
-
-    Box(
-        modifier = modifier.clip(RoundedCornerShape(12)).then(
-            if (monarch) {
-                Modifier.animatedBorderCard(
-                    shape = RoundedCornerShape(12),
-                    borderWidth = width,
-                    colors = colors,
-                    animationDuration = duration
-                ).clip(RoundedCornerShape(12))
-            } else {
-                Modifier.padding(width)
-            }
-        )
-    ) {
-        content()
+    BoxWithConstraints(Modifier.wrapContentSize()) {
+        Box(
+            modifier = modifier.clip(RoundedCornerShape(12)).then(
+                if (monarch) {
+                    Modifier.animatedBorderCard(
+                        shape = RoundedCornerShape(12),
+                        borderWidth = borderWidth,
+                        colors = colors,
+                        animationDuration = duration
+                    ).clip(RoundedCornerShape(12))
+                } else {
+                    Modifier.padding(borderWidth)
+                }
+            )
+        ) {
+            content()
+        }
     }
 }
 

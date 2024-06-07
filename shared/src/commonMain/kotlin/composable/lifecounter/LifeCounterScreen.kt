@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -121,6 +122,7 @@ fun LifeCounterScreen(
         val m = LifeCounterMeasurements(
             maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = state.numPlayers, alt4Layout = viewModel.settingsManager.alt4PlayerLayout
         )
+        val buttonPadding = maxWidth / 750f + maxHeight / 750f
 
         val buttonPlacements =  m.buttonPlacements()
 
@@ -129,11 +131,13 @@ fun LifeCounterScreen(
                 LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
                     items(buttonPlacements, key = { it.index }) { placement ->
                         AnimatedPlayerButton(
+                            modifier = Modifier.padding(buttonPadding),
                             visible = state.showButtons,
+                            borderWidth = buttonPadding,
                             playerButtonViewModel = viewModel.playerButtonViewModels[placement.index],
                             rotation = placement.angle,
-                            width = placement.width,
-                            height = placement.height,
+                            width = placement.width - buttonPadding*4,
+                            height = placement.height - buttonPadding*4,
                             setBlurBackground = { viewModel.setBlurBackground(it) }
                         )
                     }
@@ -169,6 +173,8 @@ fun LifeCounterScreen(
 
 @Composable
 fun AnimatedPlayerButton(
+    modifier: Modifier = Modifier,
+    borderWidth: Dp,
     visible: Boolean, playerButtonViewModel: PlayerButtonViewModel, rotation: Float, width: Dp, height: Dp, setBlurBackground: (Boolean) -> Unit
 ) {
     val multiplesAway = 3f
@@ -218,13 +224,15 @@ fun AnimatedPlayerButton(
         }
     }
 
-    Box(modifier = Modifier.graphicsLayer {
+    Box(modifier = modifier.graphicsLayer {
         translationX = offsetX.value
         translationY = offsetY.value
     }
     ) {
         PlayerButton(
-            modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation, setBlurBackground = {
+            modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation,
+            borderWidth = borderWidth,
+            setBlurBackground = {
                 setBlurBackground(it)
             }
         )
