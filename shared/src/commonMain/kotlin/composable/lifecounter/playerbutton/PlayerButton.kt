@@ -542,8 +542,8 @@ fun PlayerButton(
                                         modifier = Modifier,
                                         text = "Deal damage with your commander",
                                         color = state.player.textColor,
-                                        fontSize = textSize,
-                                        lineHeight = textSize,
+                                        fontSize = textSize*0.8f,
+                                        lineHeight = textSize*0.8f,
                                         textAlign = TextAlign.Center,
                                         style = defaultTextStyle()
                                     )
@@ -854,48 +854,42 @@ fun PlayerButton(
                                     textColor = state.player.textColor,
                                     text = "Counters"
                                 ) {
-                                    LazyRow(
-                                        Modifier.fillMaxSize().padding(5.dp),
-                                        horizontalArrangement = Arrangement.Center,
-                                    ) {
-                                        items(state.player.activeCounters) { counterType ->
-                                            Counter(
-                                                textColor = state.player.textColor,
-                                                iconResource = counterType.resource,
-                                                value = viewModel.getCounterValue(counterType),
-                                                onIncrement = {
-                                                    viewModel.incrementCounterValue(
-                                                        counterType,
-                                                        1
-                                                    )
-                                                },
-                                                onDecrement = {
-                                                    viewModel.incrementCounterValue(
-                                                        counterType,
-                                                        -1
-                                                    )
-                                                })
-                                        }
-                                        item {
-                                            AddCounter(
-                                                textColor = state.player.textColor,
-                                                onTap = {
-                                                    viewModel.setPlayerButtonState(PBState.COUNTERS_SELECT)
-                                                    viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW) }
-                                                },
-                                            )
+                                    BoxWithConstraints(Modifier.wrapContentSize()) {
+                                        val padding = maxWidth / 30f
+                                        LazyRow(
+                                            Modifier.fillMaxSize().padding(padding),
+                                            horizontalArrangement = Arrangement.spacedBy(padding),
+                                        ) {
+                                            items(state.player.activeCounters) { counterType ->
+                                                Counter(
+                                                    textColor = state.player.textColor,
+                                                    iconResource = counterType.resource,
+                                                    value = viewModel.getCounterValue(counterType),
+                                                    onIncrement = {
+                                                        viewModel.incrementCounterValue(
+                                                            counterType,
+                                                            1
+                                                        )
+                                                    },
+                                                    onDecrement = {
+                                                        viewModel.incrementCounterValue(
+                                                            counterType,
+                                                            -1
+                                                        )
+                                                    })
+                                            }
+                                            item {
+                                                AddCounter(
+                                                    textColor = state.player.textColor,
+                                                    onTap = {
+                                                        viewModel.setPlayerButtonState(PBState.COUNTERS_SELECT)
+                                                        viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW) }
+                                                    },
+                                                )
+                                            }
                                         }
                                     }
                                 }
-//                                Counters(
-//                                    modifier = settingsPadding.padding(horizontal = 5.dp).padding(bottom = 5.dp),
-//                                    textColor = state.player.textColor,
-//                                    activeCounters = state.player.activeCounters,
-//                                    getCounterValue = viewModel::getCounterValue,
-//                                    incrementCounterValue = viewModel::incrementCounterValue,
-//                                    setActiveCounter = viewModel::setActiveCounter,
-//                                    addToBackStack = viewModel::pushBackStack
-//                                )
                             }
 
                             PBState.COUNTERS_SELECT -> {
@@ -904,38 +898,41 @@ fun PlayerButton(
                                     textColor = state.player.textColor,
                                     text = "Select Counters"
                                 ) {
-                                    Column(
-                                        Modifier.fillMaxSize(),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        LazyHorizontalGrid(
-                                            modifier = Modifier.fillMaxSize().padding(5.dp).clip(RoundedCornerShape(12)),
-                                            rows = GridCells.Fixed(3),
-                                            horizontalArrangement = Arrangement.Center,
-                                            verticalArrangement = Arrangement.Center
+                                    BoxWithConstraints(Modifier.wrapContentSize()) {
+                                        val padding = maxWidth / 50f + maxHeight / 60f
+                                        Column(
+                                            Modifier.fillMaxSize(),
+                                            horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
-                                            items(CounterType.entries.toTypedArray()) { counterType ->
-                                                var selected by remember { mutableStateOf(counterType in state.player.activeCounters) }
-                                                Box(modifier = Modifier.fillMaxSize().aspectRatio(1.0f).padding(0.5.dp).background(
-                                                    if (selected) {
-                                                        Color.Green.copy(alpha = 0.5f)
-                                                    } else {
-                                                        Color.Transparent
+                                            LazyHorizontalGrid(
+                                                modifier = Modifier.fillMaxSize().padding(padding).clip(RoundedCornerShape(12)),
+                                                rows = GridCells.Fixed(3),
+                                                horizontalArrangement = Arrangement.Center,
+                                                verticalArrangement = Arrangement.Center
+                                            ) {
+                                                items(CounterType.entries.toTypedArray()) { counterType ->
+                                                    var selected by remember { mutableStateOf(counterType in state.player.activeCounters) }
+                                                    Box(modifier = Modifier.fillMaxSize().aspectRatio(1.0f).background(
+                                                        if (selected) {
+                                                            Color.Green.copy(alpha = 0.5f)
+                                                        } else {
+                                                            Color.Transparent
+                                                        }
+                                                    ).pointerInput(Unit) {
+                                                        detectTapGestures {
+                                                            selected = viewModel.setActiveCounter(counterType)
+                                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        }
+                                                    }) {
+                                                        SettingsButton(
+                                                            imageVector = vectorResource(counterType.resource),
+                                                            modifier = Modifier.fillMaxSize().padding(padding),
+                                                            mainColor = state.player.textColor,
+                                                            backgroundColor = Color.Transparent,
+                                                            shadowEnabled = true,
+                                                            enabled = false
+                                                        )
                                                     }
-                                                ).pointerInput(Unit) {
-                                                    detectTapGestures {
-                                                        selected = viewModel.setActiveCounter(counterType)
-                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    }
-                                                }) {
-                                                    SettingsButton(
-                                                        imageVector = vectorResource(counterType.resource),
-                                                        modifier = Modifier.fillMaxSize().padding(5.dp),
-                                                        mainColor = state.player.textColor,
-                                                        backgroundColor = Color.Transparent,
-                                                        shadowEnabled = true,
-                                                        enabled = false
-                                                    )
                                                 }
                                             }
                                         }
@@ -1156,11 +1153,11 @@ fun AddCounter(
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(Modifier.fillMaxHeight().aspectRatio(0.70f).padding(5.dp).bounceClick(0.0125f).background(
         Color.Black.copy(0.2f),
-        shape = RoundedCornerShape(10)
+        shape = RoundedCornerShape(15)
     ).border(
         0.5.dp,
         textColor.copy(alpha = 0.9f),
-        RoundedCornerShape(10)
+        RoundedCornerShape(15)
     ).pointerInput(Unit) {
         detectTapGestures {
             onTap()
@@ -1189,14 +1186,14 @@ fun Counter(
 ) {
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(
-        Modifier.fillMaxHeight().aspectRatio(0.70f).padding(5.dp).bounceClick(0.0125f).background(
+        Modifier.fillMaxHeight().aspectRatio(0.70f).bounceClick(0.0125f).background(
             Color.Black.copy(0.2f),
-            shape = RoundedCornerShape(10)
+            shape = RoundedCornerShape(15)
         ).border(
             0.5.dp,
             textColor.copy(alpha = 0.9f),
-            RoundedCornerShape(10)
-        ).clip(RoundedCornerShape(10))
+            RoundedCornerShape(15)
+        ).clip(RoundedCornerShape(15))
     ) {
         val textSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).scaledSp / 1.5f
         val topPadding = maxHeight / 10f
@@ -1236,7 +1233,7 @@ fun Counter(
             )
             SettingsButton(
                 imageVector = vectorResource(iconResource),
-                modifier = Modifier.fillMaxSize(0.35f).aspectRatio(1.0f).padding(bottom = 15.dp),
+                modifier = Modifier.fillMaxSize(0.35f).aspectRatio(1.0f).padding(bottom = topPadding*0.85f),
                 mainColor = textColor,
                 backgroundColor = Color.Transparent,
                 shadowEnabled = true,
