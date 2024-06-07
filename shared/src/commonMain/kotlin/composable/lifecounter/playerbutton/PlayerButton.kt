@@ -274,7 +274,7 @@ fun PlayerButton(
                 Spacer(Modifier.weight(0.7f))
                 BoxWithConstraints(
                     modifier = Modifier
-                        .fillMaxWidth(0.7f)
+                        .fillMaxWidth(0.8f)
                         .aspectRatio(2f)
                         .clip(RoundedCornerShape(12)),
                 ) {

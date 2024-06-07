@@ -48,15 +48,15 @@ fun WarningDialog(
             BoxWithConstraints(Modifier
                 .wrapContentSize()
                 .clip(RoundedCornerShape(15))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.70f), RoundedCornerShape(15))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 1.0f), RoundedCornerShape(15))
                 .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f), RoundedCornerShape(15))
             ) {
-                val textSize = (maxWidth / 30f).value.scaledSp
-                val padding = maxWidth / 60f
+                val textSize = (maxWidth / 25f).value.scaledSp
+                val padding = maxWidth / 45f
                 Column(
                     modifier = Modifier
                         .wrapContentHeight()
-                        .fillMaxWidth(0.7f),
+                        .fillMaxWidth(0.8f),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(padding, Alignment.CenterVertically)
                 ) {
@@ -85,12 +85,13 @@ fun WarningDialog(
                             TextButton(onClick = {
                                 onDismiss()
                                 onOptionTwo()
-                            }) {
+                            }, modifier = Modifier.fillMaxWidth(0.5f)
+                            ) {
                                 Text(
                                     text = optionTwoMessage,
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = textSize,
-                                    modifier = Modifier.padding(start = padding*2, bottom = padding*2, end = padding*2)
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
                         }
@@ -98,12 +99,13 @@ fun WarningDialog(
                             TextButton(onClick = {
                                 onDismiss()
                                 onOptionOne()
-                            }) {
+                            }, modifier = Modifier.fillMaxWidth()
+                            ) {
                                 Text(
                                     text = optionOneMessage,
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = textSize,
-                                    modifier = Modifier.padding(start = padding*2, bottom = padding*2, end = padding*2)
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
                         }
