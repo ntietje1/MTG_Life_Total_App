@@ -46,7 +46,7 @@ fun StartingLifeDialogContent(
 ) {
     var customLife by remember { mutableStateOf("") }
     BoxWithConstraints(modifier) {
-        val textFieldHeight = maxHeight / 7f
+        val textFieldHeight = maxWidth / 9f
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.height(textFieldHeight))
             GridDialogContent(Modifier.wrapContentSize().weight(1.0f), title = "Set starting life total", items = listOf({

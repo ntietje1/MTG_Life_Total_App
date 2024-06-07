@@ -146,7 +146,7 @@ fun ScryfallDialogContent(
     }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val searchBarHeight = maxHeight / 11f
+        val searchBarHeight = maxWidth / 9f
         val padding = searchBarHeight / 10f
         val textSize = (maxHeight / 50f).value.scaledSp
 //        val textSize = maxWidth / 20f
