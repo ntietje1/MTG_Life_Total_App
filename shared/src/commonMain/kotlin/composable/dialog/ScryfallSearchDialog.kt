@@ -146,10 +146,9 @@ fun ScryfallDialogContent(
     }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val searchBarHeight = maxWidth / 9f + 30.dp
-        val padding = searchBarHeight / 10f
-        val textSize = (maxHeight / 50f).value.scaledSp
-//        val textSize = maxWidth / 20f
+        val searchBarHeight = remember(Unit) { maxWidth / 9f + 30.dp }
+        val padding = remember(Unit) { searchBarHeight / 10f }
+        val textSize = remember(Unit) { (maxHeight / 50f).value }
         Column(
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -175,7 +174,7 @@ fun ScryfallDialogContent(
             AnimatedVisibility(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding), visible = lastSearchWasError
             ) {
-                Text("No cards found :(", color = Color.Red, fontSize = textSize)
+                Text("No cards found :(", color = Color.Red, fontSize = textSize.scaledSp)
             }
             if (lastSearchWasError) return@Column
             LazyColumn(
@@ -188,7 +187,7 @@ fun ScryfallDialogContent(
                     Text(
                         "${cardResults.size + rulingsResults.size} results",
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = textSize,
+                        fontSize = textSize.scaledSp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(vertical = padding).align(Alignment.CenterHorizontally)
                     )
