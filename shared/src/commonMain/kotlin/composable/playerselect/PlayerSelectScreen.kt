@@ -10,9 +10,9 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,9 +37,11 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import composable.SettingsButton
 import composable.modifier.routePointerChangesTo
@@ -75,8 +77,11 @@ fun PlayerSelectScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    Box(Modifier.fillMaxSize()) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
         PlayerSelectScreenValues.animScale = getAnimationCorrectionFactor()
+
+        val textSize = remember(Unit) { (maxWidth / 30f + maxHeight / 30f).value }
+        val buttonSize = remember(Unit) { (maxWidth / 10f + maxHeight / 10f) }
 
         PlayerSelectScreenBase(
             setHelperText = { viewModel.setHelperText(it) },
@@ -88,15 +93,14 @@ fun PlayerSelectScreen(
             Text(
                 text = "Tap to select player",
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 40.scaledSp,
-                lineHeight = 50.scaledSp,
+                fontSize = textSize.scaledSp,
+                lineHeight = textSize.scaledSp * 1.2f,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.Center).rotate(90f)
             )
 
-            SettingsButton(modifier = Modifier.rotate(90f).align(Alignment.TopEnd).size(100.dp),
-                shape = RoundedCornerShape(30.dp),
+            SettingsButton(modifier = Modifier.rotate(90f).align(Alignment.TopEnd).size(buttonSize),
                 mainColor = MaterialTheme.colorScheme.onPrimary,
                 backgroundColor = Color.Transparent,
                 text = "Skip",
@@ -144,6 +148,7 @@ fun PlayerSelectScreenBase(
     var selectedId: PointerId? by remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
+    val circleSize: Dp = 80.dp + (20.dp * LocalDensity.current.density )
 
     fun applyRandomColor(circle: Circle) {
         do {
@@ -175,10 +180,13 @@ fun PlayerSelectScreenBase(
         }
     }
 
-    fun onDown(event: PointerInputChange) {
+    fun onDown(event: PointerInputChange, baseSize: Dp) {
         if (circles.size < 6 && selectedId == null) {
             circles[event.id] = Circle(
-                x = event.position.x, y = event.position.y, triggerHaptic = { haptic.performHapticFeedback(HapticFeedbackType.LongPress) }
+                baseSize = baseSize,
+                x = event.position.x,
+                y = event.position.y,
+                triggerHaptic = { haptic.performHapticFeedback(HapticFeedbackType.LongPress) }
             ).apply {
                 applyRandomColor(this)
                 CoroutineScope(scope.coroutineContext).launch {
@@ -212,8 +220,8 @@ fun PlayerSelectScreenBase(
         onUp(event.id)
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
-        routePointerChangesTo(onDown = { onDown(it) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
+        routePointerChangesTo(onDown = { onDown(it, circleSize) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
             for (id in circles.keys) {
                 if (!it.contains(id)) {
                     onUp(id) // secondary check to remove circles that should be removed
@@ -268,13 +276,16 @@ fun PlayerSelectScreenBase(
 }
 
 private class Circle(
-    x: Float, y: Float, color: Color = Color.Magenta, val predictor: CirclePredictor = CirclePredictor(), private val triggerHaptic: () -> Unit
+    baseSize: Dp,
+    x: Float,
+    y: Float,
+    color: Color = Color.Magenta,
+    val predictor: CirclePredictor = CirclePredictor(),
+    private val triggerHaptic: () -> Unit
 ) {
-    companion object {
-        private const val baseRadius = 130f
-        private const val pulsedRadius = 150f
-        private const val baseWidth = 25f
-    }
+    private val baseRadius = baseSize.value
+    private val pulsedRadius = baseRadius * 1.15f
+    private val baseWidth = baseRadius * 0.2f
 
     private val animatedRadius: Animatable<Float, AnimationVector1D> = Animatable(0f)
     private val animatedWidth: Animatable<Float, AnimationVector1D> = Animatable(baseWidth)
