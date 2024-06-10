@@ -173,12 +173,14 @@ fun SettingsDialogContent(
                         goToAboutMe()
                         addGoToSettingsToBackStack()
                     }
-                    SettingsDialogButton(
-                        modifier = Modifier.fillMaxWidth().height(buttonHeight),
-                        text = "Buy me a Coffee", icon = vectorResource(Res.drawable.coffee_icon)
-                    ) {
-                        val url = "https://www.buymeacoffee.com/hypepixel"
-                        uriHandler.openUri(url)
+                    if (platform != Platform.IOS) {
+                        SettingsDialogButton(
+                            modifier = Modifier.fillMaxWidth().height(buttonHeight),
+                            text = "Buy me a Coffee", icon = vectorResource(Res.drawable.coffee_icon)
+                        ) {
+                            val url = "https://www.buymeacoffee.com/hypepixel"
+                            uriHandler.openUri(url)
+                        }
                     }
                     SettingsDialogButton(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
