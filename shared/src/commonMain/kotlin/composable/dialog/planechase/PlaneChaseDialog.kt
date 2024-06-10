@@ -54,6 +54,7 @@ import lifelinked.shared.generated.resources.back_icon_alt
 import lifelinked.shared.generated.resources.chaos_icon
 import lifelinked.shared.generated.resources.checkmark
 import lifelinked.shared.generated.resources.deck_icon
+import lifelinked.shared.generated.resources.die_icon
 import lifelinked.shared.generated.resources.invisible_icon
 import lifelinked.shared.generated.resources.planeswalker_icon
 import lifelinked.shared.generated.resources.question_icon
@@ -164,7 +165,7 @@ fun PlaneChaseDialogContent(
                 SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f), text = "Planeswalk", shadowEnabled = false, imageVector = vectorResource(Res.drawable.planeswalker_icon), onPress = {
                     viewModel.planeswalk()
                 })
-                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f), text = "Planar Die", shadowEnabled = false, imageVector = vectorResource(Res.drawable.chaos_icon), onPress = {
+                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f), text = "Planar Die", shadowEnabled = false, imageVector = vectorResource(Res.drawable.die_icon), onPress = {
                     rollPlanarDie()
                 })
                 SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f), text = "Planar Deck", shadowEnabled = false, imageVector = vectorResource(Res.drawable.deck_icon), onPress = {

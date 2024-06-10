@@ -50,6 +50,7 @@ import getAnimationCorrectionFactor
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
 import lifelinked.shared.generated.resources.coin_icon
+import lifelinked.shared.generated.resources.die_icon
 import lifelinked.shared.generated.resources.heart_solid_icon
 import lifelinked.shared.generated.resources.mana_icon
 import lifelinked.shared.generated.resources.moon_icon
@@ -59,7 +60,6 @@ import lifelinked.shared.generated.resources.player_select_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
 import lifelinked.shared.generated.resources.settings_icon_small
-import lifelinked.shared.generated.resources.six_icon
 import lifelinked.shared.generated.resources.star_icon_small
 import lifelinked.shared.generated.resources.sun_and_moon_icon
 import lifelinked.shared.generated.resources.sun_icon
@@ -290,7 +290,7 @@ fun MiddleButtonDialog(
                             backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
                     }, {
-                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.six_icon), text = "Dice roll", shadowEnabled = false, onPress = {
+                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.die_icon), text = "Dice roll", shadowEnabled = false, onPress = {
                             middleButtonDialogState = MiddleButtonDialogState.DiceRoll
                             backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
                         })
