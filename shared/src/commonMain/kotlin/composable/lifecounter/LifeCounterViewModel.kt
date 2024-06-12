@@ -38,22 +38,19 @@ class LifeCounterViewModel(
 
     fun onNavigate(firstNavigation: Boolean) {
         if (settingsManager.loadPlayerStates().isEmpty()) generatePlayers()
-        if (!state.value.showButtons) {
-            if (firstNavigation) {
-                viewModelScope.launch {
-                    setShowButtons(true)
-                    delay(1000)
-                    showLoadingScreen(false)
-                    setShowButtons(false)
-                    delay(10)
-                    setShowButtons(true)
-                }
-            } else {
+        if (firstNavigation) {
+            viewModelScope.launch {
+                showLoadingScreen(true)
+                setShowButtons(true)
+                delay(1000) // Delay to allow for animations to finish
+                setShowButtons(false)
+                delay(10)
                 showLoadingScreen(false)
                 setShowButtons(true)
             }
         } else {
             showLoadingScreen(false)
+            setShowButtons(true)
         }
     }
 
