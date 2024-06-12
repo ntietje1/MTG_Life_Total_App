@@ -87,22 +87,7 @@ fun LifeCounterScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (viewModel.settingsManager.loadPlayerStates().isEmpty()) viewModel.generatePlayers()
-        if (!state.showButtons) {
-            if (firstNavigation) {
-                scope.launch {
-                    viewModel.setShowButtons(true)
-                    delay(1000)
-                    viewModel.showLoadingScreen(false)
-                    viewModel.setShowButtons(false)
-                    delay(10)
-                    viewModel.setShowButtons(true)
-                }
-            } else {
-                viewModel.showLoadingScreen(false)
-                viewModel.setShowButtons(true)
-            }
-        }
+        viewModel.onNavigate(firstNavigation)
     }
 
     LaunchedEffect(showDialog) {

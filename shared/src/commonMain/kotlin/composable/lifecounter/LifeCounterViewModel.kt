@@ -36,6 +36,27 @@ class LifeCounterViewModel(
         savePlayerStates()
     }
 
+    fun onNavigate(firstNavigation: Boolean) {
+        if (settingsManager.loadPlayerStates().isEmpty()) generatePlayers()
+        if (!state.value.showButtons) {
+            if (firstNavigation) {
+                viewModelScope.launch {
+                    setShowButtons(true)
+                    delay(1000)
+                    showLoadingScreen(false)
+                    setShowButtons(false)
+                    delay(10)
+                    setShowButtons(true)
+                }
+            } else {
+                showLoadingScreen(false)
+                setShowButtons(true)
+            }
+        } else {
+            showLoadingScreen(false)
+        }
+    }
+
     private fun getUsedColors(): List<Color> {
         return playerButtonViewModels.map { it.state.value.player.color }
     }
