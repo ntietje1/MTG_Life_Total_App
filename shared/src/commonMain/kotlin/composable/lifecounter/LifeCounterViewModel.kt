@@ -44,8 +44,8 @@ class LifeCounterViewModel(
                 setShowButtons(true)
                 delay(1000) // Delay to allow for animations to finish
                 setShowButtons(false)
-                delay(10)
                 showLoadingScreen(false)
+                delay(25)
                 setShowButtons(true)
             }
         } else {
