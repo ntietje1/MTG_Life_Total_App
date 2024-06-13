@@ -141,8 +141,7 @@ fun MiddleButtonDialog(
                 visible = middleButtonDialogState == MiddleButtonDialogState.CoinFlip
             ) {
                 CoinFlipDialogContent(
-                    modifier = modifier,
-                    fastCoinFlip = viewModel.settingsManager.fastCoinFlip
+                    modifier = modifier
                 )
             }
 

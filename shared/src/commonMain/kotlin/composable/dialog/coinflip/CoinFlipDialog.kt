@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,15 +40,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import composable.flippable.FlipAnimationType
 import composable.flippable.Flippable
 import composable.flippable.FlippableState
-import composable.flippable.rememberFlipController
 import getAnimationCorrectionFactor
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.scaledSp
-import kotlin.random.Random
 
 /**
  * TODO:
@@ -68,7 +64,6 @@ import kotlin.random.Random
 fun CoinFlipDialogContent(
     modifier: Modifier = Modifier,
     viewModel: CoinFlipViewModel = koinInject(),
-    fastCoinFlip: Boolean
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -84,8 +79,7 @@ fun CoinFlipDialogContent(
                     .align(Alignment.CenterHorizontally)
                     .padding(top = padding / 2f, start = padding, end = padding)
                     .fillMaxWidth(0.9f),
-                addToHistory = viewModel::setLastResult,
-                fastCoinFlip = fastCoinFlip
+                viewModel = viewModel
             )
             Spacer(Modifier.weight(0.1f))
             Text(
@@ -124,51 +118,38 @@ fun CoinFlipDialogContent(
 @Composable
 fun CoinFlippable(
     modifier: Modifier = Modifier,
-    addToHistory: (CoinFace) -> Unit,
-    fastCoinFlip: Boolean
+    viewModel: CoinFlipViewModel,
 ) {
-    val flipEnabled by remember { mutableStateOf(true) }
+    val state by viewModel.state.collectAsState()
+
     var initialDuration = 150
-    var additionalDuration = 35
-    if (fastCoinFlip) {
-        initialDuration = 85
-        additionalDuration = 25
+    var additionalDuration = 20
+    if (viewModel.settingsManager.fastCoinFlip) {
+        initialDuration = 115
+        additionalDuration = 20
     }
     initialDuration = (initialDuration / getAnimationCorrectionFactor()).toInt()
     additionalDuration = (additionalDuration / getAnimationCorrectionFactor()).toInt()
     var duration by remember { mutableIntStateOf(initialDuration) }
-    var flipAnimationType by remember { mutableStateOf(FlipAnimationType.VERTICAL_ANTI_CLOCKWISE) }
-    val totalFlips = 2 // + 1
-    var flipCount by remember { mutableIntStateOf(totalFlips) }
-    val flipController = rememberFlipController()
     val haptic = LocalHapticFeedback.current
 
     fun decrementFlipCount() {
-        flipCount--
+        viewModel.decrementFlipCount()
         duration += additionalDuration
     }
 
     fun resetCount() {
-        flipCount = totalFlips
+        viewModel.resetCount()
         duration = initialDuration
     }
 
     fun continueFlip(currentSide: FlippableState) {
-        if (flipCount == totalFlips) {
-            if (Random.nextBoolean()) {
-                decrementFlipCount()
-            }
-        }
-        if (flipCount > 0) {
-            flipAnimationType = if (flipAnimationType == FlipAnimationType.VERTICAL_ANTI_CLOCKWISE) {
-                FlipAnimationType.VERTICAL_CLOCKWISE
-            } else {
-                FlipAnimationType.VERTICAL_ANTI_CLOCKWISE
-            }
-            flipController.flip()
+        if (state.flipCount > 0) {
+            viewModel.toggleAnimationType()
+            viewModel.flipController.flip()
             decrementFlipCount()
         } else {
-            addToHistory(if (currentSide == FlippableState.FRONT) CoinFace.HEADS else CoinFace.TAILS)
+            viewModel.setLastResult(if (currentSide == FlippableState.FRONT) CoinFace.HEADS else CoinFace.TAILS)
             resetCount()
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
@@ -176,10 +157,10 @@ fun CoinFlippable(
 
     BoxWithConstraints(modifier = modifier) {
         Flippable(modifier = Modifier.fillMaxWidth().aspectRatio(1f),
-            flipController = flipController,
+            flipController = viewModel.flipController,
             flipDurationMs = duration,
-            flipEnabled = flipEnabled,
-            flipAnimationType = flipAnimationType,
+            flipEnabled = true,
+            flipAnimationType = state.flipAnimationType,
             frontSide = {
                 Image(
                     imageVector = vectorResource(CoinFace.HEADS.drawable), contentDescription = CoinFace.HEADS.name, modifier = Modifier.fillMaxSize()

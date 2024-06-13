@@ -11,7 +11,7 @@ actual val platformModule = module {
     single { platform }
     single { ImageManager() }
     single { PlaneChaseViewModel(get(), get()) }
-    single { CoinFlipViewModel() }
+    single { CoinFlipViewModel(get()) }
     single { TutorialViewModel(get()) }
     single { PlayerSelectViewModel(get()) }
     single { LifeCounterViewModel(get(), get(), get()) }
