@@ -58,7 +58,7 @@ class LifeCounterViewModel(
         return playerButtonViewModels.map { it.state.value.player.color }
     }
 
-    fun generatePlayers() {
+    private fun generatePlayers() {
         val startingLife = settingsManager.startingLife
         val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
         playerButtonViewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }
@@ -125,7 +125,7 @@ class LifeCounterViewModel(
         return Player(color = color, life = startingLife, name = name, playerNum = playerNum)
     }
 
-    fun showLoadingScreen(value: Boolean) {
+    private fun showLoadingScreen(value: Boolean) {
         _state.value = _state.value.copy(showLoadingScreen = value)
     }
 
