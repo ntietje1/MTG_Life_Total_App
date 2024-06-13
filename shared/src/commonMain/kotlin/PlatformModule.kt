@@ -14,5 +14,5 @@ expect val platform: Platform
 
 enum class Platform(val platformString: String, val appStoreListing: String) {
     ANDROID("android", "https://play.google.com/store/apps/details?id=com.hypeapps.lifelinked"),
-    IOS("ios", "https://sites.google.com/view/lifelinked/home"),
+    IOS("ios", "https://apps.apple.com/us/app/lifelinked-mtg-life-counter/id6503708612"),
 }
