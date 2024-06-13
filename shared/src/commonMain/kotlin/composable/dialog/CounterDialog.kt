@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import composable.dialog.coinflip.ResetButton
 import composable.modifier.bounceClick
 import composable.modifier.repeatingClickable
 import lifelinked.shared.generated.resources.Res

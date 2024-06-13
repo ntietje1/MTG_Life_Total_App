@@ -1,4 +1,4 @@
-package composable.dialog
+package composable.dialog.coinflip
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,10 +46,8 @@ import composable.flippable.Flippable
 import composable.flippable.FlippableState
 import composable.flippable.rememberFlipController
 import getAnimationCorrectionFactor
-import lifelinked.shared.generated.resources.Res
-import lifelinked.shared.generated.resources.heads
-import lifelinked.shared.generated.resources.tails
 import org.jetbrains.compose.resources.vectorResource
+import org.koin.compose.koinInject
 import theme.scaledSp
 import kotlin.random.Random
 
@@ -68,24 +67,24 @@ import kotlin.random.Random
 @Composable
 fun CoinFlipDialogContent(
     modifier: Modifier = Modifier,
-    history: List<String>,
-    addToHistory: (String) -> Unit,
-    resetHistory: () -> Unit,
+    viewModel: CoinFlipViewModel = koinInject(),
     fastCoinFlip: Boolean
 ) {
+    val state by viewModel.state.collectAsState()
+
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val padding = remember(Unit) { maxWidth / 25f + maxHeight / 30f }
-        val counterHeight = remember(Unit) {  maxHeight / 20f }
-        val textSize = remember(Unit) {  (maxWidth / 30f).value }
+        val counterHeight = remember(Unit) { maxHeight / 20f }
+        val textSize = remember(Unit) { (maxWidth / 30f).value }
+
         Column(modifier = modifier.fillMaxSize()) {
             Spacer(Modifier.weight(0.8f))
             CoinFlippable(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = padding / 2f, start = padding, end = padding)
-                    .fillMaxWidth(0.9f)
-                ,
-                addToHistory = addToHistory,
+                    .fillMaxWidth(0.9f),
+                addToHistory = viewModel::setLastResult,
                 fastCoinFlip = fastCoinFlip
             )
             Spacer(Modifier.weight(0.1f))
@@ -99,7 +98,7 @@ fun CoinFlipDialogContent(
                     .padding(top = padding / 10f, bottom = padding / 8f)
             )
             Spacer(Modifier.weight(1.25f))
-            FlipCounter(Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(counterHeight), history, resetHistory)
+            FlipCounter(Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(counterHeight), state.history, viewModel::resetHistory)
             Spacer(Modifier.weight(0.5f))
             Text(
                 text = "Flip History",
@@ -113,7 +112,7 @@ fun CoinFlipDialogContent(
             FlipHistory(
                 Modifier.align(Alignment.CenterHorizontally)
                     .fillMaxWidth(0.8f)
-                    .height(counterHeight), coinFlipHistory = history
+                    .height(counterHeight), state.history, 19
             )
             Spacer(Modifier.height(padding / 2f))
             Spacer(Modifier.weight(0.7f))
@@ -125,7 +124,7 @@ fun CoinFlipDialogContent(
 @Composable
 fun CoinFlippable(
     modifier: Modifier = Modifier,
-    addToHistory: (String) -> Unit,
+    addToHistory: (CoinFace) -> Unit,
     fastCoinFlip: Boolean
 ) {
     val flipEnabled by remember { mutableStateOf(true) }
@@ -169,7 +168,7 @@ fun CoinFlippable(
             flipController.flip()
             decrementFlipCount()
         } else {
-            addToHistory(if (currentSide == FlippableState.FRONT) "H" else "T")
+            addToHistory(if (currentSide == FlippableState.FRONT) CoinFace.HEADS else CoinFace.TAILS)
             resetCount()
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
@@ -183,12 +182,12 @@ fun CoinFlippable(
             flipAnimationType = flipAnimationType,
             frontSide = {
                 Image(
-                    imageVector = vectorResource(Res.drawable.heads), contentDescription = "Front Side", modifier = Modifier.fillMaxSize()
+                    imageVector = vectorResource(CoinFace.HEADS.drawable), contentDescription = CoinFace.HEADS.name, modifier = Modifier.fillMaxSize()
                 )
             },
             backSide = {
                 Image(
-                    imageVector = vectorResource(Res.drawable.tails), contentDescription = "Back Side", modifier = Modifier.fillMaxSize()
+                    imageVector = vectorResource(CoinFace.TAILS.drawable), contentDescription = CoinFace.TAILS.name, modifier = Modifier.fillMaxSize()
                 )
             },
             onFlippedListener = { currentSide ->
@@ -228,11 +227,11 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
 @Composable
 fun FlipCounter(
     modifier: Modifier = Modifier,
-    history: List<String>,
+    history: List<CoinFace>,
     clearHistory: () -> Unit
 ) {
-    val numberOfHeads = history.count { it == "H" }
-    val numberOfTails = history.count { it == "T" }
+    val numberOfHeads = history.count { it == CoinFace.HEADS }
+    val numberOfTails = history.count { it == CoinFace.TAILS }
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val padding = remember(Unit) { maxWidth / 100f }
@@ -281,7 +280,7 @@ fun FlipCounter(
 }
 
 @Composable
-fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: List<String>, maxHistoryLength: Int = 19) {
+fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: List<CoinFace>, maxHistoryLength: Int = 19) {
     BoxWithConstraints(
         modifier
             .clip(RoundedCornerShape(30))
@@ -292,8 +291,8 @@ fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: List<String>, ma
         Text(
             text = buildAnnotatedString {
                 coinFlipHistory.takeLast(maxHistoryLength).forEach { result ->
-                    withStyle(style = SpanStyle(color = if (result == "H") Color.Green else Color.Red)) {
-                        append("$result ")
+                    withStyle(style = SpanStyle(color = result.color)) {
+                        append("${result.letter} ")
                     }
                 }
             },

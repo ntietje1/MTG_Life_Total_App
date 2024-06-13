@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import composable.SettingsButton
+import composable.dialog.coinflip.CoinFlipDialogContent
 import composable.dialog.planechase.ChoosePlanesDialogContent
 import composable.dialog.planechase.PlaneChaseDialogContent
 import composable.lifecounter.DayNightState
@@ -141,9 +142,6 @@ fun MiddleButtonDialog(
             ) {
                 CoinFlipDialogContent(
                     modifier = modifier,
-                    history = state.coinFlipHistory,
-                    addToHistory = { viewModel.addToCoinFlipHistory(it) },
-                    resetHistory = { viewModel.resetCoinFlipHistory() },
                     fastCoinFlip = viewModel.settingsManager.fastCoinFlip
                 )
             }
