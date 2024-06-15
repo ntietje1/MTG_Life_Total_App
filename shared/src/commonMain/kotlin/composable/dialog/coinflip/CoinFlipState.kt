@@ -1,29 +1,29 @@
 package composable.dialog.coinflip
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import composable.flippable.FlipAnimationType
-import data.SettingsManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.heads
 import lifelinked.shared.generated.resources.tails
+import lifelinked.shared.generated.resources.transparent
 import org.jetbrains.compose.resources.DrawableResource
 
 data class CoinFlipState(
-    private val settingsManager: SettingsManager = SettingsManager.instance,
     val currentFace: CoinFace = CoinFace.HEADS,
-    val history: SnapshotStateList<CoinFace> = mutableStateListOf(),
+    val headCount: Int = 0,
+    val tailCount: Int = 0,
+    val history: List<CoinFace> = listOf(),
+    val historyString: AnnotatedString = AnnotatedString(""),
     val flipInProgress: Boolean = false,
     val flipAnimationType: FlipAnimationType = FlipAnimationType.VERTICAL_ANTI_CLOCKWISE,
-    val totalFlips: Int = 3,
-    val flipCount: Int = totalFlips,
-    val initialDuration: Int = if (settingsManager.fastCoinFlip) 115 else 175,
-    val additionalDuration: Int = 20,
-    val duration: Int = initialDuration,
+    val flippingUntil: CoinFace? = null,
+    val flipCount: Int = Int.MAX_VALUE,
+    val duration: Int = Int.MAX_VALUE,
 )
 
-enum class CoinFace(val letter: String, val altLetter: String, val drawable: DrawableResource, val color: Color) {
-    HEADS("H", "W", Res.drawable.heads, Color.Green),
-    TAILS("T", "L", Res.drawable.tails, Color.Red),
+enum class CoinFace(val letter: String, val drawable: DrawableResource, val color: Color) {
+    HEADS("H", Res.drawable.heads, Color.Green),
+    TAILS("T", Res.drawable.tails, Color.Red),
+    DIVIDER("|", Res.drawable.transparent, Color.White)
 }

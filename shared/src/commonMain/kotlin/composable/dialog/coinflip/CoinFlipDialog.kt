@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -39,7 +41,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import composable.SettingsButton
 import composable.flippable.Flippable
+import composable.flippable.FlippableState
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.scaledSp
@@ -68,6 +72,7 @@ fun CoinFlipDialogContent(
         val padding = remember(Unit) { maxWidth / 25f + maxHeight / 30f }
         val counterHeight = remember(Unit) { maxHeight / 20f }
         val textSize = remember(Unit) { (maxWidth / 30f).value }
+        val buttonSize = remember(Unit) { maxWidth / 4f }
 
         Column(modifier = modifier.fillMaxSize()) {
             Spacer(Modifier.weight(0.8f))
@@ -89,14 +94,31 @@ fun CoinFlipDialogContent(
                     .padding(top = padding / 10f, bottom = padding / 8f)
             )
             Spacer(Modifier.weight(1.25f))
-//            SettingsButton(
-//                modifier = Modifier
-//                    .align(Alignment.CenterHorizontally)
-//                    .padding(top = padding / 2f, start = padding, end = padding)
-//                    .fillMaxWidth(0.3f),
-//                onPress = { if (!state.flipInProgress) viewModel.randomFlip() }
-//            )
-            FlipCounter(Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(counterHeight), state.history, viewModel::resetHistory)
+            Row(
+                modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = padding / 2f),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize),
+                    onPress = { if (!state.flipInProgress) viewModel.flipUntil(CoinFace.TAILS) },
+                    hapticEnabled = false,
+                    text = "Flip Until Tails",
+                    imageVector = vectorResource(CoinFace.TAILS.drawable)
+                )
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize),
+                    onPress = { if (!state.flipInProgress) viewModel.flipUntil(CoinFace.HEADS) },
+                    hapticEnabled = false,
+                    text = "Flip Until Heads",
+                    imageVector = vectorResource(CoinFace.HEADS.drawable)
+                )
+            }
+            FlipCounter(
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(counterHeight),
+                headCount = state.headCount,
+                tailCount = state.tailCount,
+                clearHistory = viewModel::reset
+            )
             Spacer(Modifier.weight(0.5f))
             Text(
                 text = "Flip History",
@@ -108,9 +130,10 @@ fun CoinFlipDialogContent(
                     .padding(top = padding / 4f, bottom = padding / 12f)
             )
             FlipHistory(
-                Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.align(Alignment.CenterHorizontally)
                     .fillMaxWidth(0.8f)
-                    .height(counterHeight), state.history, 19
+                    .height(counterHeight),
+                coinFlipHistory = state.historyString
             )
             Spacer(Modifier.height(padding / 2f))
             Spacer(Modifier.weight(0.7f))
@@ -149,7 +172,7 @@ fun CoinFlippable(
             },
             onFlippedListener = { currentSide ->
                 if (viewModel.continueFlip()) { // continues to flip until no more flips left
-                    viewModel.onResult(currentSide)
+                    viewModel.onResult(if (currentSide == FlippableState.FRONT) CoinFace.HEADS else CoinFace.TAILS)
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 }
             }
@@ -196,11 +219,10 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
 @Composable
 fun FlipCounter(
     modifier: Modifier = Modifier,
-    history: List<CoinFace>,
+    headCount: Int,
+    tailCount: Int,
     clearHistory: () -> Unit
 ) {
-    val numberOfHeads = history.count { it == CoinFace.HEADS }
-    val numberOfTails = history.count { it == CoinFace.TAILS }
     val haptic = LocalHapticFeedback.current
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val padding = remember(Unit) { maxWidth / 100f }
@@ -220,7 +242,7 @@ fun FlipCounter(
                             color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Normal
                         )
                     ) {
-                        append("$numberOfHeads")
+                        append("$headCount")
                     }
                 }, style = TextStyle(fontSize = textSize.scaledSp), modifier = Modifier.padding(vertical = 0.dp, horizontal = padding)
             )
@@ -234,12 +256,12 @@ fun FlipCounter(
                             color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Normal
                         )
                     ) {
-                        append("$numberOfTails")
+                        append("$tailCount")
                     }
                 }, style = TextStyle(fontSize = textSize.scaledSp), modifier = Modifier.padding(vertical = 0.dp, horizontal = padding)
             )
             ResetButton(
-                modifier = Modifier.fillMaxHeight().padding(start = padding * 5),
+                modifier = Modifier.fillMaxHeight().padding(start = padding * 5).padding(vertical = padding / 2),
                 onReset = {
                     clearHistory()
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -249,7 +271,7 @@ fun FlipCounter(
 }
 
 @Composable
-fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: List<CoinFace>, maxHistoryLength: Int = 19) {
+fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: AnnotatedString) {
     BoxWithConstraints(
         modifier
             .clip(RoundedCornerShape(30))
@@ -258,13 +280,7 @@ fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: List<CoinFace>, 
         val textSize = (maxWidth / 18f).value.scaledSp
         val hPadding = maxWidth / 50f
         Text(
-            text = buildAnnotatedString {
-                coinFlipHistory.takeLast(maxHistoryLength).forEach { result ->
-                    withStyle(style = SpanStyle(color = result.color)) {
-                        append("${result.letter} ")
-                    }
-                }
-            },
+            text = coinFlipHistory,
             maxLines = 1,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
