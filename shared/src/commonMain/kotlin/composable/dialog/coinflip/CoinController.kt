@@ -6,20 +6,31 @@ import data.SettingsManager
 import kotlin.random.Random
 
 class CoinController(
-    settingsManager: SettingsManager,
+    private val settingsManager: SettingsManager,
 ) {
-    private val totalFlips: Int = 3
-    private val initialDuration: Int = if (settingsManager.fastCoinFlip) 115 else 175
-    private val additionalDuration: Int = 20
+    companion object {
+        fun generateFlipDurations(fastCoinFlip: Boolean, changeSides: Boolean): List<Int> {
+            val totalDuration = if (fastCoinFlip) 500 else 750
+            val totalFlips = if (changeSides) 3 else 4
+            val durations = List(totalFlips) { totalDuration / totalFlips }
+            return durations
+        }
+    }
+
+    val duration: Int
+        get() = try {
+            durations[flipIndex]
+        } catch (e: IndexOutOfBoundsException) {
+            0
+        }
+
+    private var durations = generateFlipDurations(settingsManager.fastCoinFlip, Random.nextBoolean())
 
     var flipAnimationType: FlipAnimationType = FlipAnimationType.VERTICAL_ANTI_CLOCKWISE
-    private var flipCount: Int = Int.MAX_VALUE
-    var duration: Int = Int.MAX_VALUE
+    private var flipIndex: Int = 0
     private var currentFace: CoinFace = CoinFace.HEADS
     var flipInProgress: Boolean = false
     private var onResultCallback: ((CoinFace) -> Unit)? = null
-//    private var resultCallback: ((CoinFace) -> Unit)? = null
-
 
     val flipController = FlippableController()
 
@@ -33,14 +44,13 @@ class CoinController(
 
     // method hat "resets" the coin flip, should be called before each flip
     private fun setNextResult(nextResult: CoinFace? = null) {
-        duration = initialDuration
         if (nextResult == null) {
-            flipCount = totalFlips
-            if (Random.nextBoolean()) decrementFlipCount()
+            flipIndex = 0
+            durations = generateFlipDurations(settingsManager.fastCoinFlip, Random.nextBoolean())
         } else if (currentFace != nextResult) {
-            flipCount = totalFlips
+            durations = generateFlipDurations(settingsManager.fastCoinFlip, true)
         } else {
-            flipCount = totalFlips - 1
+            durations = generateFlipDurations(settingsManager.fastCoinFlip, false)
         }
     }
 
@@ -52,48 +62,23 @@ class CoinController(
         }
     }
 
-    private fun decrementFlipCount() {
-        flipCount -= 1
-        duration += additionalDuration
+    private fun incrementFlipIndex() {
+        flipIndex += 1
     }
 
     fun continueFlip(): Boolean {
         updateFlipInProgress(true)
-        if (flipCount > 0) {
+        if (flipIndex < durations.size) {
             toggleAnimationType()
             flipController.flip()
-            decrementFlipCount()
+            incrementFlipIndex()
             return false
         } else {
-//            CoroutineScope(Dispatchers.IO).launch {
-//                delay(150)
-                updateFlipInProgress(false)
-//            }
+            flipIndex = 0
+            updateFlipInProgress(false)
             return true
         }
     }
-
-//    suspend fun randomFlip(): CoinFace = suspendCancellableCoroutine { continuation ->
-//        resultCallback = { result ->
-//            continuation.resume(result)
-//            resultCallback = null
-//        }
-//        setNextResult()
-//        continueFlip()
-//    }
-//
-//    suspend fun flipUntil(target: CoinFace): CoinFace = suspendCancellableCoroutine { continuation ->
-//        resultCallback = { result ->
-//            if (result == target) {
-//                continuation.resume(result)
-//                resultCallback = null
-//            } else {
-//                randomFlip()
-//            }
-//        }
-//        flippingUntil = target
-//        randomFlip()
-//    }
 
     fun randomFlip(onResult: ((CoinFace) -> Unit)? = null) {
         onResult?.let { onResultCallback = it }
@@ -105,23 +90,4 @@ class CoinController(
         currentFace = currentSide
         onResultCallback!!(currentSide)
     }
-//        if (flippingUntil == null)  {
-//            currentFace = currentSide
-//            onResultCallback!!(currentSide)
-////            addToHistory(currentSide)
-////            addToCounter(currentSide)
-//        } else if (currentSide == flippingUntil) {
-//            flippingUntil = null
-//            currentFace = currentSide
-//            onResultCallback!!(currentSide)
-//            addRightDivider()
-////            addToCounter(currentSide)
-////            addToHistory(currentSide)
-////            addToHistory(CoinFace.DIVIDER)
-//        } else {
-////            addToHistory(currentSide)
-//            onResultCallback!!(currentSide)
-//            randomFlip()
-//        }
-//    }
 }

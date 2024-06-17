@@ -18,7 +18,9 @@ data class CoinFlipState(
 enum class CoinFace(val letter: String, val drawable: DrawableResource, val color: Color) {
     HEADS("H", Res.drawable.heads, Color.Green),
     TAILS("T", Res.drawable.tails, Color.Red),
-    L_DIVIDER("(", Res.drawable.transparent, Color.White),
-    R_DIVIDER(")", Res.drawable.transparent, Color.White),
+    L_DIVIDER_SINGLE("(", Res.drawable.transparent, Color.White),
+    R_DIVIDER_SINGLE(")", Res.drawable.transparent, Color.White),
     COMMA(",", Res.drawable.transparent, Color.White),
+    L_DIVIDER_LIST("(", Res.drawable.transparent, Color.White),
+    R_DIVIDER_LIST(")", Res.drawable.transparent, Color.White),
 }

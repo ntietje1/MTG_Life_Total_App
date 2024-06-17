@@ -1,5 +1,9 @@
 package composable.dialog.coinflip
 
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.SettingsManager
@@ -35,6 +39,94 @@ class CoinFlipViewModel(
         return rows(thumbs + 1)
     }
 
+    fun buildLastResultString(): AnnotatedString {
+        return buildAnnotatedString {
+            append(" ")
+            if (state.value.lastResults.isEmpty()) {
+                append("   ")
+            }
+            state.value.lastResults.forEach { result ->
+                withStyle(style = SpanStyle(color = result.color)) {
+                    append("${result.letter} ")
+                }
+            }
+        }
+    }
+
+    fun buildHistoryString(): AnnotatedString {
+        var index = 0
+        val historySize = state.value.history.size
+        return buildAnnotatedString {
+            append(" ")
+            while (index < historySize) {
+                val coinFace = state.value.history[index]
+                withStyle(style = SpanStyle(color = coinFace.color)) {
+                    append("${coinFace.letter} ")
+                }
+                when (coinFace) {
+                    CoinFace.L_DIVIDER_LIST -> {
+                        val (heads, tails) = parseHistory(index)
+                        withStyle(style = SpanStyle(color = CoinFace.HEADS.color)) {
+                            append("${heads}H")
+                        }
+                        withStyle(style = SpanStyle(color = CoinFace.L_DIVIDER_LIST.color)) {
+                            append(" / ")
+                        }
+                        withStyle(style = SpanStyle(color = CoinFace.TAILS.color)) {
+                            append("${tails}T ")
+                        }
+                        val rightIndexSublist = state.value.history.subList(index, historySize).indexOf(CoinFace.R_DIVIDER_LIST)
+                        index = if (rightIndexSublist != -1) rightIndexSublist + index else historySize
+                    }
+
+                    else -> {
+                        index++
+                    }
+                }
+            }
+        }
+    }
+
+    private fun parseHistory(startIndex: Int): Pair<Int, Int> {
+        var countHeads = 0
+        var countTails = 0
+        var isCounting = false
+
+        state.value.history.subList(startIndex, state.value.history.size).forEach { coinFace ->
+            when (coinFace) {
+                CoinFace.L_DIVIDER_LIST -> {
+                    isCounting = true
+                    countHeads = 0
+                    countTails = 0
+                }
+
+                CoinFace.R_DIVIDER_LIST -> {
+                    if (isCounting) {
+                        isCounting = false
+                        return Pair(countHeads, countTails)
+                    }
+                }
+
+                CoinFace.HEADS -> {
+                    if (isCounting) {
+                        countHeads++
+                    }
+                }
+
+                CoinFace.TAILS -> {
+                    if (isCounting) {
+                        countTails++
+                    }
+                }
+
+                else -> {
+                    // Do nothing
+                }
+            }
+        }
+        return Pair(countHeads, countTails)
+    }
+
     fun incrementKrarksThumbs(value: Int) {
         if (state.value.krarksThumbs + value < 0) return
         _state.value = state.value.copy(krarksThumbs = state.value.krarksThumbs + value)
@@ -42,10 +134,10 @@ class CoinFlipViewModel(
     }
 
     fun flipUntil(target: CoinFace) {
-        triggerCancel = false
         resetLastResults()
-        addToHistory(CoinFace.L_DIVIDER)
+        triggerCancel = false
         flippingUntil = target
+        addToHistory(CoinFace.L_DIVIDER_LIST)
         flipUntilHelper(target)
     }
 
@@ -62,11 +154,10 @@ class CoinFlipViewModel(
                         triggerCancel = false
                         flippingUntil = null
                         return@randomFlip
-                    }
-                    else if (flipResults.all { it == target }) { // done
+                    } else if (flipResults.all { it == target }) { // done
                         flippingUntil = null
                         addToHistory(target)
-                        addToHistory(CoinFace.R_DIVIDER)
+                        addToHistory(CoinFace.R_DIVIDER_LIST)
                     } else { // keep flipping
                         addToHistory(if (target == CoinFace.HEADS) CoinFace.TAILS else CoinFace.HEADS)
                         addToHistory(CoinFace.COMMA)
@@ -83,14 +174,14 @@ class CoinFlipViewModel(
 
     fun randomFlip() {
         resetLastResults()
-        addToHistory(CoinFace.L_DIVIDER)
+        addToHistory(CoinFace.L_DIVIDER_SINGLE)
         coinControllers.forEachIndexed { index, coinController ->
             coinController.randomFlip {
                 addToCounter(it)
                 addToLastResults(it)
                 addToHistory(it)
                 if (state.value.lastResults.size == coinControllers.size) {
-                    addToHistory(CoinFace.R_DIVIDER)
+                    addToHistory(CoinFace.R_DIVIDER_SINGLE)
                 }
             }
         }
@@ -99,10 +190,7 @@ class CoinFlipViewModel(
     fun reset() {
         cancelFlipUntil()
         _state.value = state.value.copy(
-            history = listOf(),
-            lastResults = listOf(),
-            headCount = 0,
-            tailCount = 0
+            history = listOf(), lastResults = listOf(), headCount = 0, tailCount = 0
         )
     }
 
