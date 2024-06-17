@@ -3,6 +3,7 @@ package composable.dialog.coinflip
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -16,13 +17,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -44,6 +52,9 @@ import androidx.compose.ui.unit.dp
 import composable.SettingsButton
 import composable.flippable.Flippable
 import composable.flippable.FlippableState
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.minus_icon
+import lifelinked.shared.generated.resources.plus_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.scaledSp
@@ -76,66 +87,104 @@ fun CoinFlipDialogContent(
 
         Column(modifier = modifier.fillMaxSize()) {
             Spacer(Modifier.weight(0.1f))
-            SettingsButton(
-                modifier = Modifier.size(buttonSize),
-                onPress = { if (!viewModel.flipInProgress) viewModel.toggleKrarksThumbs() },
-                hapticEnabled = true,
-                text = "Krark's Thumbs: ${state.krarksThumbs}",
-//                imageVector = vectorResource(CoinFace.HEADS.drawable)
-            )
+            Column(
+                Modifier.wrapContentSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(Modifier.wrapContentSize()) {
+                    SettingsButton(
+                        modifier = Modifier.size(buttonSize * 0.8f),
+                        onPress = { if (!viewModel.flipInProgress) viewModel.incrementKrarksThumbs(-1) },
+                        hapticEnabled = true,
+                        imageVector = vectorResource(Res.drawable.minus_icon)
+                    )
+                    SettingsButton(
+                        modifier = Modifier.size(buttonSize * 0.8f),
+                        onPress = { if (!viewModel.flipInProgress) viewModel.incrementKrarksThumbs(1) },
+                        hapticEnabled = true,
+                        imageVector = vectorResource(Res.drawable.plus_icon)
+                    )
+                }
+                Text(
+                    text = "Krark's Thumbs: ${state.krarksThumbs}",
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = textSize.scaledSp,
+                    modifier = Modifier
+                        .padding(top = padding / 10f, bottom = padding / 8f)
+                )
+            }
             Spacer(Modifier.weight(0.3f))
-            CoinFlippable(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = padding / 2f, start = padding, end = padding)
-                    .fillMaxWidth(0.9f),
-                coinController = viewModel.coinControllers.first(),
-                flipOnTapEnabled = state.krarksThumbs == 0
-            )
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth().aspectRatio(1.5f),
+                contentAlignment = Alignment.Center
+            ) {
+                val columns = remember(state.krarksThumbs) {
+                    viewModel.columns()
+                }
+
+                val rows = remember(state.krarksThumbs) {
+                    viewModel.rows()
+                }
+
+                val coinSize = remember(columns, rows) {
+                    minOf(
+                        maxWidth / columns,
+                        maxHeight / rows
+                    )
+                }
+
+                LazyVerticalGrid(
+                    modifier = Modifier.width(coinSize*columns).height(coinSize*rows),
+                    columns = GridCells.Fixed(columns),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    items(viewModel.coinControllers) {
+                        CoinFlippable(
+                            modifier = Modifier.height(coinSize).wrapContentWidth(),
+                            coinController = it,
+                            onTap = {
+                                if (!viewModel.flipInProgress) {
+                                    viewModel.randomFlip()
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
             Spacer(Modifier.weight(0.1f))
-            Text(
-                text = "Tap to flip",
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
-                fontWeight = FontWeight.Bold,
-                fontSize = textSize.scaledSp,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = padding / 10f, bottom = padding / 8f)
-            )
+//            Text(
+//                text = "Tap to flip",
+//                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+//                fontWeight = FontWeight.Bold,
+//                fontSize = textSize.scaledSp,
+//                modifier = Modifier
+//                    .align(Alignment.CenterHorizontally)
+//                    .padding(top = padding / 10f, bottom = padding / 8f)
+//            )
             Spacer(Modifier.weight(1.25f))
             Row(
                 modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = padding / 2f),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                if (state.krarksThumbs != 0){
-                    SettingsButton(
-                        modifier = Modifier.size(buttonSize),
-                        onPress = { if (!viewModel.flipInProgress) viewModel.flipFor(CoinFace.TAILS) },
-                        hapticEnabled = false,
-                        text = "Flip For Tails",
-                        imageVector = vectorResource(CoinFace.TAILS.drawable)
-                    )
-                    SettingsButton(
-                        modifier = Modifier.size(buttonSize),
-                        onPress = { if (!viewModel.flipInProgress) viewModel.flipFor(CoinFace.HEADS) },
-                        hapticEnabled = false,
-                        text = "Flip For Heads",
-                        imageVector = vectorResource(CoinFace.HEADS.drawable)
-                    )
-                }
-                SettingsButton(
-                    modifier = Modifier.size(buttonSize),
-                    onPress = { if (!viewModel.flipInProgress) viewModel.flipUntil(CoinFace.TAILS) },
-                    hapticEnabled = false,
-                    text = "Flip Until Tails",
-                    imageVector = vectorResource(CoinFace.TAILS.drawable)
-                )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize),
                     onPress = { if (!viewModel.flipInProgress) viewModel.flipUntil(CoinFace.HEADS) },
                     hapticEnabled = false,
-                    text = "Flip Until Heads",
+                    text = "Flip Until Lose (Heads)",
+                    textSizeMultiplier = 0.9f,
                     imageVector = vectorResource(CoinFace.HEADS.drawable)
+                )
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize),
+                    onPress = { if (!viewModel.flipInProgress) viewModel.flipUntil(CoinFace.TAILS) },
+                    hapticEnabled = false,
+                    text = "Flip Until Lose (Tails)",
+                    textSizeMultiplier = 0.9f,
+                    imageVector = vectorResource(CoinFace.TAILS.drawable)
                 )
             }
             FlipCounter(
@@ -158,8 +207,18 @@ fun CoinFlipDialogContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
                     .fillMaxWidth(0.8f)
                     .height(counterHeight),
-                lastResult = if (state.historyString.length >= 2) state.historyString.subSequence(state.historyString.length - 2, state.historyString.length - 1) else AnnotatedString("")
-            ) //TODO: fix this (should show the RESULT of each coin, so 2^X length where X is number of thumbs
+                lastResult = buildAnnotatedString {
+                    append(" ")
+                    if (state.lastResults.isEmpty()) {
+                        append("   ")
+                    }
+                    state.lastResults.forEach { result ->
+                        withStyle(style = SpanStyle(color = result.color)) {
+                            append("${result.letter} ")
+                        }
+                    }
+                }
+            )
             Spacer(Modifier.weight(0.1f))
             Text(
                 text = "Flip History",
@@ -174,7 +233,14 @@ fun CoinFlipDialogContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
                     .fillMaxWidth(0.8f)
                     .height(counterHeight),
-                coinFlipHistory = state.historyString
+                coinFlipHistory = buildAnnotatedString {
+                    append(" ")
+                    state.history.forEach { result ->
+                        withStyle(style = SpanStyle(color = result.color)) {
+                            append("${result.letter} ")
+                        }
+                    }
+                }
             )
             Spacer(Modifier.height(padding / 2f))
             Spacer(Modifier.weight(0.7f))
@@ -187,14 +253,16 @@ fun CoinFlipDialogContent(
 fun CoinFlippable(
     modifier: Modifier = Modifier,
     coinController: CoinController,
-    flipOnTapEnabled: Boolean = true
+    onTap: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
 
-    BoxWithConstraints(modifier = modifier
+    BoxWithConstraints(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
     ) {
         Flippable(modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxHeight()
             .aspectRatio(1f),
             flipController = coinController.flipController,
             flipDurationMs = coinController.duration,
@@ -219,11 +287,11 @@ fun CoinFlippable(
             }
         )
         Box(Modifier
-            .fillMaxWidth()
+            .fillMaxHeight()
             .aspectRatio(1f)
             .pointerInput(Unit) {
             detectTapGestures(onPress = { _ ->
-                if (!coinController.flipInProgress && flipOnTapEnabled) coinController.randomFlip()
+                onTap()
             })
         })
     }
@@ -313,35 +381,20 @@ fun FlipCounter(
 
 @Composable
 fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: AnnotatedString) {
-    BoxWithConstraints(
-        modifier
-    ) {
-        val textSize = (maxWidth / 18f).value.scaledSp
-        val padding = maxWidth / 50f
-        Box(
-            Modifier
-                .wrapContentSize()
-                .clip(RoundedCornerShape(30))
-                .background(color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), shape = RoundedCornerShape(30))
-        ) {
-            Text(
-                text = coinFlipHistory,
-                maxLines = 1,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
-                fontSize = textSize,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(vertical = padding / 2f, horizontal = padding)
-            )
-        }
-    }
+    historyBase(modifier, coinFlipHistory, wrapContentSize = false)
 }
 
 @Composable
 fun LastResult(modifier: Modifier = Modifier, lastResult: AnnotatedString) {
+    historyBase(modifier, lastResult, wrapContentSize = true)
+}
+
+@Composable
+private fun historyBase(modifier: Modifier = Modifier, lastResult: AnnotatedString, wrapContentSize: Boolean) {
+    val scrollState = rememberScrollState()
+    LaunchedEffect(lastResult) {
+        scrollState.animateScrollTo(scrollState.maxValue)
+    }
     BoxWithConstraints(
         modifier
     ) {
@@ -349,10 +402,10 @@ fun LastResult(modifier: Modifier = Modifier, lastResult: AnnotatedString) {
         val padding = maxWidth / 50f
         Box(
             Modifier
-                .wrapContentSize()
                 .align(Alignment.Center)
                 .clip(RoundedCornerShape(30))
                 .background(color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), shape = RoundedCornerShape(30))
+                .then(if (wrapContentSize) Modifier.wrapContentSize() else Modifier.fillMaxWidth())
         ) {
             Text(
                 text = lastResult,
@@ -364,6 +417,7 @@ fun LastResult(modifier: Modifier = Modifier, lastResult: AnnotatedString) {
                     .align(Alignment.Center)
                     .wrapContentSize()
                     .padding(vertical = padding / 2f, horizontal = padding)
+                    .horizontalScroll(scrollState)
             )
         }
     }
