@@ -294,7 +294,7 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
 
         ) {
         val textSize = (maxWidth / 4f).value.scaledSp
-        val textPadding = maxHeight / 10f
+        val textPadding = maxHeight / 9f
         Surface(
             modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
         ) {
