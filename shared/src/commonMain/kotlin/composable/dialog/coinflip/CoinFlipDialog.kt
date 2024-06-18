@@ -81,6 +81,8 @@ fun CoinFlipDialogContent(
 
     CoinController.setAnimationCorrectionFactor(getAnimationCorrectionFactor())
     DisposableEffect(Unit) {
+        viewModel.resetCoinControllers()
+        viewModel.repairHistoryString()
         onDispose {
             viewModel.repairHistoryString()
             viewModel.resetCoinControllers()
