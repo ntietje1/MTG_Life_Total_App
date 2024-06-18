@@ -43,6 +43,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import composable.SettingsButton
 import composable.dialog.coinflip.CoinFlipDialogContent
+import composable.dialog.coinflip.CoinFlipTutorialContent
 import composable.dialog.planechase.ChoosePlanesDialogContent
 import composable.dialog.planechase.PlaneChaseDialogContent
 import composable.lifecounter.DayNightState
@@ -70,7 +71,7 @@ import org.koin.compose.koinInject
 import theme.scaledSp
 
 private enum class MiddleButtonDialogState {
-    Default, CoinFlip, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, AboutMe, PlaneChase, PlanarDeck
+    Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, AboutMe, PlaneChase, PlanarDeck
 }
 
 @Composable
@@ -130,17 +131,31 @@ fun MiddleButtonDialog(
         BoxWithConstraints(
             modifier = modifier.fillMaxSize(),
         ) {
-            val buttonModifier = remember(Unit) { Modifier.then(
-                if (maxWidth / 3f < maxHeight / 4f) {
-                    Modifier.fillMaxHeight(0.8f)
-                } else {
-                    Modifier.fillMaxWidth(0.8f)
-                }
-            ) }
+            val buttonModifier = remember(Unit) {
+                Modifier.then(
+                    if (maxWidth / 3f < maxHeight / 4f) {
+                        Modifier.fillMaxHeight(0.8f)
+                    } else {
+                        Modifier.fillMaxWidth(0.8f)
+                    }
+                )
+            }
             FormattedAnimatedVisibility(
                 visible = middleButtonDialogState == MiddleButtonDialogState.CoinFlip
             ) {
                 CoinFlipDialogContent(
+                    modifier = modifier,
+                    goToCoinFlipTutorial = {
+                        backHandler.push { middleButtonDialogState = MiddleButtonDialogState.CoinFlip }
+                        middleButtonDialogState = MiddleButtonDialogState.CoinFlipTutorial
+                    }
+                )
+            }
+
+            FormattedAnimatedVisibility(
+                visible = middleButtonDialogState == MiddleButtonDialogState.CoinFlipTutorial
+            ) {
+                CoinFlipTutorialContent(
                     modifier = modifier
                 )
             }
@@ -367,7 +382,7 @@ fun GridDialogContent(
 ) {
     BoxWithConstraints(modifier = modifier) {
         val padding = remember(Unit) { maxHeight / 60f }
-        val titleSize = remember(Unit) {  (maxWidth / 20f).value }
+        val titleSize = remember(Unit) { (maxWidth / 20f).value }
         Column(
             Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -375,18 +390,19 @@ fun GridDialogContent(
             Text(
                 modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
-            Spacer(modifier = Modifier.height(padding/2))
+            Spacer(modifier = Modifier.height(padding / 2))
 //            Box(Modifier.fillMaxSize().background(color = Color.Red),
 //                contentAlignment = Alignment.Center) {
-                LazyVerticalGrid(
-                    modifier = Modifier.padding(horizontal = padding/2f).fillMaxSize(),
-                    columns = GridCells.Fixed(3),
-                    userScrollEnabled = false,
-                    verticalArrangement = Arrangement.Center,
-                    horizontalArrangement = Arrangement.Center,
-                    content = {
+            LazyVerticalGrid(
+                modifier = Modifier.padding(horizontal = padding / 2f).fillMaxSize(),
+                columns = GridCells.Fixed(3),
+                userScrollEnabled = false,
+                verticalArrangement = Arrangement.Center,
+                horizontalArrangement = Arrangement.Center,
+                content = {
                     items(items.size) { index ->
-                        Box(modifier = Modifier.fillMaxSize(),
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center,
                         ) {
                             items[index]()

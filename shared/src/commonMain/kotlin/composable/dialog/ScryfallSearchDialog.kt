@@ -49,10 +49,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import data.ScryfallApiRetriever
 import data.serializable.Card
+import data.serializable.ImageUris
 import data.serializable.Ruling
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -193,7 +193,7 @@ fun ScryfallDialogContent(
                     )
                 }
                 items(cardResults) { card ->
-                    CardPreview(
+                    CardInfoPreview(
                         card = card,
                         selectButtonEnabled = selectButtonEnabled,
                         printingsButtonEnabled = _printingsButtonEnabled,
@@ -362,8 +362,8 @@ private fun TextPreview(
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxWidth(0.9f).border(
-            1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(30.dp)
-        ).clip(RoundedCornerShape(30.dp)), contentAlignment = Alignment.Center
+            1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10)
+        ).clip(RoundedCornerShape(10)), contentAlignment = Alignment.Center
     ) {
         val textSize = remember(Unit) { (maxWidth / 30f).value }
         val padding = remember(Unit) { maxWidth / 60f }
@@ -389,8 +389,29 @@ private fun TextPreview(
 }
 
 @Composable
-fun CardPreview(
-    card: Card, onRulings: () -> Unit = {}, onSelect: () -> Unit = {}, onPrintings: () -> Unit = {}, selectButtonEnabled: Boolean, printingsButtonEnabled: Boolean, rulingsButtonEnabled: Boolean
+fun ExpandableCard(
+    modifier: Modifier = Modifier,
+    imageUri: String
+) {
+    val card = Card(
+        artist = "",
+        name = "",
+        printsSearchUri = "",
+        setName = "",
+        imageUris = ImageUris(
+            large = imageUri,
+            small = imageUri,
+            normal = imageUri,
+            artCrop = imageUri,
+        )
+    )
+    ExpandableCard(modifier = modifier, card = card)
+}
+
+@Composable
+fun ExpandableCard(
+    modifier: Modifier = Modifier,
+    card: Card
 ) {
     var showLargeImage by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
@@ -411,6 +432,29 @@ fun CardPreview(
             }
         })
     }
+
+    BoxWithConstraints(modifier.clip(RoundedCornerShape(8)).aspectRatio(5 / 7f).pointerInput(Unit) {
+        detectTapGestures(onLongPress = {
+            showLargeImage = true
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        })
+    }) {
+        val indicatorPadding = remember(Unit) { maxWidth / 4f }
+        SubcomposeAsyncImage(
+            model = card.getUris().normal, modifier = Modifier.fillMaxSize(), contentDescription = "",
+            loading = { CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center).padding(indicatorPadding),
+                color = MaterialTheme.colorScheme.onPrimary
+            ) }
+        )
+    }
+}
+
+@Composable
+fun CardInfoPreview(
+    card: Card, onRulings: () -> Unit = {}, onSelect: () -> Unit = {}, onPrintings: () -> Unit = {}, selectButtonEnabled: Boolean, printingsButtonEnabled: Boolean, rulingsButtonEnabled: Boolean
+) {
+    val haptic = LocalHapticFeedback.current
 
     BoxWithConstraints(
         modifier = Modifier.wrapContentSize()
@@ -469,16 +513,10 @@ fun CardPreview(
 
                         }
                     }
-                    Box(Modifier.fillMaxHeight().weight(1.0f).clip(CutCornerShape(6.dp)).pointerInput(Unit) {
-                        detectTapGestures(onLongPress = {
-                            showLargeImage = true
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        })
-                    }) {
-                        AsyncImage(
-                            model = card.getUris().large, modifier = Modifier.fillMaxSize(), contentDescription = ""
-                        )
-                    }
+                    ExpandableCard(
+                        modifier = Modifier.fillMaxHeight().weight(1.0f),
+                        card = card
+                    )
                 }
             }
         }

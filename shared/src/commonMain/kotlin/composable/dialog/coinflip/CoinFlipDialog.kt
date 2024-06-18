@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import composable.SettingsButton
+import composable.dialog.ExpandableCard
 import composable.flippable.Flippable
 import composable.flippable.FlippableState
 import lifelinked.shared.generated.resources.Res
@@ -64,6 +66,7 @@ import theme.scaledSp
 @Composable
 fun CoinFlipDialogContent(
     modifier: Modifier = Modifier,
+    goToCoinFlipTutorial: () -> Unit,
     viewModel: CoinFlipViewModel = koinInject(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -85,7 +88,7 @@ fun CoinFlipDialogContent(
             state.history.lastOrNull() == CoinFace.R_DIVIDER_LIST ||
             state.history.lastOrNull() == CoinFace.R_DIVIDER_SINGLE ||
             state.lastResults.lastOrNull() == CoinFace.COMMA
-            ) {
+        ) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
@@ -98,7 +101,7 @@ fun CoinFlipDialogContent(
 
         SettingsButton(
             modifier = Modifier.size(buttonSize * 0.5f).align(Alignment.TopEnd).padding(end = buttonSize * 0.15f, top = buttonSize * 0.15f),
-            onPress = { println("TODO") },
+            onPress = goToCoinFlipTutorial,
             hapticEnabled = true,
             textSizeMultiplier = 0.9f,
             shape = RoundedCornerShape(100),
@@ -113,12 +116,12 @@ fun CoinFlipDialogContent(
                 Modifier.wrapContentSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
-                    modifier = Modifier.wrapContentSize().padding(buttonSize*0.1f),
+                    modifier = Modifier.wrapContentSize().padding(buttonSize * 0.1f),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.Top
                 ) {
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize * 0.7f).rotate(180f).padding(buttonSize*0.025f),
+                        modifier = Modifier.size(buttonSize * 0.7f).rotate(180f).padding(buttonSize * 0.025f),
                         onPress = { if (!viewModel.flipInProgress) viewModel.incrementKrarksThumbs(-1) },
                         hapticEnabled = true,
                         imageVector = vectorResource(Res.drawable.thumbsup_icon),
@@ -126,7 +129,7 @@ fun CoinFlipDialogContent(
                         backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
                     )
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize * 0.7f).padding(buttonSize*0.025f),
+                        modifier = Modifier.size(buttonSize * 0.7f).padding(buttonSize * 0.025f),
                         onPress = { if (!viewModel.flipInProgress) viewModel.incrementKrarksThumbs(1) },
                         hapticEnabled = true,
                         imageVector = vectorResource(Res.drawable.thumbsup_icon),
@@ -178,27 +181,45 @@ fun CoinFlipDialogContent(
                 }
             }
             Spacer(Modifier.weight(1.25f))
-            Row(
-                modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = padding / 2f),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+
+            Column(
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth(0.8f)
+                    .align(Alignment.CenterHorizontally)
+                    .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), RoundedCornerShape(30)),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                SettingsButton(
-                    modifier = Modifier.size(buttonSize),
-                    onPress = { if (!viewModel.flipInProgress) viewModel.flipUntil(CoinFace.HEADS) },
-                    hapticEnabled = false,
-                    text = "Flip Until Lose (Heads)",
-                    textSizeMultiplier = 0.9f,
-                    imageVector = vectorResource(CoinFace.HEADS.drawable)
+                Text(
+                    text = "Flip Until You Lose",
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = textSize.scaledSp,
+                    modifier = Modifier.padding(top = padding / 6f, bottom = padding / 6f)
                 )
-                SettingsButton(
-                    modifier = Modifier.size(buttonSize),
-                    onPress = { if (!viewModel.flipInProgress) viewModel.flipUntil(CoinFace.TAILS) },
-                    hapticEnabled = false,
-                    text = "Flip Until Lose (Tails)",
-                    textSizeMultiplier = 0.9f,
-                    imageVector = vectorResource(CoinFace.TAILS.drawable)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = padding / 2f),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    SettingsButton(
+                        modifier = Modifier.size(buttonSize),
+                        onPress = { if (!viewModel.flipInProgress) viewModel.flipUntil(CoinFace.HEADS) },
+                        hapticEnabled = false,
+                        text = "Call Tails",
+                        imageVector = vectorResource(CoinFace.HEADS.drawable)
+                    )
+                    Spacer(Modifier.width(buttonSize / 4f))
+                    SettingsButton(
+                        modifier = Modifier.size(buttonSize),
+                        onPress = { if (!viewModel.flipInProgress) viewModel.flipUntil(CoinFace.TAILS) },
+                        hapticEnabled = false,
+                        text = "Call Heads",
+                        imageVector = vectorResource(CoinFace.TAILS.drawable)
+                    )
+                }
             }
+            Spacer(Modifier.weight(0.1f).padding(bottom = padding / 2f))
             FlipCounter(
                 modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(counterHeight), headCount = state.headCount, tailCount = state.tailCount, clearHistory = viewModel::reset
             )
@@ -374,6 +395,85 @@ private fun historyBase(modifier: Modifier = Modifier, lastResult: AnnotatedStri
                 fontSize = textSize,
                 modifier = Modifier.align(Alignment.Center).wrapContentSize().padding(vertical = padding / 2f, horizontal = padding).horizontalScroll(scrollState)
             )
+        }
+    }
+}
+
+@Composable
+fun CoinFlipTutorialContent(
+    modifier: Modifier = Modifier,
+) {
+    BoxWithConstraints(
+        modifier = Modifier.wrapContentSize(),
+    ) {
+        val padding = remember(Unit) { maxWidth / 25f }
+        val textSize = remember(Unit) { (maxWidth / 30f).value }
+        LazyColumn(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            /**
+             * what is krark's thumb
+             * explain "flip until you lose"
+             *
+             */
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ExpandableCard(
+                        modifier = Modifier.fillMaxWidth(0.33f),
+                        imageUri = "https://cards.scryfall.io/large/front/9/f/9f63277b-e139-46c8-b9e3-0cfb647f44cc.jpg?1670031752"
+                    )
+                    Text(
+                        text = """
+                            Krark's Thumb is an artifact with the ability "If you would flip a coin, instead flip two coins and ignore one."
+                            
+                            This means that if you call heads, any number of heads will win the flip.
+                            
+                            This ability stacks exponentially, so if you have two thumbs, you flip four coins and ignore three, and so on.
+                        """.trimIndent(),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = textSize.scaledSp,
+                        modifier = Modifier.fillMaxWidth().padding(padding / 2f)
+                    )
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = buildAnnotatedString {
+                            append("\"Flip until you lose\" means that you will keep flipping coins until you get don't get the result you called.\n\n")
+                            append("With Krark's Thumb, this means you will keep flipping until you don't get ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("any")
+                            }
+                            append(" of the result you called.\n\n")
+                            append("For example, to call Heads, press the \"Flip Until Lose (Tails)\" button. This will flip until you fail to get a single Head among all coins flipped.")
+                        },
+//                        text = """
+//                            "Flip until you lose" means that you will keep flipping coins until you get don't get the result you called.
+//
+//                            With Krark's Thumb, this means you will keep flipping until you don't get any of the result you called.
+//                        """.trimIndent(),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = textSize.scaledSp,
+                        modifier = Modifier.fillMaxWidth(0.67f).padding(padding / 2f)
+                    )
+                    ExpandableCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        imageUri = "https://cards.scryfall.io/large/front/d/5/d5dfd236-b1da-4552-b94f-ebf6bb9dafdf.jpg?1670031689"
+                    )
+                }
+            }
         }
     }
 }
