@@ -135,7 +135,7 @@ fun PlaneChaseDialogContent(
     }
 
     BoxWithConstraints(modifier = modifier.padding(bottom = 20.dp)) {
-        val buttonSize = remember(Unit) { maxWidth / 5f }
+        val buttonSize = remember(Unit) { maxWidth / 6f }
         val previewPadding = remember(Unit) {  buttonSize / 2f }
         val textSize = remember(Unit) {  (maxWidth / 35f).value }
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -172,6 +172,7 @@ fun PlaneChaseDialogContent(
                     goToChoosePlanes()
                 })
             }
+            Spacer(Modifier.height(buttonSize / 5f))
         }
     }
 }
@@ -196,7 +197,7 @@ fun ChoosePlanesDialogContent(
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = remember(Unit) {  maxWidth }
         val maxHeight = remember(Unit) {  maxHeight }
-        val buttonSize = remember(Unit) {  maxWidth / 5f }
+        val buttonSize = remember(Unit) {  maxWidth / 6f }
 
         val searchBarHeight = remember(Unit) {  maxWidth / 9f + 30.dp }
         val padding = remember(Unit) {  searchBarHeight / 10f }
@@ -297,6 +298,7 @@ fun ChoosePlanesDialogContent(
                     }
                 )
             }
+            Spacer(Modifier.height(buttonSize / 5f))
         }
     }
 }
