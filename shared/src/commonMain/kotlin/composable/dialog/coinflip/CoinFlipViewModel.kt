@@ -23,14 +23,10 @@ class CoinFlipViewModel(
     val state: StateFlow<CoinFlipState> = _state.asStateFlow()
 
     private var flippingUntil: CoinFace? = null
-    private var triggerCancel: Boolean = false
 
     val coinControllers = MutableList(1) {
         generateCoinController()
     }
-
-    val flipInProgress: Boolean
-        get() = coinControllers.any { it.flipInProgress }
 
     fun rows(thumbs: Int = state.value.krarksThumbs): Int {
         return 2.0.pow(floor(thumbs / 2.0)).toInt()
@@ -42,7 +38,7 @@ class CoinFlipViewModel(
 
     fun buildLastResultString(): AnnotatedString {
         return buildAnnotatedString {
-            if (state.value.lastResults.isEmpty() || (flipInProgress && flippingUntil == null)) {
+            if (state.value.lastResults.isEmpty() || (state.value.flipInProgress && flippingUntil == null)) {
                 append(" ".repeat((coinControllers.size * 3.85f + 1).roundToInt()))
             } else {
                 append(" ")
@@ -138,14 +134,15 @@ class CoinFlipViewModel(
     }
 
     fun incrementKrarksThumbs(value: Int) {
-        if (state.value.krarksThumbs + value < 0 || flipInProgress) return
+        if (state.value.krarksThumbs + value < 0 || state.value.flipInProgress) return
         _state.value = state.value.copy(krarksThumbs = state.value.krarksThumbs + value)
         updateNumberOfCoins()
     }
 
     fun flipUntil(target: CoinFace) {
         resetLastResults()
-        triggerCancel = false
+        setFlipInProgress(true)
+        setUserInteractionEnabled(false)
         flippingUntil = target
         addToHistory(CoinFace.L_DIVIDER_LIST)
         flipUntilHelper(target)
@@ -159,12 +156,9 @@ class CoinFlipViewModel(
                 addToLastResults(result)
                 flipResults.add(result)
                 if (flipResults.size == coinControllers.size) { // end case
-                    if (triggerCancel) { // reset triggered
-                        reset()
-                        triggerCancel = false
-                        flippingUntil = null
-                        return@randomFlip
-                    } else if (flipResults.all { it == target }) { // done
+                    if (flipResults.all { it == target }) { // done
+                        setFlipInProgress(false)
+                        setUserInteractionEnabled(true)
                         flippingUntil = null
                         addToHistory(target)
                         addToHistory(CoinFace.R_DIVIDER_LIST)
@@ -173,8 +167,13 @@ class CoinFlipViewModel(
 //                        addToHistory(CoinFace.COMMA)
                         addToLastResults(CoinFace.COMMA)
                         viewModelScope.launch {
-                            delay(250)
-                            flipUntilHelper(target)
+                            setFlipInProgress(false)
+                            delay(100)
+                            setFlipInProgress(true)
+                            delay(150)
+                            if (state.value.flipInProgress) {
+                                flipUntilHelper(target)
+                            }
                         }
                     }
                 }
@@ -184,25 +183,41 @@ class CoinFlipViewModel(
 
     fun randomFlip() {
         resetLastResults()
+        setFlipInProgress(true)
+        setUserInteractionEnabled(false)
         addToHistory(CoinFace.L_DIVIDER_SINGLE)
-        coinControllers.forEachIndexed { index, coinController ->
+        coinControllers.forEach { coinController ->
             coinController.randomFlip {
                 addToCounter(it)
                 addToLastResults(it)
                 addToHistory(it)
                 if (state.value.lastResults.size == coinControllers.size) {
                     addToHistory(CoinFace.R_DIVIDER_SINGLE)
+                    setUserInteractionEnabled(true)
+                    setFlipInProgress(false)
                 }
             }
         }
     }
 
     fun reset() {
-        cancelFlipUntil()
-        _state.value = state.value.copy(
-            history = listOf(), lastResults = listOf(), headCount = 0, tailCount = 0
-        )
         resetCoinControllers()
+        flippingUntil = null
+        _state.value = state.value.copy(
+            history = listOf(), lastResults = listOf(), headCount = 0, tailCount = 0, flipInProgress = false, userInteractionEnabled = false
+        )
+        viewModelScope.launch {
+            delay(100)
+            setUserInteractionEnabled(true)
+        }
+    }
+
+    private fun setUserInteractionEnabled(value: Boolean) {
+        _state.value = state.value.copy(userInteractionEnabled = value)
+    }
+
+    private fun setFlipInProgress(value: Boolean) {
+        _state.value = state.value.copy(flipInProgress = value)
     }
 
     private fun resetLastResults() {
@@ -231,14 +246,10 @@ class CoinFlipViewModel(
         )
     }
 
-    private fun cancelFlipUntil() {
-        triggerCancel = true
-        flippingUntil = null
-    }
-
     fun resetCoinControllers() {
-        coinControllers.removeAll{true}
-        updateNumberOfCoins()
+        coinControllers.forEach {
+            it.reset()
+        }
     }
 
     private fun generateCoinController(): CoinController {

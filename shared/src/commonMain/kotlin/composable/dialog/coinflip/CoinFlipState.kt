@@ -11,6 +11,8 @@ data class CoinFlipState(
     val headCount: Int = 0,
     val tailCount: Int = 0,
     val krarksThumbs: Int = 0,
+    val flipInProgress: Boolean = false,
+    val userInteractionEnabled: Boolean = true,
     val lastResults: List<CoinFace> = listOf(),
     val history: List<CoinFace> = listOf(),
 )
