@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -87,20 +90,39 @@ fun DiceRollDialogContent(
     }
     BoxWithConstraints(modifier = modifier) {
         val resultTextSize = (maxWidth / 30f).value.scaledSp()
+        val diceRollButtonSize = maxWidth / 3.3f
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
             Spacer(modifier = Modifier.weight(0.1f))
             GridDialogContent(modifier = Modifier.weight(1.0f), title = "Tap to roll", items = listOf({
-                DiceRollButton(value = 4, imageVector = vectorResource(Res.drawable.d4_icon), resultCallBack = { setLastResult(it, 4) })
+                DiceRollButton(modifier = Modifier.size(diceRollButtonSize).padding(bottom = diceRollButtonSize / 5f),
+                    value = 4,
+                    imageVector = vectorResource(Res.drawable.d4_icon),
+                    resultCallBack = { setLastResult(it, 4) })
             }, {
-                DiceRollButton(value = 6, imageVector = vectorResource(Res.drawable.d6_icon), resultCallBack = { setLastResult(it, 6) })
+                DiceRollButton(modifier = Modifier.size(diceRollButtonSize).padding(bottom = diceRollButtonSize / 5f),
+                    value = 6,
+                    imageVector = vectorResource(Res.drawable.d6_icon),
+                    resultCallBack = { setLastResult(it, 6) })
             }, {
-                DiceRollButton(value = 8, imageVector = vectorResource(Res.drawable.d8_icon), resultCallBack = { setLastResult(it, 8) })
+                DiceRollButton(modifier = Modifier.size(diceRollButtonSize).padding(bottom = diceRollButtonSize / 5f),
+                    value = 8,
+                    imageVector = vectorResource(Res.drawable.d8_icon),
+                    resultCallBack = { setLastResult(it, 8) })
             }, {
-                DiceRollButton(value = 10, imageVector = vectorResource(Res.drawable.d10_icon), resultCallBack = { setLastResult(it, 10) })
+                DiceRollButton(modifier = Modifier.size(diceRollButtonSize).padding(bottom = diceRollButtonSize / 5f),
+                    value = 10,
+                    imageVector = vectorResource(Res.drawable.d10_icon),
+                    resultCallBack = { setLastResult(it, 10) })
             }, {
-                DiceRollButton(value = 12, imageVector = vectorResource(Res.drawable.d12_icon), resultCallBack = { setLastResult(it, 12) })
+                DiceRollButton(modifier = Modifier.size(diceRollButtonSize).padding(bottom = diceRollButtonSize / 5f),
+                    value = 12,
+                    imageVector = vectorResource(Res.drawable.d12_icon),
+                    resultCallBack = { setLastResult(it, 12) })
             }, {
-                DiceRollButton(value = 20, imageVector = vectorResource(Res.drawable.d20_icon), resultCallBack = { setLastResult(it, 20) })
+                DiceRollButton(modifier = Modifier.size(diceRollButtonSize).padding(bottom = diceRollButtonSize / 5f),
+                    value = 20,
+                    imageVector = vectorResource(Res.drawable.d20_icon),
+                    resultCallBack = { setLastResult(it, 20) })
             }))
 
             Text(
@@ -136,8 +158,7 @@ fun DiceRollDialogContent(
                                 modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
                             )
                         }
-                    }
-                )
+                    })
             }
             Spacer(modifier = Modifier.weight(0.05f))
         }
@@ -181,7 +202,7 @@ fun DiceRollButton(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.wrapContentSize(),
         contentAlignment = Alignment.Center,
     ) {
         SettingsButton(modifier = modifier.bounceClick(bounceAmount = 0.04f).shake(shakeController),

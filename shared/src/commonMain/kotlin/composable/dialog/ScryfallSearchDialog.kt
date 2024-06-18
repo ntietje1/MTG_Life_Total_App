@@ -513,10 +513,16 @@ fun CardInfoPreview(
 
                         }
                     }
-                    ExpandableCard(
-                        modifier = Modifier.fillMaxHeight().weight(1.0f),
-                        card = card
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxHeight().weight(1.0f).padding(vertical = padding / 10f),
+                        verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ExpandableCard(
+                            modifier = Modifier.fillMaxHeight(),
+                            card = card
+                        )
+                    }
+
                 }
             }
         }
