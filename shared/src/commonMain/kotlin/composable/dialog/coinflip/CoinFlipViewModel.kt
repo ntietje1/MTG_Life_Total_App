@@ -42,7 +42,7 @@ class CoinFlipViewModel(
 
     fun buildLastResultString(): AnnotatedString {
         return buildAnnotatedString {
-            if (state.value.lastResults.isEmpty() || flipInProgress) {
+            if (state.value.lastResults.isEmpty() || (flipInProgress && flippingUntil == null)) {
                 append(" ".repeat((coinControllers.size * 3.85f + 1).roundToInt()))
             } else {
                 append(" ")
