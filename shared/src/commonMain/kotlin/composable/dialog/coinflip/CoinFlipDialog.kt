@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -54,24 +55,11 @@ import composable.SettingsButton
 import composable.flippable.Flippable
 import composable.flippable.FlippableState
 import lifelinked.shared.generated.resources.Res
-import lifelinked.shared.generated.resources.minus_icon
-import lifelinked.shared.generated.resources.plus_icon
+import lifelinked.shared.generated.resources.question_icon
+import lifelinked.shared.generated.resources.thumbsup_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.scaledSp
-
-/**
- * TODO:
- * - add krarks thumb toggle, with hold down function to change to number
- *  - modify flipping behavior when krark thumb is toggled
- * - "flip till lose" button
- * - popup to show results
- *        single flip: "WIN by X heads, Y tails in Z flips" HT
- *        flip till lose: "X wins by flipping Y heads, Z tails in M flips" HH | HT | TH | TT
- *
- * - "set winning side" button
- * -
- */
 
 @Composable
 fun CoinFlipDialogContent(
@@ -108,31 +96,49 @@ fun CoinFlipDialogContent(
         val textSize = remember(Unit) { (maxWidth / 30f).value }
         val buttonSize = remember(Unit) { maxWidth / 4.5f }
 
+        SettingsButton(
+            modifier = Modifier.size(buttonSize * 0.5f).align(Alignment.TopEnd).padding(end = buttonSize * 0.15f, top = buttonSize * 0.15f),
+            onPress = { println("TODO") },
+            hapticEnabled = true,
+            textSizeMultiplier = 0.9f,
+            shape = RoundedCornerShape(100),
+            imageVector = vectorResource(Res.drawable.question_icon),
+            backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+            mainColor = MaterialTheme.colorScheme.onPrimary
+        )
+
         Column(modifier = modifier.fillMaxSize()) {
             Spacer(Modifier.weight(0.1f))
             Column(
                 Modifier.wrapContentSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(Modifier.wrapContentSize()) {
+                Row(
+                    modifier = Modifier.wrapContentSize().padding(buttonSize*0.1f),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.Top
+                ) {
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize * 0.8f),
+                        modifier = Modifier.size(buttonSize * 0.7f).rotate(180f).padding(buttonSize*0.025f),
                         onPress = { if (!viewModel.flipInProgress) viewModel.incrementKrarksThumbs(-1) },
                         hapticEnabled = true,
-                        imageVector = vectorResource(Res.drawable.minus_icon)
+                        imageVector = vectorResource(Res.drawable.thumbsup_icon),
+                        shape = RoundedCornerShape(30),
+                        backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
                     )
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize * 0.8f),
+                        modifier = Modifier.size(buttonSize * 0.7f).padding(buttonSize*0.025f),
                         onPress = { if (!viewModel.flipInProgress) viewModel.incrementKrarksThumbs(1) },
                         hapticEnabled = true,
-                        imageVector = vectorResource(Res.drawable.plus_icon)
+                        imageVector = vectorResource(Res.drawable.thumbsup_icon),
+                        shape = RoundedCornerShape(30),
+                        backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
                     )
                 }
-                Text( //TODO: add icon for krark's thumb, on tap toggles all krark's thumb functionality
+                Text(
                     text = "Krark's Thumbs: ${state.krarksThumbs}",
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                     fontWeight = FontWeight.Bold,
                     fontSize = textSize.scaledSp,
-                    modifier = Modifier.padding(top = padding / 10f, bottom = padding / 8f)
                 )
             }
             Spacer(Modifier.weight(0.3f))
@@ -159,7 +165,10 @@ fun CoinFlipDialogContent(
                     verticalArrangement = Arrangement.Center,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    items(viewModel.coinControllers) {
+                    items(
+                        items = viewModel.coinControllers,
+                        key = { it.hashCode() }
+                    ) {
                         CoinFlippable(modifier = Modifier.height(coinSize).wrapContentWidth(), coinController = it, skipAnimation = state.krarksThumbs >= 4, onTap = {
                             if (!viewModel.flipInProgress) {
                                 viewModel.randomFlip()
@@ -168,17 +177,6 @@ fun CoinFlipDialogContent(
                     }
                 }
             }
-
-            Spacer(Modifier.weight(0.1f))
-//            Text(
-//                text = "Tap to flip",
-//                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
-//                fontWeight = FontWeight.Bold,
-//                fontSize = textSize.scaledSp,
-//                modifier = Modifier
-//                    .align(Alignment.CenterHorizontally)
-//                    .padding(top = padding / 10f, bottom = padding / 8f)
-//            )
             Spacer(Modifier.weight(1.25f))
             Row(
                 modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = padding / 2f),

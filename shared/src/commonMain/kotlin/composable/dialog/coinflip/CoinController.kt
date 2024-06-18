@@ -88,6 +88,6 @@ class CoinController(
 
     fun onResult(currentSide: CoinFace) {
         currentFace = currentSide
-        onResultCallback!!(currentSide)
+        onResultCallback?.let { it((currentSide)) }
     }
 }
