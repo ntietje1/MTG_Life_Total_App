@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.math.floor
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 class CoinFlipViewModel(
     val settingsManager: SettingsManager
@@ -41,13 +42,14 @@ class CoinFlipViewModel(
 
     fun buildLastResultString(): AnnotatedString {
         return buildAnnotatedString {
-            append(" ")
-            if (state.value.lastResults.isEmpty()) {
-                append("   ")
-            }
-            state.value.lastResults.forEach { result ->
-                withStyle(style = SpanStyle(color = result.color)) {
-                    append("${result.letter} ")
+            if (state.value.lastResults.isEmpty() || flipInProgress) {
+                append(" ".repeat((coinControllers.size * 3.85f + 1).roundToInt()))
+            } else {
+                append(" ")
+                state.value.lastResults.forEach { result ->
+                    withStyle(style = SpanStyle(color = result.color)) {
+                        append("${result.letter} ")
+                    }
                 }
             }
         }
@@ -168,7 +170,7 @@ class CoinFlipViewModel(
                         addToHistory(CoinFace.R_DIVIDER_LIST)
                     } else { // keep flipping
                         addToHistory(if (target == CoinFace.HEADS) CoinFace.TAILS else CoinFace.HEADS)
-                        addToHistory(CoinFace.COMMA)
+//                        addToHistory(CoinFace.COMMA)
                         addToLastResults(CoinFace.COMMA)
                         viewModelScope.launch {
                             delay(250)
@@ -220,8 +222,10 @@ class CoinFlipViewModel(
         }
     }
 
+    private val maxHistoryLength = 256 + 2
+
     private fun addToHistory(coinFace: CoinFace) {
-        val newHistory = state.value.history + coinFace
+        val newHistory = (state.value.history + coinFace).takeLast(maxHistoryLength)
         _state.value = state.value.copy(
             history = newHistory,
         )
