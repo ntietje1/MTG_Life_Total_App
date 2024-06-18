@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -80,10 +81,23 @@ fun CoinFlipDialogContent(
     val state by viewModel.state.collectAsState()
 
     val haptic = LocalHapticFeedback.current
-    val flipInProgress = remember(state.history.size) { viewModel.flipInProgress }
 
-    LaunchedEffect(flipInProgress) {
-        if (!flipInProgress && state.history.isNotEmpty()) {
+    val lastResultString = remember(state.lastResults.size) { viewModel.buildLastResultString() }
+    val historyString = remember(state.history.size) { viewModel.buildHistoryString() }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.repairHistoryString()
+            viewModel.resetCoinControllers()
+        }
+    }
+
+    LaunchedEffect(state.history.size, state.lastResults.size) {
+        if ( // hacky way to trigger haptic feedback on a flip
+            state.history.lastOrNull() == CoinFace.R_DIVIDER_LIST ||
+            state.history.lastOrNull() == CoinFace.R_DIVIDER_SINGLE ||
+            state.lastResults.lastOrNull() == CoinFace.COMMA
+            ) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
@@ -146,7 +160,7 @@ fun CoinFlipDialogContent(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     items(viewModel.coinControllers) {
-                        CoinFlippable(modifier = Modifier.height(coinSize).wrapContentWidth(), coinController = it, skipAnimation = state.krarksThumbs >= 5, onTap = {
+                        CoinFlippable(modifier = Modifier.height(coinSize).wrapContentWidth(), coinController = it, skipAnimation = state.krarksThumbs >= 4, onTap = {
                             if (!viewModel.flipInProgress) {
                                 viewModel.randomFlip()
                             }
@@ -199,7 +213,7 @@ fun CoinFlipDialogContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 4f, bottom = padding / 12f)
             )
             LastResult(
-                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), lastResult = viewModel.buildLastResultString()
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), lastResult = lastResultString
             )
             Spacer(Modifier.weight(0.1f))
             Text(
@@ -210,7 +224,7 @@ fun CoinFlipDialogContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 4f, bottom = padding / 12f)
             )
             FlipHistory(
-                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), coinFlipHistory = viewModel.buildHistoryString()
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), coinFlipHistory = historyString
             )
             Spacer(Modifier.height(padding / 2f))
             Spacer(Modifier.weight(0.7f))

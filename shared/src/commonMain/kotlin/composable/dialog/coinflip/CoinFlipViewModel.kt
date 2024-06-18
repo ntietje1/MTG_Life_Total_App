@@ -53,6 +53,14 @@ class CoinFlipViewModel(
         }
     }
 
+    fun repairHistoryString() {
+        val leftDividerIndex = state.value.history.indexOfLast { it == CoinFace.L_DIVIDER_LIST }
+        val rightDividerIndex = state.value.history.indexOfLast { it == CoinFace.R_DIVIDER_LIST }
+        if (leftDividerIndex > rightDividerIndex) {
+            addToHistory(CoinFace.R_DIVIDER_LIST)
+        }
+    }
+
     fun buildHistoryString(): AnnotatedString {
         var index = 0
         val historySize = state.value.history.size
@@ -128,7 +136,7 @@ class CoinFlipViewModel(
     }
 
     fun incrementKrarksThumbs(value: Int) {
-        if (state.value.krarksThumbs + value < 0) return
+        if (state.value.krarksThumbs + value < 0 || flipInProgress) return
         _state.value = state.value.copy(krarksThumbs = state.value.krarksThumbs + value)
         updateNumberOfCoins()
     }
@@ -192,6 +200,7 @@ class CoinFlipViewModel(
         _state.value = state.value.copy(
             history = listOf(), lastResults = listOf(), headCount = 0, tailCount = 0
         )
+        resetCoinControllers()
     }
 
     private fun resetLastResults() {
@@ -221,6 +230,11 @@ class CoinFlipViewModel(
     private fun cancelFlipUntil() {
         triggerCancel = true
         flippingUntil = null
+    }
+
+    fun resetCoinControllers() {
+        coinControllers.removeAll{true}
+        updateNumberOfCoins()
     }
 
     private fun generateCoinController(): CoinController {
