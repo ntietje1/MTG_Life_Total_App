@@ -134,9 +134,13 @@ fun MiddleButtonDialog(
             val buttonModifier = remember(Unit) {
                 Modifier.then(
                     if (maxWidth / 3f < maxHeight / 4f) {
-                        Modifier.fillMaxHeight(0.8f)
+                        Modifier
+                            .fillMaxHeight(0.8f)
+                            .padding(maxWidth / 50f)
                     } else {
-                        Modifier.fillMaxWidth(0.8f)
+                        Modifier
+                            .fillMaxWidth(0.8f)
+                            .padding(maxHeight / 50f)
                     }
                 )
             }

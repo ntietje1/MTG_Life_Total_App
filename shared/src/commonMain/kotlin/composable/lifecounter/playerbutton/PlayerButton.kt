@@ -568,7 +568,8 @@ fun PlayerButton(
 
                             PBState.SETTINGS_DEFAULT -> {
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
-                                    val (settingsButtonSize, _, _) = generateSizes(maxWidth, maxHeight)
+                                    val (settingsButtonSize, smallPadding, _) = generateSizes(maxWidth, maxHeight)
+                                    val settingsButtonModifier = Modifier.size(settingsButtonSize).padding(smallPadding/2f)
                                     LazyHorizontalGrid(
                                         modifier = Modifier.fillMaxSize(),
                                         rows = GridCells.Fixed(2),
@@ -577,21 +578,21 @@ fun PlayerButton(
                                     ) {
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.monarchy_icon,
                                                 text = "Monarchy"
                                             ) { viewModel.onMonarchyButtonClicked() }
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.transparent,
                                                 text = ""
                                             ) { }
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.mana_icon,
                                                 text = "Counters"
                                             ) {
@@ -601,7 +602,7 @@ fun PlayerButton(
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.star_icon,
                                                 text = "Customize"
                                             ) {
@@ -611,7 +612,7 @@ fun PlayerButton(
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.skull_icon,
                                                 text = "KO Player"
                                             ) {
@@ -623,7 +624,7 @@ fun PlayerButton(
 
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.change_name_icon,
                                                 text = "Change Name"
                                             ) {
@@ -636,7 +637,8 @@ fun PlayerButton(
 
                             PBState.SETTINGS_CUSTOMIZE -> {
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
-                                    val (settingsButtonSize, _, _) = generateSizes(maxWidth, maxHeight)
+                                    val (settingsButtonSize, smallPadding, _) = generateSizes(maxWidth, maxHeight)
+                                    val settingsButtonModifier = Modifier.size(settingsButtonSize).padding(smallPadding/2f)
                                     LazyHorizontalGrid(
                                         modifier = Modifier.fillMaxSize(),
                                         rows = GridCells.Fixed(2),
@@ -645,7 +647,7 @@ fun PlayerButton(
                                     ) {
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.change_background_icon,
                                                 text = "Background Color"
                                             ) {
@@ -656,7 +658,7 @@ fun PlayerButton(
 
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.text_icon,
                                                 text = "Text Color"
                                             ) {
@@ -667,7 +669,7 @@ fun PlayerButton(
 
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.camera_icon,
                                                 text = "Upload Image"
                                             ) {
@@ -677,7 +679,7 @@ fun PlayerButton(
 
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.download_icon,
                                                 text = "Load Profile"
                                             ) {
@@ -688,7 +690,7 @@ fun PlayerButton(
 
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.search_icon,
                                                 text = "Search Image"
                                             ) {
@@ -698,7 +700,7 @@ fun PlayerButton(
 
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = Modifier.size(settingsButtonSize),
+                                                modifier = settingsButtonModifier,
                                                 imageResource = Res.drawable.reset_icon,
                                                 text = "Reset",
                                             ) {
