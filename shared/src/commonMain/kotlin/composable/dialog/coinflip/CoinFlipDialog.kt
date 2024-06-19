@@ -127,7 +127,7 @@ fun CoinFlipDialogContent(
             Modifier.wrapContentSize().align(Alignment.TopStart), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
-                modifier = Modifier.wrapContentSize().padding(top = buttonSize * 0.05f, start = buttonSize * 0.1f, bottom = buttonSize * 0.05f),
+                modifier = Modifier.wrapContentSize().padding(top = buttonSize * 0.1f, start = buttonSize * 0.1f, bottom = buttonSize * 0.05f),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.Top
             ) {
@@ -216,7 +216,7 @@ fun CoinFlipDialogContent(
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize * 0.7f),
+                        modifier = Modifier.size(buttonSize * 0.8f),
                         onPress = { if (state.userInteractionEnabled) viewModel.flipUntil(CoinFace.HEADS) },
                         hapticEnabled = false,
                         text = "Call Tails",
@@ -224,7 +224,7 @@ fun CoinFlipDialogContent(
                     )
                     Spacer(Modifier.width(buttonSize / 4f))
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize * 0.7f),
+                        modifier = Modifier.size(buttonSize * 0.8f),
                         onPress = { if (state.userInteractionEnabled) viewModel.flipUntil(CoinFace.TAILS) },
                         hapticEnabled = false,
                         text = "Call Heads",
@@ -410,7 +410,7 @@ private fun historyBase(modifier: Modifier = Modifier, lastResult: AnnotatedStri
                 .then(if (wrapContentSize) Modifier.wrapContentSize() else Modifier.fillMaxWidth())
         ) {
             Text(
-                text = lastResult,
+                text = lastResult.plus(if (platform == Platform.IOS) AnnotatedString(" ") else AnnotatedString("")),
                 maxLines = 1,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
