@@ -37,7 +37,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,21 +80,23 @@ fun CoinFlipDialogContent(
     viewModel: CoinFlipViewModel = koinInject(),
 ) {
     val state by viewModel.state.collectAsState()
-
     val haptic = LocalHapticFeedback.current
 
     val lastResultString = remember(state.lastResults) { viewModel.buildLastResultString() }
     val historyString = remember(state.history) { viewModel.buildHistoryString() }
+    var allowHaptic by remember { mutableStateOf(false) }
 
     CoinController.setAnimationCorrectionFactor(getAnimationCorrectionFactor())
     DisposableEffect(Unit) {
         viewModel.viewModelScope.launch {
+            allowHaptic = false
             viewModel.softReset()
-            delay(100)
+            delay(10)
             viewModel.randomFlip()
-            delay(100)
+            delay(10)
             viewModel.softReset()
             viewModel.repairHistoryString()
+            allowHaptic = true
         }
         onDispose {
             viewModel.repairHistoryString()
@@ -102,7 +106,7 @@ fun CoinFlipDialogContent(
     LaunchedEffect(state.history.size, state.lastResults.size) {
         if ( // hacky way to trigger haptic feedback on a flip
             state.history.lastOrNull() == CoinFace.R_DIVIDER_LIST || state.history.lastOrNull() == CoinFace.R_DIVIDER_SINGLE || state.lastResults.lastOrNull() == CoinFace.COMMA) {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            if (allowHaptic) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
 
@@ -476,7 +480,7 @@ fun CoinFlipTutorialContent(
                             append("any")
                         }
                         append(" of the result you called.\n\n")
-                        append("For example, to call Heads, press the \"Flip Until Lose (Tails)\" button. This will flip until you fail to get a single Head among all coins flipped.")
+                        append("For example, the \"Call Heads\" button will flip until you fail to get a single head among all coins flipped.")
                     }, color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize.scaledSp, modifier = Modifier.fillMaxWidth(0.67f).padding(padding / 2f).clickable {
                         flipController.flip()
                     })
@@ -495,6 +499,14 @@ fun CoinFlipTutorialContent(
                         },
                     )
                 }
+            }
+            item {
+                Text(
+                    text = """
+                            Hint: if something breaks, the "Reset" button hopefully will fix it :)
+                        """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f), fontSize = textSize.scaledSp,
+                    modifier = Modifier.padding(horizontal = padding*2)
+                )
             }
         }
     }
