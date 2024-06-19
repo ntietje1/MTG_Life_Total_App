@@ -52,6 +52,10 @@ class CoinFlipViewModel(
     }
 
     fun repairHistoryString() {
+        while (state.value.history.count{it == CoinFace.L_DIVIDER_SINGLE} > state.value.history.count{it == CoinFace.R_DIVIDER_SINGLE}) {
+            _state.value = state.value.copy(history = state.value.history.subList(0, state.value.history.size - 1))
+        }
+
         val leftDividerIndex = state.value.history.indexOfLast { it == CoinFace.L_DIVIDER_LIST }
         val rightDividerIndex = state.value.history.indexOfLast { it == CoinFace.R_DIVIDER_LIST }
         if (leftDividerIndex > rightDividerIndex) {
@@ -140,8 +144,8 @@ class CoinFlipViewModel(
     }
 
     fun flipUntil(target: CoinFace) {
-        softReset()
-//        resetLastResults()
+//        softReset()
+        resetLastResults()
         setFlipInProgress(true)
         setUserInteractionEnabled(false)
         flippingUntil = target
@@ -183,7 +187,7 @@ class CoinFlipViewModel(
     }
 
     fun randomFlip() {
-        softReset()
+//        softReset()
         resetLastResults()
         setFlipInProgress(true)
         setUserInteractionEnabled(false)
@@ -261,6 +265,7 @@ class CoinFlipViewModel(
             it.reset()
         }
     }
+
 
     private fun generateCoinController(): CoinController {
         return CoinController(

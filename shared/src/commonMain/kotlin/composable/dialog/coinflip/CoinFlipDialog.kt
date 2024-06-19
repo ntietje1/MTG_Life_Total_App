@@ -1,5 +1,6 @@
 package composable.dialog.coinflip
 
+import Platform
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,17 +54,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import composable.SettingsButton
 import composable.dialog.ExpandableCard
 import composable.flippable.Flippable
 import composable.flippable.FlippableState
 import composable.flippable.rememberFlipController
 import getAnimationCorrectionFactor
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.thumbsup_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import platform
 import theme.scaledSp
 
 @Composable
@@ -81,10 +86,15 @@ fun CoinFlipDialogContent(
 
     CoinController.setAnimationCorrectionFactor(getAnimationCorrectionFactor())
     DisposableEffect(Unit) {
-        viewModel.softReset()
-        viewModel.repairHistoryString()
-        onDispose {
+        viewModel.viewModelScope.launch {
             viewModel.softReset()
+            delay(100)
+            viewModel.randomFlip()
+            delay(100)
+            viewModel.softReset()
+            viewModel.repairHistoryString()
+        }
+        onDispose {
             viewModel.repairHistoryString()
         }
     }
@@ -384,7 +394,11 @@ fun LastResult(modifier: Modifier = Modifier, lastResult: AnnotatedString) {
 private fun historyBase(modifier: Modifier = Modifier, lastResult: AnnotatedString, wrapContentSize: Boolean) {
     val scrollState = rememberScrollState()
     LaunchedEffect(lastResult) {
-        scrollState.animateScrollTo(scrollState.maxValue)
+        if (platform == Platform.IOS) {
+            scrollState.scrollTo(scrollState.maxValue)
+        } else {
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
     }
     BoxWithConstraints(
         modifier
