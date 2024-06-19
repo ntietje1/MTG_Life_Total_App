@@ -81,11 +81,11 @@ fun CoinFlipDialogContent(
 
     CoinController.setAnimationCorrectionFactor(getAnimationCorrectionFactor())
     DisposableEffect(Unit) {
-        viewModel.resetCoinControllers()
+        viewModel.softReset()
         viewModel.repairHistoryString()
         onDispose {
+            viewModel.softReset()
             viewModel.repairHistoryString()
-            viewModel.resetCoinControllers()
         }
     }
 
@@ -179,7 +179,7 @@ fun CoinFlipDialogContent(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     items(items = viewModel.coinControllers, key = { it.hashCode() }) {
-                        CoinFlippable(modifier = Modifier.height(coinSize).wrapContentWidth(), coinController = it, skipAnimation = state.krarksThumbs >= 5, onTap = {
+                        CoinFlippable(modifier = Modifier.height(coinSize).wrapContentWidth(), coinController = it, skipAnimation = state.krarksThumbs >= 4, onTap = {
                             if (state.userInteractionEnabled) {
                                 viewModel.randomFlip()
                             }
@@ -265,13 +265,12 @@ fun CoinFlippable(
     modifier: Modifier = Modifier, coinController: CoinController, skipAnimation: Boolean, onTap: () -> Unit
 ) {
     val duration by coinController.duration.collectAsState()
-    val flipController by coinController.flipController.collectAsState()
 
     BoxWithConstraints(
         modifier = modifier, contentAlignment = Alignment.Center
     ) {
         Flippable(modifier = Modifier.fillMaxHeight().aspectRatio(1f),
-            flipController = flipController,
+            flipController = coinController.flipController,
             flipDurationMs = if (skipAnimation) 0 else duration,
             flipOnTouch = false,
             flipEnabled = true,
@@ -418,7 +417,7 @@ fun CoinFlipTutorialContent(
         val padding = remember(Unit) { maxWidth / 25f }
         val textSize = remember(Unit) { (maxWidth / 30f).value }
         LazyColumn(
-            modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = modifier, verticalArrangement = Arrangement.spacedBy(padding / 2f), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
                 Row(
