@@ -81,8 +81,8 @@ fun CoinFlipDialogContent(
 
     val haptic = LocalHapticFeedback.current
 
-    val lastResultString = remember(state.flipInProgress, state.userInteractionEnabled) { viewModel.buildLastResultString() }
-    val historyString = remember(state.flipInProgress, state.userInteractionEnabled) { viewModel.buildHistoryString() }
+    val lastResultString = remember(state.lastResults) { viewModel.buildLastResultString() }
+    val historyString = remember(state.history) { viewModel.buildHistoryString() }
 
     CoinController.setAnimationCorrectionFactor(getAnimationCorrectionFactor())
     DisposableEffect(Unit) {
