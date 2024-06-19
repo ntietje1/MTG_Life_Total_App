@@ -410,7 +410,7 @@ private fun historyBase(modifier: Modifier = Modifier, lastResult: AnnotatedStri
                 .then(if (wrapContentSize) Modifier.wrapContentSize() else Modifier.fillMaxWidth())
         ) {
             Text(
-                text = lastResult.plus(if (platform == Platform.IOS) AnnotatedString(" ") else AnnotatedString("")),
+                text = lastResult.plus(if (platform == Platform.IOS) AnnotatedString("   ") else AnnotatedString("")),
                 maxLines = 1,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
