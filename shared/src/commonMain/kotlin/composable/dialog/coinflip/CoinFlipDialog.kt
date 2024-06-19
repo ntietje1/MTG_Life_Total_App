@@ -505,7 +505,7 @@ fun CoinFlipTutorialContent(
                     text = """
                             Hint: if something breaks, the "Reset" button hopefully will fix it :)
                         """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f), fontSize = textSize.scaledSp,
-                    modifier = Modifier.padding(horizontal = padding*2)
+                    modifier = Modifier.padding(horizontal = padding*1.5f)
                 )
             }
         }
