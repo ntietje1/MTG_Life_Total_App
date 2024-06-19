@@ -30,8 +30,7 @@ class CoinController(
     private val _duration = MutableStateFlow(0)
     val duration: StateFlow<Int> = _duration
 
-    private val _flipController = MutableStateFlow(FlippableController())
-    val flipController: StateFlow<FlippableController> = _flipController
+    val flipController = FlippableController()
 
     private var durations = generateFlipDurations(settingsManager.fastCoinFlip, Random.nextBoolean())
 
@@ -46,7 +45,8 @@ class CoinController(
     }
 
     fun reset() {
-        onResultCallback = { reset() }
+//        onResultCallback = { reset() }
+        onResultCallback = null
         flipIndex = durations.size
     }
 
@@ -98,7 +98,7 @@ class CoinController(
         incrementFlipIndex()
         toggleAnimationType()
         if (flipIndex < durations.size) {
-            flipController.value.flip()
+            flipController.flip()
             return false
         } else {
             resetFlipIndex()

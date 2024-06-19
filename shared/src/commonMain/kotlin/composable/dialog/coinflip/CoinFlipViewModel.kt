@@ -140,7 +140,8 @@ class CoinFlipViewModel(
     }
 
     fun flipUntil(target: CoinFace) {
-        resetLastResults()
+        softReset()
+//        resetLastResults()
         setFlipInProgress(true)
         setUserInteractionEnabled(false)
         flippingUntil = target
@@ -168,9 +169,9 @@ class CoinFlipViewModel(
                         addToLastResults(CoinFace.COMMA)
                         viewModelScope.launch {
                             setFlipInProgress(false)
-                            delay(100)
+                            delay(10)
                             setFlipInProgress(true)
-                            delay(150)
+                            delay(250)
                             if (state.value.flipInProgress) {
                                 flipUntilHelper(target)
                             }
@@ -182,6 +183,7 @@ class CoinFlipViewModel(
     }
 
     fun randomFlip() {
+        softReset()
         resetLastResults()
         setFlipInProgress(true)
         setUserInteractionEnabled(false)
@@ -198,6 +200,14 @@ class CoinFlipViewModel(
                 }
             }
         }
+    }
+
+    fun softReset() {
+        resetCoinControllers()
+        flippingUntil = null
+        _state.value = state.value.copy(
+            flipInProgress = false, userInteractionEnabled = true
+        )
     }
 
     fun reset() {
@@ -246,7 +256,7 @@ class CoinFlipViewModel(
         )
     }
 
-    fun resetCoinControllers() {
+    private fun resetCoinControllers() {
         coinControllers.forEach {
             it.reset()
         }
