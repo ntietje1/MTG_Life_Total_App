@@ -165,7 +165,7 @@ fun CoinFlipDialogContent(
         val coinHeight = remember(Unit) { maxHeight / 2f }
 
         Column(modifier = modifier.fillMaxSize()) {
-            Spacer(Modifier.height(buttonSize * 0.6f))
+            Spacer(Modifier.height(buttonSize * 0.5f))
             Spacer(Modifier.weight(1.0f))
             BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth(0.8f).height(coinHeight).align(Alignment.CenterHorizontally), contentAlignment = Alignment.Center
@@ -240,7 +240,7 @@ fun CoinFlipDialogContent(
             Spacer(Modifier.height(padding / 4f))
             Spacer(Modifier.weight(0.7f))
             FlipCounter(
-                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(counterHeight * 0.9f),
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(counterHeight * 0.8f),
                 headCount = state.headCount,
                 tailCount = state.tailCount,
                 clearHistory = viewModel::reset
@@ -315,13 +315,13 @@ fun CoinFlippable(
 @Composable
 fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
     BoxWithConstraints(
-        modifier = modifier.aspectRatio(2.5f).clip(RoundedCornerShape(5.dp)).pointerInput(Unit) {
+        modifier = modifier.aspectRatio(2.5f).clip(RoundedCornerShape(15)).pointerInput(Unit) {
             detectTapGestures(onTap = { _ -> onReset() })
         },
 
         ) {
-        val textSize = (maxWidth / 4f).value.scaledSp
-        val textPadding = maxHeight / 9f
+        val textSize = remember(Unit) { (maxWidth / 4f).value }
+        val textPadding = remember(Unit) { maxHeight / 9f }
         Surface(
             modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
         ) {
@@ -330,7 +330,7 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                style = TextStyle(fontSize = textSize),
+                style = TextStyle(fontSize = textSize.scaledSp),
                 modifier = Modifier.align(Alignment.BottomCenter).padding(top = textPadding)
             )
         }
@@ -342,11 +342,11 @@ fun FlipCounter(
     modifier: Modifier = Modifier, headCount: Int, tailCount: Int, clearHistory: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
-    BoxWithConstraints(Modifier.wrapContentSize()) {
-        val padding = remember(Unit) { maxWidth / 100f }
-        val textSize = remember(Unit) { (maxWidth / 25f).value }
+    BoxWithConstraints(modifier) {
+        val textSize = remember(Unit) { (maxHeight / 2f).value }
+        val padding = remember(Unit) { maxHeight / 8f }
         Row(
-            modifier = modifier, horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = buildAnnotatedString {
@@ -376,7 +376,7 @@ fun FlipCounter(
                     }
                 }, style = TextStyle(fontSize = textSize.scaledSp), modifier = Modifier.padding(vertical = 0.dp, horizontal = padding)
             )
-            ResetButton(modifier = Modifier.fillMaxHeight().padding(start = padding * 5).padding(vertical = padding / 2), onReset = {
+            ResetButton(modifier = Modifier.fillMaxHeight().padding(start = padding * 4f).padding(vertical = padding * 0.5f), onReset = {
                 clearHistory()
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             })
@@ -432,10 +432,10 @@ fun CoinFlipTutorialContent(
     BoxWithConstraints(
         modifier = Modifier.wrapContentSize(),
     ) {
-        val padding = remember(Unit) { maxWidth / 25f }
-        val textSize = remember(Unit) { (maxWidth / 30f).value }
+        val padding = remember(Unit) { maxWidth / 50f + maxHeight / 75f}
+        val textSize = remember(Unit) { (maxWidth / 50f + maxHeight / 150f).value }
         LazyColumn(
-            modifier = modifier, verticalArrangement = Arrangement.spacedBy(padding / 2f), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = modifier, verticalArrangement = Arrangement.spacedBy(padding / 6f), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
                 Row(
