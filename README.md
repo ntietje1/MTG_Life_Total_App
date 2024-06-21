@@ -53,9 +53,27 @@ The UI is crafted to be minimal yet intuitive, providing a clear picture of the 
 - **Kotlinx Serialization:** Efficient serialization/deserialization of Json.
 - **Gradle** Tracks versions across the multi-module app structure.
 
-## Customization Options
+## Installation
 
-Experience the flexibility of various theme options and individual player customization settings that can be saved and loaded across different game sessions.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+It is assumed you have [Git](https://git-scm.com/downloads) and [Android Studio](https://developer.android.com/studio) installed.
+To build and run the iOS app, a macOS device with [Xcode](https://developer.apple.com/xcode/) installed is required as well.
+
+1. Clone the repository to your local machine:
+```bash
+git clone https://github.com/ntietje1/MTG_Life_Total_App.git
+```
+2. Open the project in Android Studio and allow Gradle to sync.
+3. Build and run the app on your desired Android emulator or device by either clicking the green play button or running the following command:
+```bash
+./gradlew :shared:installDebug
+```
+4. Open [the xcode project](https://github.com/ntietje1/MTG_Life_Total_App/blob/c7494c22a9b3595e434436c90db1a51041f91439/iosApp/LifeLinkedIOS.xcodeproj) in Xcode.
+5. When building for iOS, the following command should run automatically, but you may need to run it manually:
+```bash
+./gradlew linkReleaseFrameworkIosArm64
+```
+6. Build and run the app on your desired iOS simulator or device by clicking the play button in Xcode.
 
 ## Future Development
 
