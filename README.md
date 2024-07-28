@@ -1,3 +1,4 @@
+[![Badge](https://3o1a4kxu4zvf.runkit.sh)](https://git.io/gradientbadge)
 ![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/ntietje1/MTG_Life_Total_App)
 ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-orange)
 ![Static Badge](https://img.shields.io/badge/Kotlin-1.9.24-blue)
