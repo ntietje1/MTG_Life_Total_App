@@ -7,8 +7,8 @@
 ![Static Badge](https://img.shields.io/badge/Koin-3.6.0-blue)
 ![Static Badge](https://img.shields.io/badge/MinSdk-24-yellow)
 
-[![Google Play](https://img.shields.io/badge/Google%20Play-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.hypeapps.lifelinked)
-[![App Store](https://img.shields.io/badge/App%20Store-0D96F6?style=for-the-badge&logo=app-store&logoColor=white)](https://apps.apple.com/us/app/lifelinked-mtg-life-counter/id6503708612)
+[<img src="images/google-play-badge.png" height="50">](https://play.google.com/store/apps/details?id=com.hypeapps.lifelinked)
+[<img src="images/appstore-badge.png" height="50">](https://apps.apple.com/us/app/lifelinked-mtg-life-counter/id6503708612)
 
 
 # LifeLinked: A MTG Life Tracking App
