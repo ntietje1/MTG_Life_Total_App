@@ -179,13 +179,13 @@ class LifeCounterViewModel(
         _state.value = _state.value.copy(counters = List(COUNTER_DIALOG_ENTRIES) { 0 })
     }
 
-    fun addToCoinFlipHistory(value: String) {
-        setCoinFlipHistory(_state.value.coinFlipHistory.toMutableList().apply { add(value) }.toList())
-    }
-
-    fun resetCoinFlipHistory() {
-        setCoinFlipHistory(emptyList())
-    }
+//    fun addToCoinFlipHistory(value: String) {
+//        setCoinFlipHistory(_state.value.coinFlipHistory.toMutableList().apply { add(value) }.toList())
+//    }
+//
+//    fun resetCoinFlipHistory() {
+//        setCoinFlipHistory(emptyList())
+//    }
 
 //    private fun startTimer() {
 //        viewModelScope.launch {

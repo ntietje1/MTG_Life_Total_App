@@ -941,10 +941,6 @@ fun PlayerButton(
                                     }
                                 }
                             }
-
-                            else -> {
-                                Text("Oopsies")
-                            }
                         }
                     }
                 }
