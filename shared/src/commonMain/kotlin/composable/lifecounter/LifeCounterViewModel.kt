@@ -96,6 +96,12 @@ class LifeCounterViewModel(
         )
     }
 
+    fun savePlayerPrefs() {
+        playerButtonViewModels.forEach {
+            it.savePlayerPref()
+        }
+    }
+
     private fun savePlayerStates() {
         settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
     }
@@ -134,13 +140,16 @@ class LifeCounterViewModel(
         settingsManager.numPlayers = value
     }
 
-    fun resetPlayerStates() {
+    fun restartButtons() {
         setShowButtons(false)
-        planeChaseViewModel.onResetGame()
         viewModelScope.launch {
             delay(10)
             setShowButtons(true)
         }
+    }
+
+    fun resetGameState() {
+        planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
         resetAllPlayerStates()
         savePlayerStates()

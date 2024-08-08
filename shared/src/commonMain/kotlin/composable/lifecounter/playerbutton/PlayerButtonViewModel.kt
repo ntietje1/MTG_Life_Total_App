@@ -39,12 +39,12 @@ class PlayerButtonViewModel(
         updateCurrentDealerMode(state.value.player.partnerMode)
     }
 
-    private fun setPlayerInfo(player: Player) {
+    private fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
     }
 
-    private fun updatePlayerInfo(update: Player.() -> Player) {
-        setPlayerInfo(state.value.player.update())
+    private fun updatePlayer(update: Player.() -> Player) {
+        setPlayer(state.value.player.update())
     }
 
     fun onCommanderButtonClicked() {
@@ -111,22 +111,23 @@ class PlayerButtonViewModel(
 
     init {
         updateRecentChange()
+        settingsManager.loadPlayerPref(initialPlayer)?.let { copyPrefs(it) }
     }
 
     fun resetPlayerPref() {
-        updatePlayerInfo {
+        updatePlayer {
             state.value.player.copy(
                 name = "P${state.value.player.playerNum}",
                 textColor = Color.White,
                 imageString = null
             )
         }
-        updatePlayerInfo {
+        updatePlayer {
             resetPlayerColor(state.value.player)
         }
     }
 
-    private fun savePlayerPref() {
+    fun savePlayerPref() {
         settingsManager.savePlayerPref(state.value.player)
     }
 
@@ -152,17 +153,17 @@ class PlayerButtonViewModel(
     }
 
     fun setImageUri(uri: String?) {
-        setPlayerInfo(state.value.player.copy(imageString = uri))
+        setPlayer(state.value.player.copy(imageString = uri))
         savePlayerPref()
     }
 
     private fun setBackgroundColor(color: Color) {
-        setPlayerInfo(state.value.player.copy(color = color))
+        setPlayer(state.value.player.copy(color = color))
         savePlayerPref()
     }
 
     private fun setTextColor(color: Color) {
-        setPlayerInfo(state.value.player.copy(textColor = color))
+        setPlayer(state.value.player.copy(textColor = color))
         savePlayerPref()
     }
 
@@ -172,7 +173,7 @@ class PlayerButtonViewModel(
     }
 
     fun setName(name: String) {
-        setPlayerInfo(state.value.player.copy(name = name))
+        setPlayer(state.value.player.copy(name = name))
         savePlayerPref()
     }
 
@@ -210,30 +211,30 @@ class PlayerButtonViewModel(
     }
 
     fun toggleMonarch(value: Boolean? = null) {
-        setPlayerInfo(state.value.player.copy(monarch = value ?: !state.value.player.monarch))
+        setPlayer(state.value.player.copy(monarch = value ?: !state.value.player.monarch))
         triggerSave()
     }
 
     fun togglePartnerMode(value: Boolean? = null) {
-        setPlayerInfo(state.value.player.copy(partnerMode = value ?: !state.value.player.partnerMode))
+        setPlayer(state.value.player.copy(partnerMode = value ?: !state.value.player.partnerMode))
         updateCurrentDealerMode(state.value.player.partnerMode)
         triggerSave()
     }
 
     fun toggleSetDead(value: Boolean? = null) {
-        setPlayerInfo(state.value.player.copy(setDead = value ?: !state.value.player.setDead))
+        setPlayer(state.value.player.copy(setDead = value ?: !state.value.player.setDead))
         triggerSave()
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
-        setPlayerInfo(state.value.player.copy(counters = state.value.player.counters.toMutableList().apply {
+        setPlayer(state.value.player.copy(counters = state.value.player.counters.toMutableList().apply {
             this[counterType.ordinal] += value
         }))
         triggerSave()
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean? = null): Boolean {
-        setPlayerInfo(state.value.player.copy(activeCounters = state.value.player.activeCounters.toMutableList().apply {
+        setPlayer(state.value.player.copy(activeCounters = state.value.player.activeCounters.toMutableList().apply {
             val previousValue = this.contains(counterType)
             val targetValue = active ?: !previousValue
             if (targetValue) {
@@ -262,7 +263,7 @@ class PlayerButtonViewModel(
     }
 
     private fun receiveCommanderDamage(index: Int, value: Int) {
-        setPlayerInfo(state.value.player.copy(commanderDamage = state.value.player.commanderDamage.toMutableList().apply {
+        setPlayer(state.value.player.copy(commanderDamage = state.value.player.commanderDamage.toMutableList().apply {
             this[index] += value
         }.toList()))
         triggerSave()
@@ -279,8 +280,8 @@ class PlayerButtonViewModel(
         savePlayerPref()
     }
 
-    fun copySettings(other: Player) {
-        setPlayerInfo(
+    fun copyPrefs(other: Player) {
+        setPlayer(
             state.value.player.copy(
                 imageString = other.imageString,
                 color = other.color,
@@ -292,7 +293,7 @@ class PlayerButtonViewModel(
     }
 
     fun incrementLife(value: Int) {
-        setPlayerInfo(
+        setPlayer(
             state.value.player.copy(
                 life = state.value.player.life + value,
                 recentChange = state.value.player.recentChange + value
@@ -306,7 +307,7 @@ class PlayerButtonViewModel(
         recentChangeJob?.cancel()
         recentChangeJob = viewModelScope.launch {
             delay(1500)
-            setPlayerInfo(
+            setPlayer(
                 state.value.player.copy(
                     recentChange = 0
                 )
@@ -315,7 +316,7 @@ class PlayerButtonViewModel(
     }
 
     fun resetState(startingLife: Int) {
-        updatePlayerInfo {
+        updatePlayer {
             state.value.player.copy(
                 life = startingLife,
                 recentChange = 0,

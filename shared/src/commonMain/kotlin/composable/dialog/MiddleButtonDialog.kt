@@ -93,6 +93,7 @@ fun MiddleButtonDialog(
     val haptic = LocalHapticFeedback.current
     val duration = (450 / getAnimationCorrectionFactor()).toInt()
     var showResetDialog by remember { mutableStateOf(false) }
+    var showChooseFirstPlayerDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         backHandler.push { onDismiss() }
@@ -169,10 +170,10 @@ fun MiddleButtonDialog(
             ) {
                 PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
-                    viewModel.resetPlayerStates()
+                    viewModel.resetGameState()
                     triggerEnterAnimation()
                 }, resetPlayers = {
-                    viewModel.resetPlayerStates()
+                    viewModel.resetGameState()
                     triggerEnterAnimation()
                 }, show4PlayerDialog = { middleButtonDialogState = MiddleButtonDialogState.FourPlayerLayout })
             }
@@ -182,7 +183,7 @@ fun MiddleButtonDialog(
             ) {
                 FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
-                    viewModel.resetPlayerStates()
+                    viewModel.resetGameState()
                     triggerEnterAnimation()
                 }, setAlt4PlayerLayout = { viewModel.settingsManager.alt4PlayerLayout = it })
             }
@@ -192,7 +193,7 @@ fun MiddleButtonDialog(
             ) {
                 StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setStartingLife = {
                     viewModel.settingsManager.startingLife = it
-                    viewModel.resetPlayerStates()
+                    viewModel.resetGameState()
                     triggerEnterAnimation()
                 })
             }
@@ -273,6 +274,7 @@ fun MiddleButtonDialog(
                 GridDialogContent(
                     Modifier.fillMaxSize(), title = "Settings", items = listOf({
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
+                            viewModel.savePlayerPrefs()
                             goToPlayerSelectScreen()
                             onDismiss()
                         })
@@ -359,14 +361,37 @@ fun MiddleButtonDialog(
             optionOneMessage = "Same players",
             optionTwoMessage = "Different players",
             onOptionOne = {
-                viewModel.resetPlayerStates()
+                viewModel.resetGameState()
                 showResetDialog = false
+                showChooseFirstPlayerDialog = true
+//                onDismiss()
+            },
+            onOptionTwo = {
+                viewModel.savePlayerPrefs()
+                viewModel.resetAllPrefs()
+                viewModel.resetGameState()
+                showResetDialog = false
+                showChooseFirstPlayerDialog = true
+//                onDismiss()
+            },
+        )
+    }
+
+    if (showChooseFirstPlayerDialog) {
+        WarningDialog(
+            onDismiss = { showChooseFirstPlayerDialog = false },
+            title = "Choose New First Player",
+            message = "Select whether to skip player selection or not",
+            optionOneMessage = "Select",
+            optionTwoMessage = "Skip",
+            onOptionOne = {
+                goToPlayerSelectScreen()
+                showChooseFirstPlayerDialog = false
                 onDismiss()
             },
             onOptionTwo = {
-                viewModel.resetAllPrefs()
-                viewModel.resetPlayerStates()
-                showResetDialog = false
+                viewModel.restartButtons()
+                showChooseFirstPlayerDialog = false
                 onDismiss()
             },
         )

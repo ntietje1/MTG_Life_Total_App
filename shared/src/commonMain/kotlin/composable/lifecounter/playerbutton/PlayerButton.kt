@@ -768,7 +768,7 @@ fun PlayerButton(
                                                                 backgroundColor = pInfo.color,
                                                                 textColor = pInfo.textColor,
                                                                 copyPrefsToCurrentPlayer = {
-                                                                    viewModel.copySettings(pInfo)
+                                                                    viewModel.copyPrefs(pInfo)
                                                                     viewModel.closeSettingsMenu()
                                                                 },
                                                                 removePlayerProfile = {

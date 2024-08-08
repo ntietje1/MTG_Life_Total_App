@@ -66,16 +66,6 @@ class SettingsManager private constructor() {
         settings.putString("playerStates", allPrefString)
     }
 
-    fun loadAllPlanes(): List<Card> {
-        val allPrefString = settings.getString("allPlanes", "[]")
-        return Json.decodeFromString(allPrefString)
-    }
-
-    fun saveAllPlanes(planes: List<Card>) {
-        val allPrefString = Json.encodeToString(planes)
-        settings.putString("allPlanes", allPrefString)
-    }
-
     fun savePlanechaseState(planarDeck: List<Card>, planarBackStack: List<Card>) {
         val allPrefString = Json.encodeToString(planarDeck)
         settings.putString("planarDeck", allPrefString)
@@ -103,6 +93,11 @@ class SettingsManager private constructor() {
             }
         }
         savePlayerPrefs(playerList)
+    }
+
+    fun loadPlayerPref(player: Player): Player? {
+        val playerList = loadPlayerPrefs()
+        return playerList.find { it.name == player.name }
     }
 
     fun loadPlayerPrefs(): ArrayList<Player> {
