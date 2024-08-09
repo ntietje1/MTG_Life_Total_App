@@ -463,7 +463,7 @@ fun SettingsDialog(
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            val buttonSize = remember(Unit) { maxWidth / 8f }
+            val buttonSize = remember(Unit) { maxWidth / 6.5f }
 
             Column(Modifier.fillMaxSize()) {
                 if (exitButtonEnabled) {
