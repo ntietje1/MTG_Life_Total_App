@@ -583,12 +583,22 @@ fun PlayerButton(
                                                 text = "Monarchy"
                                             ) { viewModel.onMonarchyButtonClicked() }
                                         }
+//                                        item {
+//                                            FormattedSettingsButton(
+//                                                modifier = settingsButtonModifier,
+//                                                imageResource = Res.drawable.transparent,
+//                                                text = ""
+//                                            ) { }
+//                                        }
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier,
-                                                imageResource = Res.drawable.transparent,
-                                                text = ""
-                                            ) { }
+                                                imageResource = Res.drawable.download_icon,
+                                                text = "Load Profile"
+                                            ) {
+                                                viewModel.setPlayerButtonState(PBState.SETTINGS_LOAD_PLAYER)
+                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_DEFAULT) }
+                                            }
                                         }
                                         item {
                                             FormattedSettingsButton(
@@ -680,11 +690,9 @@ fun PlayerButton(
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier,
-                                                imageResource = Res.drawable.download_icon,
-                                                text = "Load Profile"
+                                                imageResource = Res.drawable.transparent,
+                                                text = ""
                                             ) {
-                                                viewModel.setPlayerButtonState(PBState.SETTINGS_LOAD_PLAYER)
-                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE) }
                                             }
                                         }
 
