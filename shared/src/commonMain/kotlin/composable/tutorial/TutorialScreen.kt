@@ -3,6 +3,7 @@ package composable.tutorial
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -117,7 +118,16 @@ fun TutorialScreen(
                 beyondBoundsPageCount = 4
             ) { index ->
                 Image(
-                    modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillHeight, bitmap = imageResource(SingleTutorialScreen.entries[index].imageResource), contentDescription = null
+                    modifier = Modifier.fillMaxSize().clickable {
+                        scope.launch {
+                            pagerState.animateScrollToPage(
+                                pagerState.currentPage + 1
+                            )
+                        }
+                    },
+                    contentScale = ContentScale.FillHeight,
+                    bitmap = imageResource(SingleTutorialScreen.entries[index].imageResource),
+                    contentDescription = null
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
