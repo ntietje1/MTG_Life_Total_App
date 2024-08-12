@@ -132,7 +132,6 @@ class PlayerButtonViewModel(
     }
 
     fun locateImage(player: Player): String? {
-        println("Locating image for player: ${player.name}")
         return player.imageString?.let {
             if (it.startsWith("http")) {
                 return it

@@ -82,6 +82,7 @@ class LifeCounterViewModel(
         get() = playerButtonViewModels.find { it.state.value.buttonState == PBState.COMMANDER_DEALER }
 
     private fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
+        println("Generating player button view model for ${player.name}")
         return PlayerButtonViewModel(
             initialPlayer = player,
             settingsManager = settingsManager,
@@ -102,7 +103,8 @@ class LifeCounterViewModel(
         }
     }
 
-    private fun savePlayerStates() {
+    fun savePlayerStates() {
+        println("Saving player states: ${playerButtonViewModels.map { it.state.value.player.name }}")
         settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
     }
 

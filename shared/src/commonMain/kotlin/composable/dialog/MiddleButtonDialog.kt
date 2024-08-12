@@ -274,6 +274,7 @@ fun MiddleButtonDialog(
                 GridDialogContent(
                     Modifier.fillMaxSize(), title = "Settings", items = listOf({
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
+                            viewModel.savePlayerStates()
                             viewModel.savePlayerPrefs()
                             goToPlayerSelectScreen()
                             onDismiss()

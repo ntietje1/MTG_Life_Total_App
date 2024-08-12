@@ -80,18 +80,22 @@ class SettingsManager private constructor() {
     }
 
     fun savePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
-        deletePlayerPref(player, playerList)
+        removePlayerPref(player, playerList)
         playerList.add(player)
         savePlayerPrefs(playerList)
     }
 
-    fun deletePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
+    private fun removePlayerPref(player: Player, playerList: ArrayList<Player>) {
         val iterator = playerList.iterator()
         while (iterator.hasNext()) {
             if (iterator.next().name == player.name) {
                 iterator.remove()
             }
         }
+    }
+
+    fun deletePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
+        removePlayerPref(player, playerList)
         savePlayerPrefs(playerList)
     }
 
@@ -102,7 +106,7 @@ class SettingsManager private constructor() {
 
     fun loadPlayerPrefs(): ArrayList<Player> {
         val allPrefString = settings.getString("playerPrefs", "[]")
-        return Json.decodeFromString<List<Player>>(allPrefString).reversed().toCollection(ArrayList())
+        return Json.decodeFromString<List<Player>>(allPrefString).toCollection(ArrayList())
     }
 
     private fun savePlayerPrefs(players: ArrayList<Player>) {
