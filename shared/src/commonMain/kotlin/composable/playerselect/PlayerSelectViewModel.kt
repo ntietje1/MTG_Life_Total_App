@@ -13,8 +13,8 @@ class PlayerSelectViewModel(
     private val _state = MutableStateFlow(PlayerSelectState())
     val state: StateFlow<PlayerSelectState> = _state.asStateFlow()
 
-    fun setHelperText(value: Boolean?) {
-        _state.value = _state.value.copy(showHelperText = value ?: !_state.value.showHelperText)
+    fun setHelperText(value: HelperTextState) {
+        _state.value = _state.value.copy(showHelperText = value)
     }
 
     fun setNumPlayers(allowChangeNumPlayers: Boolean, numPlayers: Int) {

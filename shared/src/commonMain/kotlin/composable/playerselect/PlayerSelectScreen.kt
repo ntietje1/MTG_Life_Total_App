@@ -28,6 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
@@ -89,17 +90,19 @@ fun PlayerSelectScreen(
             setNumPlayers = { viewModel.setNumPlayers(allowChangeNumPlayers, it) }
         )
 
-        if (state.showHelperText) {
-            Text(
-                text = "Tap to select player",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = textSize.scaledSp,
-                lineHeight = textSize.scaledSp * 1.2f,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.Center).rotate(90f)
-            )
 
+        Text(
+            text = state.showHelperText.text,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = textSize.scaledSp,
+            lineHeight = textSize.scaledSp * 1.2f,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.align(Alignment.Center).rotate(90f).then(
+                if (state.showHelperText == HelperTextState.FADED) Modifier.alpha(0.15f) else Modifier.alpha(1f)
+            )
+        )
+        if (state.showHelperText == HelperTextState.FULL) {
             SettingsButton(modifier = Modifier.rotate(90f).align(Alignment.TopEnd).size(buttonSize),
                 mainColor = MaterialTheme.colorScheme.onPrimary,
                 backgroundColor = Color.Transparent,
@@ -139,13 +142,14 @@ private object PlayerSelectScreenValues {
 
 @Composable
 fun PlayerSelectScreenBase(
-    setHelperText: (Boolean) -> Unit,
+    setHelperText: (HelperTextState) -> Unit,
     goToLifeCounterScreen: () -> Unit,
     setNumPlayers: (Int) -> Unit
 ) {
     val circles = remember { mutableStateMapOf<PointerId, Circle>() }
     val disappearingCircles = remember { mutableStateListOf<Circle>() }
     var selectedId: PointerId? by remember { mutableStateOf(null) }
+    var previousCircleCount by remember { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
     val circleSize: Dp = 80.dp + (20.dp * LocalDensity.current.density )
@@ -235,14 +239,23 @@ fun PlayerSelectScreenBase(
             val pulseScope = CoroutineScope(coroutineContext)
             val helperTextScope = CoroutineScope(coroutineContext)
 
-            if (circles.size == 0) {
-                helperTextScope.launch {
-                    delay(showHelperTextDelay)
-                    setHelperText(true)
+            if (selectedId == null) {
+                when(circles.size) {
+                    0 -> helperTextScope.launch {
+                        delay(showHelperTextDelay)
+                        setHelperText(HelperTextState.FULL)
+                    }
+                    1 -> {
+                        if (previousCircleCount > 0) helperTextScope.launch {
+                            delay(showHelperTextDelay / 4)
+                            setHelperText(HelperTextState.FADED)
+                        }
+                        else setHelperText(HelperTextState.FADED)
+                    }
+                    else -> setHelperText(HelperTextState.HIDDEN)
                 }
-            } else {
-                setHelperText(false)
             }
+            previousCircleCount = circles.size
 
             if (circles.size >= 2) {
                 selectionScope.launch {
@@ -252,6 +265,7 @@ fun PlayerSelectScreenBase(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     for (id in circles.keys) {
                         if (selectedId != id) launch {
+//                            setHelperText(HelperTextState.HIDDEN)
                             disappearCircle(id, finalDeselectDuration)
                         } else launch {
                             circles[id]?.pulse()
