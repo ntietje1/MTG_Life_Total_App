@@ -416,11 +416,13 @@ fun GridDialogContent(
         Column(
             Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(padding))
+            Spacer(modifier = Modifier.weight(0.5f))
+            Spacer(modifier = Modifier.height(padding * 3f))
             Text(
                 modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
-            Spacer(modifier = Modifier.height(padding / 2))
+            Spacer(modifier = Modifier.weight(0.15f))
+            Spacer(modifier = Modifier.height(padding * 2f))
 //            Box(Modifier.fillMaxSize().background(color = Color.Red),
 //                contentAlignment = Alignment.Center) {
             LazyVerticalGrid(
@@ -439,6 +441,7 @@ fun GridDialogContent(
                         }
                     }
                 })
+            Spacer(modifier = Modifier.weight(0.1f))
             Spacer(modifier = Modifier.height(padding / 2f))
         }
     }
