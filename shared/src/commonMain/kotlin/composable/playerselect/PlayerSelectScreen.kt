@@ -99,7 +99,7 @@ fun PlayerSelectScreen(
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.Center).rotate(90f).then(
-                if (state.showHelperText == HelperTextState.FADED) Modifier.alpha(0.15f) else Modifier.alpha(1f)
+                if (state.showHelperText == HelperTextState.FADED) Modifier.alpha(0.25f) else Modifier.alpha(1f)
             )
         )
         if (state.showHelperText == HelperTextState.FULL) {
