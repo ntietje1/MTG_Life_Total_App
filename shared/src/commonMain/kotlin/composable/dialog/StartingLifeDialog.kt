@@ -106,6 +106,36 @@ fun TextFieldWithButton(
     onDone: () -> Unit,
     button: @Composable () -> Unit,
 ) {
+    Box(
+        modifier = modifier
+    ) {
+        FormattedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = label,
+            keyboardType = keyboardType,
+            onDone = onDone
+        )
+        Box(
+            Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+                .aspectRatio(1.0f)
+        ) {
+            button()
+        }
+    }
+}
+
+@Composable
+fun FormattedTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    keyboardType: KeyboardType,
+    onDone: () -> Unit,
+) {
     BoxWithConstraints(
         modifier = modifier
     ) {
@@ -137,13 +167,5 @@ fun TextFieldWithButton(
             keyboardType = keyboardType, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
         ), keyboardActions = KeyboardActions(onDone = { onDone() }), modifier = Modifier.fillMaxSize()
         )
-        Box(
-            Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .aspectRatio(1.0f)
-        ) {
-            button()
-        }
     }
 }
