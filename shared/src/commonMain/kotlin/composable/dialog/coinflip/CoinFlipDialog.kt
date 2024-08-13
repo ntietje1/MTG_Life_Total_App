@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -66,6 +67,8 @@ import getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.minus_icon
+import lifelinked.shared.generated.resources.plus_icon
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.thumbsup_icon
 import org.jetbrains.compose.resources.vectorResource
@@ -115,17 +118,17 @@ fun CoinFlipDialogContent(
         val padding = remember(Unit) { buttonSize / 2 }
         val counterHeight = remember(Unit) { maxHeight / 16f }
         val textSize = remember(Unit) { (buttonSize / 8f).value }
-
-        SettingsButton(
-            modifier = Modifier.size(buttonSize * 0.5f).align(Alignment.TopEnd).padding(end = buttonSize * 0.15f, top = buttonSize * 0.15f),
-            onPress = goToCoinFlipTutorial,
-            hapticEnabled = true,
-            textSizeMultiplier = 0.9f,
-            shape = RoundedCornerShape(100),
-            imageVector = vectorResource(Res.drawable.question_icon),
-            backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
-            mainColor = MaterialTheme.colorScheme.onPrimary
-        )
+//
+//        SettingsButton(
+//            modifier = Modifier.size(buttonSize * 0.5f).align(Alignment.TopEnd).padding(end = buttonSize * 0.15f, top = buttonSize * 0.15f),
+//            onPress = goToCoinFlipTutorial,
+//            hapticEnabled = true,
+//            textSizeMultiplier = 0.9f,
+//            shape = RoundedCornerShape(100),
+//            imageVector = vectorResource(Res.drawable.question_icon),
+//            backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+//            mainColor = MaterialTheme.colorScheme.onPrimary
+//        )
 
         Column(
             Modifier.wrapContentSize().align(Alignment.TopStart), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
@@ -162,6 +165,41 @@ fun CoinFlipDialogContent(
             )
         }
 
+        Column(
+            Modifier.wrapContentSize().align(Alignment.TopEnd), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.wrapContentSize().padding(top = buttonSize * 0.1f, end = buttonSize * 0.1f, bottom = buttonSize * 0.05f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.Top
+            ) {
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize * 0.7f).rotate(180f).padding(buttonSize * 0.025f),
+                    onPress = { if (state.userInteractionEnabled) viewModel.incrementBaseCoins(-1) },
+                    hapticEnabled = true,
+                    imageVector = vectorResource(Res.drawable.minus_icon),
+                    shape = RoundedCornerShape(30),
+                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+                )
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize * 0.7f).padding(buttonSize * 0.025f),
+                    onPress = { if (state.userInteractionEnabled) viewModel.incrementBaseCoins(1) },
+                    hapticEnabled = true,
+                    imageVector = vectorResource(Res.drawable.plus_icon),
+                    shape = RoundedCornerShape(30),
+                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+                )
+            }
+            Text(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = "Base Coins: ${state.baseCoins}",
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                fontWeight = FontWeight.Bold,
+                fontSize = textSize.scaledSp,
+                textAlign = TextAlign.Center
+            )
+        }
+
         val coinHeight = remember(Unit) { maxHeight / 2f }
 
         Column(modifier = modifier.fillMaxSize()) {
@@ -170,11 +208,11 @@ fun CoinFlipDialogContent(
             BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth(0.8f).height(coinHeight).align(Alignment.CenterHorizontally), contentAlignment = Alignment.Center
             ) {
-                val columns = remember(state.krarksThumbs) {
+                val columns = remember(state.baseCoins, state.krarksThumbs) {
                     viewModel.columns()
                 }
 
-                val rows = remember(state.krarksThumbs) {
+                val rows = remember(state.baseCoins, state.krarksThumbs) {
                     viewModel.rows()
                 }
 
@@ -185,23 +223,38 @@ fun CoinFlipDialogContent(
                         maxWidth / columns * 0.3f, maxHeight / rows * 0.3f
                     )
                 }
-
-                LazyVerticalGrid(
-                    modifier = Modifier.width(coinSize * columns).height(coinSize * rows),
-                    columns = GridCells.Fixed(columns),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalArrangement = Arrangement.Center
+                Box(
+                    modifier = Modifier.wrapContentHeight().fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    items(items = viewModel.coinControllers, key = { it.hashCode() }) {
-                        CoinFlippable(modifier = Modifier.height(coinSize).wrapContentWidth(), coinController = it, skipAnimation = state.krarksThumbs >= 4, onTap = {
-                            if (state.userInteractionEnabled) {
-                                viewModel.randomFlip()
-                            }
-                        })
+                    LazyVerticalGrid(
+                        modifier = Modifier.width(coinSize * columns).height(coinSize * rows),
+                        columns = GridCells.Fixed(columns),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        items(items = viewModel.coinControllers, key = { it.hashCode() }) {
+                            CoinFlippable(modifier = Modifier.height(coinSize).wrapContentWidth(), coinController = it, skipAnimation = viewModel.calculateCoinCount() >= 32, onTap = { //TODO: change krark thumb condition
+                                if (state.userInteractionEnabled) {
+                                    viewModel.randomFlip()
+                                }
+                            })
+                        }
                     }
+                    SettingsButton(
+                        modifier = Modifier.size(buttonSize * 0.5f).align(Alignment.BottomEnd).padding(end = buttonSize * 0.15f).offset(y = buttonSize * 0.5f),
+                        onPress = goToCoinFlipTutorial,
+                        hapticEnabled = true,
+                        textSizeMultiplier = 0.9f,
+                        shape = RoundedCornerShape(100),
+                        imageVector = vectorResource(Res.drawable.question_icon),
+                        backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+                        mainColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
+
             }
-            Spacer(Modifier.weight(0.5f))
+            Spacer(Modifier.weight(0.4f))
             Column(
                 modifier = Modifier.wrapContentHeight().fillMaxWidth(0.8f).align(Alignment.CenterHorizontally)
                     .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), RoundedCornerShape(30)),

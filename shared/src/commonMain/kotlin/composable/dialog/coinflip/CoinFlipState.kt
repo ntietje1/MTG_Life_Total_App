@@ -10,6 +10,7 @@ import org.jetbrains.compose.resources.DrawableResource
 data class CoinFlipState(
     val headCount: Int = 0,
     val tailCount: Int = 0,
+    val baseCoins: Int = 1,
     val krarksThumbs: Int = 0,
     val flipInProgress: Boolean = false,
     val userInteractionEnabled: Boolean = true,

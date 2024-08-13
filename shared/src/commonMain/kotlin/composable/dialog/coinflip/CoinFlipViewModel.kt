@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 class CoinFlipViewModel(
     val settingsManager: SettingsManager
@@ -28,13 +28,54 @@ class CoinFlipViewModel(
         generateCoinController()
     }
 
-    fun rows(thumbs: Int = state.value.krarksThumbs): Int {
-        return 2.0.pow(floor(thumbs / 2.0)).toInt()
+    fun calculateCoinCount(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
+        return baseCoins * 2.0.pow(thumbs).toInt()
     }
 
-    fun columns(thumbs: Int = state.value.krarksThumbs): Int {
-        return rows(thumbs + 1)
+    private fun findClosestSquare(value: Int): Int {
+        val sqrt = sqrt(value.toDouble())
+        val floor = sqrt.toInt()
+        val ceil = sqrt.toInt() + 1
+        return if ((value - floor * floor) < (ceil * ceil - value)) {
+            floor
+        } else {
+            ceil
+        }
     }
+
+    fun rows(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
+//        val coinCount = calculateCoinCount(baseCoins, thumbs)
+//        val cols = columns()
+//        var rows = coinCount / cols
+//        if (coinCount % cols != 0) {
+//            rows++
+//        }
+//        return rows
+        return findClosestSquare(calculateCoinCount(baseCoins, thumbs))
+    }
+
+    //TODO: find closest square, no matter higher or lower
+    //TODO: determine rows/cols based on that
+
+    fun columns(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
+//        val coinCount = calculateCoinCount(baseCoins, thumbs) * 2
+//        return sqrt(coinCount.toDouble()).toInt()
+        val closestSqr = findClosestSquare(calculateCoinCount(baseCoins, thumbs))
+        return if (closestSqr * closestSqr < calculateCoinCount(baseCoins, thumbs)) {
+            closestSqr + 1
+        } else {
+            closestSqr
+        }
+    }
+
+//    fun rows(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
+//        return calculateCoinCount(baseCoins, thumbs)
+////        return 2.0.pow(floor(thumbs / 2.0)).toInt()
+//    }
+//
+//    fun columns(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
+//        return rows(baseCoins, thumbs + 1)
+//    }
 
     fun buildLastResultString(): AnnotatedString {
         return buildAnnotatedString {
@@ -135,6 +176,12 @@ class CoinFlipViewModel(
             }
         }
         return Pair(countHeads, countTails)
+    }
+
+    fun incrementBaseCoins(value: Int) {
+        if (state.value.baseCoins + value <= 0 || state.value.flipInProgress) return
+        _state.value = state.value.copy(baseCoins = state.value.baseCoins + value)
+        updateNumberOfCoins()
     }
 
     fun incrementKrarksThumbs(value: Int) {
@@ -274,10 +321,11 @@ class CoinFlipViewModel(
     }
 
     private fun updateNumberOfCoins() {
-        while (coinControllers.size > 2.toDouble().pow(state.value.krarksThumbs)) {
+        val coinCount = calculateCoinCount()
+        while (coinControllers.size > coinCount) {
             coinControllers.removeLast()
         }
-        while (coinControllers.size < 2.toDouble().pow(state.value.krarksThumbs)) {
+        while (coinControllers.size < coinCount) {
             coinControllers.add(generateCoinController())
         }
     }
