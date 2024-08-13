@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import composable.SettingsButton
@@ -62,6 +63,8 @@ import theme.scaledSp
 fun DiceRollDialogContent(
     modifier: Modifier = Modifier
 ) {
+    var textFieldValue by remember { mutableStateOf("100") }
+    var customDieValue by remember { mutableStateOf(100) }
     var lastResult: Int? by remember { mutableStateOf(null) }
     var faceValue: Int? by remember { mutableStateOf(null) }
     var size by remember { mutableStateOf(1.0f) }
@@ -124,7 +127,30 @@ fun DiceRollDialogContent(
                     imageVector = vectorResource(Res.drawable.d20_icon),
                     resultCallBack = { setLastResult(it, 20) })
             }))
-
+            DiceRollButton(modifier = Modifier.size(diceRollButtonSize).padding(bottom = diceRollButtonSize / 5f),
+                value = customDieValue,
+                imageVector = vectorResource(Res.drawable.d20_icon),
+                resultCallBack = { setLastResult(it, 20) })
+            Box(
+                modifier = Modifier.fillMaxWidth(0.6f).height(diceRollButtonSize/2f)
+            ) {
+                FormattedTextField(
+                    modifier = Modifier,
+                    value = textFieldValue,
+                    onValueChange = {
+                        if (it.toIntOrNull() != null) {
+                            textFieldValue = it
+                            customDieValue = it.toInt()
+                        }
+                    },
+                    label = "Custom Die Value",
+                    keyboardType = KeyboardType.Number,
+                    onDone = {
+                        //TODO: close keyboard
+                    }
+                )
+            }
+            Spacer(modifier = Modifier.weight(0.1f))
             Text(
                 text = "Last result", color = MaterialTheme.colorScheme.onPrimary, fontSize = resultTextSize, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()
             )
@@ -226,7 +252,7 @@ fun DiceRollButton(
                         text = faceValue.toString(),
                         color = MaterialTheme.colorScheme.background,
                         fontWeight = FontWeight.Bold,
-                        fontSize = maxHeight.value.scaledSp / 5,
+                        fontSize = if (faceValue.toString().length >= 3) maxHeight.value.scaledSp / (5 + (faceValue.toString().length - 2) * 1.3f) else maxHeight.value.scaledSp / 5,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
                     )
