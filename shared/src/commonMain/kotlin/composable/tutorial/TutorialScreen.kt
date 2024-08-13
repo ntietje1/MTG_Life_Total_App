@@ -120,9 +120,13 @@ fun TutorialScreen(
                 Image(
                     modifier = Modifier.fillMaxSize().clickable {
                         scope.launch {
-                            pagerState.animateScrollToPage(
-                                pagerState.currentPage + 1
-                            )
+                            if (pagerState.currentPage == state.totalPages - 1) {
+                                onFinishTutorial()
+                            } else {
+                                pagerState.animateScrollToPage(
+                                    pagerState.currentPage + 1
+                                )
+                            }
                         }
                     },
                     contentScale = ContentScale.FillHeight,
