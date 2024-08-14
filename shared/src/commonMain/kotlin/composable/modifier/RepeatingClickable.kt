@@ -30,7 +30,7 @@ private enum class PressState { Pressed, Idle }
 
 @Composable
 fun Modifier.repeatingClickable(
-    interactionSource: MutableInteractionSource,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     indication: Indication? = null,
     enabled: Boolean = true,
     initialDelayMillis: Long = 500,
