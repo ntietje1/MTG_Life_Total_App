@@ -60,7 +60,30 @@ class CoinFlipViewModel(
         return buildAnnotatedString {
             if (state.value.lastResults.isEmpty() || (state.value.flipInProgress && flippingUntil == null)) {
                 append(" ".repeat((coinControllers.size * 3.825f + 1).roundToInt()))
-            } else {
+            } else if (state.value.lastResults.count{it == CoinHistoryItem.HEADS || it == CoinHistoryItem.TAILS } == 1) {
+                append(" ")
+                state.value.lastResults.forEach { result ->
+                    when (result) {
+                        CoinHistoryItem.HEADS -> {
+                            withStyle(style = SpanStyle(color = result.color)) {
+                                append("Heads")
+                            }
+                        }
+
+                        CoinHistoryItem.TAILS -> {
+                            withStyle(style = SpanStyle(color = result.color)) {
+                                append("Tails")
+                            }
+                        }
+
+                        else -> {
+//                            append(result.letter)
+                        }
+                    }
+                }
+                append(" ")
+            }
+            else {
                 append(" ")
                 state.value.lastResults.forEach { result ->
                     withStyle(style = SpanStyle(color = result.color)) {
@@ -172,11 +195,11 @@ class CoinFlipViewModel(
                         } else {
                             if (heads > 0) {
                                 withStyle(style = SpanStyle(color = CoinHistoryItem.HEADS.color)) {
-                                    append("Heads ")
+                                    append("H ")
                                 }
                             } else if (tails > 0) {
                                 withStyle(style = SpanStyle(color = CoinHistoryItem.TAILS.color)) {
-                                    append("Tails ")
+                                    append("T ")
                                 }
                             }
                         }
