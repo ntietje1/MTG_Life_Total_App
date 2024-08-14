@@ -54,9 +54,6 @@ class CoinFlipViewModel(
         return findClosestSquare(calculateCoinCount(baseCoins, thumbs))
     }
 
-    //TODO: find closest square, no matter higher or lower
-    //TODO: determine rows/cols based on that
-
     fun columns(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
 //        val coinCount = calculateCoinCount(baseCoins, thumbs) * 2
 //        return sqrt(coinCount.toDouble()).toInt()
@@ -130,6 +127,21 @@ class CoinFlipViewModel(
                         index = if (rightIndexSublist != -1) rightIndexSublist + index else historySize
                     }
 
+                    CoinFace.L_DIVIDER_SINGLE -> { //TODO: parse <base coin> flips at a time, separate by that
+                        val (heads, tails) = parseHistory(index)
+                        withStyle(style = SpanStyle(color = CoinFace.HEADS.color)) {
+                            append("${heads}H")
+                        }
+                        withStyle(style = SpanStyle(color = CoinFace.L_DIVIDER_SINGLE.color)) {
+                            append(" & ")
+                        }
+                        withStyle(style = SpanStyle(color = CoinFace.TAILS.color)) {
+                            append("${tails}T ")
+                        }
+                        val rightIndexSublist = state.value.history.subList(index, historySize).indexOf(CoinFace.R_DIVIDER_SINGLE)
+                        index = if (rightIndexSublist != -1) rightIndexSublist + index else historySize
+                    }
+
                     else -> {
                         index++
                     }
@@ -145,13 +157,13 @@ class CoinFlipViewModel(
 
         state.value.history.subList(startIndex, state.value.history.size).forEach { coinFace ->
             when (coinFace) {
-                CoinFace.L_DIVIDER_LIST -> {
+                CoinFace.L_DIVIDER_LIST, CoinFace.L_DIVIDER_SINGLE-> {
                     isCounting = true
                     countHeads = 0
                     countTails = 0
                 }
 
-                CoinFace.R_DIVIDER_LIST -> {
+                CoinFace.R_DIVIDER_LIST, CoinFace.R_DIVIDER_SINGLE -> {
                     if (isCounting) {
                         isCounting = false
                         return Pair(countHeads, countTails)
