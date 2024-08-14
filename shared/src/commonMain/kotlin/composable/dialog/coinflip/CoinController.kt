@@ -36,9 +36,9 @@ class CoinController(
 
     var flipAnimationType: FlipAnimationType = FlipAnimationType.VERTICAL_ANTI_CLOCKWISE
     private var flipIndex: Int = 0
-    private var currentFace: CoinFace = CoinFace.HEADS
+    private var currentFace: CoinHistoryItem = CoinHistoryItem.HEADS
     private var flipInProgress: Boolean = false
-    private var onResultCallback: ((CoinFace) -> Unit)? = null
+    private var onResultCallback: ((CoinHistoryItem) -> Unit)? = null
 
     init {
         setNextResult()
@@ -73,7 +73,7 @@ class CoinController(
     }
 
     // method hat "resets" the coin flip, should be called before each flip
-    private fun setNextResult(nextResult: CoinFace? = null) {
+    private fun setNextResult(nextResult: CoinHistoryItem? = null) {
         flipAnimationType = FlipAnimationType.VERTICAL_CLOCKWISE
         if (nextResult == null) {
             flipIndex = 0
@@ -107,13 +107,13 @@ class CoinController(
         }
     }
 
-    fun randomFlip(onResult: ((CoinFace) -> Unit)? = null) {
+    fun randomFlip(onResult: ((CoinHistoryItem) -> Unit)? = null) {
         onResult?.let { onResultCallback = it }
         setNextResult()
         continueFlip()
     }
 
-    fun onResult(currentSide: CoinFace) {
+    fun onResult(currentSide: CoinHistoryItem) {
         currentFace = currentSide
         onResultCallback?.let { it((currentSide)) }
     }

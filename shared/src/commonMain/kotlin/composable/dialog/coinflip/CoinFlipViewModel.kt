@@ -22,7 +22,7 @@ class CoinFlipViewModel(
     private val _state = MutableStateFlow(CoinFlipState())
     val state: StateFlow<CoinFlipState> = _state.asStateFlow()
 
-    private var flippingUntil: CoinFace? = null
+    private var flippingUntil: CoinHistoryItem? = null
 
     val coinControllers = MutableList(1) {
         generateCoinController()
@@ -44,19 +44,10 @@ class CoinFlipViewModel(
     }
 
     fun rows(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
-//        val coinCount = calculateCoinCount(baseCoins, thumbs)
-//        val cols = columns()
-//        var rows = coinCount / cols
-//        if (coinCount % cols != 0) {
-//            rows++
-//        }
-//        return rows
         return findClosestSquare(calculateCoinCount(baseCoins, thumbs))
     }
 
     fun columns(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
-//        val coinCount = calculateCoinCount(baseCoins, thumbs) * 2
-//        return sqrt(coinCount.toDouble()).toInt()
         val closestSqr = findClosestSquare(calculateCoinCount(baseCoins, thumbs))
         return if (closestSqr * closestSqr < calculateCoinCount(baseCoins, thumbs)) {
             closestSqr + 1
@@ -65,39 +56,45 @@ class CoinFlipViewModel(
         }
     }
 
-//    fun rows(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
-//        return calculateCoinCount(baseCoins, thumbs)
-////        return 2.0.pow(floor(thumbs / 2.0)).toInt()
-//    }
-//
-//    fun columns(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
-//        return rows(baseCoins, thumbs + 1)
-//    }
-
     fun buildLastResultString(): AnnotatedString {
         return buildAnnotatedString {
             if (state.value.lastResults.isEmpty() || (state.value.flipInProgress && flippingUntil == null)) {
-                append(" ".repeat((coinControllers.size * 3.85f + 1).roundToInt()))
+                append(" ".repeat((coinControllers.size * 3.825f + 1).roundToInt()))
             } else {
                 append(" ")
                 state.value.lastResults.forEach { result ->
                     withStyle(style = SpanStyle(color = result.color)) {
-                        append("${result.letter} ")
+                        when (result) {
+                            CoinHistoryItem.R_DIVIDER_LIST, CoinHistoryItem.R_DIVIDER_SINGLE -> {
+                                append(" ")
+                                append(result.letter)
+                            }
+
+                            CoinHistoryItem.COMMA, CoinHistoryItem.L_DIVIDER_LIST, CoinHistoryItem.L_DIVIDER_SINGLE -> {
+                                append(result.letter)
+                                append(" ")
+                            }
+
+                            else -> {
+                                append(result.letter)
+                            }
+                        }
                     }
                 }
+                append(" ")
             }
         }
     }
 
     fun repairHistoryString() {
-        while (state.value.history.count{it == CoinFace.L_DIVIDER_SINGLE} > state.value.history.count{it == CoinFace.R_DIVIDER_SINGLE}) {
+        while (state.value.history.count { it == CoinHistoryItem.L_DIVIDER_SINGLE } > state.value.history.count { it == CoinHistoryItem.R_DIVIDER_SINGLE }) {
             _state.value = state.value.copy(history = state.value.history.subList(0, state.value.history.size - 1))
         }
 
-        val leftDividerIndex = state.value.history.indexOfLast { it == CoinFace.L_DIVIDER_LIST }
-        val rightDividerIndex = state.value.history.indexOfLast { it == CoinFace.R_DIVIDER_LIST }
+        val leftDividerIndex = state.value.history.indexOfLast { it == CoinHistoryItem.L_DIVIDER_LIST }
+        val rightDividerIndex = state.value.history.indexOfLast { it == CoinHistoryItem.R_DIVIDER_LIST }
         if (leftDividerIndex > rightDividerIndex) {
-            addToHistory(CoinFace.R_DIVIDER_LIST)
+            addToHistory(CoinHistoryItem.R_DIVIDER_LIST)
         }
     }
 
@@ -107,42 +104,95 @@ class CoinFlipViewModel(
         return buildAnnotatedString {
             append(" ")
             while (index < historySize) {
-                val coinFace = state.value.history[index]
-                withStyle(style = SpanStyle(color = coinFace.color)) {
-                    append("${coinFace.letter} ")
-                }
-                when (coinFace) {
-                    CoinFace.L_DIVIDER_LIST -> {
-                        val (heads, tails) = parseHistory(index)
-                        withStyle(style = SpanStyle(color = CoinFace.HEADS.color)) {
-                            append("${heads}H")
+                when (val coinHistoryItem = state.value.history[index]) {
+                    CoinHistoryItem.L_DIVIDER_LIST -> {
+                        val (params, counts) = parseHistory(index)
+                        val (_, target) = params
+                        val (heads, tails) = counts
+                        withStyle(style = SpanStyle(color = CoinHistoryItem.L_DIVIDER_LIST.color)) {
+                            append("${CoinHistoryItem.L_DIVIDER_LIST.letter} ")
                         }
-                        withStyle(style = SpanStyle(color = CoinFace.L_DIVIDER_LIST.color)) {
-                            append(" / ")
+                        when (target) {
+                            CoinHistoryItem.HEADS -> {
+                                withStyle(style = SpanStyle(color = CoinHistoryItem.TAILS.color)) {
+                                    append("$tails Tails")
+                                }
+                                append(" in ")
+                                withStyle(style = SpanStyle(color = CoinHistoryItem.HEADS.color)) {
+                                append("${heads + tails} Flips ")
+                                }
+                            }
+
+                            CoinHistoryItem.TAILS -> {
+                                withStyle(style = SpanStyle(color = CoinHistoryItem.HEADS.color)) {
+                                    append("$heads Heads")
+                                }
+                                append(" in ")
+                                withStyle(style = SpanStyle(color = CoinHistoryItem.TAILS.color)) {
+                                append("${heads + tails} Flips ")
+                                }
+                            }
+
+                            else -> {
+                                append(" Error :(")
+                            }
                         }
-                        withStyle(style = SpanStyle(color = CoinFace.TAILS.color)) {
-                            append("${tails}T ")
+
+                        withStyle(style = SpanStyle(color = CoinHistoryItem.R_DIVIDER_LIST.color)) {
+                            append("${CoinHistoryItem.R_DIVIDER_LIST.letter} ")
                         }
-                        val rightIndexSublist = state.value.history.subList(index, historySize).indexOf(CoinFace.R_DIVIDER_LIST)
+
+
+                        val rightIndexSublist = state.value.history.subList(index, historySize).indexOf(CoinHistoryItem.R_DIVIDER_LIST)
                         index = if (rightIndexSublist != -1) rightIndexSublist + index else historySize
                     }
 
-                    CoinFace.L_DIVIDER_SINGLE -> { //TODO: parse <base coin> flips at a time, separate by that
-                        val (heads, tails) = parseHistory(index)
-                        withStyle(style = SpanStyle(color = CoinFace.HEADS.color)) {
-                            append("${heads}H")
+                    CoinHistoryItem.L_DIVIDER_SINGLE -> {
+                        val (params, counts) = parseHistory(index)
+                        val (multiMode, _) = params
+                        val (heads, tails) = counts
+                        if (multiMode) {
+                            withStyle(style = SpanStyle(color = CoinHistoryItem.L_DIVIDER_SINGLE.color)) {
+                                append("${CoinHistoryItem.L_DIVIDER_SINGLE.letter} ")
+                            }
+
+                            withStyle(style = SpanStyle(color = CoinHistoryItem.HEADS.color)) {
+                                append("${heads}H")
+                            }
+                            withStyle(style = SpanStyle(color = CoinHistoryItem.L_DIVIDER_SINGLE.color)) {
+                                append(" & ")
+                            }
+                            withStyle(style = SpanStyle(color = CoinHistoryItem.TAILS.color)) {
+                                append("${tails}T ")
+                            }
+
+                            withStyle(style = SpanStyle(color = CoinHistoryItem.R_DIVIDER_SINGLE.color)) {
+                                append("${CoinHistoryItem.R_DIVIDER_SINGLE.letter} ")
+                            }
+                        } else {
+                            if (heads > 0) {
+                                withStyle(style = SpanStyle(color = CoinHistoryItem.HEADS.color)) {
+                                    append("Heads ")
+                                }
+                            } else if (tails > 0) {
+                                withStyle(style = SpanStyle(color = CoinHistoryItem.TAILS.color)) {
+                                    append("Tails ")
+                                }
+                            }
                         }
-                        withStyle(style = SpanStyle(color = CoinFace.L_DIVIDER_SINGLE.color)) {
-                            append(" & ")
-                        }
-                        withStyle(style = SpanStyle(color = CoinFace.TAILS.color)) {
-                            append("${tails}T ")
-                        }
-                        val rightIndexSublist = state.value.history.subList(index, historySize).indexOf(CoinFace.R_DIVIDER_SINGLE)
+
+                        val rightIndexSublist = state.value.history.subList(index, historySize).indexOf(CoinHistoryItem.R_DIVIDER_SINGLE)
                         index = if (rightIndexSublist != -1) rightIndexSublist + index else historySize
+                    }
+
+                    CoinHistoryItem.R_DIVIDER_SINGLE, CoinHistoryItem.R_DIVIDER_LIST -> {
+                        index++
                     }
 
                     else -> {
+                        withStyle(style = SpanStyle(color = coinHistoryItem.color)) {
+                            append("${coinHistoryItem.letter} ")
+                        }
                         index++
                     }
                 }
@@ -150,36 +200,54 @@ class CoinFlipViewModel(
         }
     }
 
-    private fun parseHistory(startIndex: Int): Pair<Int, Int> {
+    private fun parseHistory(startIndex: Int): Pair<Pair<Boolean, CoinHistoryItem?>, Pair<Int, Int>> {
         var countHeads = 0
         var countTails = 0
         var isCounting = false
+        var target: CoinHistoryItem? = null
+        var multiMode = false
 
-        state.value.history.subList(startIndex, state.value.history.size).forEach { coinFace ->
-            when (coinFace) {
-                CoinFace.L_DIVIDER_LIST, CoinFace.L_DIVIDER_SINGLE-> {
+        state.value.history.subList(startIndex, state.value.history.size).forEach { coinHistoryItem ->
+            when (coinHistoryItem) {
+                CoinHistoryItem.L_DIVIDER_LIST, CoinHistoryItem.L_DIVIDER_SINGLE -> {
                     isCounting = true
                     countHeads = 0
                     countTails = 0
                 }
 
-                CoinFace.R_DIVIDER_LIST, CoinFace.R_DIVIDER_SINGLE -> {
+                CoinHistoryItem.R_DIVIDER_LIST, CoinHistoryItem.R_DIVIDER_SINGLE -> {
                     if (isCounting) {
                         isCounting = false
-                        return Pair(countHeads, countTails)
+                        return Pair(Pair(multiMode, target), Pair(countHeads, countTails))
                     }
                 }
 
-                CoinFace.HEADS -> {
+                CoinHistoryItem.HEADS -> {
                     if (isCounting) {
                         countHeads++
                     }
                 }
 
-                CoinFace.TAILS -> {
+                CoinHistoryItem.TAILS -> {
                     if (isCounting) {
                         countTails++
                     }
+                }
+
+                CoinHistoryItem.HEADS_TARGET_MARKER -> {
+                    target = CoinHistoryItem.HEADS
+                }
+
+                CoinHistoryItem.TAILS_TARGET_MARKER -> {
+                    target = CoinHistoryItem.TAILS
+                }
+
+                CoinHistoryItem.MULTI_MODE_MARKER -> {
+                    multiMode = true
+                }
+
+                CoinHistoryItem.SINGLE_MODE_MARKER -> {
+                    multiMode = false
                 }
 
                 else -> {
@@ -187,7 +255,7 @@ class CoinFlipViewModel(
                 }
             }
         }
-        return Pair(countHeads, countTails)
+        return Pair(Pair(multiMode, target), Pair(countHeads, countTails))
     }
 
     fun incrementBaseCoins(value: Int) {
@@ -202,43 +270,65 @@ class CoinFlipViewModel(
         updateNumberOfCoins()
     }
 
-    fun flipUntil(target: CoinFace) {
-//        softReset()
+    fun flipUntil(target: CoinHistoryItem) {
         resetLastResults()
         setFlipInProgress(true)
         setUserInteractionEnabled(false)
         flippingUntil = target
-        addToHistory(CoinFace.L_DIVIDER_LIST)
-        flipUntilHelper(target)
+        println("FLIPPING UNTIL: $target")
+        addToHistory(CoinHistoryItem.L_DIVIDER_LIST)
+        if (state.value.baseCoins > 1) {
+            addToLastResults(CoinHistoryItem.L_DIVIDER_SINGLE)
+        }
+        when (target) {
+            CoinHistoryItem.HEADS -> addToHistory(CoinHistoryItem.HEADS_TARGET_MARKER)
+            CoinHistoryItem.TAILS -> addToHistory(CoinHistoryItem.TAILS_TARGET_MARKER)
+            else -> return
+        }
+        addToHistory(CoinHistoryItem.MULTI_MODE_MARKER)
+        val groupedCoinControllers = coinControllers.chunked(calculateCoinCount(baseCoins = 1))
+        val done = MutableList(groupedCoinControllers.size) { false }
+        for (index in groupedCoinControllers.indices) {
+            val group = groupedCoinControllers[index]
+            flipUntilHelper(target = target, coinControllers = group) {
+                done[index] = true
+                if (done.all { it }) {
+                    setFlipInProgress(false)
+                    setUserInteractionEnabled(true)
+                    flippingUntil = null
+                    addToHistory(CoinHistoryItem.R_DIVIDER_LIST)
+                    if (state.value.baseCoins > 1) {
+                        addToLastResults(CoinHistoryItem.R_DIVIDER_SINGLE)
+                    }
+                } else {
+                    addToLastResults(CoinHistoryItem.R_DIVIDER_SINGLE)
+                    addToLastResults(CoinHistoryItem.COMMA)
+                    addToLastResults(CoinHistoryItem.L_DIVIDER_SINGLE)
+                }
+            }
+        }
     }
 
-    private fun flipUntilHelper(target: CoinFace) {
-        val flipResults = mutableListOf<CoinFace>()
+    private fun flipUntilHelper(
+        target: CoinHistoryItem, coinControllers: List<CoinController> = this.coinControllers, totalFlipResults: MutableList<CoinHistoryItem> = mutableListOf(), onDone: () -> Unit = {}
+    ) {
+        val flipResults = mutableListOf<CoinHistoryItem>()
         coinControllers.forEach { coinController ->
             coinController.randomFlip { result ->
                 addToCounter(result)
-                addToLastResults(result)
+                totalFlipResults.add(result)
                 flipResults.add(result)
-                if (flipResults.size == coinControllers.size) { // end case
-                    if (flipResults.all { it == target }) { // done
-                        setFlipInProgress(false)
-                        setUserInteractionEnabled(true)
-                        flippingUntil = null
-                        addToHistory(target)
-                        addToHistory(CoinFace.R_DIVIDER_LIST)
-                    } else { // keep flipping
-                        addToHistory(if (target == CoinFace.HEADS) CoinFace.TAILS else CoinFace.HEADS)
-//                        addToHistory(CoinFace.COMMA)
-                        addToLastResults(CoinFace.COMMA)
-                        viewModelScope.launch {
-                            setFlipInProgress(false)
-                            delay(10)
-                            setFlipInProgress(true)
-                            delay(250)
-                            if (state.value.flipInProgress) {
-                                flipUntilHelper(target)
-                            }
-                        }
+                if (flipResults.size != coinControllers.size) return@randomFlip // not all coins have flipped
+                if (flipResults.all { it == target }) { // done
+                    totalFlipResults.forEach { addToLastResults(it) }
+                    addToHistory(target)
+                    onDone()
+                } else { // keep flipping
+                    addToHistory(if (target == CoinHistoryItem.HEADS) CoinHistoryItem.TAILS else CoinHistoryItem.HEADS)
+                    totalFlipResults.add(CoinHistoryItem.COMMA)
+                    viewModelScope.launch {
+                        delay(250)
+                        flipUntilHelper(target = target, coinControllers = coinControllers, totalFlipResults = totalFlipResults, onDone = onDone)
                     }
                 }
             }
@@ -246,20 +336,27 @@ class CoinFlipViewModel(
     }
 
     fun randomFlip() {
-//        softReset()
         resetLastResults()
         setFlipInProgress(true)
         setUserInteractionEnabled(false)
-        addToHistory(CoinFace.L_DIVIDER_SINGLE)
+        addToHistory(CoinHistoryItem.L_DIVIDER_SINGLE)
+        if (calculateCoinCount() > 1) {
+            addToHistory(CoinHistoryItem.MULTI_MODE_MARKER)
+        } else {
+            addToHistory(CoinHistoryItem.SINGLE_MODE_MARKER)
+        }
         coinControllers.forEach { coinController ->
-            coinController.randomFlip {
-                addToCounter(it)
-                addToLastResults(it)
-                addToHistory(it)
-                if (state.value.lastResults.size == coinControllers.size) {
-                    addToHistory(CoinFace.R_DIVIDER_SINGLE)
+            coinController.randomFlip { res ->
+                addToCounter(res)
+                addToLastResults(res)
+                addToHistory(res)
+                val resultCount = state.value.lastResults.count { it == CoinHistoryItem.TAILS || it == CoinHistoryItem.HEADS }
+                if (resultCount == coinControllers.size) {
+                    addToHistory(CoinHistoryItem.R_DIVIDER_SINGLE)
                     setUserInteractionEnabled(true)
                     setFlipInProgress(false)
+                } else if (resultCount % calculateCoinCount(baseCoins = 1) == 0) {
+                    addToLastResults(CoinHistoryItem.COMMA)
                 }
             }
         }
@@ -297,23 +394,23 @@ class CoinFlipViewModel(
         _state.value = state.value.copy(lastResults = listOf())
     }
 
-    private fun addToLastResults(value: CoinFace) {
+    private fun addToLastResults(value: CoinHistoryItem) {
         val newResults = state.value.lastResults + value
         _state.value = state.value.copy(lastResults = newResults)
     }
 
-    private fun addToCounter(value: CoinFace) {
+    private fun addToCounter(value: CoinHistoryItem) {
         when (value) {
-            CoinFace.HEADS -> _state.value = state.value.copy(headCount = state.value.headCount + 1)
-            CoinFace.TAILS -> _state.value = state.value.copy(tailCount = state.value.tailCount + 1)
+            CoinHistoryItem.HEADS -> _state.value = state.value.copy(headCount = state.value.headCount + 1)
+            CoinHistoryItem.TAILS -> _state.value = state.value.copy(tailCount = state.value.tailCount + 1)
             else -> return
         }
     }
 
     private val maxHistoryLength = 256 + 2
 
-    private fun addToHistory(coinFace: CoinFace) {
-        val newHistory = (state.value.history + coinFace).takeLast(maxHistoryLength)
+    private fun addToHistory(coinHistoryItem: CoinHistoryItem) {
+        val newHistory = (state.value.history + coinHistoryItem).takeLast(maxHistoryLength)
         _state.value = state.value.copy(
             history = newHistory,
         )
@@ -328,7 +425,7 @@ class CoinFlipViewModel(
 
     private fun generateCoinController(): CoinController {
         return CoinController(
-            settingsManager = settingsManager
+            settingsManager = settingsManager,
         )
     }
 

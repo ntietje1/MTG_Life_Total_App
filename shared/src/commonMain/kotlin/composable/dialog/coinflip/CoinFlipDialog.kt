@@ -108,7 +108,7 @@ fun CoinFlipDialogContent(
 
     LaunchedEffect(state.history.size, state.lastResults.size) {
         if ( // hacky way to trigger haptic feedback on a flip
-            state.history.lastOrNull() == CoinFace.R_DIVIDER_LIST || state.history.lastOrNull() == CoinFace.R_DIVIDER_SINGLE || state.lastResults.lastOrNull() == CoinFace.COMMA) {
+            state.history.lastOrNull() == CoinHistoryItem.R_DIVIDER_LIST || state.history.lastOrNull() == CoinHistoryItem.R_DIVIDER_SINGLE) {
             if (allowHaptic) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
@@ -118,18 +118,6 @@ fun CoinFlipDialogContent(
         val padding = remember(Unit) { buttonSize / 2 }
         val counterHeight = remember(Unit) { maxHeight / 16f }
         val textSize = remember(Unit) { (buttonSize / 8f).value }
-//
-//        SettingsButton(
-//            modifier = Modifier.size(buttonSize * 0.5f).align(Alignment.TopEnd).padding(end = buttonSize * 0.15f, top = buttonSize * 0.15f),
-//            onPress = goToCoinFlipTutorial,
-//            hapticEnabled = true,
-//            textSizeMultiplier = 0.9f,
-//            shape = RoundedCornerShape(100),
-//            imageVector = vectorResource(Res.drawable.question_icon),
-//            backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
-//            mainColor = MaterialTheme.colorScheme.onPrimary
-//        )
-
         Column(
             Modifier.wrapContentSize().align(Alignment.TopStart), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -140,7 +128,7 @@ fun CoinFlipDialogContent(
             ) {
                 SettingsButton(
                     modifier = Modifier.size(buttonSize * 0.7f).rotate(180f).padding(buttonSize * 0.025f).then(
-                        if (!state.userInteractionEnabled) Modifier.alpha(0.75f) else Modifier
+                        if (!state.userInteractionEnabled) Modifier.alpha(0.65f) else Modifier
                     ),
                     onPress = { if (state.userInteractionEnabled) viewModel.incrementKrarksThumbs(-1) },
                     hapticEnabled = true,
@@ -150,7 +138,7 @@ fun CoinFlipDialogContent(
                 )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize * 0.7f).padding(buttonSize * 0.025f).then(
-                        if (!state.userInteractionEnabled) Modifier.alpha(0.75f) else Modifier
+                        if (!state.userInteractionEnabled) Modifier.alpha(0.65f) else Modifier
                     ),
                     onPress = { if (state.userInteractionEnabled) viewModel.incrementKrarksThumbs(1) },
                     hapticEnabled = true,
@@ -179,7 +167,7 @@ fun CoinFlipDialogContent(
             ) {
                 SettingsButton(
                     modifier = Modifier.size(buttonSize * 0.7f).rotate(180f).padding(buttonSize * 0.025f).then(
-                        if (!state.userInteractionEnabled) Modifier.alpha(0.75f) else Modifier
+                        if (!state.userInteractionEnabled) Modifier.alpha(0.65f) else Modifier
                     ),
                     enabled = state.userInteractionEnabled,
                     onPress = { viewModel.incrementBaseCoins(-1) },
@@ -190,7 +178,7 @@ fun CoinFlipDialogContent(
                 )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize * 0.7f).padding(buttonSize * 0.025f).then(
-                        if (!state.userInteractionEnabled) Modifier.alpha(0.75f) else Modifier
+                        if (!state.userInteractionEnabled) Modifier.alpha(0.65f) else Modifier
                     ),
                     enabled = state.userInteractionEnabled,
                     onPress = { viewModel.incrementBaseCoins(1) },
@@ -240,12 +228,18 @@ fun CoinFlipDialogContent(
                     verticalArrangement = Arrangement.Center,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    items(items = viewModel.coinControllers, key = { it.hashCode() }) {
-                        CoinFlippable(modifier = Modifier.height(coinSize).wrapContentWidth(), coinController = it, skipAnimation = viewModel.calculateCoinCount() >= 32, onTap = {
-                            if (state.userInteractionEnabled) {
+                    items(items = viewModel.coinControllers, key = { it.hashCode() }) {//TODO: add helper text for when clicked when disabled
+                        CoinFlippable(
+                            modifier = Modifier.height(coinSize).wrapContentWidth().alpha(
+                                if (state.userInteractionEnabled && !(state.krarksThumbs == 0 || state.baseCoins == 1)) 0.5f else 1.0f
+                            ),
+                            coinController = it,
+                            skipAnimation = viewModel.calculateCoinCount() >= 32
+                        ) {
+                            if (state.userInteractionEnabled && (state.krarksThumbs == 0 || state.baseCoins == 1)) {
                                 viewModel.randomFlip()
                             }
-                        })
+                        }
                     }
                 }
             }
@@ -276,26 +270,26 @@ fun CoinFlipDialogContent(
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = padding / 2f).then(
-                            if (!state.userInteractionEnabled || state.baseCoins > 1) Modifier.alpha(0.6f) else Modifier
+                            if (!state.userInteractionEnabled) Modifier.alpha(0.5f) else Modifier
                         ),
                         horizontalArrangement = Arrangement.Center,
                     ) {
                         SettingsButton(
                             modifier = Modifier.size(buttonSize * 0.8f),
-                            enabled = state.userInteractionEnabled && state.baseCoins == 1,
-                            onPress = { viewModel.flipUntil(CoinFace.HEADS) },
+                            enabled = state.userInteractionEnabled,
+                            onPress = { viewModel.flipUntil(CoinHistoryItem.TAILS) },
                             hapticEnabled = false,
-                            text = "Call Tails",
-                            imageVector = vectorResource(CoinFace.HEADS.drawable)
+                            text = "Call Heads",
+                            imageVector = vectorResource(CoinHistoryItem.HEADS.drawable)
                         )
                         Spacer(Modifier.width(buttonSize / 4f))
                         SettingsButton(
                             modifier = Modifier.size(buttonSize * 0.8f),
-                            enabled = state.userInteractionEnabled && state.baseCoins == 1,
-                            onPress = { viewModel.flipUntil(CoinFace.HEADS) },
+                            enabled = state.userInteractionEnabled,
+                            onPress = { viewModel.flipUntil(CoinHistoryItem.HEADS) },
                             hapticEnabled = false,
-                            text = "Call Heads",
-                            imageVector = vectorResource(CoinFace.TAILS.drawable)
+                            text = "Call Tails",
+                            imageVector = vectorResource(CoinHistoryItem.TAILS.drawable)
                         )
                     }
                     Spacer(Modifier.height(padding / 8f))
@@ -355,17 +349,17 @@ fun CoinFlippable(
             flipAnimationType = coinController.flipAnimationType,
             frontSide = {
                 Image(
-                    imageVector = vectorResource(CoinFace.HEADS.drawable), contentDescription = CoinFace.HEADS.name, modifier = Modifier.fillMaxSize()
+                    imageVector = vectorResource(CoinHistoryItem.HEADS.drawable), contentDescription = CoinHistoryItem.HEADS.name, modifier = Modifier.fillMaxSize()
                 )
             },
             backSide = {
                 Image(
-                    imageVector = vectorResource(CoinFace.TAILS.drawable), contentDescription = CoinFace.TAILS.name, modifier = Modifier.fillMaxSize()
+                    imageVector = vectorResource(CoinHistoryItem.TAILS.drawable), contentDescription = CoinHistoryItem.TAILS.name, modifier = Modifier.fillMaxSize()
                 )
             },
             onFlippedListener = { currentSide ->
                 if (coinController.continueFlip()) { // continues to flip until no more flips left
-                    coinController.onResult(if (currentSide == FlippableState.FRONT) CoinFace.HEADS else CoinFace.TAILS)
+                    coinController.onResult(if (currentSide == FlippableState.FRONT) CoinHistoryItem.HEADS else CoinHistoryItem.TAILS)
                 }
             })
         Box(Modifier.fillMaxHeight().aspectRatio(1f).pointerInput(Unit) {
@@ -481,6 +475,7 @@ private fun historyBase(modifier: Modifier = Modifier, lastResult: AnnotatedStri
                 text = lastResult.plus(if (platform == Platform.IOS) AnnotatedString("   ") else AnnotatedString("")),
                 maxLines = 1,
                 textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = textSize.scaledSp,
                 modifier = Modifier.align(Alignment.Center).wrapContentSize().padding(vertical = padding / 2f, horizontal = padding).horizontalScroll(scrollState)
@@ -496,7 +491,7 @@ fun CoinFlipTutorialContent(
     BoxWithConstraints(
         modifier = Modifier.wrapContentSize(),
     ) {
-        val padding = remember(Unit) { maxWidth / 50f + maxHeight / 75f}
+        val padding = remember(Unit) { maxWidth / 50f + maxHeight / 75f }
         val textSize = remember(Unit) { (maxWidth / 50f + maxHeight / 150f).value }
         LazyColumn(
             modifier = modifier, verticalArrangement = Arrangement.spacedBy(padding / 6f), horizontalAlignment = Alignment.CenterHorizontally
@@ -575,21 +570,19 @@ fun CoinFlipTutorialContent(
                         flipController = flipController,
                         frontSide = {
                             ExpandableCard(
-                                modifier = Modifier.fillMaxSize(), imageUri = "https://cards.scryfall.io/large/front/0/8/087c3a0d-c710-4451-989e-596b55352184.jpg?1670031740"
+                                modifier = Modifier.fillMaxSize(), imageUri = "https://cards.scryfall.io/large/front/7/f/7f2c332e-a5c9-40fb-a2fa-b4888aecc9c7.jpg?1694286113"
                             )
                         },
                         backSide = {
                             ExpandableCard(
-                                modifier = Modifier.fillMaxSize(), imageUri = "https://cards.scryfall.io/large/back/0/8/087c3a0d-c710-4451-989e-596b55352184.jpg?1670031740"
+                                modifier = Modifier.fillMaxSize(), imageUri = "https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
                             )
                         },
                     )
                     Text(text = """
                             You can adjust the number of Krark's Thumbs you have with the "Krark's Thumbs" buttons.
                         
-                            You also may want to flip a specific amount of coins, which you can set with the "Coins to Flip" button.
-                            
-                            "Flip Until You Lose" is currently disabled when flipping more than one coin.
+                            You also may want to flip a specific amount of coins simultaneously, which you can set with the "Coins to Flip" button.
                         """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize.scaledSp, modifier = Modifier.fillMaxWidth().padding(padding / 2f).clickable {
                         flipController.flip()
                     })
@@ -601,7 +594,7 @@ fun CoinFlipTutorialContent(
                     text = """
                             Hint: if something breaks, the "Reset" button hopefully will fix it :)
                         """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f), fontSize = textSize.scaledSp,
-                    modifier = Modifier.padding(horizontal = padding*1.5f)
+                    modifier = Modifier.padding(horizontal = padding * 1.5f)
                 )
             }
         }

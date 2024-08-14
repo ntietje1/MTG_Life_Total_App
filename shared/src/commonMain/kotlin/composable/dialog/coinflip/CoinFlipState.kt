@@ -14,16 +14,20 @@ data class CoinFlipState(
     val krarksThumbs: Int = 0,
     val flipInProgress: Boolean = false,
     val userInteractionEnabled: Boolean = true,
-    val lastResults: List<CoinFace> = listOf(),
-    val history: List<CoinFace> = listOf(),
+    val lastResults: List<CoinHistoryItem> = listOf(),
+    val history: List<CoinHistoryItem> = listOf(),
 )
 
-enum class CoinFace(val letter: String, val drawable: DrawableResource, val color: Color) {
+enum class CoinHistoryItem(val letter: String, val drawable: DrawableResource, val color: Color) {
     HEADS("H", Res.drawable.heads, Color.Green),
     TAILS("T", Res.drawable.tails, Color.Red),
+    HEADS_TARGET_MARKER("", Res.drawable.transparent, Color.White),
+    TAILS_TARGET_MARKER("", Res.drawable.transparent, Color.White),
+    MULTI_MODE_MARKER("", Res.drawable.transparent, Color.White),
+    SINGLE_MODE_MARKER("", Res.drawable.transparent, Color.White),
+    COMMA(",", Res.drawable.transparent, Color.White),
     L_DIVIDER_SINGLE("(", Res.drawable.transparent, Color.White),
     R_DIVIDER_SINGLE(")", Res.drawable.transparent, Color.White),
-    COMMA(",", Res.drawable.transparent, Color.White),
     L_DIVIDER_LIST("(", Res.drawable.transparent, Color.White),
     R_DIVIDER_LIST(")", Res.drawable.transparent, Color.White),
 }
