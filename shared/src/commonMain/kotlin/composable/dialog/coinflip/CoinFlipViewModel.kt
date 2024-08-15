@@ -298,7 +298,6 @@ class CoinFlipViewModel(
         setFlipInProgress(true)
         setUserInteractionEnabled(false)
         flippingUntil = target
-        println("FLIPPING UNTIL: $target")
         addToHistory(CoinHistoryItem.L_DIVIDER_LIST)
         if (state.value.baseCoins > 1) {
             addToLastResults(CoinHistoryItem.L_DIVIDER_SINGLE)
@@ -348,7 +347,6 @@ class CoinFlipViewModel(
                     onDone()
                 } else { // keep flipping
                     addToHistory(if (target == CoinHistoryItem.HEADS) CoinHistoryItem.TAILS else CoinHistoryItem.HEADS)
-                    totalFlipResults.add(CoinHistoryItem.COMMA)
                     viewModelScope.launch {
                         delay(250)
                         flipUntilHelper(target = target, coinControllers = coinControllers, totalFlipResults = totalFlipResults, onDone = onDone)
