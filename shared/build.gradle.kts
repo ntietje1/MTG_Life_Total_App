@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.livedata.ktx)
 
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.coil.gif)
 
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)

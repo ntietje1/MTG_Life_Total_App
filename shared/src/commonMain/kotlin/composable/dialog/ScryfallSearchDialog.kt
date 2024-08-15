@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
@@ -49,7 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.AsyncImage
 import data.ScryfallApiRetriever
 import data.serializable.Card
 import data.serializable.ImageUris
@@ -57,7 +58,9 @@ import data.serializable.Ruling
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.card_back
 import lifelinked.shared.generated.resources.search_icon
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
@@ -411,7 +414,8 @@ fun ExpandableCard(
 @Composable
 fun ExpandableCard(
     modifier: Modifier = Modifier,
-    card: Card
+    card: Card,
+    placeholderPainter: Painter = painterResource(Res.drawable.card_back)
 ) {
     var showLargeImage by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
@@ -425,10 +429,14 @@ fun ExpandableCard(
                     showLargeImage = false
                 })
             }) {
-                SubcomposeAsyncImage(
+                AsyncImage(
                     model = card.getUris().large, modifier = Modifier.clip(CutCornerShape(32)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = "",
-                    loading = { CircularProgressIndicator(modifier = Modifier.align(Alignment.Center)) }
+                    placeholder = placeholderPainter
                 )
+//                SubcomposeAsyncImage(
+//                    model = card.getUris().large, modifier = Modifier.clip(CutCornerShape(32)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = "",
+//                    loading = { CircularProgressIndicator(modifier = Modifier.align(Alignment.Center)) }
+//                )
             }
         })
     }
@@ -439,14 +447,18 @@ fun ExpandableCard(
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         })
     }) {
-        val indicatorPadding = remember(Unit) { maxWidth / 4f }
-        SubcomposeAsyncImage(
+//        val indicatorPadding = remember(Unit) { maxWidth / 4f }
+        AsyncImage(
             model = card.getUris().normal, modifier = Modifier.fillMaxSize(), contentDescription = "",
-            loading = { CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center).padding(indicatorPadding),
-                color = MaterialTheme.colorScheme.onPrimary
-            ) }
+            placeholder = placeholderPainter
         )
+//        SubcomposeAsyncImage(
+//            model = card.getUris().normal, modifier = Modifier.fillMaxSize(), contentDescription = "",
+//            loading = { CircularProgressIndicator(
+//                modifier = Modifier.align(Alignment.Center).padding(indicatorPadding),
+//                color = MaterialTheme.colorScheme.onPrimary
+//            ) }
+//        )
     }
 }
 
