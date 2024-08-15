@@ -234,7 +234,8 @@ fun CoinFlipDialogContent(
                                 if (state.userInteractionEnabled && !(state.krarksThumbs == 0 || state.baseCoins == 1)) 0.5f else 1.0f
                             ),
                             coinController = it,
-                            skipAnimation = viewModel.calculateCoinCount() >= 32
+                            skipAnimation = viewModel.calculateCoinCount() >= 32,
+                            flipEnabled = state.flipInProgress,
                         ) {
                             if (state.userInteractionEnabled && (state.krarksThumbs == 0 || state.baseCoins == 1)) {
                                 viewModel.randomFlip()
@@ -334,7 +335,7 @@ fun CoinFlipDialogContent(
 
 @Composable
 fun CoinFlippable(
-    modifier: Modifier = Modifier, coinController: CoinController, skipAnimation: Boolean, onTap: () -> Unit
+    modifier: Modifier = Modifier, coinController: CoinController, skipAnimation: Boolean, flipEnabled: Boolean, onTap: () -> Unit
 ) {
     val duration by coinController.duration.collectAsState()
 
@@ -358,8 +359,12 @@ fun CoinFlippable(
                 )
             },
             onFlippedListener = { currentSide ->
-                if (coinController.continueFlip()) { // continues to flip until no more flips left
-                    coinController.onResult(if (currentSide == FlippableState.FRONT) CoinHistoryItem.HEADS else CoinHistoryItem.TAILS)
+                if (flipEnabled) {
+                    if (coinController.continueFlip()) { // continues to flip until no more flips left
+                        coinController.onResult(if (currentSide == FlippableState.FRONT) CoinHistoryItem.HEADS else CoinHistoryItem.TAILS)
+                    }
+                } else {
+                    coinController.reset()
                 }
             })
         Box(Modifier.fillMaxHeight().aspectRatio(1f).pointerInput(Unit) {

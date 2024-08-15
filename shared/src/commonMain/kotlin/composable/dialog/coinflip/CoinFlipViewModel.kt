@@ -60,7 +60,7 @@ class CoinFlipViewModel(
         return buildAnnotatedString {
             if (state.value.lastResults.isEmpty() || (state.value.flipInProgress && flippingUntil == null)) {
                 append(" ".repeat((coinControllers.size * 3.825f + 1).roundToInt()))
-            } else if (state.value.lastResults.count{it == CoinHistoryItem.HEADS || it == CoinHistoryItem.TAILS } == 1) {
+            } else if (state.value.lastResults.count { it == CoinHistoryItem.HEADS || it == CoinHistoryItem.TAILS } == 1) {
                 append(" ")
                 state.value.lastResults.forEach { result ->
                     when (result) {
@@ -82,8 +82,7 @@ class CoinFlipViewModel(
                     }
                 }
                 append(" ")
-            }
-            else {
+            } else {
                 append(" ")
                 state.value.lastResults.forEach { result ->
                     withStyle(style = SpanStyle(color = result.color)) {
@@ -142,7 +141,7 @@ class CoinFlipViewModel(
                                 }
                                 append(" in ")
                                 withStyle(style = SpanStyle(color = CoinHistoryItem.HEADS.color)) {
-                                append("${heads + tails} Flips ")
+                                    append("${heads + tails} Flips ")
                                 }
                             }
 
@@ -152,7 +151,7 @@ class CoinFlipViewModel(
                                 }
                                 append(" in ")
                                 withStyle(style = SpanStyle(color = CoinHistoryItem.TAILS.color)) {
-                                append("${heads + tails} Flips ")
+                                    append("${heads + tails} Flips ")
                                 }
                             }
 
@@ -392,15 +391,12 @@ class CoinFlipViewModel(
     }
 
     fun reset() {
-        resetCoinControllers()
         flippingUntil = null
         _state.value = state.value.copy(
             history = listOf(), lastResults = listOf(), headCount = 0, tailCount = 0, flipInProgress = false, userInteractionEnabled = false
         )
-        viewModelScope.launch {
-            delay(100)
-            setUserInteractionEnabled(true)
-        }
+        resetCoinControllers()
+        setUserInteractionEnabled(true)
     }
 
     private fun setUserInteractionEnabled(value: Boolean) {
