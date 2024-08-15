@@ -59,7 +59,7 @@ class CoinFlipViewModel(
     fun buildLastResultString(): AnnotatedString {
         return buildAnnotatedString {
             if (state.value.lastResults.isEmpty() || (state.value.flipInProgress && flippingUntil == null)) {
-                append(" ".repeat((coinControllers.size * 3.825f + 1).roundToInt()))
+                append(" ".repeat((coinControllers.size * 2.5f + 1).roundToInt()))
             } else if (state.value.lastResults.count { it == CoinHistoryItem.HEADS || it == CoinHistoryItem.TAILS } == 1) {
                 append(" ")
                 state.value.lastResults.forEach { result ->
@@ -91,6 +91,8 @@ class CoinFlipViewModel(
                                 append(" ")
                                 append(result.letter)
                             }
+
+                            //TODO: add commas for multi coins + krark thumbs flip until you lose
 
                             CoinHistoryItem.COMMA, CoinHistoryItem.L_DIVIDER_LIST, CoinHistoryItem.L_DIVIDER_SINGLE -> {
                                 append(result.letter)
@@ -348,6 +350,7 @@ class CoinFlipViewModel(
                     addToHistory(if (target == CoinHistoryItem.HEADS) CoinHistoryItem.TAILS else CoinHistoryItem.HEADS)
                     viewModelScope.launch {
                         delay(250)
+                        totalFlipResults.add(CoinHistoryItem.COMMA)
                         flipUntilHelper(target = target, coinControllers = coinControllers, totalFlipResults = totalFlipResults, onDone = onDone)
                     }
                 }
