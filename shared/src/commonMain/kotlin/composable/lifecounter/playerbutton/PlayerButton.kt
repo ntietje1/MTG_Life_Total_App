@@ -1,6 +1,7 @@
 package composable.lifecounter.playerbutton
 
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -73,7 +74,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.ImageRequest
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import composable.SettingsButton
@@ -1289,8 +1293,13 @@ fun PlayerButtonBackground(
                 if (isDead) deadSettingsColorMatrix else settingsColorMatrix
             }
         }
-        AsyncImage(
-            model = imageUri,
+
+        val painter = rememberAsyncImagePainter("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif")
+
+        Image(
+            painter = painter,
+//            model = imageUri,
+//            model = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
             contentDescription = "Player uploaded image",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
@@ -1298,6 +1307,18 @@ fun PlayerButtonBackground(
                 colorMatrix = colorMatrix
             )
         )
+
+//        AsyncImage(
+//            model = painter,
+////            model = imageUri,
+////            model = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
+//            contentDescription = "Player uploaded image",
+//            modifier = Modifier.fillMaxSize(),
+//            contentScale = ContentScale.Crop,
+//            colorFilter = ColorFilter.colorMatrix(
+//                colorMatrix = colorMatrix
+//            )
+//        )
     }
 }
 
