@@ -267,7 +267,7 @@ fun CoinFlipDialogContent(
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                         fontWeight = FontWeight.Bold,
                         fontSize = textSize.scaledSp,
-                        modifier = Modifier.padding(top = padding / 6f, bottom = padding / 8f)
+                        modifier = Modifier.padding(top = padding / 8f, bottom = padding / 8f)
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = padding / 2f).then(
@@ -276,7 +276,7 @@ fun CoinFlipDialogContent(
                         horizontalArrangement = Arrangement.Center,
                     ) {
                         SettingsButton(
-                            modifier = Modifier.size(buttonSize * 0.8f),
+                            modifier = Modifier.size(buttonSize * 0.7f),
                             enabled = state.userInteractionEnabled,
                             onPress = { viewModel.flipUntil(CoinHistoryItem.TAILS) },
                             hapticEnabled = false,
@@ -285,7 +285,7 @@ fun CoinFlipDialogContent(
                         )
                         Spacer(Modifier.width(buttonSize / 4f))
                         SettingsButton(
-                            modifier = Modifier.size(buttonSize * 0.8f),
+                            modifier = Modifier.size(buttonSize * 0.7f),
                             enabled = state.userInteractionEnabled,
                             onPress = { viewModel.flipUntil(CoinHistoryItem.HEADS) },
                             hapticEnabled = false,
@@ -293,11 +293,11 @@ fun CoinFlipDialogContent(
                             imageVector = vectorResource(CoinHistoryItem.TAILS.drawable)
                         )
                     }
-                    Spacer(Modifier.height(padding / 8f))
+                    Spacer(Modifier.height(padding / 10f))
                 }
             }
             Spacer(Modifier.height(padding / 4f))
-            Spacer(Modifier.weight(0.7f))
+            Spacer(Modifier.weight(0.5f))
             FlipCounter(
                 modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(counterHeight * 0.8f),
                 headCount = state.headCount,
@@ -310,7 +310,7 @@ fun CoinFlipDialogContent(
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
                 fontSize = textSize.scaledSp * 1.2f,
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 8f, bottom = padding / 12f)
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 8f, bottom = padding / 24f)
             )
             LastResult(
                 modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), lastResult = lastResultString
@@ -321,7 +321,7 @@ fun CoinFlipDialogContent(
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
                 fontSize = textSize.scaledSp * 1.2f,
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 8f, bottom = padding / 12f)
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 8f, bottom = padding / 24f)
             )
             FlipHistory(
                 modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), coinFlipHistory = historyString
@@ -599,7 +599,7 @@ fun CoinFlipTutorialContent(
                     text = """
                             Hint: if something breaks, the "Reset" button hopefully will fix it :)
                         """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f), fontSize = textSize.scaledSp,
-                    modifier = Modifier.padding(horizontal = padding * 1.5f)
+                    modifier = Modifier.padding(horizontal = padding * 1.5f).padding(bottom = padding)
                 )
             }
         }

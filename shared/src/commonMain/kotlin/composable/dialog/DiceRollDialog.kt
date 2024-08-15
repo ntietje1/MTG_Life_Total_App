@@ -4,7 +4,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,7 +61,6 @@ import lifelinked.shared.generated.resources.d4_icon
 import lifelinked.shared.generated.resources.d6_icon
 import lifelinked.shared.generated.resources.d8_icon
 import lifelinked.shared.generated.resources.enter_icon
-import lifelinked.shared.generated.resources.search_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 
@@ -105,112 +102,88 @@ fun DiceRollDialogContent(
         size = pressedSize
     }
 
-
-
     BoxWithConstraints(modifier = modifier) {
-        val resultTextSize = (maxWidth / 30f).value.scaledSp()
-        val diceRollButtonSize = maxWidth / 3.3f
+        val diceRollButtonSize = remember(Unit) { maxWidth / 11f + maxHeight / 12f }
+        val resultTextSize = remember(Unit) { diceRollButtonSize.value / 6f }
+        val textFieldHeight = remember(Unit) { diceRollButtonSize / 4f + maxHeight / 25f }
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
 //            Spacer(modifier = Modifier.weight(0.2f))
             val diceRollButtonModifier = Modifier.size(diceRollButtonSize).padding(bottom = diceRollButtonSize / 5f)
-            GridDialogContent(modifier = Modifier.weight(1.0f), title = "Tap to roll", items = listOf({
-                DiceRollButton(modifier = diceRollButtonModifier,
-                    value = 4,
-                    imageVector = vectorResource(Res.drawable.d4_icon),
-                    resultCallBack = {
-                        setLastResult(it, 4)
-                        focusManager.clearFocus()
-                    })
-            }, {
-                DiceRollButton(modifier = diceRollButtonModifier,
-                    value = 6,
-                    imageVector = vectorResource(Res.drawable.d6_icon),
-                    resultCallBack = {
-                        setLastResult(it, 6)
-                        focusManager.clearFocus()
-                    })
-            }, {
-                DiceRollButton(modifier = diceRollButtonModifier,
-                    value = 8,
-                    imageVector = vectorResource(Res.drawable.d8_icon),
-                    resultCallBack = {
-                        setLastResult(it, 8)
-                        focusManager.clearFocus()
-                    })
-            }, {
-                DiceRollButton(modifier = diceRollButtonModifier,
-                    value = 10,
-                    imageVector = vectorResource(Res.drawable.d10_icon),
-                    resultCallBack = {
-                        setLastResult(it, 10)
-                        focusManager.clearFocus()
-                    })
-            }, {
-                DiceRollButton(modifier = diceRollButtonModifier,
-                    value = 12,
-                    imageVector = vectorResource(Res.drawable.d12_icon),
-                    resultCallBack = {
-                        setLastResult(it, 12)
-                        focusManager.clearFocus()
-                    })
-            }, {
-                DiceRollButton(modifier = diceRollButtonModifier,
-                    value = 20,
-                    imageVector = vectorResource(Res.drawable.d20_icon),
-                    resultCallBack = {
-                        setLastResult(it, 20)
-                        focusManager.clearFocus()
-                    })
-            }))
-            DiceRollButton(modifier = diceRollButtonModifier,
-                value = customDieValue,
-                imageVector = vectorResource(Res.drawable.d20_icon),
-                resultCallBack = {
-                        setLastResult(it, 20)
-                        focusManager.clearFocus()
-                    })
-            Spacer(modifier = Modifier.weight(0.05f))
-            Box(
-                modifier = Modifier.width(diceRollButtonSize*2).height(diceRollButtonSize/2f)
-            ) {
-                TextFieldWithButton(
-                    modifier = Modifier,
-                    value = textFieldValue,
-                    onValueChange = {
-                        if (it.toIntOrNull() != null) {
-                            textFieldValue = it
-                            customDieValue = it.toInt()
-                        }
-                    },
-                    label = "Custom Die Value",
-                    keyboardType = KeyboardType.Number,
-                    onDone = {
-                        focusManager.clearFocus()
-                    }
+            Box(Modifier.weight(1.0f)) {
+                Column(
+                    modifier = Modifier.wrapContentSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    IconButton(
-                        onClick = {
+                    GridDialogContent(modifier = Modifier.wrapContentSize(), title = "Tap to roll", items = listOf({
+                        DiceRollButton(modifier = diceRollButtonModifier, value = 4, imageVector = vectorResource(Res.drawable.d4_icon), resultCallBack = {
+                            setLastResult(it, 4)
                             focusManager.clearFocus()
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        },
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                            Icon(
-                                imageVector = vectorResource(Res.drawable.enter_icon),
-                                contentDescription = "Enter",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            )
+                        })
+                    }, {
+                        DiceRollButton(modifier = diceRollButtonModifier, value = 6, imageVector = vectorResource(Res.drawable.d6_icon), resultCallBack = {
+                            setLastResult(it, 6)
+                            focusManager.clearFocus()
+                        })
+                    }, {
+                        DiceRollButton(modifier = diceRollButtonModifier, value = 8, imageVector = vectorResource(Res.drawable.d8_icon), resultCallBack = {
+                            setLastResult(it, 8)
+                            focusManager.clearFocus()
+                        })
+                    }, {
+                        DiceRollButton(modifier = diceRollButtonModifier, value = 10, imageVector = vectorResource(Res.drawable.d10_icon), resultCallBack = {
+                            setLastResult(it, 10)
+                            focusManager.clearFocus()
+                        })
+                    }, {
+                        DiceRollButton(modifier = diceRollButtonModifier, value = 12, imageVector = vectorResource(Res.drawable.d12_icon), resultCallBack = {
+                            setLastResult(it, 12)
+                            focusManager.clearFocus()
+                        })
+                    }, {
+                        DiceRollButton(modifier = diceRollButtonModifier, value = 20, imageVector = vectorResource(Res.drawable.d20_icon), resultCallBack = {
+                            setLastResult(it, 20)
+                            focusManager.clearFocus()
+                        })
+                    }, {
 
+                    }, {
+                        DiceRollButton(modifier = diceRollButtonModifier, value = customDieValue, imageVector = vectorResource(Res.drawable.d20_icon), resultCallBack = {
+                            setLastResult(it, 20)
+                            focusManager.clearFocus()
+                        })
                     }
+                    ))
                 }
             }
-            Spacer(modifier = Modifier.weight(0.2f))
+            Spacer(modifier = Modifier.weight(0.005f))
+
+            TextFieldWithButton(modifier = Modifier.width(diceRollButtonSize * 3).height(textFieldHeight), value = textFieldValue, onValueChange = {
+                if (it.toIntOrNull() != null) {
+                    textFieldValue = it
+                    customDieValue = it.toInt()
+                } else if (it.isEmpty()) {
+                    textFieldValue = ""
+                    customDieValue = 0
+                }
+            }, label = "Custom Die Value", keyboardType = KeyboardType.Number, onDone = {
+                focusManager.clearFocus()
+            }) {
+                IconButton(
+                    onClick = {
+                        focusManager.clearFocus()
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }, modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.enter_icon), contentDescription = "Enter", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(0.05f))
             Text(
-                text = "Last result", color = MaterialTheme.colorScheme.onPrimary, fontSize = resultTextSize, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()
+                text = "Last result", color = MaterialTheme.colorScheme.onPrimary, fontSize = resultTextSize.scaledSp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().weight(0.1f)
             )
-            Spacer(modifier = Modifier.height(5.dp).weight(0.05f))
+            Spacer(modifier = Modifier.weight(0.005f))
             Box(
                 modifier = Modifier.weight(0.35f).aspectRatio(1.0f).align(Alignment.CenterHorizontally).background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f), RoundedCornerShape(15))
                     .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(15))
@@ -242,7 +215,7 @@ fun DiceRollDialogContent(
                         }
                     })
             }
-            Spacer(modifier = Modifier.weight(0.05f))
+            Spacer(modifier = Modifier.weight(0.025f))
         }
     }
 }

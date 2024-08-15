@@ -106,25 +106,27 @@ fun TextFieldWithButton(
     onDone: () -> Unit,
     button: @Composable () -> Unit,
 ) {
-    Box(
-        modifier = modifier
-    ) {
+//    Box(
+//        modifier = modifier
+//    ) {
         FormattedTextField(
+            modifier = modifier,
             value = value,
             onValueChange = onValueChange,
             label = label,
             keyboardType = keyboardType,
-            onDone = onDone
+            onDone = onDone,
+            button = button
         )
-        Box(
-            Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .aspectRatio(1.0f)
-        ) {
-            button()
-        }
-    }
+//        Box(
+//            Modifier
+//                .align(Alignment.CenterEnd)
+//                .fillMaxHeight()
+//                .aspectRatio(1.0f)
+//        ) {
+//            button()
+//        }
+//    }
 }
 
 @Composable
@@ -135,12 +137,14 @@ fun FormattedTextField(
     label: String,
     keyboardType: KeyboardType,
     onDone: () -> Unit,
+    button: @Composable () -> Unit,
 ) {
     BoxWithConstraints(
         modifier = modifier
     ) {
         val textSize = remember(Unit) { (maxHeight / 3.75f).value }
-        TextField(value = value, onValueChange = onValueChange, label = {
+        TextField(
+            value = value, onValueChange = onValueChange, label = {
             Text(
                 modifier = Modifier.wrapContentSize(),
                 text = label, color = MaterialTheme.colorScheme.onPrimary, fontSize = (textSize * 0.9f).scaledSp
@@ -167,5 +171,13 @@ fun FormattedTextField(
             keyboardType = keyboardType, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
         ), keyboardActions = KeyboardActions(onDone = { onDone() }), modifier = Modifier.fillMaxSize()
         )
+        Box(
+            Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+                .aspectRatio(1.0f)
+        ) {
+            button()
+        }
     }
 }

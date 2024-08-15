@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -136,11 +135,11 @@ fun MiddleButtonDialog(
                 Modifier.then(
                     if (maxWidth / 3f < maxHeight / 4f) {
                         Modifier
-                            .fillMaxHeight(0.8f)
+                            .fillMaxHeight(0.75f)
                             .padding(maxWidth / 50f)
                     } else {
                         Modifier
-                            .fillMaxWidth(0.8f)
+                            .fillMaxWidth(0.75f)
                             .padding(maxHeight / 50f)
                     }
                 )
@@ -412,21 +411,21 @@ fun GridDialogContent(
 ) {
     BoxWithConstraints(modifier = modifier) {
         val padding = remember(Unit) { maxHeight / 60f }
-        val titleSize = remember(Unit) { (maxWidth / 20f).value }
+        val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
         Column(
             Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.weight(0.5f))
-            Spacer(modifier = Modifier.height(padding * 3f))
+            Spacer(modifier = Modifier.weight(0.1f))
+//            Spacer(modifier = Modifier.height(padding * 3f))
             Text(
                 modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
-            Spacer(modifier = Modifier.weight(0.15f))
-            Spacer(modifier = Modifier.height(padding * 2f))
+            Spacer(modifier = Modifier.weight(0.015f))
+//            Spacer(modifier = Modifier.height(padding * 2f))
 //            Box(Modifier.fillMaxSize().background(color = Color.Red),
 //                contentAlignment = Alignment.Center) {
             LazyVerticalGrid(
-                modifier = Modifier.padding(horizontal = padding / 2f).fillMaxSize(),
+                modifier = Modifier.padding(horizontal = padding / 2f).wrapContentSize(),
                 columns = GridCells.Fixed(3),
                 userScrollEnabled = false,
                 verticalArrangement = Arrangement.Center,
@@ -441,8 +440,8 @@ fun GridDialogContent(
                         }
                     }
                 })
-            Spacer(modifier = Modifier.weight(0.1f))
-            Spacer(modifier = Modifier.height(padding / 2f))
+            Spacer(modifier = Modifier.weight(0.15f))
+//            Spacer(modifier = Modifier.height(padding / 2f))
         }
     }
 }
