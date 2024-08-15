@@ -52,7 +52,7 @@ fun LifeCounterScreen(
     viewModel: LifeCounterViewModel,
     toggleTheme: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
-    goToPlayerSelectScreen: () -> Unit,
+    goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     firstNavigation: Boolean
 ) {
@@ -69,9 +69,9 @@ fun LifeCounterScreen(
             viewModel = viewModel,
             toggleTheme = { toggleTheme() },
             toggleKeepScreenOn = { toggleKeepScreenOn() },
-            goToPlayerSelectScreen = {
+            goToPlayerSelectScreen = { changeNumPlayers ->
                 viewModel.setShowButtons(false)
-                goToPlayerSelectScreen()
+                goToPlayerSelectScreen(changeNumPlayers)
             },
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {

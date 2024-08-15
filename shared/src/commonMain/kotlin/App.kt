@@ -100,8 +100,12 @@ fun LifeLinkedApp() {
                             SettingsManager.instance.keepScreenOn = !keepScreenOn
                             keepScreenOn = !keepScreenOn
                         },
-                        goToPlayerSelectScreen = {
-                            navController.navigate("${LifeLinkedScreen.PLAYER_SELECT.route}/false")
+                        goToPlayerSelectScreen = { changeNumPlayers ->
+                            if (changeNumPlayers) {
+                                navController.navigate("${LifeLinkedScreen.PLAYER_SELECT.route}/true")
+                            } else {
+                                navController.navigate("${LifeLinkedScreen.PLAYER_SELECT.route}/false")
+                            }
                             firstLifeCounterNavigation = false
                         },
                         goToTutorialScreen = {

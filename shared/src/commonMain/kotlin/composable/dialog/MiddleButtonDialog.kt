@@ -83,7 +83,7 @@ fun MiddleButtonDialog(
     viewModel: LifeCounterViewModel,
     toggleTheme: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
-    goToPlayerSelectScreen: () -> Unit,
+    goToPlayerSelectScreen: (Boolean) -> Unit,
     triggerEnterAnimation: () -> Unit,
     setNumPlayers: (Int) -> Unit,
     goToTutorialScreen: () -> Unit,
@@ -286,7 +286,7 @@ fun MiddleButtonDialog(
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
                             viewModel.savePlayerStates()
                             viewModel.savePlayerPrefs()
-                            goToPlayerSelectScreen()
+                            goToPlayerSelectScreen(false)
                             onDismiss()
                         })
                     }, {
@@ -396,7 +396,7 @@ fun MiddleButtonDialog(
             optionOneMessage = "Select",
             optionTwoMessage = "Skip",
             onOptionOne = {
-                goToPlayerSelectScreen()
+                goToPlayerSelectScreen(true)
                 showChooseFirstPlayerDialog = false
                 onDismiss()
             },
