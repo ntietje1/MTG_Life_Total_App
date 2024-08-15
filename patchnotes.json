@@ -1,0 +1,116 @@
+{
+  "patch-notes": [
+    {
+      "version": "1.8.0",
+      "date": "TO BE RELEASED",
+      "title": "Streamlined User Experience",
+      "notes": [
+        "Thank you for using LifeLinked! I'm constantly working to improve the app and provide the best experience for my users. A special thanks to those of you who have submitted feedback! If you experience any issues or would like to request a feature, please let me know.",
+        "Fixed issue where player settings were not saved",
+        "Added option to re-select first player when restarting game",
+        "Made tutorial clickable",
+        "Moved \"Load Player\" button location",
+        "Increased menu navigation button sizes",
+        "Adjusted player select UI to be clearer",
+        "Added custom die in dice menu",
+        "Added flipping multiple coins simultaneously",
+        "Improved coin flip history display window"
+      ]
+    },
+    {
+      "version": "1.7.0",
+      "date": "2024-06-20",
+      "title": "Coin Flip Update",
+      "notes": [
+        "Added additional features to the coin flip menu",
+        "General UI improvements",
+        "Fixed typo in preview screenshot"
+      ]
+    },
+    {
+      "version": "1.6.1",
+      "date": "2024-06-09",
+      "title": "Quick Fix",
+      "notes": [
+        "Fixed crash related to loading game state"
+      ]
+    },
+    {
+      "version": "1.6.0",
+      "date": "2024-06-07",
+      "title": "Tablet Support",
+      "notes": [
+        "UI Improvements",
+        "Greatly improved UI for tablets",
+        "Fixed crash related to loading custom images"
+      ]
+    },
+    {
+      "version": "1.5.0",
+      "date": "2024-06-02",
+      "title": "Official IOS Release",
+      "notes": [
+        "Added iOS support (tell your friends!)",
+        "Major UI optimizations",
+        "General UI improvements",
+        "Added tutorial screen",
+        "Improved player settings menu layout",
+        "Improved save performance and reliability",
+        "Added search loading indicator",
+        "Fixed player select issue",
+        "Fixed “keep screen on” implementation and remove restart requirement",
+        "Fixed font-related issues",
+        "Fixed card search crash",
+        "Adjusted dialog text",
+        "Adjusted button icons",
+        "Adjusted ruling search UI"
+      ]
+    },
+    {
+      "version": "1.4.0",
+      "date": "2024-02-20",
+      "title": "Official Android Release",
+      "notes": [
+        "Redesigned player UI",
+        "Improved loading/animation performance",
+        "Redesigned dice screen",
+        "Fixed visual bugs",
+        "Added alternate animations for older android versions",
+        "Added settings menu",
+        "Fixed some crash-causing issues",
+        "Added commander damage partner-mode",
+        "Added Planechase module"
+      ]
+    },
+    {
+      "version": "1.3.0",
+      "date": "2024-01-13",
+      "title": "Closed Testing",
+      "notes": [
+        "Redesigned counter screen",
+        "Migrated to Compose Multiplatform (woohoo!)",
+        "General UI upgrades",
+        "Many bug fixes"
+      ]
+    },
+    {
+      "version": "1.2.0",
+      "date": "2024-01-04",
+      "title": "Internal Testing",
+      "notes": [
+        "Fixed issue where skip button always set number of players to 4",
+        "Adjusted color picker UI in player settings",
+        "Added player counters",
+        "Added uploaded image support"
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2023-12-15",
+      "title": "Initial Release",
+      "notes": [
+        "Added basic life counter functionality"
+      ]
+    }
+  ]
+}

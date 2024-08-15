@@ -1,4 +1,4 @@
-package composable.dialog
+package composable.dialog.settings
 
 import Platform
 import androidx.compose.foundation.background
@@ -41,8 +41,10 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.change_name_icon
 import lifelinked.shared.generated.resources.coffee_icon
 import lifelinked.shared.generated.resources.coin_icon
+import lifelinked.shared.generated.resources.d20_icon
 import lifelinked.shared.generated.resources.email_icon
 import lifelinked.shared.generated.resources.invisible_icon
+import lifelinked.shared.generated.resources.middle_icon
 import lifelinked.shared.generated.resources.player_select_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.skull_icon
@@ -60,6 +62,7 @@ import theme.scaledSp
 fun SettingsDialogContent(
     modifier: Modifier = Modifier,
     goToAboutMe: () -> Unit,
+    goToPatchNotes: () -> Unit,
     addGoToSettingsToBackStack: () -> Unit,
     goToTutorialScreen: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
@@ -125,6 +128,13 @@ fun SettingsDialogContent(
                         },
                         icon = vectorResource(Res.drawable.sun_icon)
                     )
+                    SettingsDialogButton(
+                        modifier = Modifier.fillMaxWidth().height(buttonHeight),
+                        text = "Patch Notes", icon = vectorResource(Res.drawable.d20_icon)
+                    ) {
+                        goToPatchNotes()
+                        addGoToSettingsToBackStack()
+                    }
                     SettingsDialogButton(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "View Tutorial Again", icon = vectorResource(Res.drawable.reset_icon)

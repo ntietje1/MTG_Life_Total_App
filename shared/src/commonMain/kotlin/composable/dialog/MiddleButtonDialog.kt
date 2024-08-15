@@ -45,6 +45,9 @@ import composable.dialog.coinflip.CoinFlipDialogContent
 import composable.dialog.coinflip.CoinFlipTutorialContent
 import composable.dialog.planechase.ChoosePlanesDialogContent
 import composable.dialog.planechase.PlaneChaseDialogContent
+import composable.dialog.settings.AboutMeDialogContent
+import composable.dialog.settings.patchnotes.PatchNotesDialogContent
+import composable.dialog.settings.SettingsDialogContent
 import composable.lifecounter.DayNightState
 import composable.lifecounter.LifeCounterViewModel
 import getAnimationCorrectionFactor
@@ -70,7 +73,7 @@ import org.koin.compose.koinInject
 import theme.scaledSp
 
 private enum class MiddleButtonDialogState {
-    Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, AboutMe, PlaneChase, PlanarDeck
+    Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, PatchNotes, AboutMe, PlaneChase, PlanarDeck
 }
 
 @Composable
@@ -229,6 +232,7 @@ fun MiddleButtonDialog(
             ) {
                 SettingsDialogContent(
                     Modifier.fillMaxSize(),
+                    goToPatchNotes = { middleButtonDialogState = MiddleButtonDialogState.PatchNotes },
                     goToAboutMe = { middleButtonDialogState = MiddleButtonDialogState.AboutMe },
                     addGoToSettingsToBackStack = { backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Settings } },
                     goToTutorialScreen = {
@@ -236,6 +240,13 @@ fun MiddleButtonDialog(
                         goToTutorialScreen()
                     },
                     toggleKeepScreenOn = toggleKeepScreenOn
+                )
+            }
+            FormattedAnimatedVisibility(
+                visible = middleButtonDialogState == MiddleButtonDialogState.PatchNotes
+            ) {
+                PatchNotesDialogContent(
+                    Modifier.fillMaxSize()
                 )
             }
             FormattedAnimatedVisibility(

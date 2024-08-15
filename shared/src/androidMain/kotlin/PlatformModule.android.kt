@@ -1,6 +1,7 @@
 
 import composable.dialog.coinflip.CoinFlipViewModel
 import composable.dialog.planechase.PlaneChaseViewModel
+import composable.dialog.settings.patchnotes.PatchNotesViewModel
 import composable.lifecounter.LifeCounterViewModel
 import composable.playerselect.PlayerSelectViewModel
 import composable.tutorial.TutorialViewModel
@@ -16,6 +17,7 @@ actual val platformModule = module {
     viewModel { TutorialViewModel(get()) }
     viewModel { PlayerSelectViewModel(get()) }
     viewModel { LifeCounterViewModel(get(), get(), get()) }
+    viewModel { PatchNotesViewModel() }
 }
 
 actual val platform: Platform
