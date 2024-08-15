@@ -1,6 +1,7 @@
 package composable.dialog.settings
 
 import Platform
+import VersionNumber
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -68,6 +69,7 @@ fun SettingsDialogContent(
     toggleKeepScreenOn: () -> Unit,
     settingsManager: SettingsManager = koinInject(),
     platform: Platform = koinInject(),
+    version: VersionNumber = koinInject()
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -207,7 +209,7 @@ fun SettingsDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = smallPadding, end = smallPadding, top = smallPadding),
-                    text = "LifeLinked v1.7 by Nicholas Tietje",
+                    text = "LifeLinked v${version.value} by Nicholas Tietje",
                     fontSize = textSize.scaledSp,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,

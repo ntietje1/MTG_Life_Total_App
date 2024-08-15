@@ -8,7 +8,10 @@ expect val platformModule : Module
 val sharedModule = module {
     single { SettingsManager.instance }
     single { BackHandler() }
+    single { VersionNumber("1.8.0")  }
 }
+
+data class VersionNumber(val value: String)
 
 expect val platform: Platform
 
