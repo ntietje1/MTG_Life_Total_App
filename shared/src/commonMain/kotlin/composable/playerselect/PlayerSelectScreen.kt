@@ -9,10 +9,16 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -63,6 +70,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.one_finger_hold
+import lifelinked.shared.generated.resources.one_finger_tap
 import lifelinked.shared.generated.resources.skip_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
@@ -90,18 +99,47 @@ fun PlayerSelectScreen(
             setNumPlayers = { viewModel.setNumPlayers(allowChangeNumPlayers, it) }
         )
 
+        if (state.showHelperText != HelperTextState.HIDDEN) {
+            Column(
+                modifier = Modifier.wrapContentSize().align(Alignment.Center).rotate(90f).then(
+                    if (state.showHelperText == HelperTextState.FADED) Modifier.alpha(0.35f) else Modifier.alpha(1f)
+                ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.size(buttonSize * 0.4f))
+                Text(
+                    text = state.showHelperText.text,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = textSize.scaledSp,
+                    lineHeight = textSize.scaledSp * 1.2f,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                )
+                Spacer(modifier = Modifier.size(buttonSize * 0.2f))
+                Row(
+                    modifier = Modifier.wrapContentSize(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        modifier = Modifier.size(buttonSize * 0.6f).rotate(17.5f).scale(scaleX = -1f, scaleY = 1f),
+                        imageVector = vectorResource(Res.drawable.one_finger_hold),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.size(buttonSize * 0.3f))
+                    Icon(
+                        modifier = Modifier.size(buttonSize * 0.6f).rotate(-15f),
+                        imageVector = vectorResource(Res.drawable.one_finger_hold),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
 
-        Text(
-            text = state.showHelperText.text,
-            color = MaterialTheme.colorScheme.onPrimary,
-            fontSize = textSize.scaledSp,
-            lineHeight = textSize.scaledSp * 1.2f,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.align(Alignment.Center).rotate(90f).then(
-                if (state.showHelperText == HelperTextState.FADED) Modifier.alpha(0.25f) else Modifier.alpha(1f)
-            )
-        )
         if (state.showHelperText == HelperTextState.FULL) {
             SettingsButton(modifier = Modifier.rotate(90f).align(Alignment.TopEnd).size(buttonSize),
                 mainColor = MaterialTheme.colorScheme.onPrimary,

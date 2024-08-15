@@ -455,7 +455,6 @@ fun PlayerButton(
                                         },
                                         onDecrementLife = {
                                             viewModel.incrementCommanderDamage(
-                                                viewModel,
                                                 value = -1,
                                                 partner = true
                                             )
