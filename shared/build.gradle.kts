@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kapt)
 }
@@ -85,6 +86,7 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
 
+//            implementation("media.kamel:kamel-image-default:1.0.0-beta.6")
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
         }
