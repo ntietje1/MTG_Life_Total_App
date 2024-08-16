@@ -1,7 +1,9 @@
 package composable.dialog.settings.patchnotes
 
+import NotificationManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,13 +34,16 @@ import org.koin.compose.koinInject
 import theme.scaledSp
 
 
-
 @Composable
 fun PatchNotesDialogContent(
     modifier: Modifier = Modifier,
-    viewModel: PatchNotesViewModel = koinInject()
+    viewModel: PatchNotesViewModel = koinInject(),
+    notificationManager: NotificationManager = koinInject()
 ) {
     val items = remember { mutableStateListOf<PatchNotesItem>() }
+
+
+
 
     viewModel.viewModelScope.launch {
         items.addAll(viewModel.getPatchNotes())
@@ -56,7 +62,16 @@ fun PatchNotesDialogContent(
             }
             items(items) {
                 PatchNotesItem(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().then(
+                        if (items.indexOf(it) == items.size - 1) Modifier.clickable {
+                            val result = viewModel.onSecretPatchNotesClick()
+                            if (result != null && result) {
+                                notificationManager.showNotification("Dev Mode Enabled")
+                            } else if (result != null && !result) {
+                                notificationManager.showNotification("Dev Mode Disabled")
+                            }
+                        } else Modifier
+                    ),
                     version = it.version,
                     title = it.title,
                     date = it.date,
@@ -78,7 +93,6 @@ fun PatchNotesItem(
     BoxWithConstraints(modifier) {
         val padding = remember(Unit) { maxWidth / 25f }
         val textSize = remember(Unit) { (maxWidth / 24f).value }
-
 
         Row(
             modifier = Modifier

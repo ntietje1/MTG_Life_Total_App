@@ -56,6 +56,10 @@ class SettingsManager private constructor() {
         get() = settings.getBoolean("tutorialSkip", false)
         set(value) = settings.putBoolean("tutorialSkip", value)
 
+    var devMode: Boolean
+        get() = settings.getBoolean("devMode", false)
+        set(value) = settings.putBoolean("devMode", value)
+
     fun loadPlayerStates(): List<Player> {
         val allPrefString = settings.getString("playerStates", "[]")
         return Json.decodeFromString<List<Player>>(allPrefString)

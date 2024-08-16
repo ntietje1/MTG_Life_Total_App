@@ -1,9 +1,11 @@
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.os.Build
 import android.provider.Settings
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -13,6 +15,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @SuppressLint("ComposableNaming")
 @Composable
@@ -61,5 +65,11 @@ actual fun keepScreenOn(keepScreenOn: Boolean) {
         onDispose {
             activity.window.clearFlags(flag)
         }
+    }
+}
+
+actual class NotificationManager(private val context: Context) {
+    actual fun showNotification(message: String, duration: Long) {
+        Toast.makeText(context, message, duration.toInt()).show()
     }
 }
