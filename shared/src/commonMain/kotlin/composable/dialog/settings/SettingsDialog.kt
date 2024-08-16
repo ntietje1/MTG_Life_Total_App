@@ -47,6 +47,7 @@ import lifelinked.shared.generated.resources.email_icon
 import lifelinked.shared.generated.resources.invisible_icon
 import lifelinked.shared.generated.resources.middle_icon
 import lifelinked.shared.generated.resources.player_select_icon
+import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.skull_icon
 import lifelinked.shared.generated.resources.star_icon_small
@@ -202,6 +203,33 @@ fun SettingsDialogContent(
                         uriHandler.openUri(url)
                     }
                 }
+            }
+
+            if (settingsManager.devMode) {
+                item {
+                    SettingsDialogHeader(
+                        modifier = Modifier.fillMaxWidth().height(buttonHeight),
+                        text = "SECRET OPTIONS"
+                    )
+                }
+                item {
+                    Column(
+                        Modifier
+                            .wrapContentSize()
+                            .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
+                    ) {
+                        if (platform == Platform.ANDROID) {
+                            SettingsDialogButtonWithToggle(
+                                modifier = Modifier.fillMaxWidth().height(buttonHeight),
+                                text = "Cat Gif Button",
+                                initialState = settingsManager.catGifButton,
+                                toggle = { settingsManager.catGifButton = it },
+                                icon = vectorResource(Res.drawable.question_icon)
+                            )
+                        }
+                    }
+                }
+
             }
 
             item {

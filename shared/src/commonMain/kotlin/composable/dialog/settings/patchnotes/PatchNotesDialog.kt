@@ -66,9 +66,9 @@ fun PatchNotesDialogContent(
                         if (items.indexOf(it) == items.size - 1) Modifier.clickable {
                             val result = viewModel.onSecretPatchNotesClick()
                             if (result != null && result) {
-                                notificationManager.showNotification("Dev Mode Enabled")
+                                notificationManager.showNotification("Secret Mode Enabled")
                             } else if (result != null && !result) {
-                                notificationManager.showNotification("Dev Mode Disabled")
+                                notificationManager.showNotification("Secret Mode Disabled")
                             }
                         } else Modifier
                     ),

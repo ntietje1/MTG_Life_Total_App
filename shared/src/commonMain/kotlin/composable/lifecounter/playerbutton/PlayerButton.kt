@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
+import coil3.compose.DefaultModelEqualityDelegate
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import composable.SettingsButton
@@ -102,6 +103,7 @@ import lifelinked.shared.generated.resources.enter_icon
 import lifelinked.shared.generated.resources.heart_solid_icon
 import lifelinked.shared.generated.resources.mana_icon
 import lifelinked.shared.generated.resources.monarchy_icon
+import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
 import lifelinked.shared.generated.resources.settings_icon
@@ -687,11 +689,36 @@ fun PlayerButton(
                                         }
 
                                         item {
-                                            FormattedSettingsButton(
-                                                modifier = settingsButtonModifier,
-                                                imageResource = Res.drawable.transparent,
-                                                text = ""
-                                            ) {
+                                            if (viewModel.settingsManager.catGifButton && viewModel.settingsManager.devMode) {
+                                                FormattedSettingsButton(
+                                                    modifier = settingsButtonModifier,
+                                                    imageResource = Res.drawable.question_icon,
+                                                    text = "Random Cat Gif"
+                                                ) {
+                                                    val catGifs = listOf(
+                                                        "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
+                                                        "https://media1.tenor.com/m/Jc9jT66AJRwAAAAd/chipi-chipi-chapa-chapa.gif",
+                                                        "https://media1.tenor.com/m/nisaHYy8yAYAAAAd/besito-catlove.gif",
+                                                        "https://media1.tenor.com/m/goY0VJNhQSIAAAAd/bleh-bleh-cat.gif",
+                                                        "https://media1.tenor.com/m/s50cn0tfWewAAAAC/cat.gif",
+                                                        "https://media1.tenor.com/m/UyXyHDmPBOcAAAAC/cat-stare-stare.gif",
+                                                        "https://media1.tenor.com/m/8oWF4zMAmQgAAAAd/cat-funny.gif",
+                                                        "https://media1.tenor.com/m/2If2O7HO1CYAAAAC/cat-staring-at-camera-fr.gif",
+                                                        )
+                                                    viewModel.setImageUri(
+                                                        if (viewModel.state.value.player.imageString != null && viewModel.state.value.player.imageString in catGifs)
+                                                            catGifs[catGifs.indexOf(viewModel.state.value.player.imageString).plus(1).rem(catGifs.size)]
+                                                        else
+                                                            catGifs.random()
+                                                    )
+                                                }
+                                            } else {
+                                                FormattedSettingsButton(
+                                                    modifier = settingsButtonModifier,
+                                                    imageResource = Res.drawable.transparent,
+                                                    text = ""
+                                                ) {
+                                                }
                                             }
                                         }
 
@@ -1289,31 +1316,14 @@ fun PlayerButtonBackground(
             }
         }
 
-//        val painter = rememberAsyncImagePainter("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif")
-//
-//        Image(
-//            painter = painter,
-////            model = imageUri,
-////            model = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
-//            contentDescription = "Player uploaded image",
-//            modifier = Modifier.fillMaxSize(),
-//            contentScale = ContentScale.Crop,
-//            colorFilter = ColorFilter.colorMatrix(
-//                colorMatrix = colorMatrix
-//            )
-//        )
-
-        println("Image uri: $imageUri")
         AsyncImage(
-//            model = painter,
             model = imageUri,
-//            model = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
             contentDescription = "Player uploaded image",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
             colorFilter = ColorFilter.colorMatrix(
                 colorMatrix = colorMatrix
-            )
+            ),
         )
     }
 }

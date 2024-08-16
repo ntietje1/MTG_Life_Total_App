@@ -60,6 +60,10 @@ class SettingsManager private constructor() {
         get() = settings.getBoolean("devMode", false)
         set(value) = settings.putBoolean("devMode", value)
 
+    var catGifButton: Boolean
+        get() = settings.getBoolean("catGifButton", false)
+        set(value) = settings.putBoolean("catGifButton", value)
+
     fun loadPlayerStates(): List<Player> {
         val allPrefString = settings.getString("playerStates", "[]")
         return Json.decodeFromString<List<Player>>(allPrefString)
