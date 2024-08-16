@@ -1303,10 +1303,11 @@ fun PlayerButtonBackground(
 //            )
 //        )
 
+        println("Image uri: $imageUri")
         AsyncImage(
 //            model = painter,
-//            model = imageUri,
-            model = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
+            model = imageUri,
+//            model = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
             contentDescription = "Player uploaded image",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,

@@ -137,7 +137,7 @@ class PlayerButtonViewModel(
                 return it
             }
             else if (it.startsWith("content://")) {
-                val playerNameAndUUID = it.substringAfter("content://lifelinked.multiplatform.provider/lifelinked_multiplatform_saved_images/").substringBefore("..png")
+                val playerNameAndUUID = it.substringAfter("content://lifelinked.multiplatform.provider/lifelinked_multiplatform_saved_images/").substringBefore(".png")
                 val uuid = playerNameAndUUID.substringAfterLast(player.name)
                 val newImageString = "${player.name}-${uuid}"
                 setImageUri(newImageString)
