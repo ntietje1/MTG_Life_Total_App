@@ -230,14 +230,13 @@ fun CoinFlipDialogContent(
                 ) {
                     items(items = viewModel.coinControllers, key = { it.hashCode() }) {//TODO: add helper text for when clicked when disabled
                         CoinFlippable(
-                            modifier = Modifier.height(coinSize).wrapContentWidth().alpha(
-                                if (state.userInteractionEnabled && !(state.krarksThumbs == 0 || state.baseCoins == 1)) 0.5f else 1.0f
-                            ),
+                            modifier = Modifier.height(coinSize).wrapContentWidth(),
                             coinController = it,
                             skipAnimation = viewModel.calculateCoinCount() >= 32,
                             flipEnabled = state.flipInProgress,
                         ) {
-                            if (state.userInteractionEnabled && (state.krarksThumbs == 0 || state.baseCoins == 1)) {
+//                            if (state.userInteractionEnabled && (state.krarksThumbs == 0 || state.baseCoins == 1)) {
+                            if (state.userInteractionEnabled) {
                                 viewModel.randomFlip()
                             }
                         }
