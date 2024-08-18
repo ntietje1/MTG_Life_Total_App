@@ -5,16 +5,17 @@
       "date": "TO BE RELEASED",
       "title": "Streamlined User Experience",
       "notes": [
-        "Thank you for using LifeLinked! I'm constantly working to improve the app and provide the best experience for my users. A special thanks to those of you who have submitted feedback! If you experience any issues or would like to request a feature, please let me know.",
         "Fixed issue where player settings were not saved",
         "Added option to re-select first player when restarting game",
         "Made tutorial clickable",
         "Moved \"Load Player\" button location",
         "Increased menu navigation button sizes",
         "Adjusted player select UI to be clearer",
+        "Adjusted Scryfall search UI",
         "Added custom die in dice menu",
         "Added flipping multiple coins simultaneously",
-        "Improved coin flip history display window"
+        "Improved coin flip history display window",
+        "Added a secret feature"
       ]
     },
     {
