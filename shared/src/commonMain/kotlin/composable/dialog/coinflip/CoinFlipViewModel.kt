@@ -24,8 +24,14 @@ class CoinFlipViewModel(
 
     private var flippingUntil: CoinHistoryItem? = null
 
+    private var onFlip: () -> Unit = {}
+
     val coinControllers = MutableList(1) {
         generateCoinController()
+    }
+
+    fun setOnFlip(onFlip: () -> Unit) {
+        this.onFlip = onFlip
     }
 
     fun calculateCoinCount(baseCoins: Int = state.value.baseCoins, thumbs: Int = state.value.krarksThumbs): Int {
@@ -342,6 +348,7 @@ class CoinFlipViewModel(
                 totalFlipResults.add(result)
                 flipResults.add(result)
                 if (flipResults.size != coinControllers.size) return@randomFlip // not all coins have flipped
+                onFlip()
                 if (flipResults.all { it == target }) { // done
                     totalFlipResults.forEach { addToLastResults(it) }
                     addToHistory(target)
@@ -358,7 +365,7 @@ class CoinFlipViewModel(
         }
     }
 
-    fun randomFlip() {
+    fun singleFlip() {
         resetLastResults()
         setFlipInProgress(true)
         setUserInteractionEnabled(false)
@@ -375,6 +382,7 @@ class CoinFlipViewModel(
                 addToHistory(res)
                 val resultCount = state.value.lastResults.count { it == CoinHistoryItem.TAILS || it == CoinHistoryItem.HEADS }
                 if (resultCount == coinControllers.size) {
+                    onFlip()
                     addToHistory(CoinHistoryItem.R_DIVIDER_SINGLE)
                     setUserInteractionEnabled(true)
                     setFlipInProgress(false)

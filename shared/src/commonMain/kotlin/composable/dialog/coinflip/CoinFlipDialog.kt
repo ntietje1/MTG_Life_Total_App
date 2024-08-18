@@ -95,7 +95,7 @@ fun CoinFlipDialogContent(
             allowHaptic = false
             viewModel.softReset()
             delay(10)
-            viewModel.randomFlip()
+            viewModel.singleFlip()
             delay(10)
             viewModel.softReset()
             viewModel.repairHistoryString()
@@ -106,12 +106,16 @@ fun CoinFlipDialogContent(
         }
     }
 
-    LaunchedEffect(state.history.size, state.lastResults.size) {
-        if ( // hacky way to trigger haptic feedback on a flip
-            state.history.lastOrNull() == CoinHistoryItem.R_DIVIDER_LIST || state.history.lastOrNull() == CoinHistoryItem.R_DIVIDER_SINGLE) {
-            if (allowHaptic) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        }
+    viewModel.setOnFlip{
+        if (allowHaptic) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
+
+//    LaunchedEffect(state.history.size, state.lastResults.size) {
+//        if ( // hacky way to trigger haptic feedback on a flip
+//            state.history.lastOrNull() == CoinHistoryItem.R_DIVIDER_LIST || state.history.lastOrNull() == CoinHistoryItem.R_DIVIDER_SINGLE) {
+//            if (allowHaptic) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//        }
+//    }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val buttonSize = remember(Unit) { maxWidth / 12f + maxHeight / 15f }
@@ -237,7 +241,7 @@ fun CoinFlipDialogContent(
                         ) {
 //                            if (state.userInteractionEnabled && (state.krarksThumbs == 0 || state.baseCoins == 1)) {
                             if (state.userInteractionEnabled) {
-                                viewModel.randomFlip()
+                                viewModel.singleFlip()
                             }
                         }
                     }
