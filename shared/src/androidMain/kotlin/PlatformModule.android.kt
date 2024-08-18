@@ -1,4 +1,6 @@
 
+
+import android.app.NotificationManager
 import composable.dialog.coinflip.CoinFlipViewModel
 import composable.dialog.planechase.PlaneChaseViewModel
 import composable.dialog.settings.patchnotes.PatchNotesViewModel
@@ -11,13 +13,14 @@ import org.koin.dsl.module
 
 actual val platformModule = module {
     single { platform }
+    single { NotificationManager(get()) }
     single { ImageManager(get()) }
     single { PlaneChaseViewModel(get(), get()) } //TODO: workaround for odd lifecycle behavior?
     single { CoinFlipViewModel(get()) }
     viewModel { TutorialViewModel(get()) }
     viewModel { PlayerSelectViewModel(get()) }
     viewModel { LifeCounterViewModel(get(), get(), get()) }
-    viewModel { PatchNotesViewModel() }
+    viewModel { PatchNotesViewModel(get()) }
 }
 
 actual val platform: Platform

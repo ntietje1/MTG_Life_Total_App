@@ -7,7 +7,7 @@ data class PlayerSelectState(
 enum class HelperTextState(
     val text: String
 ) {
-    FULL("Press fingers down to select player"),
-    FADED("Press fingers down to select player"),
+    FULL("Press & hold to select 1st player"),
+    FADED("Press & hold to select 1st player"),
     HIDDEN("")
 }

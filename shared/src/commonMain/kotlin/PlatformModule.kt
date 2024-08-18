@@ -19,3 +19,8 @@ enum class Platform(val platformString: String, val appStoreListing: String) {
     ANDROID("android", "https://play.google.com/store/apps/details?id=com.hypeapps.lifelinked"),
     IOS("ios", "https://apps.apple.com/us/app/lifelinked-mtg-life-counter/id6503708612"),
 }
+
+
+expect class NotificationManager {
+    fun showNotification(message: String, duration: Long = 2000L)
+}

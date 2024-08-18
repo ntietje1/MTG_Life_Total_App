@@ -378,7 +378,6 @@ fun MiddleButtonDialog(
 //                onDismiss()
             },
             onOptionTwo = {
-                viewModel.savePlayerPrefs()
                 viewModel.resetAllPrefs()
                 viewModel.resetGameState()
                 showResetDialog = false
