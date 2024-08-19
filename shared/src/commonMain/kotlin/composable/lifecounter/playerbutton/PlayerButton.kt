@@ -74,7 +74,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
-import coil3.compose.DefaultModelEqualityDelegate
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import composable.SettingsButton
@@ -704,6 +703,9 @@ fun PlayerButton(
                                                         "https://media1.tenor.com/m/UyXyHDmPBOcAAAAC/cat-stare-stare.gif",
                                                         "https://media1.tenor.com/m/8oWF4zMAmQgAAAAd/cat-funny.gif",
                                                         "https://media1.tenor.com/m/2If2O7HO1CYAAAAC/cat-staring-at-camera-fr.gif",
+                                                        "https://media1.tenor.com/m/Dm4Ahmoh3nwAAAAd/cat-awful.gif",
+                                                        "https://media1.tenor.com/m/ZuXnTDxIbjQAAAAC/shocked-shocked-cat.gif",
+                                                        "https://media1.tenor.com/m/OUehVPHGpQ8AAAAd/cat-cat-lick.gif"
                                                         )
                                                     viewModel.setImageUri(
                                                         if (viewModel.state.value.player.imageString != null && viewModel.state.value.player.imageString in catGifs)
