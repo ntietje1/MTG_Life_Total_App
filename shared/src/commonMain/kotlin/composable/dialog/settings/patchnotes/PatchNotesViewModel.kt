@@ -1,7 +1,6 @@
 package composable.dialog.settings.patchnotes
 
 import androidx.lifecycle.ViewModel
-import composable.dialog.planechase.PlaneChaseState
 import data.SettingsManager
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -11,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
-import org.koin.compose.koinInject
 
 class PatchNotesViewModel(
     private val settingsManager: SettingsManager
@@ -22,14 +20,19 @@ class PatchNotesViewModel(
     private val patchnotesUrl = "https://lcvgoezm16.execute-api.us-east-1.amazonaws.com/lifelinked/patchnotes"
     private val client = HttpClient()
 
-    suspend fun getPatchNotes(): List<PatchNotesItem> {
+    suspend fun getPatchNotes(): Pair<List<PatchNotesItem>, List<String>> {
         if (state.value.patchNotes.isEmpty()) {
-            val response: HttpResponse = client.get(patchnotesUrl)
-            val patchNotesResponse = Json.decodeFromString<PatchNotesResponse>(response.bodyAsText())
-            val patchNotes = patchNotesResponse.patchNotes
-            _state.value = _state.value.copy(patchNotes = patchNotes)
+            try {
+                val response: HttpResponse = client.get(patchnotesUrl)
+                val patchNotesResponse = Json.decodeFromString<PatchNotesResponse>(response.bodyAsText())
+                val patchNotes = patchNotesResponse.patchNotes
+                val inProgress = patchNotesResponse.inProgress
+                _state.value = _state.value.copy(patchNotes = patchNotes, inProgress = inProgress)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
-        return state.value.patchNotes
+        return Pair(state.value.patchNotes, state.value.inProgress)
     }
 
     fun onSecretPatchNotesClick(): Boolean? {

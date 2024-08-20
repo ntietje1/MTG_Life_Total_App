@@ -1,5 +1,21 @@
 {
+  "in-progress": [
+    "Game/turn timer",
+    "Improved player customization",
+    "Bounties, city's blessing, the ring, and dungeon progress tracking",
+    "Improved tutorial",
+    "Game statistics tracking"
+  ],
   "patch-notes": [
+    {
+      "version": "1.8.1",
+      "date": "2024-08-19",
+      "title": "Quick Fix",
+      "notes": [
+        "Added \"In Development\" section to patchnotes",
+        "Adjusted dice menu text box size"
+      ]
+    },
     {
       "version": "1.8.0",
       "date": "2024-08-18",

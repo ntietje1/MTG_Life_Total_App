@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 data class PatchNotesState(
     val patchNotes: List<PatchNotesItem> = emptyList(),
+    val inProgress: List<String> = emptyList(),
     val secretPatchNotesClicks: Int = 0
 )
 
@@ -19,5 +20,8 @@ data class PatchNotesItem(
 @Serializable
 data class PatchNotesResponse(
     @SerialName("patch-notes")
-    val patchNotes: List<PatchNotesItem>
+    val patchNotes: List<PatchNotesItem> = emptyList(),
+
+    @SerialName("in-progress")
+    val inProgress: List<String> = emptyList()
 )

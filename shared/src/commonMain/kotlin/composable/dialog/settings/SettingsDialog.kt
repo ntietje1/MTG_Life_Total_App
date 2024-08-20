@@ -45,7 +45,6 @@ import lifelinked.shared.generated.resources.coin_icon
 import lifelinked.shared.generated.resources.d20_icon
 import lifelinked.shared.generated.resources.email_icon
 import lifelinked.shared.generated.resources.invisible_icon
-import lifelinked.shared.generated.resources.middle_icon
 import lifelinked.shared.generated.resources.player_select_icon
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
@@ -205,7 +204,7 @@ fun SettingsDialogContent(
                 }
             }
 
-            if (settingsManager.devMode) {
+            if (settingsManager.devMode && platform == Platform.ANDROID) { //TODO: Remove android check if iOS ever gets secret options
                 item {
                     SettingsDialogHeader(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
