@@ -65,7 +65,9 @@ import ui.playerselect.PlayerSelectScreenValues.pulseFreq
 import ui.playerselect.PlayerSelectScreenValues.selectionDelay
 import ui.playerselect.PlayerSelectScreenValues.showHelperTextDelay
 import data.Player.Companion.allPlayerColors
+import di.Platform
 import di.getAnimationCorrectionFactor
+import di.platform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -221,8 +223,10 @@ fun PlayerSelectScreenBase(
         }
     }
 
+//    val maxPresses = remember { if (platform == Platform.IOS) 5 else 6 }
+    val maxPresses = 6
     fun onDown(event: PointerInputChange, baseSize: Dp) {
-        if (circles.size < 6 && selectedId == null) {
+        if (circles.size < maxPresses && selectedId == null) {
             circles[event.id] = Circle(
                 baseSize = baseSize,
                 x = event.position.x,
