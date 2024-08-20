@@ -54,11 +54,16 @@ fun LifeCounterScreen(
     toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
+    numPlayers: Int,
     firstNavigation: Boolean
 ) {
     val state by viewModel.state.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.setNumPlayers(numPlayers)
+    }
 
     if (showDialog) {
         MiddleButtonDialog(

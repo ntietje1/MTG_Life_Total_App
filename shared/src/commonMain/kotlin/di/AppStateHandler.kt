@@ -13,6 +13,7 @@ object AppStateHandler {
     var allowChangeNumPlayers: Boolean
         get() = _allowChangeNumPlayers
         set(value) {
+            println("Set allowChangeNumPlayers: ${value}")
             _allowChangeNumPlayers = value
         }
 }
