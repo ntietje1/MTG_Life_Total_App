@@ -105,7 +105,7 @@ fun DiceRollDialogContent(
     BoxWithConstraints(modifier = modifier) {
         val diceRollButtonSize = remember(Unit) { maxWidth / 11f + maxHeight / 12f }
         val resultTextSize = remember(Unit) { diceRollButtonSize.value / 6f }
-        val textFieldHeight = remember(Unit) { diceRollButtonSize / 3f + maxHeight / 25f }
+        val textFieldHeight = remember(Unit) { diceRollButtonSize / 3f + maxWidth / 15f }
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
 //            Spacer(modifier = Modifier.weight(0.2f))
             val diceRollButtonModifier = Modifier.size(diceRollButtonSize).padding(bottom = diceRollButtonSize / 5f)
