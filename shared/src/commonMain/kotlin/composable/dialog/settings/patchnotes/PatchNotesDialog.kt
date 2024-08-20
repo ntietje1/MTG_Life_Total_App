@@ -60,29 +60,33 @@ fun PatchNotesDialogContent(
                     text = "Change Log",
                 )
             }
-            item{
-                InProgressItems(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-                    items = inProgressItems
-                )
+            if (inProgressItems.isNotEmpty()) {
+                item{
+                    InProgressItems(
+                        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                        items = inProgressItems
+                    )
+                }
             }
-            items(patchNotes) {
-                PatchNotesItem(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().then(
-                        if (patchNotes.indexOf(it) == patchNotes.size - 1) Modifier.clickable {
-                            val result = viewModel.onSecretPatchNotesClick()
-                            if (result != null && result) {
-                                notificationManager.showNotification("Secret Mode Enabled")
-                            } else if (result != null && !result) {
-                                notificationManager.showNotification("Secret Mode Disabled")
-                            }
-                        } else Modifier
-                    ),
-                    version = it.version,
-                    title = it.title,
-                    date = it.date,
-                    notes = it.notes
-                )
+            if (patchNotes.isNotEmpty()) {
+                items(patchNotes) {
+                    PatchNotesItem(
+                        modifier = Modifier.fillMaxWidth().wrapContentHeight().then(
+                            if (patchNotes.indexOf(it) == patchNotes.size - 1) Modifier.clickable {
+                                val result = viewModel.onSecretPatchNotesClick()
+                                if (result != null && result) {
+                                    notificationManager.showNotification("Secret Mode Enabled")
+                                } else if (result != null && !result) {
+                                    notificationManager.showNotification("Secret Mode Disabled")
+                                }
+                            } else Modifier
+                        ),
+                        version = it.version,
+                        title = it.title,
+                        date = it.date,
+                        notes = it.notes
+                    )
+                }
             }
         }
     }
