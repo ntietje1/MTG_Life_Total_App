@@ -1,3 +1,5 @@
+package di
+
 import org.koin.core.context.startKoin
 
 actual class KoinInitializer {

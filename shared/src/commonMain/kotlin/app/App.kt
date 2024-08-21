@@ -1,4 +1,5 @@
-
+package app
+import di.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,9 +17,11 @@ import ui.playerselect.PlayerSelectViewModel
 import ui.tutorial.TutorialScreen
 import ui.tutorial.TutorialViewModel
 import data.SettingsManager
+import di.keepScreenOn
 import org.koin.compose.KoinContext
 import org.koin.compose.currentKoinScope
 import theme.LifeLinkedTheme
+import di.updateSystemBarsColors
 
 
 private enum class LifeLinkedScreen(val route: String) {

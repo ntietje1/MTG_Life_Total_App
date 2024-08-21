@@ -1,4 +1,4 @@
-
+package di
 import ui.dialog.coinflip.CoinFlipViewModel
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.dialog.settings.patchnotes.PatchNotesViewModel
@@ -10,7 +10,7 @@ import org.koin.dsl.module
 
 actual val platformModule = module {
     single { platform }
-    single { NotificationManager() }
+    single { di.NotificationManager() }
     single { ImageManager() }
     single { PlaneChaseViewModel(get(), get()) }
     single { CoinFlipViewModel(get()) }

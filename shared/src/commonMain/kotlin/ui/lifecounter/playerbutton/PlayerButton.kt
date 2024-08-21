@@ -88,7 +88,7 @@ import ui.modifier.repeatingClickable
 import ui.modifier.rotateVertically
 import data.Player
 import data.Player.Companion.allPlayerColors
-import getAnimationCorrectionFactor
+import di.getAnimationCorrectionFactor
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.add_icon
 import lifelinked.shared.generated.resources.back_icon

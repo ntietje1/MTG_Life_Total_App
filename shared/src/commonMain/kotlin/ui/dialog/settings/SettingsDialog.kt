@@ -1,7 +1,7 @@
 package ui.dialog.settings
 
-import Platform
-import VersionNumber
+import di.Platform
+import di.VersionNumber
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures

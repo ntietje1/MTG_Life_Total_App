@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.Dp
 import ui.dialog.MiddleButtonDialog
 import ui.lifecounter.playerbutton.PlayerButton
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
-import getAnimationCorrectionFactor
+import di.getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res

@@ -1,6 +1,6 @@
 package ui.dialog.coinflip
 
-import Platform
+import di.Platform
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,7 +63,7 @@ import ui.dialog.ExpandableCard
 import ui.flippable.Flippable
 import ui.flippable.FlippableState
 import ui.flippable.rememberFlipController
-import getAnimationCorrectionFactor
+import di.getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
@@ -73,7 +73,7 @@ import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.thumbsup_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
-import platform
+import di.platform
 import theme.scaledSp
 
 @Composable

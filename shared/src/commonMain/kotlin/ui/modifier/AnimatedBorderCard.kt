@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import legacyMonarchyIndicator
+import di.legacyMonarchyIndicator
 import kotlin.math.max
 
 fun Modifier.animatedBorderCard(

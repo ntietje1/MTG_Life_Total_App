@@ -1,6 +1,6 @@
 package com.hypeapps.lifelinked
 
-import KoinInitializer
+import di.KoinInitializer
 import android.app.Application
 
 class App : Application() {

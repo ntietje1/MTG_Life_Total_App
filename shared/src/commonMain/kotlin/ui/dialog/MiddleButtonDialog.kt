@@ -1,6 +1,6 @@
 package ui.dialog
 
-import BackHandler
+import di.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.TweenSpec
@@ -50,7 +50,7 @@ import ui.dialog.settings.SettingsDialogContent
 import ui.dialog.settings.patchnotes.PatchNotesDialogContent
 import ui.lifecounter.DayNightState
 import ui.lifecounter.LifeCounterViewModel
-import getAnimationCorrectionFactor
+import di.getAnimationCorrectionFactor
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
 import lifelinked.shared.generated.resources.coin_icon

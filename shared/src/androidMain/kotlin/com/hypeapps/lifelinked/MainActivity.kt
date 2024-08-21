@@ -1,8 +1,8 @@
 package com.hypeapps.lifelinked
 
 
-import BackHandler
-import LifeLinkedApp
+import di.BackHandler
+import app.LifeLinkedApp
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle

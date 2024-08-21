@@ -65,13 +65,12 @@ import ui.playerselect.PlayerSelectScreenValues.pulseFreq
 import ui.playerselect.PlayerSelectScreenValues.selectionDelay
 import ui.playerselect.PlayerSelectScreenValues.showHelperTextDelay
 import data.Player.Companion.allPlayerColors
-import getAnimationCorrectionFactor
+import di.getAnimationCorrectionFactor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.one_finger_hold
-import lifelinked.shared.generated.resources.one_finger_tap
 import lifelinked.shared.generated.resources.skip_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp

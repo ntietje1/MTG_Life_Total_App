@@ -1,6 +1,6 @@
 package ui.dialog.planechase
 
-import Platform
+import di.Platform
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
