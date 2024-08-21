@@ -17,6 +17,9 @@ import ui.playerselect.PlayerSelectViewModel
 import ui.tutorial.TutorialScreen
 import ui.tutorial.TutorialViewModel
 import data.SettingsManager
+import di.AppStateHandler
+import di.AppStateHandler.allowChangeNumPlayers
+import di.AppStateHandler.firstLifeCounterNavigation
 import di.keepScreenOn
 import org.koin.compose.KoinContext
 import org.koin.compose.currentKoinScope
@@ -54,9 +57,6 @@ fun LifeLinkedApp() {
 
             val backHandler: BackHandler by currentKoinScope().inject()
             backHandler.attachNavigation(navController)
-
-            var firstLifeCounterNavigation by remember { mutableStateOf(true) }
-            var allowChangeNumPlayers by remember { mutableStateOf(true) }
 
             NavHost(
                 navController = navController,
