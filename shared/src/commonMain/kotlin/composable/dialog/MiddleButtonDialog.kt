@@ -46,8 +46,8 @@ import composable.dialog.coinflip.CoinFlipTutorialContent
 import composable.dialog.planechase.ChoosePlanesDialogContent
 import composable.dialog.planechase.PlaneChaseDialogContent
 import composable.dialog.settings.AboutMeDialogContent
-import composable.dialog.settings.patchnotes.PatchNotesDialogContent
 import composable.dialog.settings.SettingsDialogContent
+import composable.dialog.settings.patchnotes.PatchNotesDialogContent
 import composable.lifecounter.DayNightState
 import composable.lifecounter.LifeCounterViewModel
 import getAnimationCorrectionFactor
@@ -130,7 +130,6 @@ fun MiddleButtonDialog(
     }
 
     val dialogContent: @Composable () -> Unit = {
-
         BoxWithConstraints(
             modifier = modifier.fillMaxSize(),
         ) {
@@ -364,6 +363,16 @@ fun MiddleButtonDialog(
         }
     }
 
+    var onReset: () -> Boolean by remember {
+        mutableStateOf(
+            {
+                println("OOPSIES")
+                false
+            }
+        )
+
+    }
+
     if (showResetDialog) {
         WarningDialog(
             onDismiss = { showResetDialog = false },
@@ -372,17 +381,25 @@ fun MiddleButtonDialog(
             optionOneMessage = "Same players",
             optionTwoMessage = "Different players",
             onOptionOne = {
-                viewModel.resetGameState()
+                onReset = {
+                    viewModel.resetGameState()
+//                onDismiss()
+                    println("resetting game, same players")
+                    false
+                }
                 showResetDialog = false
                 showChooseFirstPlayerDialog = true
-//                onDismiss()
             },
             onOptionTwo = {
-                viewModel.resetAllPrefs()
-                viewModel.resetGameState()
+                onReset = {
+                    viewModel.resetAllPrefs()
+                    viewModel.resetGameState()
+                    println("resetting game, different players")
+//                onDismiss()
+                    true
+                }
                 showResetDialog = false
                 showChooseFirstPlayerDialog = true
-//                onDismiss()
             },
         )
     }
@@ -395,11 +412,15 @@ fun MiddleButtonDialog(
             optionOneMessage = "Select",
             optionTwoMessage = "Skip",
             onOptionOne = {
-                goToPlayerSelectScreen(true)
+                val allowChangeNumPlayers = onReset()
+                println("selecting players")
                 showChooseFirstPlayerDialog = false
                 onDismiss()
+                goToPlayerSelectScreen(allowChangeNumPlayers)
             },
             onOptionTwo = {
+                println("using same players")
+                onReset()
                 viewModel.restartButtons()
                 showChooseFirstPlayerDialog = false
                 onDismiss()

@@ -43,7 +43,7 @@ fun LifeLinkedApp() {
                 return if (!settingsManager.tutorialSkip) {
                     LifeLinkedScreen.TUTORIAL.route
                 } else if (!settingsManager.autoSkip) {
-                    "${LifeLinkedScreen.PLAYER_SELECT.route}/true"
+                    LifeLinkedScreen.PLAYER_SELECT.route
                 } else {
                     LifeLinkedScreen.LIFE_COUNTER.route
                 }
@@ -53,6 +53,7 @@ fun LifeLinkedApp() {
             backHandler.attachNavigation(navController)
 
             var firstLifeCounterNavigation by remember { mutableStateOf(true) }
+            var allowChangeNumPlayers by remember { mutableStateOf(true) }
 
             NavHost(
                 navController = navController,
@@ -76,12 +77,11 @@ fun LifeLinkedApp() {
                     )
                 }
 
-                composable(LifeLinkedScreen.PLAYER_SELECT.route + "/{allowChangeNumPlayers}") { backStackEntry ->
-                    val allowChangeNumPlayers = backStackEntry.arguments?.getString("allowChangeNumPlayers") ?: "true"
+                composable(LifeLinkedScreen.PLAYER_SELECT.route) {
                     val viewModel = koinViewModel<PlayerSelectViewModel>()
                     PlayerSelectScreen(
                         viewModel = viewModel,
-                        allowChangeNumPlayers = allowChangeNumPlayers.toBoolean(),
+                        allowChangeNumPlayers = allowChangeNumPlayers,
                         goToLifeCounterScreen = {
                             navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
                         }
@@ -101,11 +101,8 @@ fun LifeLinkedApp() {
                             keepScreenOn = !keepScreenOn
                         },
                         goToPlayerSelectScreen = { changeNumPlayers ->
-                            if (changeNumPlayers) {
-                                navController.navigate("${LifeLinkedScreen.PLAYER_SELECT.route}/true")
-                            } else {
-                                navController.navigate("${LifeLinkedScreen.PLAYER_SELECT.route}/false")
-                            }
+                            allowChangeNumPlayers = changeNumPlayers
+                            navController.navigate(LifeLinkedScreen.PLAYER_SELECT.route)
                             firstLifeCounterNavigation = false
                         },
                         goToTutorialScreen = {
