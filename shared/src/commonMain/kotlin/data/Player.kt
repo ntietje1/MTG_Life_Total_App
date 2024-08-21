@@ -2,7 +2,7 @@ package data
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import composable.lifecounter.CounterType
+import ui.lifecounter.CounterType
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer

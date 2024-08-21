@@ -1,12 +1,12 @@
 
 
 import android.app.NotificationManager
-import composable.dialog.coinflip.CoinFlipViewModel
-import composable.dialog.planechase.PlaneChaseViewModel
-import composable.dialog.settings.patchnotes.PatchNotesViewModel
-import composable.lifecounter.LifeCounterViewModel
-import composable.playerselect.PlayerSelectViewModel
-import composable.tutorial.TutorialViewModel
+import ui.dialog.coinflip.CoinFlipViewModel
+import ui.dialog.planechase.PlaneChaseViewModel
+import ui.dialog.settings.patchnotes.PatchNotesViewModel
+import ui.lifecounter.LifeCounterViewModel
+import ui.playerselect.PlayerSelectViewModel
+import ui.tutorial.TutorialViewModel
 import data.ImageManager
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
