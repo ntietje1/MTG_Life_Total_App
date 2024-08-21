@@ -33,7 +33,7 @@ class LifeCounterViewModel(
 
     init {
         generatePlayers()
-        savePlayerStates()
+//        savePlayerStates()
     }
 
     fun onNavigate(firstNavigation: Boolean) {
@@ -111,12 +111,10 @@ class LifeCounterViewModel(
     }
 
     fun resetAllPrefs() {
-        savePlayerPrefs()
         playerButtonViewModels.forEach {
             it.resetPlayerPref()
             it.copyPrefs(it.state.value.player)
         }
-
     }
 
     private fun setAllButtonStates(pbState: PBState) {

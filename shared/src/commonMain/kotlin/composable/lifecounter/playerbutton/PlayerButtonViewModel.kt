@@ -111,7 +111,7 @@ class PlayerButtonViewModel(
 
     init {
         updateRecentChange()
-        settingsManager.loadPlayerPref(initialPlayer)?.let { copyPrefs(it) }
+//        settingsManager.loadPlayerPref(initialPlayer)?.let { copyPrefs(it) }
     }
 
     fun resetPlayerPref() {
