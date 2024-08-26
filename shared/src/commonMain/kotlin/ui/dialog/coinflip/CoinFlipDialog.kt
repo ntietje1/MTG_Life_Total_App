@@ -90,7 +90,7 @@ fun CoinFlipDialogContent(
     var allowHaptic by remember { mutableStateOf(false) }
 
     CoinController.setAnimationCorrectionFactor(getAnimationCorrectionFactor())
-    DisposableEffect(Unit) {
+    LaunchedEffect(Unit) {
         viewModel.viewModelScope.launch {
             allowHaptic = false
             viewModel.softReset()
@@ -98,11 +98,7 @@ fun CoinFlipDialogContent(
             viewModel.singleFlip()
             delay(10)
             viewModel.softReset()
-            viewModel.repairHistoryString()
             allowHaptic = true
-        }
-        onDispose {
-            viewModel.repairHistoryString()
         }
     }
 

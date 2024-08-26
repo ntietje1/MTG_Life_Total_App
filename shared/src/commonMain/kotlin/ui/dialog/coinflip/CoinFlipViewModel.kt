@@ -99,8 +99,6 @@ class CoinFlipViewModel(
                                 append(result.letter)
                             }
 
-                            //TODO: add commas for multi coins + krark thumbs flip until you lose
-
                             CoinHistoryItem.COMMA, CoinHistoryItem.L_DIVIDER_LIST, CoinHistoryItem.L_DIVIDER_SINGLE -> {
                                 append(result.letter)
                                 append(" ")
@@ -117,7 +115,7 @@ class CoinFlipViewModel(
         }
     }
 
-    fun repairHistoryString() {
+//    fun repairHistoryString() {
 //        while (state.value.history.count { it == CoinHistoryItem.L_DIVIDER_SINGLE } > state.value.history.count { it == CoinHistoryItem.R_DIVIDER_SINGLE }) {
 //            _state.value = state.value.copy(history = state.value.history.subList(0, state.value.history.size - 1))
 //        }
@@ -127,7 +125,7 @@ class CoinFlipViewModel(
 //        if (leftDividerIndex > rightDividerIndex) {
 //            addToHistory(CoinHistoryItem.R_DIVIDER_LIST)
 //        }
-    }
+//    }
 
     fun buildHistoryString(): AnnotatedString {
         var index = 0
