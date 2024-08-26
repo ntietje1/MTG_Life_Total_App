@@ -19,7 +19,9 @@ class PlayerSelectViewModel(
 
     fun setNumPlayers(allowChangeNumPlayers: Boolean, numPlayers: Int) {
         if (allowChangeNumPlayers) {
+            println("SETTING NUMBER OF PLAYERS: $numPlayers")
             settingsManager.numPlayers = numPlayers
+            println("SUCCESSFULLY SET NUM PLAYERS: ${settingsManager.numPlayers}")
         }
     }
 }

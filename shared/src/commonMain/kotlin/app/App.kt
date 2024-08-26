@@ -1,4 +1,5 @@
 package app
+
 import di.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,9 +18,6 @@ import ui.playerselect.PlayerSelectViewModel
 import ui.tutorial.TutorialScreen
 import ui.tutorial.TutorialViewModel
 import data.SettingsManager
-import di.AppStateHandler
-import di.AppStateHandler.allowChangeNumPlayers
-import di.AppStateHandler.firstLifeCounterNavigation
 import di.keepScreenOn
 import org.koin.compose.KoinContext
 import org.koin.compose.currentKoinScope
@@ -38,6 +36,8 @@ fun LifeLinkedApp() {
     KoinContext {
         var darkTheme by remember { mutableStateOf(SettingsManager.instance.darkTheme) }
         var keepScreenOn by remember { mutableStateOf(SettingsManager.instance.keepScreenOn) }
+        var allowChangeNumPlayers by remember { mutableStateOf(true) }
+        var firstLifeCounterNavigation by remember { mutableStateOf(true) }
         keepScreenOn(keepScreenOn)
 
         LifeLinkedTheme(darkTheme = darkTheme) {
@@ -69,9 +69,9 @@ fun LifeLinkedApp() {
                         onFinishTutorial = {
                             settingsManager.tutorialSkip = true
                             if (navController.currentBackStack.value.all {
-                                it.destination.route == null ||
-                                !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route)
-                            }) {
+                                    it.destination.route == null ||
+                                            !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route)
+                                }) {
                                 navController.navigate(getStartScreen())
                             } else {
                                 navController.popBackStack()
@@ -82,6 +82,7 @@ fun LifeLinkedApp() {
 
                 composable(LifeLinkedScreen.PLAYER_SELECT.route) {
                     val viewModel = koinViewModel<PlayerSelectViewModel>()
+                    println("Navigating to player select screen with allowChangeNumPlayers: $allowChangeNumPlayers")
                     PlayerSelectScreen(
                         viewModel = viewModel,
                         allowChangeNumPlayers = allowChangeNumPlayers,
@@ -95,6 +96,7 @@ fun LifeLinkedApp() {
                     val viewModel = koinViewModel<LifeCounterViewModel>()
                     LifeCounterScreen(
                         viewModel = viewModel,
+                        numPlayers = settingsManager.numPlayers,
                         toggleTheme = {
                             SettingsManager.instance.darkTheme = !darkTheme
                             darkTheme = !darkTheme
