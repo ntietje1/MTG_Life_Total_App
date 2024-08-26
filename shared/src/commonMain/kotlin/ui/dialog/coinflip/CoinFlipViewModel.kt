@@ -21,6 +21,7 @@ class CoinFlipViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(CoinFlipState())
     val state: StateFlow<CoinFlipState> = _state.asStateFlow()
+    private val maxCoins = 64
 
     private var flippingUntil: CoinHistoryItem? = null
 
@@ -117,15 +118,15 @@ class CoinFlipViewModel(
     }
 
     fun repairHistoryString() {
-        while (state.value.history.count { it == CoinHistoryItem.L_DIVIDER_SINGLE } > state.value.history.count { it == CoinHistoryItem.R_DIVIDER_SINGLE }) {
-            _state.value = state.value.copy(history = state.value.history.subList(0, state.value.history.size - 1))
-        }
-
-        val leftDividerIndex = state.value.history.indexOfLast { it == CoinHistoryItem.L_DIVIDER_LIST }
-        val rightDividerIndex = state.value.history.indexOfLast { it == CoinHistoryItem.R_DIVIDER_LIST }
-        if (leftDividerIndex > rightDividerIndex) {
-            addToHistory(CoinHistoryItem.R_DIVIDER_LIST)
-        }
+//        while (state.value.history.count { it == CoinHistoryItem.L_DIVIDER_SINGLE } > state.value.history.count { it == CoinHistoryItem.R_DIVIDER_SINGLE }) {
+//            _state.value = state.value.copy(history = state.value.history.subList(0, state.value.history.size - 1))
+//        }
+//
+//        val leftDividerIndex = state.value.history.indexOfLast { it == CoinHistoryItem.L_DIVIDER_LIST }
+//        val rightDividerIndex = state.value.history.indexOfLast { it == CoinHistoryItem.R_DIVIDER_LIST }
+//        if (leftDividerIndex > rightDividerIndex) {
+//            addToHistory(CoinHistoryItem.R_DIVIDER_LIST)
+//        }
     }
 
     fun buildHistoryString(): AnnotatedString {
@@ -289,13 +290,13 @@ class CoinFlipViewModel(
     }
 
     fun incrementBaseCoins(value: Int) {
-        if (state.value.baseCoins + value <= 0 || state.value.flipInProgress) return
+        if (state.value.baseCoins + value <= 0 || state.value.flipInProgress || calculateCoinCount(baseCoins = state.value.baseCoins + value) > maxCoins) return
         _state.value = state.value.copy(baseCoins = state.value.baseCoins + value)
         updateNumberOfCoins()
     }
 
     fun incrementKrarksThumbs(value: Int) {
-        if (state.value.krarksThumbs + value < 0 || state.value.flipInProgress) return
+        if (state.value.krarksThumbs + value < 0 || state.value.flipInProgress || calculateCoinCount(thumbs = state.value.krarksThumbs + value) > maxCoins) return
         _state.value = state.value.copy(krarksThumbs = state.value.krarksThumbs + value)
         updateNumberOfCoins()
     }

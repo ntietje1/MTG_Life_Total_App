@@ -86,7 +86,7 @@ fun CoinFlipDialogContent(
     val haptic = LocalHapticFeedback.current
 
     val lastResultString = remember(state.lastResults) { viewModel.buildLastResultString() }
-    val historyString = remember(state.history) { viewModel.buildHistoryString() }
+    val historyString = remember(state.history) { viewModel.buildHistoryString() } //TODO: make this update less if possible
     var allowHaptic by remember { mutableStateOf(false) }
 
     CoinController.setAnimationCorrectionFactor(getAnimationCorrectionFactor())
@@ -247,7 +247,15 @@ fun CoinFlipDialogContent(
                     }
                 }
             }
-            Spacer(Modifier.weight(0.4f))
+//            Spacer(Modifier.weight(0.1f))
+            Text(
+                text = "Total Number of Coins: ${viewModel.coinControllers.size}",
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                fontWeight = FontWeight.Bold,
+                fontSize = textSize.scaledSp,
+                modifier = Modifier.padding(bottom = padding / 8f).align(Alignment.CenterHorizontally)
+            )
+            Spacer(Modifier.weight(0.1f))
             Box(Modifier.wrapContentSize().align(Alignment.CenterHorizontally)) {
                 SettingsButton(
                     modifier = Modifier.size(buttonSize * 0.4f).align(Alignment.TopEnd).padding(end = buttonSize * 0.10f, top = buttonSize * 0.05f),
