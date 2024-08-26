@@ -132,14 +132,14 @@ fun SettingsDialogContent(
                     )
                     SettingsDialogButton(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
-                        text = "Patch Notes", icon = vectorResource(Res.drawable.d20_icon)
+                        text = "Patch Notes", icon = vectorResource(Res.drawable.d20_icon),
                     ) {
                         goToPatchNotes()
                         addGoToSettingsToBackStack()
                     }
                     SettingsDialogButton(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
-                        text = "View Tutorial Again", icon = vectorResource(Res.drawable.reset_icon)
+                        text = "View Tutorial Again", icon = vectorResource(Res.drawable.reset_icon),
                     ) {
                         goToTutorialScreen()
                     }
@@ -286,12 +286,14 @@ fun SettingsDialogButton(
     modifier: Modifier = Modifier,
     text: String = "placeholder text",
     icon: ImageVector,
+    hapticEnabled: Boolean = true,
     onTap: () -> Unit = {},
 ) {
     SettingsDialogButtonWithToggle(
         modifier = modifier,
         text = text,
         onTap = onTap,
+        hapticEnabled = hapticEnabled,
         toggleVisible = false,
         initialState = false,
         toggle = {},
@@ -304,6 +306,7 @@ fun SettingsDialogButtonWithToggle(
     modifier: Modifier = Modifier,
     text: String = "placeholder text",
     onTap: () -> Unit = {},
+    hapticEnabled: Boolean = false,
     toggleVisible: Boolean = true,
     initialState: Boolean = false,
     icon: ImageVector,
@@ -325,7 +328,7 @@ fun SettingsDialogButtonWithToggle(
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         onTap()
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        if (hapticEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     })
                 },
             verticalAlignment = Alignment.CenterVertically,
