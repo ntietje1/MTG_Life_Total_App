@@ -1,12 +1,23 @@
 {
   "in-progress": [
     "Game/turn timer",
-    "Improved player customization",
+    "Improved player customization menu and options",
     "Bounties, city's blessing, the ring, and dungeon progress tracking",
     "Improved tutorial",
-    "Game statistics tracking"
+    "Game statistics tracking",
+    "Fix known crash on some Android devices"
   ],
   "patch-notes": [
+    {
+      "version": "1.8.2",
+      "date": "2024-08-27",
+      "title": "Quick Fix",
+      "notes": [
+        "Added limit to number of coins",
+        "Optimized saving performance",
+        "Fixed iOS bug related to saving"
+      ]
+    },
     {
       "version": "1.8.1",
       "date": "2024-08-19",
