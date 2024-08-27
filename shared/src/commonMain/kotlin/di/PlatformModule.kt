@@ -11,7 +11,13 @@ val sharedModule = module {
     single { VersionNumber("1.8.2")  }
 }
 
-data class VersionNumber(val value: String)
+data class VersionNumber(val value: String) {
+    fun isHigherThan(other: VersionNumber): Boolean {
+        val thisParts = this.value.split(".").map { it.toInt() }
+        val otherParts = other.value.split(".").map { it.toInt() }
+        return thisParts[0] > otherParts[0] || (thisParts[0] == otherParts[0] && thisParts[1] > otherParts[1]) || (thisParts[0] == otherParts[0] && thisParts[1] == otherParts[1] && thisParts[2] > otherParts[2])
+    }
+}
 
 expect val platform: Platform
 

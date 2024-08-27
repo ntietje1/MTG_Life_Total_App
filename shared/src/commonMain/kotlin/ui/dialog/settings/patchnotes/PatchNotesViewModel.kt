@@ -20,7 +20,7 @@ class PatchNotesViewModel(
     private val patchnotesUrl = "https://lcvgoezm16.execute-api.us-east-1.amazonaws.com/lifelinked/patchnotes"
     private val client = HttpClient()
 
-    suspend fun getPatchNotes(): Pair<List<PatchNotesItem>, List<String>> {
+    suspend fun getPatchNotes(): Pair<List<PatchNotesItem>, List<String>>? {
         if (state.value.patchNotes.isEmpty()) {
             try {
                 val response: HttpResponse = client.get(patchnotesUrl)
@@ -29,7 +29,7 @@ class PatchNotesViewModel(
                 val inProgress = patchNotesResponse.inProgress
                 _state.value = _state.value.copy(patchNotes = patchNotes, inProgress = inProgress)
             } catch (e: Exception) {
-                e.printStackTrace()
+                return null
             }
         }
         return Pair(state.value.patchNotes, state.value.inProgress)

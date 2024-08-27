@@ -1,6 +1,5 @@
 package ui.dialog.settings.patchnotes
 
-import di.NotificationManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,10 +27,11 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
-import ui.dialog.settings.SettingsDialogHeader
+import di.NotificationManager
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import theme.scaledSp
+import ui.dialog.settings.SettingsDialogHeader
 
 
 @Composable
@@ -44,9 +44,10 @@ fun PatchNotesDialogContent(
     val inProgressItems = remember { mutableStateListOf<String>() }
 
     viewModel.viewModelScope.launch {
-        val (patchNotesItems, inProgress) = viewModel.getPatchNotes()
-        patchNotes.addAll(patchNotesItems)
-        inProgressItems.addAll(inProgress)
+        viewModel.getPatchNotes()?.let { (patchNotesItems, inProgress) ->
+            patchNotes.addAll(patchNotesItems)
+            inProgressItems.addAll(inProgress)
+        }
     }
 
     BoxWithConstraints(modifier) {
