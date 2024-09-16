@@ -1,4 +1,4 @@
-![Downloads Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Flcvgoezm16.execute-api.us-east-1.amazonaws.com%2Flifelinked%2Fdownloads)
+![Downloads Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Flcvgoezm16.execute-api.us-east-1.amazonaws.com%2Flifelinked%2Fdownloads&cacheSeconds=3600)
 ![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/ntietje1/MTG_Life_Total_App)
 ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-orange)
 ![Static Badge](https://img.shields.io/badge/Kotlin-1.9.24-blue)
