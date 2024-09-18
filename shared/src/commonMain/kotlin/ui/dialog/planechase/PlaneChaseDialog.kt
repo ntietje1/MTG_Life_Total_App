@@ -2,6 +2,7 @@ package ui.dialog.planechase
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -96,21 +98,43 @@ fun PlaneChaseDialogContent(
                 Column(
                     modifier = Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.weight(0.65f))
-                    SettingsButton(
-                        modifier = Modifier.size(100.dp).padding(bottom = 20.dp),
-                        textSizeMultiplier = 0.8f,
-                        imageVector = vectorResource(planarDieResult.drawableResource),
-                        shadowEnabled = false,
-                        enabled = false
-                    )
-                    Text(
-                        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-                        text = planarDieResult.toString,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        textAlign = TextAlign.Center,
-                        fontSize = 35.scaledSp
-                    )
+                    Spacer(modifier = Modifier.weight(0.8f))
+                    Column(
+                        modifier = Modifier.wrapContentSize().pointerInput(Unit) {
+                            detectTapGestures {
+                                if (planarDieResult == PlanarDieResult.PLANESWALK) {
+                                    viewModel.planeswalk()
+                                    planarDieResultVisible = false
+                                }
+                            }
+                        },
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        SettingsButton(
+                            modifier = Modifier.size(100.dp).padding(bottom = 20.dp),
+                            textSizeMultiplier = 0.8f,
+                            imageVector = vectorResource(planarDieResult.drawableResource),
+                            shadowEnabled = false,
+                            enabled = false
+                        )
+                        Text(
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                            text = planarDieResult.toString,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            textAlign = TextAlign.Center,
+                            fontSize = 35.scaledSp
+                        )
+                        if (planarDieResult == PlanarDieResult.PLANESWALK) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                                text = "(Tap to planeswalk)",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                textAlign = TextAlign.Center,
+                                fontSize = 15.scaledSp
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.weight(1.0f))
                 }
             }
