@@ -3,6 +3,7 @@ package ui.lifecounter.playerbutton
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import data.Player
+import data.TurnTimer
 
 data class PlayerButtonState(
     val player: Player,
@@ -14,7 +15,8 @@ data class PlayerButtonState(
     val showTextColorPicker: Boolean = false,
     val showChangeNameField: Boolean = false,
     val changeNameTextField: TextFieldValue = TextFieldValue(player.name, selection = TextRange(player.name.length)),
-    val backStack: List<() -> Unit> = listOf()
+    val backStack: List<() -> Unit> = listOf(),
+    val timer: TurnTimer? = null
 )
 
 enum class PBState {

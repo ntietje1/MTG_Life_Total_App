@@ -33,7 +33,44 @@ class LifeCounterViewModel(
 
     init {
         generatePlayers()
-//        savePlayerStates()
+        launchTimer()
+    }
+
+    private fun launchTimer() {
+        viewModelScope.launch {
+            while (true) {
+                delay(1000L)
+                if (_state.value.activeTimerIndex == null) continue
+                else {
+                    val newTimer = _state.value.turnTimer.tick()
+                    _state.value = _state.value.copy(turnTimer = newTimer)
+                    playerButtonViewModels[_state.value.activeTimerIndex!!].setTimer(newTimer)
+                }
+            }
+        }
+    }
+
+    private fun incrementTurn(value: Int = 1) {
+        _state.value = _state.value.copy(turnTimer = _state.value.turnTimer.copy(turn = _state.value.turnTimer.turn + value))
+    }
+
+    private fun moveTimer() {
+        //TODO: move timer to an active
+        var nextPlayerIndex = (_state.value.activeTimerIndex ?: _state.value.firstPlayer ?: 0) + 1
+        if (nextPlayerIndex >= _state.value.numPlayers) {
+            nextPlayerIndex = 0
+            incrementTurn()
+        }
+        _state.value = _state.value.copy(activeTimerIndex = nextPlayerIndex)
+        val newTimer = _state.value.turnTimer.resetTime()
+        _state.value = _state.value.copy(turnTimer = newTimer)
+        for (i in playerButtonViewModels.indices) {
+            if (i == nextPlayerIndex) {
+                playerButtonViewModels[i].setTimer(newTimer)
+            } else {
+                playerButtonViewModels[i].setTimer(null)
+            }
+        }
     }
 
     fun onNavigate(firstNavigation: Boolean) {
@@ -75,9 +112,6 @@ class LifeCounterViewModel(
         return player.copy(color = allPlayerColors.filter { it !in getUsedColors() }.random())
     }
 
-//    private val _timer = MutableStateFlow(0)
-//    val timer = _timer.asStateFlow()
-
     private val currentDealer: PlayerButtonViewModel?
         get() = playerButtonViewModels.find { it.state.value.buttonState == PBState.COMMANDER_DEALER }
 
@@ -92,7 +126,8 @@ class LifeCounterViewModel(
             updateCurrentDealerMode = { setDealerMode(it) },
             currentDealerIsPartnered = currentDealerIsPartnered,
             triggerSave = { savePlayerStates() },
-            resetPlayerColor = { resetPlayerColor(it) }
+            resetPlayerColor = { resetPlayerColor(it) },
+            moveTimer = { moveTimer() },
         )
     }
 
@@ -170,10 +205,6 @@ class LifeCounterViewModel(
         _state.value = _state.value.copy(dayNight = value)
     }
 
-    private fun setCoinFlipHistory(value: List<String>) {
-        _state.value = _state.value.copy(coinFlipHistory = value)
-    }
-
     fun incrementCounter(index: Int, value: Int) {
         _state.value = _state.value.copy(counters = _state.value.counters.toMutableList().apply { set(index, _state.value.counters[index] + value) }.toList())
     }
@@ -181,24 +212,6 @@ class LifeCounterViewModel(
     fun resetCounters() {
         _state.value = _state.value.copy(counters = List(COUNTER_DIALOG_ENTRIES) { 0 })
     }
-
-//    fun addToCoinFlipHistory(value: String) {
-//        setCoinFlipHistory(_state.value.coinFlipHistory.toMutableList().apply { add(value) }.toList())
-//    }
-//
-//    fun resetCoinFlipHistory() {
-//        setCoinFlipHistory(emptyList())
-//    }
-
-//    private fun startTimer() {
-//        viewModelScope.launch {
-//            while (true) {
-//                delay(1000 * 10)
-//                savePlayerStates()
-//                _timer.value++
-//            }
-//        }
-//    }
 
     fun toggleDayNight() {
         setDayNight(

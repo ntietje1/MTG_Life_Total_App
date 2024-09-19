@@ -10,6 +10,7 @@ import data.ImageManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
 import data.SettingsManager
+import data.TurnTimer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,11 +29,16 @@ class PlayerButtonViewModel(
     val currentDealerIsPartnered: StateFlow<Boolean>,
     private val triggerSave: () -> Unit,
     private val resetPlayerColor: (Player) -> Player,
+    val moveTimer: () -> Unit,
 ) : ViewModel() {
     private var _state = MutableStateFlow(PlayerButtonState(initialPlayer))
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
 
     private var recentChangeJob: Job? = null
+
+    fun setTimer(timer: TurnTimer?) {
+        _state.value = state.value.copy(timer = timer)
+    }
 
     fun setPlayerButtonState(buttonState: PBState) {
         _state.value = state.value.copy(buttonState = buttonState)

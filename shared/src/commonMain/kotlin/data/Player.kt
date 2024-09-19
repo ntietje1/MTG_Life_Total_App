@@ -41,6 +41,7 @@ data class Player(
     val activeCounters: List<CounterType> = listOf(),
     val setDead: Boolean = false,
     val partnerMode: Boolean = false,
+    
 ) {
     fun isDefaultOrEmptyName(): Boolean {
         return name.matches("P[1-$MAX_PLAYERS]".toRegex()) || name == "Placeholder" || name.isEmpty()
