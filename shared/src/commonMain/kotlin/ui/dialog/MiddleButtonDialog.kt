@@ -1,6 +1,5 @@
 package ui.dialog
 
-import di.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.TweenSpec
@@ -40,16 +39,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import ui.SettingsButton
-import ui.dialog.coinflip.CoinFlipDialogContent
-import ui.dialog.coinflip.CoinFlipTutorialContent
-import ui.dialog.planechase.ChoosePlanesDialogContent
-import ui.dialog.planechase.PlaneChaseDialogContent
-import ui.dialog.settings.AboutMeDialogContent
-import ui.dialog.settings.SettingsDialogContent
-import ui.dialog.settings.patchnotes.PatchNotesDialogContent
-import ui.lifecounter.DayNightState
-import ui.lifecounter.LifeCounterViewModel
+import di.BackHandler
 import di.getAnimationCorrectionFactor
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
@@ -71,6 +61,16 @@ import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.scaledSp
+import ui.SettingsButton
+import ui.dialog.coinflip.CoinFlipDialogContent
+import ui.dialog.coinflip.CoinFlipTutorialContent
+import ui.dialog.planechase.ChoosePlanesDialogContent
+import ui.dialog.planechase.PlaneChaseDialogContent
+import ui.dialog.settings.AboutMeDialogContent
+import ui.dialog.settings.SettingsDialogContent
+import ui.dialog.settings.patchnotes.PatchNotesDialogContent
+import ui.lifecounter.DayNightState
+import ui.lifecounter.LifeCounterViewModel
 
 private enum class MiddleButtonDialogState {
     Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, PatchNotes, AboutMe, PlaneChase, PlanarDeck
@@ -87,6 +87,7 @@ fun MiddleButtonDialog(
     triggerEnterAnimation: () -> Unit,
     setNumPlayers: (Int) -> Unit,
     goToTutorialScreen: () -> Unit,
+    updateTurnTimerEnabled: (Boolean) -> Unit,
     backHandler: BackHandler = koinInject()
 ) {
 
@@ -238,6 +239,7 @@ fun MiddleButtonDialog(
                         onDismiss()
                         goToTutorialScreen()
                     },
+                    updateTurnTimerEnabled = updateTurnTimerEnabled,
                     toggleKeepScreenOn = toggleKeepScreenOn
                 )
             }

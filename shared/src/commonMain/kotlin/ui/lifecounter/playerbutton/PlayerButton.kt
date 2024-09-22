@@ -71,7 +71,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
@@ -79,6 +78,7 @@ import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import data.Player
 import data.Player.Companion.allPlayerColors
+import data.TurnTimer
 import di.getAnimationCorrectionFactor
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.add_icon
@@ -357,6 +357,42 @@ fun PlayerButton(
         )
     }
 
+    var timerTextSize by remember { mutableStateOf(15) }
+    var timerPadding by remember { mutableStateOf(5) }
+
+//    val timerTextSize = (maxWidth / 22.5f).value.scaledSp
+//    val timerPadding = maxWidth / 60f
+
+    @Composable
+    fun Timer(modifier: Modifier = Modifier, timer: TurnTimer) {
+        val textSize = ((25 + timerTextSize) / 2).scaledSp
+        val padding = ((5 + timerPadding) / 2).dp
+        Column(
+            modifier = modifier.wrapContentSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(padding)
+        ) {
+            Text(
+                text = timer.getTimeString(),
+                color = state.player.textColor,
+                fontSize = textSize,
+                lineHeight = textSize,
+                textAlign = TextAlign.Center,
+                style = defaultTextStyle(),
+                modifier = Modifier.padding(horizontal = padding * 3.5f).padding(top = padding * 1.5f)
+            )
+            Text(
+                text = "Turn ${timer.turn}",
+                color = state.player.textColor,
+                fontSize = textSize,
+                lineHeight = textSize,
+                textAlign = TextAlign.Center,
+                style = defaultTextStyle(),
+                modifier = Modifier.padding(horizontal = padding * 3.5f).padding(bottom = padding * 1.5f)
+            )
+        }
+    }
+
     LaunchedEffect(state.buttonState) {
         if (state.buttonState == PBState.COMMANDER_RECEIVER) viewModel.clearBackStack()
     }
@@ -369,76 +405,36 @@ fun PlayerButton(
             else -> Modifier
         }
     }
-//    BoxWithConstraints(modifier = Modifier.wrapContentSize().then(rotationModifier)) {
-//        if (state.timer != null) {
-//            val textSize = (maxWidth / 22.5f).value.scaledSp
-//            val padding = maxWidth / 60f
-//            Column(
-//                modifier = Modifier
-//                    .wrapContentSize()
-//                    .pointerInput(Unit) {
-//                        routePointerChangesTo(onDown = {
-//                            viewModel.moveTimer()
-//                        })
-//                    }.then(
-//                        if (rotation == 180f || rotation == 270f) Modifier
-//                            .align(Alignment.TopStart)
-//                            .background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0,0,15,0))
-//                        else Modifier
-//                            .align(Alignment.TopEnd)
-//                            .background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0,0,0,15))
-//                    )
-//                ,
-//                horizontalAlignment = Alignment.CenterHorizontally,
-//                verticalArrangement = Arrangement.spacedBy(padding)
-//            ) {
-//                Text(
-//                    text = state.timer!!.getTimeString(),
-//                    color = state.player.textColor,
-//                    fontSize = textSize,
-//                    lineHeight = textSize,
-//                    textAlign = TextAlign.Center,
-//                    style = defaultTextStyle(),
-//                    modifier = Modifier.padding(horizontal = padding * 2.5f).padding(top = padding * 1.5f)
-//                )
-//                Text(
-//                    text = "Turn ${state.timer!!.turn}",
-//                    color = state.player.textColor,
-//                    fontSize = textSize,
-//                    lineHeight = textSize,
-//                    textAlign = TextAlign.Center,
-//                    style = defaultTextStyle(),
-//                    modifier = Modifier.padding(horizontal = padding * 2.5f).padding(bottom = padding * 1.5f)
-//                )
-//            }
-//        }
-//    }
-    BoxWithConstraints(
+
+    Box(
         modifier = Modifier.wrapContentSize().then(rotationModifier).clip(RoundedCornerShape(12))
     ) {
         Box(
-            modifier = modifier.wrapContentSize().background(Color.Transparent).then(
-                if (state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) {
-                    Modifier.bounceClick(
-                        bounceAmount = 0.01f,
-                        bounceDuration = 60L,
-                        repeatEnabled = true
-                    )
-                } else {
-                    Modifier
-                }
-            ),
+            modifier = Modifier.wrapContentSize(),
             contentAlignment = Alignment.Center
         ) {
             MonarchyIndicator(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.wrapContentSize(),
                 monarch = state.player.monarch,
                 borderWidth = borderWidth,
             ) {
                 BoxWithConstraints(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = modifier.background(Color.Transparent).then(
+                    if (state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) {
+                        Modifier.bounceClick(
+                            bounceAmount = 0.01f,
+                            bounceDuration = 60L,
+                            repeatEnabled = true
+                        )
+                    } else {
+                        Modifier
+                    }
+                ),
                     contentAlignment = Alignment.Center
                 ) {
+
+                    timerTextSize = (maxWidth / 22.5f).value.toInt()
+                    timerPadding = (maxWidth / 60f).value.toInt()
 
                     PlayerButtonBackground(
                         state = state.buttonState,
@@ -1125,49 +1121,24 @@ fun PlayerButton(
                 }
             }
         }
+        val turnTimerModifier = Modifier
+            .padding(2.dp)
+            .pointerInput(Unit) {
+                routePointerChangesTo(onDown = {
+                    viewModel.moveTimer()
+                })
+            }.then(
+                if (rotation == 180f || rotation == 270f) Modifier
+                    .align(Alignment.TopStart)
+                    .background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0, 0, 15, 0))
+                else Modifier
+                    .align(Alignment.TopEnd)
+                    .background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0, 0, 0, 15))
+            )
         if (state.timer != null) {
 //            val textSize = (maxWidth / 22.5f).value.scaledSp
 //            val padding = maxWidth / 60f
-            val textSize = 15.scaledSp
-            val padding = 5.dp
-            Column(
-                modifier = Modifier
-                    .padding(2.dp)
-                    .wrapContentSize()
-                    .pointerInput(Unit) {
-                        routePointerChangesTo(onDown = {
-                            viewModel.moveTimer()
-                        })
-                    }.then(
-                        if (rotation == 180f || rotation == 270f) Modifier
-                            .align(Alignment.TopStart)
-                            .background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0, 0, 15, 0))
-                        else Modifier
-                            .align(Alignment.TopEnd)
-                            .background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0, 0, 0, 15))
-                    ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(padding)
-            ) {
-                Text(
-                    text = state.timer!!.getTimeString(),
-                    color = state.player.textColor,
-                    fontSize = textSize,
-                    lineHeight = textSize,
-                    textAlign = TextAlign.Center,
-                    style = defaultTextStyle(),
-                    modifier = Modifier.padding(horizontal = padding * 3.5f).padding(top = padding * 1.5f)
-                )
-                Text(
-                    text = "Turn ${state.timer!!.turn}",
-                    color = state.player.textColor,
-                    fontSize = textSize,
-                    lineHeight = textSize,
-                    textAlign = TextAlign.Center,
-                    style = defaultTextStyle(),
-                    modifier = Modifier.padding(horizontal = padding * 3.5f).padding(bottom = padding * 1.5f)
-                )
-            }
+            Timer(modifier = turnTimerModifier, timer = state.timer!!)
         }
     }
 }

@@ -56,6 +56,10 @@ class SettingsManager private constructor() {
         get() = settings.getBoolean("tutorialSkip", false)
         set(value) = settings.putBoolean("tutorialSkip", value)
 
+    var turnTimer: Boolean
+        get() = settings.getBoolean("turnTimer", false)
+        set(value) = settings.putBoolean("turnTimer", value)
+
     var devMode: Boolean
         get() = settings.getBoolean("devMode", false)
         set(value) = settings.putBoolean("devMode", value)

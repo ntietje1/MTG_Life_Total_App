@@ -1,7 +1,5 @@
 package ui.dialog.settings
 
-import di.Platform
-import di.VersionNumber
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -36,8 +34,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import ui.SettingsButton
 import data.SettingsManager
+import di.Platform
+import di.VersionNumber
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.change_name_icon
 import lifelinked.shared.generated.resources.coffee_icon
@@ -45,6 +44,7 @@ import lifelinked.shared.generated.resources.coin_icon
 import lifelinked.shared.generated.resources.d20_icon
 import lifelinked.shared.generated.resources.email_icon
 import lifelinked.shared.generated.resources.invisible_icon
+import lifelinked.shared.generated.resources.placeholder_icon
 import lifelinked.shared.generated.resources.player_select_icon
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
@@ -58,6 +58,7 @@ import org.koin.compose.koinInject
 import theme.blendWith
 import theme.defaultTextStyle
 import theme.scaledSp
+import ui.SettingsButton
 
 @Composable
 fun SettingsDialogContent(
@@ -67,6 +68,7 @@ fun SettingsDialogContent(
     addGoToSettingsToBackStack: () -> Unit,
     goToTutorialScreen: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
+    updateTurnTimerEnabled: (Boolean) -> Unit,
     settingsManager: SettingsManager = koinInject(),
     platform: Platform = koinInject(),
     version: VersionNumber = koinInject()
@@ -129,6 +131,16 @@ fun SettingsDialogContent(
                             settingsManager.keepScreenOn = it
                         },
                         icon = vectorResource(Res.drawable.sun_icon)
+                    )
+                    SettingsDialogButtonWithToggle(
+                        modifier = Modifier.fillMaxWidth().height(buttonHeight),
+                        text = "Turn Timer",
+                        initialState = settingsManager.turnTimer,
+                        toggle = {
+                            settingsManager.turnTimer = it
+                            updateTurnTimerEnabled(it)
+                        },
+                        icon = vectorResource(Res.drawable.placeholder_icon)
                     )
                     SettingsDialogButton(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),

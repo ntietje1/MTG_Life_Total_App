@@ -3,20 +3,22 @@ package ui.lifecounter
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ui.dialog.COUNTER_DIALOG_ENTRIES
-import ui.dialog.planechase.PlaneChaseViewModel
-import ui.lifecounter.playerbutton.PBState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 import data.ImageManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
 import data.Player.Companion.allPlayerColors
 import data.SettingsManager
+import data.TurnTimer
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import ui.dialog.COUNTER_DIALOG_ENTRIES
+import ui.dialog.planechase.PlaneChaseViewModel
+import ui.lifecounter.playerbutton.PBState
+import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 class LifeCounterViewModel(
     val settingsManager: SettingsManager,
@@ -33,39 +35,66 @@ class LifeCounterViewModel(
 
     init {
         generatePlayers()
-        launchTimer()
     }
 
-    private fun launchTimer() {
-        viewModelScope.launch {
+    fun setTimerEnabled(value: Boolean = true) {
+        println("Setting timer enabled: $value")
+        if (value) {
+            val firstPlayer = _state.value.firstPlayer ?: 0 // change this to request the user to select the first player if not established
+            if (_state.value.activeTimerIndex == null) {
+                _state.value = _state.value.copy(activeTimerIndex = firstPlayer)
+            }
+            initTimer()
+        } else {
+            killTimer()
+        }
+    }
+
+    private var timerJob: Job? = null
+
+    private fun initTimer() {
+        _state.value = _state.value.copy(turnTimer = TurnTimer(-1, 1))
+        timerJob = viewModelScope.launch {
             while (true) {
-                delay(1000L)
-                if (_state.value.activeTimerIndex == null) continue
-                else {
-                    val newTimer = _state.value.turnTimer.tick()
+                if (_state.value.activeTimerIndex != null && _state.value.turnTimer != null) {
+                    val newTimer = _state.value.turnTimer!!.tick()
                     _state.value = _state.value.copy(turnTimer = newTimer)
-                    playerButtonViewModels[_state.value.activeTimerIndex!!].setTimer(newTimer)
+                    updatePlayerButtonTimers(_state.value.activeTimerIndex!!, newTimer)
                 }
+                delay(1000L)
             }
         }
     }
 
+    private fun killTimer() {
+        timerJob?.cancel()
+        timerJob = null
+        _state.value = _state.value.copy(turnTimer = null)
+        updatePlayerButtonTimers(-1, null)
+    }
+
     private fun incrementTurn(value: Int = 1) {
-        _state.value = _state.value.copy(turnTimer = _state.value.turnTimer.copy(turn = _state.value.turnTimer.turn + value))
+        if (_state.value.activeTimerIndex == null && _state.value.firstPlayer == null) throw IllegalStateException("Attempted to increment turn timer when no one has an active timer")
+        _state.value = _state.value.copy(turnTimer = _state.value.turnTimer!!.copy(turn = _state.value.turnTimer!!.turn + value))
     }
 
     private fun moveTimer() {
         //TODO: move timer to an active
-        var nextPlayerIndex = (_state.value.activeTimerIndex ?: _state.value.firstPlayer ?: 0) + 1
+        if (_state.value.activeTimerIndex == null && _state.value.firstPlayer == null) throw IllegalStateException("Attempted to move timer when no one has an active timer")
+        var nextPlayerIndex = (_state.value.activeTimerIndex ?: _state.value.firstPlayer!!) + 1
         if (nextPlayerIndex >= _state.value.numPlayers) {
             nextPlayerIndex = 0
             incrementTurn()
         }
         _state.value = _state.value.copy(activeTimerIndex = nextPlayerIndex)
-        val newTimer = _state.value.turnTimer.resetTime()
+        val newTimer = _state.value.turnTimer!!.resetTime()
         _state.value = _state.value.copy(turnTimer = newTimer)
+        updatePlayerButtonTimers(nextPlayerIndex, newTimer)
+    }
+
+    private fun updatePlayerButtonTimers(targetIndex: Int, newTimer: TurnTimer?) {
         for (i in playerButtonViewModels.indices) {
-            if (i == nextPlayerIndex) {
+            if (i == targetIndex) {
                 playerButtonViewModels[i].setTimer(newTimer)
             } else {
                 playerButtonViewModels[i].setTimer(null)

@@ -1,6 +1,5 @@
 package app
 
-import di.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,18 +10,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import data.SettingsManager
+import di.BackHandler
+import di.keepScreenOn
+import di.updateSystemBarsColors
+import org.koin.compose.KoinContext
+import org.koin.compose.currentKoinScope
+import theme.LifeLinkedTheme
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterViewModel
 import ui.playerselect.PlayerSelectScreen
 import ui.playerselect.PlayerSelectViewModel
 import ui.tutorial.TutorialScreen
 import ui.tutorial.TutorialViewModel
-import data.SettingsManager
-import di.keepScreenOn
-import org.koin.compose.KoinContext
-import org.koin.compose.currentKoinScope
-import theme.LifeLinkedTheme
-import di.updateSystemBarsColors
 
 
 private enum class LifeLinkedScreen(val route: String) {
@@ -113,6 +113,7 @@ fun LifeLinkedApp() {
                         goToTutorialScreen = {
                             navController.navigate(LifeLinkedScreen.TUTORIAL.route)
                         },
+                        timerEnabled = settingsManager.turnTimer,
                         firstNavigation = firstLifeCounterNavigation
                     )
                 }

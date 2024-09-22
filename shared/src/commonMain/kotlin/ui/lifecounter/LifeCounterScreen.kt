@@ -37,15 +37,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
-import ui.dialog.MiddleButtonDialog
-import ui.lifecounter.playerbutton.PlayerButton
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 import di.getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
 import org.jetbrains.compose.resources.vectorResource
+import ui.dialog.MiddleButtonDialog
+import ui.lifecounter.playerbutton.PlayerButton
+import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 @Composable
 fun LifeCounterScreen(
@@ -55,6 +55,7 @@ fun LifeCounterScreen(
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     numPlayers: Int,
+    timerEnabled: Boolean,
     firstNavigation: Boolean
 ) {
     val state by viewModel.state.collectAsState()
@@ -63,6 +64,7 @@ fun LifeCounterScreen(
 
     LaunchedEffect(Unit) {
         viewModel.setNumPlayers(numPlayers)
+        viewModel.setTimerEnabled(timerEnabled)
     }
 
     if (showDialog) {
@@ -87,6 +89,7 @@ fun LifeCounterScreen(
                     viewModel.setShowButtons(true)
                 }
             },
+            updateTurnTimerEnabled = { viewModel.setTimerEnabled(it) },
             goToTutorialScreen = goToTutorialScreen
         )
     }
