@@ -512,6 +512,9 @@ fun PlayerButton(
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                             verticalArrangement = Arrangement.Center
                                         ) {
+                                            if (!wideButton) {
+                                                Spacer(modifier = Modifier.height(smallButtonSize))
+                                            }
                                             Text(
                                                 text = "Select first player",
                                                 color = state.player.textColor,
@@ -521,7 +524,7 @@ fun PlayerButton(
                                             )
                                             Spacer(modifier = Modifier.height(smallButtonSize / 3f))
                                             SettingsButton(
-                                                modifier = Modifier.size(smallButtonSize * 1.2f).rotate(20f).padding(bottom = smallButtonSize / 4f),
+                                                modifier = Modifier.size(smallButtonSize * 1.2f).rotate(20f),
                                                 backgroundColor = Color.Transparent,
                                                 mainColor = state.player.textColor,
                                                 enabled = false,
