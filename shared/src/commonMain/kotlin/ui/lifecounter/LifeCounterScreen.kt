@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -44,8 +46,8 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
 import org.jetbrains.compose.resources.vectorResource
 import ui.dialog.MiddleButtonDialog
-import ui.dialog.WarningDialog
 import ui.lifecounter.playerbutton.PlayerButton
+import ui.modifier.routePointerChangesTo
 
 @Composable
 fun LifeCounterScreen(
@@ -64,7 +66,10 @@ fun LifeCounterScreen(
     val scope = rememberCoroutineScope()
 
     fun promptFirstPlayer() {
-        if (state.firstPlayer == null) {
+        if (state.numPlayers == 1) {
+            viewModel.setFirstPlayer(0)
+            viewModel.setTimerEnabled(timerEnabled)
+        } else if (state.firstPlayer == null) {
             viewModel.askForFirstPlayer()
             firstPlayerSelectionActive = true
         } else {
@@ -146,6 +151,7 @@ fun LifeCounterScreen(
                             val width = placement.width - buttonPadding * 4
                             val height = placement.height - buttonPadding * 4
                             val rotation = placement.angle
+                            val turnTimerAlignment = placement.timerAlignment
                             val playerButtonViewModel = viewModel.playerButtonViewModels[placement.index]
                             AnimatedPlayerButton(modifier = Modifier.padding(buttonPadding),
                                 visible = state.showButtons,
@@ -154,6 +160,17 @@ fun LifeCounterScreen(
                                 height = placement.height - buttonPadding * 4,
                                 playerButton = {
                                     PlayerButton(modifier = Modifier.size(width, height),
+                                        turnTimerModifier = Modifier.align(turnTimerAlignment).pointerInput(Unit) {
+                                            routePointerChangesTo(onDown = {
+                                                playerButtonViewModel.moveTimer()
+                                            })
+                                        }.then(
+                                            when (turnTimerAlignment) {
+                                                Alignment.TopStart -> Modifier.align(Alignment.TopStart).background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0, 0, 15, 0))
+                                                Alignment.TopEnd -> Modifier.align(Alignment.TopEnd).background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0, 0, 0, 15))
+                                                else -> Modifier
+                                            }
+                                        ),
                                         viewModel = playerButtonViewModel,
                                         rotation = rotation,
                                         borderWidth = buttonPadding,

@@ -93,6 +93,7 @@ import lifelinked.shared.generated.resources.enter_icon
 import lifelinked.shared.generated.resources.heart_solid_icon
 import lifelinked.shared.generated.resources.mana_icon
 import lifelinked.shared.generated.resources.monarchy_icon
+import lifelinked.shared.generated.resources.one_finger_hold
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
@@ -109,7 +110,6 @@ import theme.brightenColor
 import theme.deadDealerColorMatrix
 import theme.deadNormalColorMatrix
 import theme.deadReceiverColorMatrix
-import theme.deadSettingsColorMatrix
 import theme.dealerColorMatrix
 import theme.defaultTextStyle
 import theme.ghostify
@@ -117,7 +117,6 @@ import theme.normalColorMatrix
 import theme.receiverColorMatrix
 import theme.saturateColor
 import theme.scaledSp
-import theme.settingsColorMatrix
 import theme.textShadowStyle
 import ui.SettingsButton
 import ui.dialog.ColorDialog
@@ -133,7 +132,13 @@ import ui.modifier.routePointerChangesTo
 
 @Composable
 fun PlayerButton(
-    modifier: Modifier = Modifier, viewModel: PlayerButtonViewModel, rotation: Float = 0f, borderWidth: Dp, setBlurBackground: (Boolean) -> Unit, setFirstPlayer: () -> Unit
+    modifier: Modifier = Modifier,
+    viewModel: PlayerButtonViewModel,
+    rotation: Float = 0f,
+    borderWidth: Dp,
+    turnTimerModifier: Modifier,
+    setBlurBackground: (Boolean) -> Unit,
+    setFirstPlayer: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val currentDealerIsPartnered by viewModel.currentDealerIsPartnered.collectAsState()
@@ -502,14 +507,27 @@ fun PlayerButton(
                                             setFirstPlayer()
                                         })
                                     }) {
-                                        Text(
-                                            modifier = Modifier.align(Alignment.Center),
-                                            text = "Select the first player",
-                                            color = Color.White,
-                                            fontSize = textSize,
-                                            textAlign = TextAlign.Center,
-                                            style = defaultTextStyle()
-                                        )
+                                        Column(
+                                            modifier = Modifier.fillMaxSize(),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                text = "Select first player",
+                                                color = state.player.textColor,
+                                                fontSize = textSize * 1.2f,
+                                                textAlign = TextAlign.Center,
+                                                style = textShadowStyle()
+                                            )
+                                            Spacer(modifier = Modifier.height(smallButtonSize / 3f))
+                                            SettingsButton(
+                                                modifier = Modifier.size(smallButtonSize * 1.2f).rotate(20f).padding(bottom = smallButtonSize / 4f),
+                                                backgroundColor = Color.Transparent,
+                                                mainColor = state.player.textColor,
+                                                enabled = false,
+                                                imageVector = vectorResource(Res.drawable.one_finger_hold),
+                                            )
+                                        }
                                     }
                                 }
 
@@ -543,7 +561,7 @@ fun PlayerButton(
                                             fontSize = textSize * 0.8f,
                                             lineHeight = textSize * 0.8f,
                                             textAlign = TextAlign.Center,
-                                            style = defaultTextStyle()
+                                            style = textShadowStyle()
                                         )
                                         Spacer(modifier = Modifier.height(smallButtonSize / 4f))
                                         SettingsButton(modifier = Modifier.size(smallButtonSize * 1.5f),
@@ -559,7 +577,7 @@ fun PlayerButton(
                                             color = state.player.textColor,
                                             fontSize = textSize * 0.6f,
                                             textAlign = TextAlign.Center,
-                                            style = defaultTextStyle()
+                                            style = textShadowStyle()
                                         )
                                     }
                                 }
@@ -996,18 +1014,11 @@ fun PlayerButton(
                 }
             }
         }
-        val turnTimerModifier = Modifier.padding(2.dp).pointerInput(Unit) {
-                routePointerChangesTo(onDown = {
-                    viewModel.moveTimer()
-                })
-            }.then(
-                if (rotation == 180f || rotation == 270f) Modifier.align(Alignment.TopStart).background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0, 0, 15, 0))
-                else Modifier.align(Alignment.TopEnd).background(color = Color.White.copy(alpha = 0.3f), shape = RoundedCornerShape(0, 0, 0, 15))
-            )
-        if (state.timer != null) {
+
+        if (state.timer != null && state.buttonState == PBState.NORMAL) {
 //            val textSize = (maxWidth / 22.5f).value.scaledSp
 //            val padding = maxWidth / 60f
-            Timer(modifier = turnTimerModifier, timer = state.timer!!)
+            Timer(modifier = turnTimerModifier.then(Modifier.padding(3.dp)), timer = state.timer!!)
         }
     }
 }
@@ -1183,7 +1194,7 @@ fun PlayerButtonBackground(
             PBState.COMMANDER_DEALER -> color.saturateColor(0.5f).brightenColor(0.6f)
             else -> color
         }
-        if (isDead) {
+        if (isDead && state != PBState.SELECT_FIRST_PLAYER) {
             c = c.ghostify()
         }
         Surface(
@@ -1191,10 +1202,6 @@ fun PlayerButtonBackground(
         ) {}
     } else {
         val colorMatrix = when (state) {
-            PBState.NORMAL -> {
-                if (isDead) deadNormalColorMatrix else normalColorMatrix
-            }
-
             PBState.COMMANDER_RECEIVER -> {
                 if (isDead) deadReceiverColorMatrix else receiverColorMatrix
             }
@@ -1203,8 +1210,12 @@ fun PlayerButtonBackground(
                 if (isDead) deadDealerColorMatrix else dealerColorMatrix
             }
 
+            PBState.SELECT_FIRST_PLAYER -> {
+                normalColorMatrix
+            }
+
             else -> {
-                if (isDead) deadSettingsColorMatrix else settingsColorMatrix
+                if (isDead) deadNormalColorMatrix else normalColorMatrix
             }
         }
 

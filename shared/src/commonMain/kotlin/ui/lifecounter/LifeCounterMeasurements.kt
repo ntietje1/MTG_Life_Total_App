@@ -1,5 +1,6 @@
 package ui.lifecounter
 
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.Dp
 
 class LifeCounterMeasurements(
@@ -8,8 +9,7 @@ class LifeCounterMeasurements(
     private val numPlayers: Int,
     private val alt4Layout: Boolean = true
 ) {
-
-    data class ButtonPlacement(val index: Int, val width: Dp, val height: Dp, val angle: Float)
+    data class ButtonPlacement(val index: Int, val width: Dp, val height: Dp, val angle: Float, val timerAlignment: Alignment)
 
     private val offset3 = 0.37f
     private val unit3 = maxHeight * offset3
@@ -43,7 +43,7 @@ class LifeCounterMeasurements(
         1 -> listOf(
             listOf(
                 ButtonPlacement(
-                    index = 0, width = maxHeight, height = maxWidth, angle = 90f
+                    index = 0, width = maxHeight, height = maxWidth, angle = 90f, timerAlignment = Alignment.TopEnd
                 )
             )
         )
@@ -51,11 +51,11 @@ class LifeCounterMeasurements(
         2 -> listOf(
             listOf(
                 ButtonPlacement(
-                    index = 0, width = maxWidth, height = maxHeight / 2, angle = 180f
+                    index = 0, width = maxWidth, height = maxHeight / 2, angle = 180f, timerAlignment = Alignment.TopStart
                 ),
             ), listOf(
                 ButtonPlacement(
-                    index = 1, width = maxWidth, height = maxHeight / 2, angle = 0f
+                    index = 1, width = maxWidth, height = maxHeight / 2, angle = 0f, timerAlignment = Alignment.TopEnd
                 )
             )
         )
@@ -64,13 +64,13 @@ class LifeCounterMeasurements(
             listOf(
                 listOf(
                     ButtonPlacement(
-                        index = 0, width = maxHeight - unit3, height = maxWidth / 2, angle = 90f
+                        index = 0, width = maxHeight - unit3, height = maxWidth / 2, angle = 90f, timerAlignment = Alignment.TopEnd
                     ), ButtonPlacement(
-                        index = 1, width = maxHeight - unit3, height = maxWidth / 2, angle = 270f
+                        index = 1, width = maxHeight - unit3, height = maxWidth / 2, angle = 270f, timerAlignment = Alignment.TopStart
                     )
                 ), listOf(
                     ButtonPlacement(
-                        index = 2, width = maxWidth, height = unit3, angle = 0f
+                        index = 2, width = maxWidth, height = unit3, angle = 0f, timerAlignment = Alignment.TopEnd
                     )
                 )
             )
@@ -80,17 +80,17 @@ class LifeCounterMeasurements(
             listOf(
                 listOf(
                     ButtonPlacement(
-                        index = 0, width = maxWidth, height = unit4alt, angle = 180f
+                        index = 0, width = maxWidth, height = unit4alt, angle = 180f, timerAlignment = Alignment.TopEnd
                     )
                 ), listOf(
                     ButtonPlacement(
-                        index = 1, width = maxHeight - (unit4alt * 2), height = maxWidth / 2, angle = 90f
+                        index = 3, width = maxHeight - (unit4alt * 2), height = maxWidth / 2, angle = 90f, timerAlignment = Alignment.TopStart
                     ), ButtonPlacement(
-                        index = 2, width = maxHeight - (unit4alt * 2), height = maxWidth / 2, angle = 270f
+                        index = 1, width = maxHeight - (unit4alt * 2), height = maxWidth / 2, angle = 270f, timerAlignment = Alignment.TopEnd
                     )
                 ), listOf(
                     ButtonPlacement(
-                        index = 3, width = maxWidth, height = unit4alt, angle = 0f
+                        index = 2, width = maxWidth, height = unit4alt, angle = 0f, timerAlignment = Alignment.TopEnd
                     )
                 )
             )
@@ -98,16 +98,16 @@ class LifeCounterMeasurements(
             listOf(
                 listOf(
                     ButtonPlacement(
-                        index = 0, width = maxHeight / 2, height = maxWidth / 2, angle = 90f
+                        index = 3, width = maxHeight / 2, height = maxWidth / 2, angle = 90f, timerAlignment = Alignment.TopEnd
                     ), ButtonPlacement(
-                        index = 1, width = maxHeight / 2, height = maxWidth / 2, angle = 270f
+                        index = 0, width = maxHeight / 2, height = maxWidth / 2, angle = 270f, timerAlignment = Alignment.TopStart
                     )
                 ), listOf(
                     ButtonPlacement(
-                        index = 2, width = maxHeight / 2, height = maxWidth / 2, angle = 90f
+                        index = 2, width = maxHeight / 2, height = maxWidth / 2, angle = 90f, timerAlignment = Alignment.TopStart
                     ),
                     ButtonPlacement(
-                        index = 3, width = maxHeight / 2, height = maxWidth / 2, angle = 270f
+                        index = 1, width = maxHeight / 2, height = maxWidth / 2, angle = 270f, timerAlignment = Alignment.TopEnd
                     ),
                 )
             )
@@ -117,19 +117,19 @@ class LifeCounterMeasurements(
             listOf(
                 listOf(
                     ButtonPlacement(
-                        index = 0, width = maxHeight / 2 - unit5, height = maxWidth / 2, angle = 90f
+                        index = 4, width = maxHeight / 2 - unit5, height = maxWidth / 2, angle = 90f, timerAlignment = Alignment.TopEnd
                     ), ButtonPlacement(
-                        index = 1, width = maxHeight / 2 - unit5, height = maxWidth / 2, angle = 270f
+                        index = 0, width = maxHeight / 2 - unit5, height = maxWidth / 2, angle = 270f, timerAlignment = Alignment.TopStart
                     )
                 ), listOf(
                     ButtonPlacement(
-                        index = 2, width = maxHeight / 2 - unit5, height = maxWidth / 2, angle = 90f
+                        index = 3, width = maxHeight / 2 - unit5, height = maxWidth / 2, angle = 90f, timerAlignment = Alignment.TopStart
                     ), ButtonPlacement(
-                        index = 3, width = maxHeight / 2 - unit5, height = maxWidth / 2, angle = 270f
+                        index = 1, width = maxHeight / 2 - unit5, height = maxWidth / 2, angle = 270f, timerAlignment = Alignment.TopEnd
                     )
                 ), listOf(
                     ButtonPlacement(
-                        index = 4, width = maxWidth, height = unit5 * 2, angle = 0f
+                        index = 2, width = maxWidth, height = unit5 * 2, angle = 0f, timerAlignment = Alignment.TopEnd
                     )
                 )
             )
@@ -138,21 +138,21 @@ class LifeCounterMeasurements(
         6 -> listOf(
             listOf(
                 ButtonPlacement(
-                    index = 0, width = maxHeight / 3, height = maxWidth / 2, angle = 90f
+                    index = 5, width = maxHeight / 3, height = maxWidth / 2, angle = 90f, timerAlignment = Alignment.TopEnd
                 ), ButtonPlacement(
-                    index = 1, width = maxHeight / 3, height = maxWidth / 2, angle = 270f
+                    index = 0, width = maxHeight / 3, height = maxWidth / 2, angle = 270f, timerAlignment = Alignment.TopStart
                 )
             ), listOf(
                 ButtonPlacement(
-                    index = 2, width = maxHeight / 3, height = maxWidth / 2, angle = 90f
+                    index = 4, width = maxHeight / 3, height = maxWidth / 2, angle = 90f, timerAlignment = Alignment.TopStart
                 ), ButtonPlacement(
-                    index = 3, width = maxHeight / 3, height = maxWidth / 2, angle = 270f
+                    index = 1, width = maxHeight / 3, height = maxWidth / 2, angle = 270f, timerAlignment = Alignment.TopEnd
                 )
             ), listOf(
                 ButtonPlacement(
-                    index = 4, width = maxHeight / 3, height = maxWidth / 2, angle = 90f
+                    index = 3, width = maxHeight / 3, height = maxWidth / 2, angle = 90f, timerAlignment = Alignment.TopStart
                 ), ButtonPlacement(
-                    index = 5, width = maxHeight / 3, height = maxWidth / 2, angle = 270f
+                    index = 2, width = maxHeight / 3, height = maxWidth / 2, angle = 270f, timerAlignment = Alignment.TopEnd
                 )
             )
         )
