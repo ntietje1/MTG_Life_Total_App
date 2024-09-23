@@ -60,13 +60,12 @@ fun LifeCounterScreen(
 ) {
     val state by viewModel.state.collectAsState()
     var showMiddleDialog by remember { mutableStateOf(false) }
-    var showFirstPlayerDialog by remember { mutableStateOf(false) }
     var firstPlayerSelectionActive by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     fun promptFirstPlayer() {
         if (state.firstPlayer == null) {
-            showFirstPlayerDialog = true
+            viewModel.askForFirstPlayer()
             firstPlayerSelectionActive = true
         } else {
             viewModel.setTimerEnabled(timerEnabled)
@@ -74,33 +73,23 @@ fun LifeCounterScreen(
     }
 
     if (timerEnabled) { // Features that require first player
+        println("TIMER IS ENABLED")
         if (state.firstPlayer == null && !firstPlayerSelectionActive) {
+            println("Prompting first player")
             promptFirstPlayer()
         }
+    } else {
+        viewModel.killTimer()
     }
 
     LaunchedEffect(Unit) {
         viewModel.setNumPlayers(numPlayers)
     }
 
-    if (showFirstPlayerDialog) {
-        WarningDialog(
-            title = "Select First Player",
-            message = "Click which player is going first",
-            onDismiss = {
-                showFirstPlayerDialog = false
-                viewModel.askForFirstPlayer()
-            },
-            optionTwoEnabled = false,
-            optionOneMessage = "OK",
-        )
-    }
-
     if (showMiddleDialog) {
-        MiddleButtonDialog(
-            modifier = Modifier.onGloballyPositioned { _ ->
-                viewModel.setBlurBackground(showMiddleDialog)
-            },
+        MiddleButtonDialog(modifier = Modifier.onGloballyPositioned { _ ->
+            viewModel.setBlurBackground(showMiddleDialog)
+        },
             onDismiss = { showMiddleDialog = false },
             viewModel = viewModel,
             toggleTheme = { toggleTheme() },
@@ -158,38 +147,32 @@ fun LifeCounterScreen(
                             val height = placement.height - buttonPadding * 4
                             val rotation = placement.angle
                             val playerButtonViewModel = viewModel.playerButtonViewModels[placement.index]
-                            AnimatedPlayerButton(
-                                modifier = Modifier.padding(buttonPadding),
+                            AnimatedPlayerButton(modifier = Modifier.padding(buttonPadding),
                                 visible = state.showButtons,
                                 rotation = placement.angle,
                                 width = placement.width - buttonPadding * 4,
                                 height = placement.height - buttonPadding * 4,
                                 playerButton = {
-                                    PlayerButton(
-                                        modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation,
+                                    PlayerButton(modifier = Modifier.size(width, height),
+                                        viewModel = playerButtonViewModel,
+                                        rotation = rotation,
                                         borderWidth = buttonPadding,
                                         setBlurBackground = { viewModel.setBlurBackground(it) },
                                         setFirstPlayer = {
                                             viewModel.setFirstPlayer(placement.index)
                                             viewModel.setTimerEnabled(timerEnabled)
                                             firstPlayerSelectionActive = false
-                                        }
-                                    )
-                                }
-                            )
+                                        })
+                                })
                         }
                     })
                 }
             })
             val middleButtonOffset = m.middleButtonOffset(middleButtonSize)
 
-            AnimatedMiddleButton(
-                modifier = Modifier
-                    .offset(middleButtonOffset.first, middleButtonOffset.second)
-                    .size(middleButtonSize),
-                visible = state.showButtons, onMiddleButtonClick = {
-                    showMiddleDialog = true
-                })
+            AnimatedMiddleButton(modifier = Modifier.offset(middleButtonOffset.first, middleButtonOffset.second).size(middleButtonSize), visible = state.showButtons, onMiddleButtonClick = {
+                showMiddleDialog = true
+            })
 
             if (!state.showButtons || state.showLoadingScreen) {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
@@ -198,8 +181,7 @@ fun LifeCounterScreen(
             Box(
                 Modifier.fillMaxSize().then(
                     if (state.blurBackground) {
-                        Modifier
-                            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
+                        Modifier.background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
                     } else {
                         Modifier
                     }
@@ -268,8 +250,7 @@ fun AnimatedPlayerButton(
     Box(modifier = modifier.graphicsLayer {
         translationX = offsetX.value
         translationY = offsetY.value
-    }
-    ) {
+    }) {
         playerButton(Modifier.size(width, height))
 //        PlayerButton(
 //            modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation,

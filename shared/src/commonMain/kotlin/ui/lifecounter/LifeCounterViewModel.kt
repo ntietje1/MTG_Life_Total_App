@@ -78,6 +78,7 @@ class LifeCounterViewModel(
         if (_state.value.turnTimer == null) {
             _state.value = _state.value.copy(turnTimer = TurnTimer(-1, 1))
         }
+        killTimer()
         timerJob = viewModelScope.launch {
             while (true) {
                 if (_state.value.activeTimerIndex != null && _state.value.turnTimer != null) {
@@ -90,7 +91,7 @@ class LifeCounterViewModel(
         }
     }
 
-    private fun killTimer() {
+    fun killTimer() {
         timerJob?.cancel()
         timerJob = null
         updatePlayerButtonTimers(-1, null)

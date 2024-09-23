@@ -1,6 +1,7 @@
 package app
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,6 +95,7 @@ fun LifeLinkedApp() {
 
                 composable(LifeLinkedScreen.LIFE_COUNTER.route) {
                     val viewModel = koinViewModel<LifeCounterViewModel>()
+                    val turnTimerEnabled by settingsManager.turnTimer.collectAsState()
                     LifeCounterScreen(
                         viewModel = viewModel,
                         numPlayers = settingsManager.numPlayers,
@@ -113,7 +115,7 @@ fun LifeLinkedApp() {
                         goToTutorialScreen = {
                             navController.navigate(LifeLinkedScreen.TUTORIAL.route)
                         },
-                        timerEnabled = settingsManager.turnTimer,
+                        timerEnabled = turnTimerEnabled,
                         firstNavigation = firstLifeCounterNavigation
                     )
                 }

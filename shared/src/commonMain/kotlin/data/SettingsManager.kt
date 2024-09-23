@@ -3,6 +3,8 @@ package data
 
 import com.russhwolf.settings.Settings
 import data.serializable.Card
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -56,9 +58,17 @@ class SettingsManager private constructor() {
         get() = settings.getBoolean("tutorialSkip", false)
         set(value) = settings.putBoolean("tutorialSkip", value)
 
-    var turnTimer: Boolean
-        get() = settings.getBoolean("turnTimer", false)
-        set(value) = settings.putBoolean("turnTimer", value)
+//    var turnTimer: Boolean
+//        get() = settings.getBoolean("turnTimer", false)
+//        set(value) = settings.putBoolean("turnTimer", value)
+
+    private val _turnTimer = MutableStateFlow(settings.getBoolean("turnTimer", false))
+    val turnTimer = _turnTimer.asStateFlow()
+
+    fun setTurnTimer(value: Boolean) {
+        settings.putBoolean("turnTimer", value)
+        _turnTimer.value = value
+    }
 
     var devMode: Boolean
         get() = settings.getBoolean("devMode", false)

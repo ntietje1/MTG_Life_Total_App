@@ -135,9 +135,10 @@ fun SettingsDialogContent(
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Turn Timer",
-                        initialState = settingsManager.turnTimer,
+                        initialState = settingsManager.turnTimer.value,
                         toggle = {
-                            settingsManager.turnTimer = it
+                            settingsManager.setTurnTimer(it)
+//                            settingsManager.turnTimer = it
                             updateTurnTimerEnabled(it)
                         },
                         icon = vectorResource(Res.drawable.placeholder_icon)
