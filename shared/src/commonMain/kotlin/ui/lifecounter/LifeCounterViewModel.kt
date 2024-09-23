@@ -109,13 +109,14 @@ class LifeCounterViewModel(
     }
 
     private fun moveTimer() {
+        println("MOVING TIMER: activeTimerIndex: ${_state.value.activeTimerIndex}, firstPlayer: ${_state.value.firstPlayer}, turn: ${_state.value.turnTimer?.turn}")
         if (_state.value.activeTimerIndex == null || _state.value.firstPlayer == null) throw IllegalStateException("Attempted to move timer when no one has an active timer")
         var nextPlayerIndex = _state.value.activeTimerIndex!! + 1
-        if (nextPlayerIndex == _state.value.firstPlayer) {
-            incrementTurn()
-        }
         if (nextPlayerIndex >= _state.value.numPlayers) {
             nextPlayerIndex = 0
+        }
+        if (nextPlayerIndex == _state.value.firstPlayer) {
+            incrementTurn()
         }
         setActiveTimerIndex(nextPlayerIndex)
         val newTimer = _state.value.turnTimer!!.resetTime()
