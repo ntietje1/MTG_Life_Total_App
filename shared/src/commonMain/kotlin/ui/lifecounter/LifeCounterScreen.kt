@@ -44,8 +44,8 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
 import org.jetbrains.compose.resources.vectorResource
 import ui.dialog.MiddleButtonDialog
+import ui.dialog.WarningDialog
 import ui.lifecounter.playerbutton.PlayerButton
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 @Composable
 fun LifeCounterScreen(
@@ -59,20 +59,49 @@ fun LifeCounterScreen(
     firstNavigation: Boolean
 ) {
     val state by viewModel.state.collectAsState()
-    var showDialog by remember { mutableStateOf(false) }
+    var showMiddleDialog by remember { mutableStateOf(false) }
+    var showFirstPlayerDialog by remember { mutableStateOf(false) }
+    var firstPlayerSelectionActive by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    fun promptFirstPlayer() {
+        if (state.firstPlayer == null) {
+            showFirstPlayerDialog = true
+            firstPlayerSelectionActive = true
+        } else {
+            viewModel.setTimerEnabled(timerEnabled)
+        }
+    }
+
+    if (timerEnabled) { // Features that require first player
+        if (state.firstPlayer == null && !firstPlayerSelectionActive) {
+            promptFirstPlayer()
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.setNumPlayers(numPlayers)
-        viewModel.setTimerEnabled(timerEnabled)
     }
 
-    if (showDialog) {
+    if (showFirstPlayerDialog) {
+        WarningDialog(
+            title = "Select First Player",
+            message = "Click which player is going first",
+            onDismiss = {
+                showFirstPlayerDialog = false
+                viewModel.askForFirstPlayer()
+            },
+            optionTwoEnabled = false,
+            optionOneMessage = "OK",
+        )
+    }
+
+    if (showMiddleDialog) {
         MiddleButtonDialog(
             modifier = Modifier.onGloballyPositioned { _ ->
-                viewModel.setBlurBackground(showDialog)
+                viewModel.setBlurBackground(showMiddleDialog)
             },
-            onDismiss = { showDialog = false },
+            onDismiss = { showMiddleDialog = false },
             viewModel = viewModel,
             toggleTheme = { toggleTheme() },
             toggleKeepScreenOn = { toggleKeepScreenOn() },
@@ -83,7 +112,7 @@ fun LifeCounterScreen(
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
-                    showDialog = false
+                    showMiddleDialog = false
                     viewModel.setShowButtons(false)
                     delay(10)
                     viewModel.setShowButtons(true)
@@ -98,8 +127,8 @@ fun LifeCounterScreen(
         viewModel.onNavigate(firstNavigation)
     }
 
-    LaunchedEffect(showDialog) {
-        viewModel.setBlurBackground(showDialog)
+    LaunchedEffect(showMiddleDialog) {
+        viewModel.setBlurBackground(showMiddleDialog)
     }
 
     BoxWithConstraints(
@@ -125,15 +154,28 @@ fun LifeCounterScreen(
                 items(buttonPlacements, key = { it.hashCode() }) { buttonPlacements ->
                     LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
                         items(buttonPlacements, key = { it.index }) { placement ->
+                            val width = placement.width - buttonPadding * 4
+                            val height = placement.height - buttonPadding * 4
+                            val rotation = placement.angle
+                            val playerButtonViewModel = viewModel.playerButtonViewModels[placement.index]
                             AnimatedPlayerButton(
                                 modifier = Modifier.padding(buttonPadding),
                                 visible = state.showButtons,
-                                borderWidth = buttonPadding,
-                                playerButtonViewModel = viewModel.playerButtonViewModels[placement.index],
                                 rotation = placement.angle,
                                 width = placement.width - buttonPadding * 4,
                                 height = placement.height - buttonPadding * 4,
-                                setBlurBackground = { viewModel.setBlurBackground(it) }
+                                playerButton = {
+                                    PlayerButton(
+                                        modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation,
+                                        borderWidth = buttonPadding,
+                                        setBlurBackground = { viewModel.setBlurBackground(it) },
+                                        setFirstPlayer = {
+                                            viewModel.setFirstPlayer(placement.index)
+                                            viewModel.setTimerEnabled(timerEnabled)
+                                            firstPlayerSelectionActive = false
+                                        }
+                                    )
+                                }
                             )
                         }
                     })
@@ -146,7 +188,7 @@ fun LifeCounterScreen(
                     .offset(middleButtonOffset.first, middleButtonOffset.second)
                     .size(middleButtonSize),
                 visible = state.showButtons, onMiddleButtonClick = {
-                    showDialog = true
+                    showMiddleDialog = true
                 })
 
             if (!state.showButtons || state.showLoadingScreen) {
@@ -170,8 +212,11 @@ fun LifeCounterScreen(
 @Composable
 fun AnimatedPlayerButton(
     modifier: Modifier = Modifier,
-    borderWidth: Dp,
-    visible: Boolean, playerButtonViewModel: PlayerButtonViewModel, rotation: Float, width: Dp, height: Dp, setBlurBackground: (Boolean) -> Unit
+    visible: Boolean,
+    rotation: Float,
+    width: Dp,
+    height: Dp,
+    playerButton: @Composable (Modifier) -> Unit,
 ) {
     val multiplesAway = 3f
     val duration = (1250 / getAnimationCorrectionFactor()).toInt()
@@ -225,13 +270,14 @@ fun AnimatedPlayerButton(
         translationY = offsetY.value
     }
     ) {
-        PlayerButton(
-            modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation,
-            borderWidth = borderWidth,
-            setBlurBackground = {
-                setBlurBackground(it)
-            }
-        )
+        playerButton(Modifier.size(width, height))
+//        PlayerButton(
+//            modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation,
+//            borderWidth = borderWidth,
+//            setBlurBackground = {
+//                setBlurBackground(it)
+//            }
+//        )
     }
 }
 

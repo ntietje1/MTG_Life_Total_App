@@ -372,7 +372,6 @@ fun MiddleButtonDialog(
                 false
             }
         )
-
     }
 
     if (showResetDialog) {
