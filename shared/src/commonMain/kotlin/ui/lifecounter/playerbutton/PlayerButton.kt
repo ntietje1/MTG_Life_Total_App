@@ -128,7 +128,6 @@ import ui.modifier.animatedBorderCard
 import ui.modifier.bounceClick
 import ui.modifier.repeatingClickable
 import ui.modifier.rotateVertically
-import ui.modifier.routePointerChangesTo
 
 @Composable
 fun PlayerButton(
@@ -327,8 +326,8 @@ fun PlayerButton(
 
     @Composable
     fun Timer(modifier: Modifier = Modifier, timer: TurnTimer) {
-        val textSize = ((25 + timerTextSize) / 2).scaledSp
-        val padding = ((5 + timerPadding) / 2).dp
+        val textSize = timerTextSize.scaledSp
+        val padding = timerPadding.dp
         Column(
             modifier = modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(padding)
         ) {
@@ -388,9 +387,8 @@ fun PlayerButton(
                         }
                     ), contentAlignment = Alignment.Center
                 ) {
-
-                    timerTextSize = (maxWidth / 22.5f).value.toInt()
-                    timerPadding = (maxWidth / 60f).value.toInt()
+                    timerTextSize = (maxWidth / 20f + maxHeight / 40f).value.toInt()
+                    timerPadding = (maxWidth / 100f + maxHeight / 200f).value.toInt()
 
                     PlayerButtonBackground(
                         state = state.buttonState,

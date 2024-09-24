@@ -39,6 +39,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import di.getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -134,7 +135,7 @@ fun LifeCounterScreen(
         val buttonPadding = maxWidth / 750f + maxHeight / 750f
         val buttonPlacements = m.buttonPlacements()
         val blurRadius = maxHeight / 50f
-        val middleButtonSize = maxWidth / 15f + maxHeight / 30f
+        val middleButtonSize = (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5
         Box(
             Modifier.fillMaxSize().then(
                 if (state.blurBackground) {
