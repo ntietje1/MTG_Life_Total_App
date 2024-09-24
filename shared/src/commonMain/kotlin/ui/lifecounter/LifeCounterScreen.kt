@@ -157,7 +157,7 @@ fun LifeCounterScreen(
                             val turnTimerAlignment = placement.timerAlignment
                             val playerButtonViewModel = viewModel.playerButtonViewModels[placement.index]
                             val color = playerButtonViewModel.state.value.player.textColor
-                            val topCornerRadius = (min(width, height) * 0.08f + max(width, height) * 0.008f)
+                            val topCornerRadius = (min(width, height) * 0.1f + max(width, height) * 0.01f)
                             AnimatedPlayerButton(modifier = Modifier.padding(buttonPadding),
                                 visible = state.showButtons,
                                 rotation = placement.angle,
@@ -171,8 +171,8 @@ fun LifeCounterScreen(
                                             })
                                         }.then(
                                             when (turnTimerAlignment) {
-                                                Alignment.TopStart -> Modifier.align(Alignment.TopStart).padding(buttonPadding).background(color = color.copy(alpha = 0.1f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp)).border(1.dp, color.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
-                                                Alignment.TopEnd -> Modifier.align(Alignment.TopEnd).padding(buttonPadding).background(color = color.copy(alpha = 0.1f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius)).border(1.dp, color.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
+                                                Alignment.TopStart -> Modifier.align(Alignment.TopStart).background(color = color.copy(alpha = 0.1f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp)).border(buttonPadding, color.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
+                                                Alignment.TopEnd -> Modifier.align(Alignment.TopEnd).background(color = color.copy(alpha = 0.1f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius)).border(buttonPadding, color.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
                                                 else -> Modifier
                                             }
                                         ),
