@@ -93,7 +93,7 @@ import lifelinked.shared.generated.resources.enter_icon
 import lifelinked.shared.generated.resources.heart_solid_icon
 import lifelinked.shared.generated.resources.mana_icon
 import lifelinked.shared.generated.resources.monarchy_icon
-import lifelinked.shared.generated.resources.one_finger_hold
+import lifelinked.shared.generated.resources.one_finger_tap
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
@@ -366,7 +366,7 @@ fun PlayerButton(
     }
 
     Box(
-        modifier = Modifier.wrapContentSize().then(rotationModifier).clip(RoundedCornerShape(12))
+        modifier = Modifier.wrapContentSize().then(rotationModifier)
     ) {
         Box(
             modifier = Modifier.wrapContentSize(), contentAlignment = Alignment.Center
@@ -506,19 +506,13 @@ fun PlayerButton(
                                         })
                                     }) {
                                         Column(
-                                            modifier = Modifier.fillMaxSize(),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.Center
+                                            modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
                                         ) {
                                             if (!wideButton) {
                                                 Spacer(modifier = Modifier.height(smallButtonSize))
                                             }
                                             Text(
-                                                text = "Select first player",
-                                                color = state.player.textColor,
-                                                fontSize = textSize * 1.2f,
-                                                textAlign = TextAlign.Center,
-                                                style = textShadowStyle()
+                                                text = "Select first player", color = state.player.textColor, fontSize = textSize * 1.2f, textAlign = TextAlign.Center, style = textShadowStyle()
                                             )
                                             Spacer(modifier = Modifier.height(smallButtonSize / 3f))
                                             SettingsButton(
@@ -526,7 +520,7 @@ fun PlayerButton(
                                                 backgroundColor = Color.Transparent,
                                                 mainColor = state.player.textColor,
                                                 enabled = false,
-                                                imageVector = vectorResource(Res.drawable.one_finger_hold),
+                                                imageVector = vectorResource(Res.drawable.one_finger_tap),
                                             )
                                         }
                                     }
@@ -1401,8 +1395,8 @@ fun ColorPicker(
         ) {
             Text(
                 modifier = Modifier.wrapContentSize(unbounded = true).padding(
-                        bottom = textPadding, top = textPadding * 2
-                    ), text = text, color = textColor, fontSize = smallTextSize / 1.25f, textAlign = TextAlign.Center, style = defaultTextStyle()
+                    bottom = textPadding, top = textPadding * 2
+                ), text = text, color = textColor, fontSize = smallTextSize / 1.25f, textAlign = TextAlign.Center, style = defaultTextStyle()
             )
             Box(
                 Modifier.wrapContentSize().weight(0.5f).background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(10)).border(0.5.dp, textColor.copy(alpha = 0.9f), RoundedCornerShape(10))
@@ -1582,8 +1576,8 @@ private fun CustomIncrementButton(
     val ripple = rememberRipple(color = Color.Black)
     Box(
         modifier = modifier.repeatingClickable(
-                interactionSource = interactionSource, indication = ripple, enabled = true, onPress = onIncrementLife
-            )
+            interactionSource = interactionSource, indication = ripple, enabled = true, onPress = onIncrementLife
+        )
 //            .clickable(
 //                onClick = onIncrementLife,
 //                interactionSource = interactionSource,
