@@ -46,6 +46,7 @@ fun Modifier.repeatingClickable(
     maxDelayMillis = maxDelayMillis,
     minDelayMillis = minDelayMillis,
     delayDecayFactor = delayDecayFactor,
+    initialBounceFactor = 0.0f,
     bounceAmount = 0f,
     bounceDuration = 0L,
     onPress = onPress
@@ -60,6 +61,7 @@ fun Modifier.repeatingClickable(
     maxDelayMillis: Long = 100,
     minDelayMillis: Long = 50,
     delayDecayFactor: Float = 0.0f,
+    initialBounceFactor : Float = 2.0f,
     bounceAmount: Float = 0.0075f,
     bounceDuration: Long = 60L,
     onPress: () -> Unit
@@ -76,7 +78,7 @@ fun Modifier.repeatingClickable(
 
     val scale by animateFloatAsState( //TODO: looks a little janky on ios
         targetValue = if (buttonState == PressState.Pressed) {
-            1.0f + (if (currentlyRepeating) bounceAmount * 0.5f else bounceAmount)
+            1.0f + (if (currentlyRepeating) bounceAmount else bounceAmount * initialBounceFactor)
         } else 1.0f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun Modifier.bounceClick(
+    initialBounceFactor: Float = 2.0f,
     bounceAmount: Float = 0.0075f,
     bounceDuration: Long = 60L,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -27,6 +28,7 @@ fun Modifier.bounceClick(
         maxDelayMillis = maxDelayMillis,
         minDelayMillis = minDelayMillis,
         delayDecayFactor = delayDecayFactor,
+        initialBounceFactor = initialBounceFactor,
         bounceAmount = bounceAmount,
         bounceDuration = bounceDuration
     )
