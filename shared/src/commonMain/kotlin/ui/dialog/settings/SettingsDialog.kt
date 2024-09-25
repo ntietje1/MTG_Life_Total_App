@@ -44,7 +44,6 @@ import lifelinked.shared.generated.resources.coin_icon
 import lifelinked.shared.generated.resources.d20_icon
 import lifelinked.shared.generated.resources.email_icon
 import lifelinked.shared.generated.resources.invisible_icon
-import lifelinked.shared.generated.resources.placeholder_icon
 import lifelinked.shared.generated.resources.player_select_icon
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
@@ -52,6 +51,7 @@ import lifelinked.shared.generated.resources.skull_icon
 import lifelinked.shared.generated.resources.star_icon_small
 import lifelinked.shared.generated.resources.sun_icon
 import lifelinked.shared.generated.resources.thumbsup_icon
+import lifelinked.shared.generated.resources.timer_icon
 import lifelinked.shared.generated.resources.visible_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
@@ -141,7 +141,7 @@ fun SettingsDialogContent(
 //                            settingsManager.turnTimer = it
                             updateTurnTimerEnabled(it)
                         },
-                        icon = vectorResource(Res.drawable.placeholder_icon)
+                        icon = vectorResource(Res.drawable.timer_icon)
                     )
                     SettingsDialogButton(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
