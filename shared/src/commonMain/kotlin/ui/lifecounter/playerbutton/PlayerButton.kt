@@ -356,6 +356,15 @@ fun PlayerButton(
         if (state.buttonState == PBState.COMMANDER_RECEIVER) viewModel.clearBackStack()
     }
 
+    // Jank way of stopping the repeating bounce if long pressing on timer
+    var timerJustClicked by remember { mutableStateOf(false) }
+
+    LaunchedEffect(timerJustClicked) {
+        if (timerJustClicked) {
+            timerJustClicked = false
+        }
+    }
+
     val rotationModifier = remember(rotation) {
         when (rotation) {
             90f -> Modifier.rotateVertically(rotation = VerticalRotation.CLOCKWISE)
@@ -375,17 +384,18 @@ fun PlayerButton(
         ) {
             BoxWithConstraints(
                 modifier = modifier.background(Color.Transparent).then(
-                    if (state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) {
+                    if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked) {
                         Modifier.bounceClick(
-                            bounceAmount = 0.01f, bounceDuration = 60L, repeatEnabled = true
+                            initialBounceFactor = 3.0f,
+                            bounceAmount = 0.005f, bounceDuration = 60L, repeatEnabled = true
                         )
                     } else {
                         Modifier
                     }
                 ), contentAlignment = Alignment.Center
             ) {
-                timerTextSize = (maxWidth / 20f + maxHeight / 40f).value.toInt()
-                timerPadding = (maxWidth / 90f + maxHeight / 180f).value.toInt()
+                timerTextSize = (10.dp + maxWidth / 50f + maxHeight / 75f).value.toInt()
+                timerPadding = (4.dp + maxWidth / 350f + maxHeight / 750f).value.toInt()
 
                 PlayerButtonBackground(
                     modifier = Modifier.clip(RoundedCornerShape(12)),
@@ -1004,13 +1014,20 @@ fun PlayerButton(
                         }
                     }
                 }
+                if (state.timer != null && state.buttonState == PBState.NORMAL) {
+                    Timer(modifier = turnTimerModifier.then(
+                        Modifier.pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    timerJustClicked = true
+                                }
+                            )
+                        }
+                    ), timer = state.timer!!)
+                }
             }
-            if (state.timer != null && state.buttonState == PBState.NORMAL) {
-                Timer(modifier = turnTimerModifier, timer = state.timer!!)
-            }
-
         }
-
     }
 }
 
