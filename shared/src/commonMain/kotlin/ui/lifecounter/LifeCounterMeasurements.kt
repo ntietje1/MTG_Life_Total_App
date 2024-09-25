@@ -22,7 +22,7 @@ class LifeCounterMeasurements(
 
     fun middleButtonOffset(middleButtonSize: Dp): Pair<Dp, Dp> {
         val offset = when (numPlayers) {
-            1 -> maxWidth/2 to maxHeight/4
+            1 -> maxWidth*7/8 to maxHeight/16
             2 -> maxWidth/2  to maxHeight/2
             3 -> maxWidth / 2  to (maxHeight - unit3) - (middleButtonSize / 5)
             4 -> if (!alt4Layout) {
