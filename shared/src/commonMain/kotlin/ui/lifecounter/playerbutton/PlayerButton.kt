@@ -394,8 +394,9 @@ fun PlayerButton(
                     }
                 ), contentAlignment = Alignment.Center
             ) {
-                timerTextSize = (10.dp + maxWidth / 50f + maxHeight / 75f).value.toInt()
-                timerPadding = (4.dp + maxWidth / 350f + maxHeight / 750f).value.toInt()
+                timerTextSize = (4.dp + maxWidth / 35f + maxHeight / 55f).value.toInt()
+                timerPadding = timerTextSize / 3
+//                timerPadding = (4.dp + maxWidth / 350f + maxHeight / 750f).value.toInt()
 
                 PlayerButtonBackground(
                     modifier = Modifier.clip(RoundedCornerShape(12)),
