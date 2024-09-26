@@ -1,13 +1,24 @@
 {
   "in-progress": [
-    "Game/turn timer",
+    "Improve 1 player features",
     "Improved player customization menu and options",
     "Bounties, city's blessing, the ring, and dungeon progress tracking",
     "Improved tutorial",
     "Game statistics tracking",
-    "Fix known crash on some Android devices"
+    "Fix known crash on some Android devices",
+    "Make sure to request new features you want to see in the app!"
   ],
   "patch-notes": [
+    {
+      "version": "1.8.3",
+      "date": "2024-08-27",
+      "title": "Turn Timer Update",
+      "notes": [
+        "Moved middle icon in 1 player layout",
+        "Added an optional turn timer",
+        "Added planeswalk button to planar die roll result"
+      ]
+    },
     {
       "version": "1.8.2",
       "date": "2024-08-27",
