@@ -81,9 +81,7 @@ fun LifeCounterScreen(
     }
 
     if (timerEnabled) { // Features that require first player
-        println("TIMER IS ENABLED")
         if (state.firstPlayer == null && !firstPlayerSelectionActive) {
-            println("Prompting first player")
             promptFirstPlayer()
         }
     } else {

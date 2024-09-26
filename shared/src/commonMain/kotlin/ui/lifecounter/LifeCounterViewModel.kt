@@ -49,7 +49,6 @@ class LifeCounterViewModel(
     }
 
     fun setFirstPlayer(index: Int?) {
-        println("Setting first player: $index")
         _state.value = _state.value.copy(firstPlayer = index)
         if (index != null) {
             for (i in playerButtonViewModels.indices) {
@@ -61,7 +60,6 @@ class LifeCounterViewModel(
     }
 
     fun setTimerEnabled(value: Boolean = true) {
-        println("Setting timer enabled: $value")
         if (value) {
             if (_state.value.activeTimerIndex == null) {
                 setActiveTimerIndex(_state.value.firstPlayer)
@@ -110,7 +108,6 @@ class LifeCounterViewModel(
     }
 
     private fun moveTimer() {
-        println("MOVING TIMER: activeTimerIndex: ${_state.value.activeTimerIndex}, firstPlayer: ${_state.value.firstPlayer}, turn: ${_state.value.turnTimer?.turn}")
         if (_state.value.activeTimerIndex == null || _state.value.firstPlayer == null) throw IllegalStateException("Attempted to move timer when no one has an active timer")
         var nextPlayerIndex = _state.value.activeTimerIndex!! + 1
         if (nextPlayerIndex >= _state.value.numPlayers) {
