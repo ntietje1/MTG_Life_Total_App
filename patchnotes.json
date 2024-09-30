@@ -1,6 +1,6 @@
 {
   "in-progress": [
-    "Improve 1 player features",
+    "Improved 1 player features",
     "Improved player customization menu and options",
     "Bounties, city's blessing, the ring, and dungeon progress tracking",
     "Improved tutorial",
@@ -11,10 +11,11 @@
   "patch-notes": [
     {
       "version": "1.8.3",
-      "date": "2024-08-27",
+      "date": "2024-09-29",
       "title": "Turn Timer Update",
       "notes": [
         "Moved middle icon in 1 player layout",
+        "Ordered players in a more logical way",
         "Added an optional turn timer",
         "Added planeswalk button to planar die roll result"
       ]
