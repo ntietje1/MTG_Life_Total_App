@@ -69,7 +69,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -163,15 +162,14 @@ fun PlayerButton(
         }
     }
 
-    @Composable
-    fun generateSizes(maxWidth: Dp, maxHeight: Dp): Triple<Dp, Dp, TextUnit> {
+    fun generateSizes(maxWidth: Dp, maxHeight: Dp): Triple<Dp, Dp, Float> {
         val settingsButtonSize = if (maxHeight / 2 * 3 < maxWidth) {
             maxHeight / 2
         } else {
             maxWidth / 3
         }
         val smallPadding = settingsButtonSize / 10f
-        val smallTextSize = maxHeight.value.scaledSp / 12f
+        val smallTextSize = maxHeight.value / 12f
         return Triple(settingsButtonSize, smallPadding, smallTextSize)
     }
 
@@ -321,9 +319,6 @@ fun PlayerButton(
     var timerTextSize by remember { mutableStateOf(15) }
     var timerPadding by remember { mutableStateOf(5) }
 
-//    val timerTextSize = (maxWidth / 22.5f).value.scaledSp
-//    val timerPadding = maxWidth / 60f
-
     @Composable
     fun Timer(modifier: Modifier = Modifier, timer: TurnTimer) {
         val textSize = timerTextSize.scaledSp
@@ -384,9 +379,9 @@ fun PlayerButton(
         ) {
             BoxWithConstraints(
                 modifier = modifier.background(Color.Transparent).then(
-                    if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked) {
+                    if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked && !viewModel.isDead()) {
                         Modifier.bounceClick(
-                            initialBounceFactor = 3.0f,
+                            initialBounceFactor = 3.5f,
                             bounceAmount = 0.005f, bounceDuration = 60L, repeatEnabled = true
                         )
                     } else {
@@ -394,9 +389,8 @@ fun PlayerButton(
                     }
                 ), contentAlignment = Alignment.Center
             ) {
-                timerTextSize = (4.dp + maxWidth / 35f + maxHeight / 55f).value.toInt()
-                timerPadding = timerTextSize / 3
-//                timerPadding = (4.dp + maxWidth / 350f + maxHeight / 750f).value.toInt()
+                timerTextSize = remember { (4.dp + maxWidth / 35f + maxHeight / 55f).value.toInt() }
+                timerPadding = remember { timerTextSize / 3 }
 
                 PlayerButtonBackground(
                     modifier = Modifier.clip(RoundedCornerShape(12)),
@@ -406,21 +400,21 @@ fun PlayerButton(
                     isDead = viewModel.isDead(autoKo = true),
                 )
 
-                val smallButtonSize = (maxWidth / 15f) + (maxHeight / 10f)
-                val settingsStateMargin = smallButtonSize / 7f
-                val commanderStateMargin = settingsStateMargin * 1.4f
+                val smallButtonSize = remember { (maxWidth / 15f) + (maxHeight / 10f) }
+                val settingsStateMargin = remember { smallButtonSize / 7f }
+                val commanderStateMargin = remember { settingsStateMargin * 1.4f }
 
-                val wideButton = maxWidth / maxHeight > 1.4
+                val wideButton = remember { maxWidth / maxHeight > 1.4 }
 
-                val playerInfoPadding = if (wideButton) {
+                val playerInfoPadding = remember { if (wideButton) {
                     Modifier.padding(bottom = smallButtonSize / 2f).offset(y = -smallButtonSize / 8f)
-                } else Modifier.offset(y = smallButtonSize / 4f)
+                } else Modifier.offset(y = smallButtonSize / 4f) }
 
-                val settingsPadding = if (wideButton) Modifier.padding(
+                val settingsPadding = remember { if (wideButton) Modifier.padding(
                     bottom = smallButtonSize / 4, top = smallButtonSize / 8
                 ) else Modifier.padding(
                     top = smallButtonSize / 4
-                )
+                ) }
                 if (!state.player.setDead) {
                     when (state.buttonState) {
                         PBState.NORMAL -> {
@@ -492,7 +486,7 @@ fun PlayerButton(
                 @Composable
                 fun PlayerButtonContent(modifier: Modifier = Modifier) {
                     BoxWithConstraints(modifier.fillMaxSize()) {
-                        val textSize = (maxWidth / 15f).value.scaledSp
+                        val textSize = remember { (maxWidth / 15f).value }
                         when (state.buttonState) {
                             PBState.NORMAL -> {
                                 if (viewModel.isDead()) {
@@ -521,7 +515,7 @@ fun PlayerButton(
                                             Spacer(modifier = Modifier.height(smallButtonSize))
                                         }
                                         Text(
-                                            text = "Select first player", color = state.player.textColor, fontSize = textSize * 1.2f, textAlign = TextAlign.Center, style = textShadowStyle()
+                                            text = "Select first player", color = state.player.textColor, fontSize = textSize.scaledSp * 1.2f, textAlign = TextAlign.Center, style = textShadowStyle()
                                         )
                                         Spacer(modifier = Modifier.height(smallButtonSize / 3f))
                                         SettingsButton(
@@ -554,7 +548,7 @@ fun PlayerButton(
                             }
 
                             PBState.COMMANDER_DEALER -> {
-                                val iconResource = if (currentDealerIsPartnered) Res.drawable.sword_icon_double else Res.drawable.sword_icon
+                                val iconResource = remember { if (currentDealerIsPartnered) Res.drawable.sword_icon_double else Res.drawable.sword_icon }
                                 Column(
                                     Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
                                 ) {
@@ -562,8 +556,8 @@ fun PlayerButton(
                                         modifier = Modifier,
                                         text = "Deal damage with your commander",
                                         color = state.player.textColor,
-                                        fontSize = textSize * 0.8f,
-                                        lineHeight = textSize * 0.8f,
+                                        fontSize = textSize.scaledSp * 0.8f,
+                                        lineHeight = textSize.scaledSp * 0.8f,
                                         textAlign = TextAlign.Center,
                                         style = textShadowStyle()
                                     )
@@ -579,7 +573,7 @@ fun PlayerButton(
                                         modifier = Modifier.wrapContentSize(unbounded = true),
                                         text = "Toggle Partner Mode",
                                         color = state.player.textColor,
-                                        fontSize = textSize * 0.6f,
+                                        fontSize = textSize.scaledSp * 0.6f,
                                         textAlign = TextAlign.Center,
                                         style = textShadowStyle()
                                     )
@@ -588,8 +582,8 @@ fun PlayerButton(
 
                             PBState.SETTINGS_DEFAULT -> {
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
-                                    val (settingsButtonSize, smallPadding, _) = generateSizes(maxWidth, maxHeight)
-                                    val settingsButtonModifier = Modifier.size(settingsButtonSize).padding(smallPadding / 2f)
+                                    val (settingsButtonSize, smallPadding, _) = remember { generateSizes(maxWidth, maxHeight) }
+                                    val settingsButtonModifier = remember { Modifier.size(settingsButtonSize).padding(smallPadding / 2f) }
                                     LazyHorizontalGrid(
                                         modifier = Modifier.fillMaxSize(), rows = GridCells.Fixed(2), horizontalArrangement = Arrangement.Center, verticalArrangement = Arrangement.Center
                                     ) {
@@ -652,8 +646,8 @@ fun PlayerButton(
 
                             PBState.SETTINGS_CUSTOMIZE -> {
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
-                                    val (settingsButtonSize, smallPadding, _) = generateSizes(maxWidth, maxHeight)
-                                    val settingsButtonModifier = Modifier.size(settingsButtonSize).padding(smallPadding / 2f)
+                                    val (settingsButtonSize, smallPadding, _) = remember { generateSizes(maxWidth, maxHeight) }
+                                    val settingsButtonModifier = remember { Modifier.size(settingsButtonSize).padding(smallPadding / 2f) }
                                     LazyHorizontalGrid(
                                         modifier = Modifier.fillMaxSize(), rows = GridCells.Fixed(2), horizontalArrangement = Arrangement.Center, verticalArrangement = Arrangement.Center
                                     ) {
@@ -743,7 +737,7 @@ fun PlayerButton(
                                     }
                                 }
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
-                                    val (_, smallPadding, smallTextSize) = generateSizes(maxWidth, maxHeight)
+                                    val (_, smallPadding, smallTextSize) = remember { generateSizes(maxWidth, maxHeight) }
                                     Column(
                                         Modifier.fillMaxSize().padding(bottom = smallPadding / 2f), horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
@@ -754,7 +748,7 @@ fun PlayerButton(
                                                 modifier = Modifier.wrapContentSize(unbounded = true),
                                                 text = "Saved profiles",
                                                 color = state.player.textColor,
-                                                fontSize = smallTextSize,
+                                                fontSize = smallTextSize.scaledSp,
                                                 textAlign = TextAlign.Center,
                                                 style = defaultTextStyle()
                                             )
@@ -762,7 +756,7 @@ fun PlayerButton(
                                                 modifier = Modifier.wrapContentSize(unbounded = true).offset(y = smallPadding * 1.5f),
                                                 text = "(hold to delete)",
                                                 color = state.player.textColor,
-                                                fontSize = smallTextSize / 2,
+                                                fontSize = smallTextSize.scaledSp / 2,
                                                 textAlign = TextAlign.Center,
                                                 style = defaultTextStyle()
                                             )
@@ -802,7 +796,7 @@ fun PlayerButton(
                                                         modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp).padding(bottom = 5.dp),
                                                         text = "No saved profiles found",
                                                         color = state.player.textColor,
-                                                        fontSize = smallTextSize * 0.7f,
+                                                        fontSize = smallTextSize.scaledSp * 0.7f,
                                                         textAlign = TextAlign.Center,
                                                         style = defaultTextStyle()
                                                     )
@@ -810,8 +804,8 @@ fun PlayerButton(
                                                         modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp),
                                                         text = "Changes to name/customization will be saved automatically",
                                                         color = state.player.textColor,
-                                                        lineHeight = smallTextSize,
-                                                        fontSize = smallTextSize * 0.7f,
+                                                        lineHeight = smallTextSize.scaledSp,
+                                                        fontSize = smallTextSize.scaledSp * 0.7f,
                                                         textAlign = TextAlign.Center,
                                                         style = defaultTextStyle()
                                                     )
@@ -824,7 +818,7 @@ fun PlayerButton(
 
                             PBState.SETTINGS_BACKGROUND_COLOR_PICKER -> {
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
-                                    val (_, smallPadding, _) = generateSizes(maxWidth, maxHeight)
+                                    val (_, smallPadding, _) = remember { generateSizes(maxWidth, maxHeight) }
                                     ColorPicker(
                                         Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = if (wideButton) smallPadding * 2 else smallPadding / 4f),
                                         text = "Choose a Background Color",
@@ -842,7 +836,7 @@ fun PlayerButton(
 
                             PBState.SETTINGS_TEXT_COLOR_PICKER -> {
                                 BoxWithConstraints(settingsPadding.fillMaxSize()) {
-                                    val (_, smallPadding, _) = generateSizes(maxWidth, maxHeight)
+                                    val (_, smallPadding, _) = remember { generateSizes(maxWidth, maxHeight) }
                                     ColorPicker(
                                         Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = if (wideButton) smallPadding * 2 else smallPadding / 4f),
                                         text = "Choose a Text Color",
@@ -1264,7 +1258,7 @@ fun CommanderDamageNumber(
     secondValue: String?,
 ) {
     BoxWithConstraints(modifier = modifier) {
-        val dividerOffset = maxHeight / 12f
+        val dividerOffset = remember { maxHeight / 12f }
 
         Row(
             modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically
@@ -1293,7 +1287,7 @@ fun CommanderDamageNumber(
 fun SingleCommanderDamageNumber(
     modifier: Modifier = Modifier, name: String, textColor: Color, value: String, recentChange: Int
 ) {
-    val iconResource = Res.drawable.commander_solid_icon
+    val iconResource = remember { Res.drawable.commander_solid_icon }
 
     NumericValue(
         modifier = modifier,
@@ -1314,7 +1308,7 @@ fun LifeNumber(
     recentChangeText: String,
 
     ) {
-    val iconResource = Res.drawable.heart_solid_icon
+    val iconResource = remember { Res.drawable.heart_solid_icon }
 
     NumericValue(
         modifier = modifier, textColor = textColor, name = name, largeText = largeText, recentChangeText = recentChangeText, iconResource = iconResource
@@ -1333,19 +1327,19 @@ fun NumericValue(
     BoxWithConstraints(
         modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
-        var largeTextSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30)
-        val largeTextPadding = (largeTextSize / 6f).dp
+        var largeTextSize = remember { (maxHeight.value / 2.8f + maxWidth.value / 6f + 30) }
+        val largeTextPadding = remember { (largeTextSize / 6f).dp }
 
         if (largeText.length >= 3) {
             for (i in 0 until largeText.length - 2) {
                 largeTextSize /= 1.15f
             }
         }
-        val smallTextSize = maxHeight.value / 14f + 4
-        val smallTextPadding = (smallTextSize / 4f).dp
-        val recentChangeSize = (maxHeight / 7f).value
+        val smallTextSize = remember { maxHeight.value / 14f + 4 }
+        val smallTextPadding = remember { (smallTextSize / 4f).dp }
+        val recentChangeSize = remember { (maxHeight / 7f).value }
 
-        val iconSize = maxHeight / 7f
+        val iconSize = remember { maxHeight / 7f }
 
         Column(
             Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
@@ -1401,17 +1395,17 @@ fun ColorPicker(
     modifier: Modifier = Modifier, text: String, colorList: List<Color>, textColor: Color, showColorPicker: (Boolean) -> Unit, onPress: (Color) -> Unit
 ) {
     BoxWithConstraints(modifier) {
-        val colorPickerPadding = maxWidth / 200f
-        val containerPadding = maxWidth / 50f
-        val textPadding = maxHeight / 25f
-        val smallTextSize = maxHeight.value.scaledSp / 8f
+        val colorPickerPadding = remember { maxWidth / 200f }
+        val containerPadding = remember { maxWidth / 50f }
+        val textPadding = remember { maxHeight / 25f }
+        val smallTextSize = remember { maxHeight.value / 8f }
         Column(
             Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 modifier = Modifier.wrapContentSize(unbounded = true).padding(
                     bottom = textPadding, top = textPadding * 2
-                ), text = text, color = textColor, fontSize = smallTextSize / 1.25f, textAlign = TextAlign.Center, style = defaultTextStyle()
+                ), text = text, color = textColor, fontSize = smallTextSize.scaledSp / 1.25f, textAlign = TextAlign.Center, style = defaultTextStyle()
             )
             Box(
                 Modifier.wrapContentSize().weight(0.5f).background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(10)).border(0.5.dp, textColor.copy(alpha = 0.9f), RoundedCornerShape(10))
@@ -1436,7 +1430,8 @@ fun ColorPicker(
                                 }, color = color
                             )
                         }
-                    })
+                    }
+                )
             }
         }
     }
@@ -1593,15 +1588,6 @@ private fun CustomIncrementButton(
         modifier = modifier.repeatingClickable(
             interactionSource = interactionSource, indication = ripple, enabled = true, onPress = onIncrementLife
         )
-//            .clickable(
-//                onClick = onIncrementLife,
-//                interactionSource = interactionSource,
-//                indication = ripple
-//            )
-//            .indication(
-//                interactionSource = interactionSource,
-//                indication = ripple
-//            )
     )
 }
 
