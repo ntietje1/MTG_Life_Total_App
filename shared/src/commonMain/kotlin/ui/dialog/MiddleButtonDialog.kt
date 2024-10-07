@@ -94,281 +94,228 @@ fun MiddleButtonDialog(
     val state by viewModel.state.collectAsState()
     var middleButtonDialogState by remember { mutableStateOf(MiddleButtonDialogState.Default) }
     val haptic = LocalHapticFeedback.current
-    val duration = (450 / getAnimationCorrectionFactor()).toInt()
     var showResetDialog by remember { mutableStateOf(false) }
     var showChooseFirstPlayerDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        backHandler.push { onDismiss() }
-    }
-
-    val enterAnimation = slideInHorizontally(
-        TweenSpec(
-            duration, easing = LinearOutSlowInEasing
-        )
-    ) { (-it * 1.25).toInt() }
-    val exitAnimation = slideOutHorizontally(
-        TweenSpec(
-            duration, easing = LinearOutSlowInEasing
-        )
-    ) { (it * 1.25).toInt() }
-
-    @Composable
-    fun FormattedAnimatedVisibility(
-        visible: Boolean, content: @Composable () -> Unit
+    BoxWithConstraints(
+        modifier = modifier
     ) {
-        AnimatedVisibility(
-            visible = visible, enter = enterAnimation, exit = exitAnimation
-        ) {
-            BoxWithConstraints(
-                modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f)).border(
-                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
-                ),
-            ) {
-                content()
-            }
+        val buttonModifier = remember(Unit) {
+            Modifier.then(
+                if (maxWidth / 3f < maxHeight / 4f) {
+                    Modifier
+                        .fillMaxHeight(0.75f)
+                        .padding(maxWidth / 50f)
+                } else {
+                    Modifier
+                        .fillMaxWidth(0.75f)
+                        .padding(maxHeight / 50f)
+                }
+            )
         }
-    }
 
-    val dialogContent: @Composable () -> Unit = {
-        BoxWithConstraints(
-            modifier = modifier.fillMaxSize(),
-        ) {
-            val buttonModifier = remember(Unit) {
-                Modifier.then(
-                    if (maxWidth / 3f < maxHeight / 4f) {
-                        Modifier
-                            .fillMaxHeight(0.75f)
-                            .padding(maxWidth / 50f)
-                    } else {
-                        Modifier
-                            .fillMaxWidth(0.75f)
-                            .padding(maxHeight / 50f)
-                    }
-                )
-            }
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.CoinFlip
-            ) {
-                CoinFlipDialogContent(
-                    modifier = modifier,
-                    goToCoinFlipTutorial = {
-                        backHandler.push { middleButtonDialogState = MiddleButtonDialogState.CoinFlip }
-                        middleButtonDialogState = MiddleButtonDialogState.CoinFlipTutorial
-                    }
-                )
-            }
-
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.CoinFlipTutorial
-            ) {
-                CoinFlipTutorialContent(
-                    modifier = modifier
-                )
-            }
-
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.PlayerNumber
-            ) {
-                PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
-                    setNumPlayers(it)
-                    viewModel.resetGameState()
-                    triggerEnterAnimation()
-                }, resetPlayers = {
-                    viewModel.resetGameState()
-                    triggerEnterAnimation()
-                }, show4PlayerDialog = { middleButtonDialogState = MiddleButtonDialogState.FourPlayerLayout })
-            }
-
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.FourPlayerLayout
-            ) {
-                FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
-                    setNumPlayers(it)
-                    viewModel.resetGameState()
-                    triggerEnterAnimation()
-                }, setAlt4PlayerLayout = { viewModel.settingsManager.alt4PlayerLayout = it })
-            }
-
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.StartingLife
-            ) {
-                StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setStartingLife = {
-                    viewModel.settingsManager.startingLife = it
-                    viewModel.resetGameState()
-                    triggerEnterAnimation()
-                })
-            }
-
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.DiceRoll
-            ) {
-                DiceRollDialogContent(Modifier.fillMaxSize())
-            }
-
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.Counter
-            ) {
-                CounterDialogContent(modifier = Modifier.fillMaxSize(),
-                    counters = state.counters,
-                    incrementCounter = { index, value -> viewModel.incrementCounter(index, value) },
-                    resetCounters = { viewModel.resetCounters() })
-            }
-
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.Scryfall
-            ) {
-                ScryfallDialogContent(
-                    Modifier.fillMaxSize(),
-                    selectButtonEnabled = false,
-                    rulingsButtonEnabled = true,
-                    addToBackStack = { backHandler.push(it) },
-                    onImageSelected = {}
-                )
-            }
-
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.Settings
-            ) {
-                SettingsDialogContent(
-                    Modifier.fillMaxSize(),
-                    goToPatchNotes = { middleButtonDialogState = MiddleButtonDialogState.PatchNotes },
-                    goToAboutMe = { middleButtonDialogState = MiddleButtonDialogState.AboutMe },
-                    addGoToSettingsToBackStack = { backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Settings } },
-                    goToTutorialScreen = {
-                        onDismiss()
-                        goToTutorialScreen()
-                    },
-                    updateTurnTimerEnabled = updateTurnTimerEnabled,
-                    toggleKeepScreenOn = toggleKeepScreenOn
-                )
-            }
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.PatchNotes
-            ) {
-                PatchNotesDialogContent(
-                    Modifier.fillMaxSize()
-                )
-            }
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.AboutMe
-            ) {
-                AboutMeDialogContent(
-                    Modifier.fillMaxSize()
-                )
-            }
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.PlaneChase
-            ) {
-                PlaneChaseDialogContent(
-                    modifier = Modifier.fillMaxSize(),
-                    goToChoosePlanes = {
-                        middleButtonDialogState = MiddleButtonDialogState.PlanarDeck
-                        backHandler.push { middleButtonDialogState = MiddleButtonDialogState.PlaneChase }
-                    },
-                )
-            }
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.PlanarDeck
-            ) {
-                ChoosePlanesDialogContent(
-                    modifier = Modifier.fillMaxSize(),
-                    addToBackStack = backHandler::push,
-                    popBackStack = backHandler::pop
-                )
-            }
-
-
-            FormattedAnimatedVisibility(
-                visible = middleButtonDialogState == MiddleButtonDialogState.Default
-            ) {
-                GridDialogContent(
-                    Modifier.fillMaxSize(), title = "Settings", items = listOf({
-                        SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
-                            viewModel.savePlayerStates()
-                            viewModel.savePlayerPrefs()
-                            goToPlayerSelectScreen(false)
-                            onDismiss()
-                        })
-                    }, {
-                        SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.reset_icon), text = "Reset Game", shadowEnabled = false, onPress = {
-                            showResetDialog = true
-                        })
-                    }, {
-                        SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.StartingLife
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
-                        })
-                    }, {
-                        SettingsButton(
-                            buttonModifier,
-                            imageVector = vectorResource(Res.drawable.star_icon_small),
-                            text = "Toggle Theme",
-                            shadowEnabled = false,
-                            onPress = {
-                                toggleTheme()
-                            },
-                        )
-                    }, {
-                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.player_count_icon), text = "Player Number", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.PlayerNumber
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
-                        })
-                    }, {
-                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.mana_icon), text = "Mana & Storm", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.Counter
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
-                        })
-                    }, {
-                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.die_icon), text = "Dice roll", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.DiceRoll
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
-                        })
-                    }, {
-                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.coin_icon), text = "Coin Flip", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.CoinFlip
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
-                        })
-                    }, {
-                        SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
-                            DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
-                            DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
-                            DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
-                        }, text = when (state.dayNight) {
-                            DayNightState.DAY -> "Day/Night"
-                            DayNightState.NIGHT -> "Day/Night"
-                            DayNightState.NONE -> "Day/Night"
-                        }, shadowEnabled = false, onPress = {
-                            viewModel.toggleDayNight()
-                        }, onLongPress = {
-                            viewModel.setDayNight(DayNightState.NONE)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        })
-                    }, {
-                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.search_icon), text = "Card Search", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.Scryfall
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
-                        })
-                    }, {
-                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.planeswalker_icon), text = "Planechase", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.PlaneChase
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
-                        })
-                    }, {
-                        SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.settings_icon_small), text = "Settings", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.Settings
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
-                        })
+        AnimatedGridDialog(
+            modifier = Modifier.fillMaxSize(),
+            onDismiss = onDismiss,
+            backHandler = backHandler,
+            pages = listOf(
+                Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.CoinFlip
+                ) {
+                    CoinFlipDialogContent(
+                        modifier = modifier,
+                        goToCoinFlipTutorial = {
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.CoinFlip }
+                            middleButtonDialogState = MiddleButtonDialogState.CoinFlipTutorial
+                        }
+                    )
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.CoinFlipTutorial
+                ) {
+                    CoinFlipTutorialContent(
+                        modifier = modifier
+                    )
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.PlayerNumber
+                ) {
+                    PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
+                        setNumPlayers(it)
+                        viewModel.resetGameState()
+                        triggerEnterAnimation()
+                    }, resetPlayers = {
+                        viewModel.resetGameState()
+                        triggerEnterAnimation()
+                    }, show4PlayerDialog = { middleButtonDialogState = MiddleButtonDialogState.FourPlayerLayout })
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.FourPlayerLayout
+                ) {
+                    FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
+                        setNumPlayers(it)
+                        viewModel.resetGameState()
+                        triggerEnterAnimation()
+                    }, setAlt4PlayerLayout = { viewModel.settingsManager.alt4PlayerLayout = it })
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.StartingLife
+                ) {
+                    StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setStartingLife = {
+                        viewModel.settingsManager.startingLife = it
+                        viewModel.resetGameState()
+                        triggerEnterAnimation()
                     })
-                )
-            }
-        }
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.DiceRoll
+                ) {
+                    DiceRollDialogContent(Modifier.fillMaxSize())
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.Counter
+                ) {
+                    CounterDialogContent(modifier = Modifier.fillMaxSize(),
+                        counters = state.counters,
+                        incrementCounter = { index, value -> viewModel.incrementCounter(index, value) },
+                        resetCounters = { viewModel.resetCounters() })
+                }, Pair(middleButtonDialogState == MiddleButtonDialogState.Scryfall) {
+                    ScryfallDialogContent(
+                        Modifier.fillMaxSize(),
+                        selectButtonEnabled = false,
+                        rulingsButtonEnabled = true,
+                        addToBackStack = { backHandler.push(it) },
+                        onImageSelected = {}
+                    )
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.Settings
+                ) {
+                    SettingsDialogContent(
+                        Modifier.fillMaxSize(),
+                        goToPatchNotes = { middleButtonDialogState = MiddleButtonDialogState.PatchNotes },
+                        goToAboutMe = { middleButtonDialogState = MiddleButtonDialogState.AboutMe },
+                        addGoToSettingsToBackStack = { backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Settings } },
+                        goToTutorialScreen = {
+                            onDismiss()
+                            goToTutorialScreen()
+                        },
+                        updateTurnTimerEnabled = updateTurnTimerEnabled,
+                        toggleKeepScreenOn = toggleKeepScreenOn
+                    )
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.PatchNotes
+                ) {
+                    PatchNotesDialogContent(
+                        Modifier.fillMaxSize()
+                    )
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.AboutMe
+                ) {
+                    AboutMeDialogContent(
+                        Modifier.fillMaxSize()
+                    )
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.PlaneChase
+                ) {
+                    PlaneChaseDialogContent(
+                        modifier = Modifier.fillMaxSize(),
+                        goToChoosePlanes = {
+                            middleButtonDialogState = MiddleButtonDialogState.PlanarDeck
+                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.PlaneChase }
+                        },
+                    )
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.PlanarDeck
+                ) {
+                    ChoosePlanesDialogContent(
+                        modifier = Modifier.fillMaxSize(),
+                        addToBackStack = backHandler::push,
+                        popBackStack = backHandler::pop
+                    )
+                }, Pair(
+                    middleButtonDialogState == MiddleButtonDialogState.Default
+                ) {
+                    GridDialogContent(
+                        Modifier.fillMaxSize(), title = "Settings", items = listOf({
+                            SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
+                                viewModel.savePlayerStates()
+                                viewModel.savePlayerPrefs()
+                                goToPlayerSelectScreen(false)
+                                onDismiss()
+                            })
+                        }, {
+                            SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.reset_icon), text = "Reset Game", shadowEnabled = false, onPress = {
+                                showResetDialog = true
+                            })
+                        }, {
+                            SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
+                                middleButtonDialogState = MiddleButtonDialogState.StartingLife
+                                backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            })
+                        }, {
+                            SettingsButton(
+                                buttonModifier,
+                                imageVector = vectorResource(Res.drawable.star_icon_small),
+                                text = "Toggle Theme",
+                                shadowEnabled = false,
+                                onPress = {
+                                    toggleTheme()
+                                },
+                            )
+                        }, {
+                            SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.player_count_icon), text = "Player Number", shadowEnabled = false, onPress = {
+                                middleButtonDialogState = MiddleButtonDialogState.PlayerNumber
+                                backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            })
+                        }, {
+                            SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.mana_icon), text = "Mana & Storm", shadowEnabled = false, onPress = {
+                                middleButtonDialogState = MiddleButtonDialogState.Counter
+                                backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            })
+                        }, {
+                            SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.die_icon), text = "Dice roll", shadowEnabled = false, onPress = {
+                                middleButtonDialogState = MiddleButtonDialogState.DiceRoll
+                                backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            })
+                        }, {
+                            SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.coin_icon), text = "Coin Flip", shadowEnabled = false, onPress = {
+                                middleButtonDialogState = MiddleButtonDialogState.CoinFlip
+                                backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            })
+                        }, {
+                            SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
+                                DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
+                                DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
+                                DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
+                            }, text = when (state.dayNight) {
+                                DayNightState.DAY -> "Day/Night"
+                                DayNightState.NIGHT -> "Day/Night"
+                                DayNightState.NONE -> "Day/Night"
+                            }, shadowEnabled = false, onPress = {
+                                viewModel.toggleDayNight()
+                            }, onLongPress = {
+                                viewModel.setDayNight(DayNightState.NONE)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            })
+                        }, {
+                            SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.search_icon), text = "Card Search", shadowEnabled = false, onPress = {
+                                middleButtonDialogState = MiddleButtonDialogState.Scryfall
+                                backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            })
+                        }, {
+                            SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.planeswalker_icon), text = "Planechase", shadowEnabled = false, onPress = {
+                                middleButtonDialogState = MiddleButtonDialogState.PlaneChase
+                                backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            })
+                        }, {
+                            SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.settings_icon_small), text = "Settings", shadowEnabled = false, onPress = {
+                                middleButtonDialogState = MiddleButtonDialogState.Settings
+                                backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            })
+                        })
+                    )
+                }
+            )
+        )
     }
-
     var onReset: () -> Boolean by remember {
         mutableStateOf(
             {
-                println("OOPSIES")
+                println("This should never be called")
                 false
             }
         )
@@ -427,6 +374,60 @@ fun MiddleButtonDialog(
                 onDismiss()
             },
         )
+    }
+}
+
+@Composable
+fun AnimatedGridDialog(
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    backHandler: BackHandler = koinInject(),
+    pages: List<Pair<Boolean, @Composable () -> Unit>>
+) {
+    LaunchedEffect(Unit) {
+        backHandler.push { onDismiss() }
+    }
+
+    val duration = (450 / getAnimationCorrectionFactor()).toInt()
+
+    val enterAnimation = slideInHorizontally(
+        TweenSpec(
+            duration, easing = LinearOutSlowInEasing
+        )
+    ) { (-it * 1.25).toInt() }
+    val exitAnimation = slideOutHorizontally(
+        TweenSpec(
+            duration, easing = LinearOutSlowInEasing
+        )
+    ) { (it * 1.25).toInt() }
+
+    @Composable
+    fun FormattedAnimatedVisibility(
+        visible: Boolean, content: @Composable () -> Unit
+    ) {
+        AnimatedVisibility(
+            visible = visible, enter = enterAnimation, exit = exitAnimation
+        ) {
+            BoxWithConstraints(
+                modifier = modifier.background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f)).border(
+                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+                ),
+            ) {
+                content()
+            }
+        }
+    }
+
+    val dialogContent: @Composable () -> Unit = {
+        Box {
+            for (page in pages) {
+                FormattedAnimatedVisibility(
+                    visible = page.first
+                ) {
+                    page.second.invoke()
+                }
+            }
+        }
     }
 
     SettingsDialog(onDismiss = {
