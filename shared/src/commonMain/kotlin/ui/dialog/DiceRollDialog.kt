@@ -43,13 +43,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import ui.SettingsButton
-import ui.modifier.ShakeConfig
-import ui.modifier.bounceClick
-import ui.modifier.rememberShakeController
-import ui.modifier.shake
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -63,13 +59,20 @@ import lifelinked.shared.generated.resources.d8_icon
 import lifelinked.shared.generated.resources.enter_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
+import ui.SettingsButton
+import ui.dialog.startinglife.TextFieldWithButton
+import ui.modifier.ShakeConfig
+import ui.modifier.bounceClick
+import ui.modifier.rememberShakeController
+import ui.modifier.shake
 
 
 @Composable
 fun DiceRollDialogContent(
     modifier: Modifier = Modifier
 ) {
-    var textFieldValue by remember { mutableStateOf("100") }
+//    var textFieldValue by remember { mutableStateOf("100") }
+    var textFieldValue = remember { TextFieldValue("100") }
     var customDieValue by remember { mutableStateOf(100) }
     var lastResult: Int? by remember { mutableStateOf(null) }
     var faceValue: Int? by remember { mutableStateOf(null) }
@@ -157,11 +160,11 @@ fun DiceRollDialogContent(
             Spacer(modifier = Modifier.weight(0.005f))
 
             TextFieldWithButton(modifier = Modifier.width(diceRollButtonSize * 3).height(textFieldHeight), value = textFieldValue, onValueChange = {
-                if (it.toIntOrNull() != null) {
+                if (it.text.toIntOrNull() != null) {
                     textFieldValue = it
-                    customDieValue = it.toInt()
-                } else if (it.isEmpty()) {
-                    textFieldValue = ""
+                    customDieValue = it.text.toInt()
+                } else if (it.text.isEmpty()) {
+                    textFieldValue = TextFieldValue("")
                     customDieValue = 0
                 }
             }, label = "Custom Die Value", keyboardType = KeyboardType.Number, onDone = {

@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -63,6 +64,7 @@ import lifelinked.shared.generated.resources.search_icon
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
+import ui.dialog.startinglife.TextFieldWithButton
 
 @Composable
 fun ScryfallSearchDialog(
@@ -89,7 +91,8 @@ fun ScryfallDialogContent(
     rulingsButtonEnabled: Boolean = false,
     onImageSelected: (String) -> Unit
 ) {
-    val query = remember { mutableStateOf("") }
+//    val query = remember { mutableStateOf("") }
+    var query = remember { TextFieldValue("") }
     var cardResults by remember { mutableStateOf(listOf<Card>()) }
     var rulingsResults by remember { mutableStateOf(listOf<Ruling>()) }
     val scryfallApiRetriever = ScryfallApiRetriever()
@@ -123,7 +126,7 @@ fun ScryfallDialogContent(
                 backStackDiff += 1
                 addToBackStack {
                     backStackDiff -= 1
-                    query.value = ""
+                    query = TextFieldValue("")
                     clearResults()
                 }
             }
@@ -141,7 +144,7 @@ fun ScryfallDialogContent(
                 backStackDiff += 1
                 addToBackStack {
                     backStackDiff -= 1
-                    query.value = ""
+                    query = TextFieldValue("")
                     clearResults()
                 }
             }
@@ -166,11 +169,11 @@ fun ScryfallDialogContent(
                         1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
                     )
                 ,
-                query = query.value,
-                onQueryChange = { query.value = it },
+                query = query,
+                onQueryChange = { query = it },
                 searchInProgress = isSearchInProgress
             ) {
-                searchCards(query.value)
+                searchCards(query.text)
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
 
@@ -207,7 +210,7 @@ fun ScryfallDialogContent(
                         backStackDiff += 1
                         addToBackStack {
                             backStackDiff -= 1
-                            searchCards(query.value)
+                            searchCards(query.text)
                             rulingCard = null
                         }
                     }, onSelect = {
@@ -217,7 +220,7 @@ fun ScryfallDialogContent(
                         backStackDiff += 1
                         addToBackStack {
                             backStackDiff -= 1
-                            searchCards(query.value)
+                            searchCards(query.text)
                         }
                     })
                 }
@@ -252,8 +255,8 @@ fun ScryfallDialogContent(
 @Composable
 fun ScryfallSearchBar(
     modifier: Modifier = Modifier,
-    query: String,
-    onQueryChange: (String) -> Unit,
+    query: TextFieldValue,
+    onQueryChange: (TextFieldValue) -> Unit,
     searchInProgress: Boolean = false,
     onSearch: () -> Unit
 ) {

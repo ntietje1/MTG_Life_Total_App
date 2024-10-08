@@ -69,6 +69,7 @@ import ui.dialog.planechase.PlaneChaseDialogContent
 import ui.dialog.settings.AboutMeDialogContent
 import ui.dialog.settings.SettingsDialogContent
 import ui.dialog.settings.patchnotes.PatchNotesDialogContent
+import ui.dialog.startinglife.StartingLifeDialogContent
 import ui.lifecounter.DayNightState
 import ui.lifecounter.LifeCounterViewModel
 
@@ -157,8 +158,7 @@ fun MiddleButtonDialog(
                 }, Pair(
                     middleButtonDialogState == MiddleButtonDialogState.StartingLife
                 ) {
-                    StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setStartingLife = {
-                        viewModel.settingsManager.startingLife = it
+                    StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, resetGameState = {
                         viewModel.resetGameState()
                         triggerEnterAnimation()
                     })

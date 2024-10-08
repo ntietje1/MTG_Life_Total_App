@@ -1,13 +1,14 @@
 package ui.dialog.planechase
 
-import di.Platform
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.ScryfallApiRetriever
 import data.SettingsManager
 import data.serializable.Card
+import di.Platform
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -151,11 +152,11 @@ class PlaneChaseViewModel(
 //    }
 
 
-    private suspend fun search(qry: String = state.value.query): List<Card> {
+    private suspend fun search(qry: String = state.value.query.text): List<Card> {
         return scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall("t:plane $qry"))
     }
 
-    fun searchPlanes(qry: String = state.value.query, onSearchResult: (List<Card>) -> Unit) {
+    fun searchPlanes(qry: String = state.value.query.text, onSearchResult: (List<Card>) -> Unit) {
         setSearchInProgress(true)
         viewModelScope.launch {
             val resultCards = search(qry)
@@ -165,7 +166,7 @@ class PlaneChaseViewModel(
         }
     }
 
-    fun setQuery(value: String) {
+    fun setQuery(value: TextFieldValue) {
         _state.value = _state.value.copy(query = value)
     }
 
@@ -178,7 +179,7 @@ class PlaneChaseViewModel(
     }
 
     fun onBackPress() {
-        setQuery("")
+        setQuery(TextFieldValue(""))
         setSearchedPlanes(state.value.allPlanes)
     }
 
