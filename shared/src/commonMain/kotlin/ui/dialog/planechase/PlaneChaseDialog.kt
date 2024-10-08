@@ -2,7 +2,6 @@ package ui.dialog.planechase
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,8 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
-import ui.SettingsButton
-import ui.dialog.ScryfallSearchBar
 import data.serializable.Card
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
@@ -67,6 +64,8 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.scaledSp
+import ui.SettingsButton
+import ui.dialog.scryfall.ScryfallSearchBar
 
 private enum class PlanarDieResult(
     val toString: String,

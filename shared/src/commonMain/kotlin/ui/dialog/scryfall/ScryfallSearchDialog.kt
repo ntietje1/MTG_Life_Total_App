@@ -1,4 +1,4 @@
-package ui.dialog
+package ui.dialog.scryfall
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,7 +64,9 @@ import lifelinked.shared.generated.resources.card_back
 import lifelinked.shared.generated.resources.search_icon
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.vectorResource
+import org.koin.compose.koinInject
 import theme.scaledSp
+import ui.dialog.SettingsDialog
 import ui.dialog.startinglife.TextFieldWithButton
 
 @Composable
@@ -71,13 +74,15 @@ fun ScryfallSearchDialog(
     modifier: Modifier = Modifier,
     addToBackStack: (() -> Unit) -> Unit,
     onDismiss: () -> Unit,
-    onImageSelected: (String) -> Unit
+    onImageSelected: (String) -> Unit,
+    viewModel: ScryfallSearchViewModel = koinInject()
 ) {
     SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss) {
         ScryfallDialogContent(
             modifier = Modifier.fillMaxSize(),
             addToBackStack = addToBackStack,
-            onImageSelected = onImageSelected
+            onImageSelected = onImageSelected,
+            viewModel = viewModel
         )
     }
 }
@@ -89,10 +94,12 @@ fun ScryfallDialogContent(
     selectButtonEnabled: Boolean = true,
     printingsButtonEnabled: Boolean = true,
     rulingsButtonEnabled: Boolean = false,
-    onImageSelected: (String) -> Unit
+    onImageSelected: (String) -> Unit,
+    viewModel: ScryfallSearchViewModel
 ) {
+    val state by viewModel.state.collectAsState()
 //    val query = remember { mutableStateOf("") }
-    var query = remember { TextFieldValue("") }
+//    var query = remember { TextFieldValue("") }
     var cardResults by remember { mutableStateOf(listOf<Card>()) }
     var rulingsResults by remember { mutableStateOf(listOf<Ruling>()) }
     val scryfallApiRetriever = ScryfallApiRetriever()
@@ -126,7 +133,7 @@ fun ScryfallDialogContent(
                 backStackDiff += 1
                 addToBackStack {
                     backStackDiff -= 1
-                    query = TextFieldValue("")
+                    viewModel.setTextFieldValue(TextFieldValue(""))
                     clearResults()
                 }
             }
@@ -144,7 +151,7 @@ fun ScryfallDialogContent(
                 backStackDiff += 1
                 addToBackStack {
                     backStackDiff -= 1
-                    query = TextFieldValue("")
+                    viewModel.setTextFieldValue(TextFieldValue(""))
                     clearResults()
                 }
             }
@@ -167,13 +174,12 @@ fun ScryfallDialogContent(
                     .clip(RoundedCornerShape(15))
                     .border(
                         1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
-                    )
-                ,
-                query = query,
-                onQueryChange = { query = it },
+                    ),
+                query = state.textFieldValue,
+                onQueryChange = viewModel::setTextFieldValue,
                 searchInProgress = isSearchInProgress
             ) {
-                searchCards(query.text)
+                searchCards(state.textFieldValue.text)
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
 
@@ -210,7 +216,7 @@ fun ScryfallDialogContent(
                         backStackDiff += 1
                         addToBackStack {
                             backStackDiff -= 1
-                            searchCards(query.text)
+                            searchCards(state.textFieldValue.text)
                             rulingCard = null
                         }
                     }, onSelect = {
@@ -220,7 +226,7 @@ fun ScryfallDialogContent(
                         backStackDiff += 1
                         addToBackStack {
                             backStackDiff -= 1
-                            searchCards(query.text)
+                            searchCards(state.textFieldValue.text)
                         }
                     })
                 }

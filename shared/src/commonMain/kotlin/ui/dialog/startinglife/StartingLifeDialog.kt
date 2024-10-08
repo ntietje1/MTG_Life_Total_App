@@ -135,7 +135,7 @@ fun TextFieldWithButton(
                 Text(
                     modifier = Modifier.wrapContentSize(), text = label, color = MaterialTheme.colorScheme.onPrimary, fontSize = (textSize * 0.9f).scaledSp
                 )
-            }, textStyle = TextStyle(fontSize = (textSize * 1.25f).scaledSp), singleLine = true, colors = TextFieldDefaults.colors(
+            }, textStyle = TextStyle(fontSize = (textSize * 1.3f).scaledSp), singleLine = true, colors = TextFieldDefaults.colors(
                 focusedTextColor = MaterialTheme.colorScheme.onPrimary,
                 unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
                 disabledTextColor = MaterialTheme.colorScheme.onPrimary,

@@ -66,6 +66,7 @@ import ui.dialog.coinflip.CoinFlipDialogContent
 import ui.dialog.coinflip.CoinFlipTutorialContent
 import ui.dialog.planechase.ChoosePlanesDialogContent
 import ui.dialog.planechase.PlaneChaseDialogContent
+import ui.dialog.scryfall.ScryfallDialogContent
 import ui.dialog.settings.AboutMeDialogContent
 import ui.dialog.settings.SettingsDialogContent
 import ui.dialog.settings.patchnotes.PatchNotesDialogContent
@@ -179,7 +180,8 @@ fun MiddleButtonDialog(
                         selectButtonEnabled = false,
                         rulingsButtonEnabled = true,
                         addToBackStack = { backHandler.push(it) },
-                        onImageSelected = {}
+                        onImageSelected = {},
+                        viewModel = koinInject()
                     )
                 }, Pair(
                     middleButtonDialogState == MiddleButtonDialogState.Settings

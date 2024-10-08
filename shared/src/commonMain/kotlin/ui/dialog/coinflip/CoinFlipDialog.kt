@@ -33,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,7 +58,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import ui.SettingsButton
-import ui.dialog.ExpandableCard
+import ui.dialog.scryfall.ExpandableCard
 import ui.flippable.Flippable
 import ui.flippable.FlippableState
 import ui.flippable.rememberFlipController
