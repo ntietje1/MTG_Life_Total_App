@@ -23,7 +23,7 @@ actual val platformModule = module {
     viewModel { LifeCounterViewModel(get(), get(), get()) }
     viewModel { PatchNotesViewModel(get()) }
     viewModel { StartingLifeViewModel(get()) }
-    viewModel { ScryfallSearchViewModel() }
+    single { ScryfallSearchViewModel() }
 }
 
 actual val platform: Platform

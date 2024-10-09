@@ -6,7 +6,7 @@ class BackHandler() {
 
     private lateinit var nav: NavHostController
 
-    val backStack = mutableListOf<() -> Unit>(
+    val backStack = mutableListOf<Pair<String, () -> Unit>>(
 //        { println("backstack 3") },
 //        { println("backstack 2") },
 //        { println("backstack 1") }
@@ -21,17 +21,31 @@ class BackHandler() {
 
     fun push(block: () -> Unit) {
 //        println("backhandler.push()")
-        backStack.add(block)
+        backStack.add(Pair("unlabeled", block))
     }
+
+    fun push(label: String, block: () -> Unit) {
+//        println("backhandler.push()")
+        backStack.add(Pair(label, block))
+//        backStack.add(block)
+    }
+
 
     fun pop() {
 //        println("backhandler.pop()")
         if (backStack.isNotEmpty()) {
 //            println("backstack removeLast()")
-            backStack.removeLast().invoke()
+            backStack.removeLast().second.invoke()
         } else {
 //            println("nav.navigateUp()")
             nav.popBackStack()
+        }
+    }
+
+    fun popUntil(label: String) {
+//        println("backhandler.popUntil()")
+        while (backStack.isNotEmpty() && backStack.last().first != label) {
+            backStack.removeLast().second.invoke()
         }
     }
 }

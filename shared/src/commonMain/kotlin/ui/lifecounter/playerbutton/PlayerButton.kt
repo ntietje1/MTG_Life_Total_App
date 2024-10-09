@@ -119,8 +119,9 @@ import theme.scaledSp
 import theme.textShadowStyle
 import ui.SettingsButton
 import ui.dialog.ColorDialog
-import ui.dialog.ScryfallSearchDialog
 import ui.dialog.WarningDialog
+import ui.dialog.customization.PlayerCustomizationDialog
+import ui.dialog.scryfall.ScryfallSearchDialog
 import ui.lifecounter.CounterType
 import ui.modifier.VerticalRotation
 import ui.modifier.animatedBorderCard
@@ -174,11 +175,17 @@ fun PlayerButton(
     }
 
     LaunchedEffect(
-        state.showResetPrefsDialog, state.showCameraWarning, state.showScryfallSearch, state.showBackgroundColorPicker, state.showTextColorPicker, state.showChangeNameField
+        state.showResetPrefsDialog, state.showCameraWarning, state.showScryfallSearch,
+        state.showBackgroundColorPicker, state.showTextColorPicker,
+        state.showChangeNameField, state.showCustomizeMenu
     ) {
-        setBlurBackground(state.showResetPrefsDialog || state.showCameraWarning || state.showScryfallSearch || state.showBackgroundColorPicker || state.showTextColorPicker || state.showChangeNameField)
+        val dialogStates = listOf(
+            state.showResetPrefsDialog, state.showCameraWarning, state.showScryfallSearch,
+            state.showBackgroundColorPicker, state.showTextColorPicker,
+            state.showChangeNameField, state.showCustomizeMenu
+        )
+        setBlurBackground(dialogStates.any { it })
     }
-
     val singleImagePicker = rememberImagePickerLauncher(selectionMode = SelectionMode.Single, scope = scope, onResult = { byteArrays ->
         byteArrays.firstOrNull()?.let {
             viewModel.onFileSelected(it)
@@ -237,6 +244,14 @@ fun PlayerButton(
         }, initialColor = state.player.textColor, setColor = { color ->
             viewModel.onChangeTextColor(color)
         })
+    }
+
+    if (state.showCustomizeMenu) {
+        PlayerCustomizationDialog(
+            modifier = Modifier.fillMaxSize(), onDismiss = {
+                viewModel.showCustomizeMenu(false)
+            }, viewModel = viewModel
+        )
     }
 
     if (state.showChangeNameField) {
@@ -306,11 +321,11 @@ fun PlayerButton(
     }
 
     if (state.showScryfallSearch) {
-        val scryfallBackStack = remember { mutableStateListOf({ viewModel.showScryfallSearch(false) }) }
+        val scryfallBackStack = remember { mutableStateListOf(Pair("Main") { viewModel.showScryfallSearch(false) }) }
         ScryfallSearchDialog(modifier = Modifier.fillMaxSize(), onDismiss = {
             viewModel.showScryfallSearch(false)
-        }, addToBackStack = {
-            scryfallBackStack.add(it)
+        }, addToBackStack = { label, block ->
+            scryfallBackStack.add(Pair(label, block))
         }, onImageSelected = {
             viewModel.setImageUri(it)
         })
@@ -619,8 +634,9 @@ fun PlayerButton(
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.star_icon, text = "Customize"
                                             ) {
-                                                viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE)
-                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_DEFAULT) }
+                                                viewModel.showCustomizeMenu(true)
+//                                                viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE)
+//                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_DEFAULT) }
                                             }
                                         }
                                         item {
@@ -771,19 +787,19 @@ fun PlayerButton(
                                                 horizontalArrangement = Arrangement.spacedBy(smallPadding),
                                                 verticalArrangement = Arrangement.spacedBy(smallPadding),
                                                 content = {
-                                                    items(items = playerList, key = { p -> p.hashCode() }) { pInfo ->
+                                                    items(items = playerList, key = { p -> p.hashCode() }) { player ->
                                                         MiniPlayerButton(
-                                                            imageUri = viewModel.locateImage(pInfo),
-                                                            name = pInfo.name,
-                                                            backgroundColor = pInfo.color,
-                                                            textColor = pInfo.textColor,
+                                                            imageUri = viewModel.locateImage(player),
+                                                            name = player.name,
+                                                            backgroundColor = player.color,
+                                                            textColor = player.textColor,
                                                             copyPrefsToCurrentPlayer = {
-                                                                viewModel.copyPrefs(pInfo)
+                                                                viewModel.copyPrefs(player)
                                                                 viewModel.closeSettingsMenu()
                                                             },
                                                             removePlayerProfile = {
-                                                                playerList.remove(pInfo)
-                                                                viewModel.settingsManager.deletePlayerPref(pInfo)
+                                                                playerList.remove(player)
+                                                                viewModel.settingsManager.deletePlayerPref(player)
                                                             },
                                                         )
                                                     }

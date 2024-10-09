@@ -72,7 +72,7 @@ import ui.dialog.startinglife.TextFieldWithButton
 @Composable
 fun ScryfallSearchDialog(
     modifier: Modifier = Modifier,
-    addToBackStack: (() -> Unit) -> Unit,
+    addToBackStack: (String, () -> Unit) -> Unit,
     onDismiss: () -> Unit,
     onImageSelected: (String) -> Unit,
     viewModel: ScryfallSearchViewModel = koinInject()
@@ -90,12 +90,12 @@ fun ScryfallSearchDialog(
 @Composable
 fun ScryfallDialogContent(
     modifier: Modifier = Modifier,
-    addToBackStack: (() -> Unit) -> Unit,
+    addToBackStack: (String, () -> Unit) -> Unit,
     selectButtonEnabled: Boolean = true,
     printingsButtonEnabled: Boolean = true,
     rulingsButtonEnabled: Boolean = false,
     onImageSelected: (String) -> Unit,
-    viewModel: ScryfallSearchViewModel
+    viewModel: ScryfallSearchViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
 //    val query = remember { mutableStateOf("") }
@@ -131,11 +131,11 @@ fun ScryfallDialogContent(
 
             if (backStackDiff == 0) {
                 backStackDiff += 1
-                addToBackStack {
-                    backStackDiff -= 1
-                    viewModel.setTextFieldValue(TextFieldValue(""))
-                    clearResults()
-                }
+//                addToBackStack {
+//                    backStackDiff -= 1
+//                    viewModel.setTextFieldValue(TextFieldValue(""))
+//                    clearResults()
+//                }
             }
         }
     }
@@ -149,11 +149,11 @@ fun ScryfallDialogContent(
             isSearchInProgress = false
             if (backStackDiff == 0) {
                 backStackDiff += 1
-                addToBackStack {
-                    backStackDiff -= 1
-                    viewModel.setTextFieldValue(TextFieldValue(""))
-                    clearResults()
-                }
+//                addToBackStack {
+//                    backStackDiff -= 1
+//                    viewModel.setTextFieldValue(TextFieldValue(""))
+//                    clearResults()
+//                }
             }
         }
     }
@@ -195,6 +195,7 @@ fun ScryfallDialogContent(
                 }, horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (backStackDiff == 0 || isSearchInProgress) return@LazyColumn
+//                if (isSearchInProgress) return@LazyColumn
                 item {
                     Text(
                         "${cardResults.size + rulingsResults.size} results",
@@ -214,7 +215,7 @@ fun ScryfallDialogContent(
                         searchRulings(card.rulingsUri ?: "")
                         rulingCard = card
                         backStackDiff += 1
-                        addToBackStack {
+                        addToBackStack("Search: $state.textFieldValue.text") {
                             backStackDiff -= 1
                             searchCards(state.textFieldValue.text)
                             rulingCard = null
@@ -224,7 +225,7 @@ fun ScryfallDialogContent(
                     }, onPrintings = {
                         searchCards(card.printsSearchUri, disablePrintingsButton = true)
                         backStackDiff += 1
-                        addToBackStack {
+                        addToBackStack("Search: $state.textFieldValue.text") {
                             backStackDiff -= 1
                             searchCards(state.textFieldValue.text)
                         }
