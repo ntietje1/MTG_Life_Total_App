@@ -14,10 +14,19 @@ data class PlayerButtonState(
     val showBackgroundColorPicker: Boolean = false,
     val showTextColorPicker: Boolean = false,
     val showChangeNameField: Boolean = false,
+    val showCustomizeMenu: Boolean = false,
+    val customizationMenuState: CustomizationMenuState = CustomizationMenuState.DEFAULT,
     val changeNameTextField: TextFieldValue = TextFieldValue(player.name, selection = TextRange(player.name.length)),
     val backStack: List<() -> Unit> = listOf(),
     val timer: TurnTimer? = null
 )
+
+enum class CustomizationMenuState {
+    DEFAULT,
+    BACKGROUND,
+    LOAD_PLAYER,
+    SCRYFALL_SEARCH
+}
 
 enum class PBState {
     NORMAL,

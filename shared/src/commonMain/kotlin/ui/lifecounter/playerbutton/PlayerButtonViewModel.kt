@@ -5,7 +5,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ui.lifecounter.CounterType
 import data.ImageManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import ui.lifecounter.CounterType
 
 class PlayerButtonViewModel(
     initialPlayer: Player,
@@ -43,6 +43,10 @@ class PlayerButtonViewModel(
     fun setPlayerButtonState(buttonState: PBState) {
         _state.value = state.value.copy(buttonState = buttonState)
         updateCurrentDealerMode(state.value.player.partnerMode)
+    }
+
+    fun setCustomizeMenuState(menuState: CustomizationMenuState) {
+        _state.value = state.value.copy(customizationMenuState = menuState)
     }
 
     private fun setPlayer(player: Player) {
@@ -189,6 +193,10 @@ class PlayerButtonViewModel(
 
     fun getCounterValue(counterType: CounterType): Int {
         return state.value.player.counters[counterType.ordinal]
+    }
+
+    fun showCustomizeMenu(value: Boolean? = null) {
+        _state.value = state.value.copy(showCustomizeMenu = value ?: !state.value.showCustomizeMenu)
     }
 
     fun showChangeNameField(value: Boolean? = null) {
