@@ -635,6 +635,7 @@ fun PlayerButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.star_icon, text = "Customize"
                                             ) {
                                                 viewModel.showCustomizeMenu(true)
+                                                viewModel.popBackStack()
 //                                                viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE)
 //                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_DEFAULT) }
                                             }
@@ -1207,6 +1208,7 @@ fun PlayerButtonBackground(
     modifier: Modifier = Modifier,
     state: PBState, imageUri: String?, color: Color, isDead: Boolean
 ) {
+    println("IMAGEURI: $imageUri")
     if (imageUri == null) {
         var c = when (state) {
             PBState.NORMAL -> color
