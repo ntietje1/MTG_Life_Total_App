@@ -76,10 +76,11 @@ class PlayerButtonViewModel(
     }
 
     fun onFileSelected(file: ByteArray) {
+        var copiedUri = ""
         viewModelScope.launch {
-            val copiedUri = imageManager.copyImageToLocalStorage(file, state.value.player.name)
-            setImageUri(copiedUri)
-        }
+            copiedUri = imageManager.copyImageToLocalStorage(file, state.value.player.name)
+            println("copiedUri: $copiedUri")
+        }.invokeOnCompletion { setImageUri(copiedUri) }
     }
 
     fun onMonarchyButtonClicked(value: Boolean? = null) {
