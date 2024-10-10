@@ -51,6 +51,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import data.Player.Companion.allPlayerColors
+import di.getAnimationCorrectionFactor
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.one_finger_hold
+import lifelinked.shared.generated.resources.skip_icon
+import org.jetbrains.compose.resources.vectorResource
+import theme.scaledSp
 import ui.SettingsButton
 import ui.modifier.routePointerChangesTo
 import ui.playerselect.PlayerSelectScreenValues.deselectDuration
@@ -64,18 +74,6 @@ import ui.playerselect.PlayerSelectScreenValues.pulseDuration2
 import ui.playerselect.PlayerSelectScreenValues.pulseFreq
 import ui.playerselect.PlayerSelectScreenValues.selectionDelay
 import ui.playerselect.PlayerSelectScreenValues.showHelperTextDelay
-import data.Player.Companion.allPlayerColors
-import di.Platform
-import di.getAnimationCorrectionFactor
-import di.platform
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import lifelinked.shared.generated.resources.Res
-import lifelinked.shared.generated.resources.one_finger_hold
-import lifelinked.shared.generated.resources.skip_icon
-import org.jetbrains.compose.resources.vectorResource
-import theme.scaledSp
 import kotlin.coroutines.coroutineContext
 import kotlin.math.pow
 import kotlin.native.concurrent.ThreadLocal
@@ -266,7 +264,7 @@ fun PlayerSelectScreenBase(
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
-        routePointerChangesTo(onDown = { onDown(it, circleSize) }, onMove = { onMove(it) }, onUp = { onUp(it) }, {
+        routePointerChangesTo(onDown = { onDown(it, circleSize) }, onMove = { onMove(it) }, onUp = { onUp(it) }, countCallback = {
             for (id in circles.keys) {
                 if (!it.contains(id)) {
                     onUp(id) // secondary check to remove circles that should be removed
