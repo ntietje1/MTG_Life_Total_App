@@ -128,15 +128,16 @@ fun ScryfallDialogContent(
             lastSearchWasError = cardResults.isEmpty()
             _printingsButtonEnabled = !disablePrintingsButton
             isSearchInProgress = false
+            backStackDiff += 1
 
-            if (backStackDiff == 0) {
-                backStackDiff += 1
+//            if (backStackDiff == 0) {
+//                backStackDiff += 1
 //                addToBackStack {
 //                    backStackDiff -= 1
 //                    viewModel.setTextFieldValue(TextFieldValue(""))
 //                    clearResults()
 //                }
-            }
+//            }
         }
     }
 
@@ -147,14 +148,15 @@ fun ScryfallDialogContent(
             rulingsResults = scryfallApiRetriever.parseScryfallResponse<Ruling>(scryfallApiRetriever.searchScryfall(qry))
             lastSearchWasError = false
             isSearchInProgress = false
-            if (backStackDiff == 0) {
-                backStackDiff += 1
+            backStackDiff += 1
+//            if (backStackDiff == 0) {
+//                backStackDiff += 1
 //                addToBackStack {
 //                    backStackDiff -= 1
 //                    viewModel.setTextFieldValue(TextFieldValue(""))
 //                    clearResults()
 //                }
-            }
+//            }
         }
     }
 
@@ -214,7 +216,7 @@ fun ScryfallDialogContent(
                         onRulings = {
                         searchRulings(card.rulingsUri ?: "")
                         rulingCard = card
-                        backStackDiff += 1
+//                        backStackDiff += 1
                         addToBackStack("Search: $state.textFieldValue.text") {
                             backStackDiff -= 1
                             searchCards(state.textFieldValue.text)
@@ -224,7 +226,7 @@ fun ScryfallDialogContent(
                         onImageSelected(card.getUris().artCrop)
                     }, onPrintings = {
                         searchCards(card.printsSearchUri, disablePrintingsButton = true)
-                        backStackDiff += 1
+//                        backStackDiff += 1
                         addToBackStack("Search: $state.textFieldValue.text") {
                             backStackDiff -= 1
                             searchCards(state.textFieldValue.text)
