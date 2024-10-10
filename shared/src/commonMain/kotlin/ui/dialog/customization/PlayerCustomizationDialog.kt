@@ -52,6 +52,7 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import ui.SettingsButton
 import ui.dialog.AnimatedGridDialog
+import ui.dialog.ColorPickerDialogContent
 import ui.dialog.scryfall.ScryfallDialogContent
 import ui.dialog.startinglife.TextFieldWithButton
 import ui.lifecounter.playerbutton.CustomizationMenuState
@@ -181,7 +182,7 @@ fun PlayerCustomizationDialog(
                             lifeNumber = state.player.life,
                             state = state.buttonState,
                             isDead = false,
-                            imageUri = state.player.imageString,
+                            imageUri = viewModel.locateImage(state.player),
                             backgroundColor = state.player.color,
                             accentColor = state.player.textColor,
                         )
@@ -197,23 +198,8 @@ fun PlayerCustomizationDialog(
                                     FormattedSettingsButton(
                                         imageResource = Res.drawable.change_background_icon, text = "Background Color"
                                     ) {
-                                        viewModel.setPlayerButtonState(PBState.SETTINGS_BACKGROUND_COLOR_PICKER)
-                                        viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE) }
-                                    }
-                                }
-                                item {
-                                    FormattedSettingsButton(
-                                        imageResource = Res.drawable.text_icon, text = "Text Color"
-                                    ) {
-                                        viewModel.setPlayerButtonState(PBState.SETTINGS_TEXT_COLOR_PICKER)
-                                        viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE) }
-                                    }
-                                }
-                                item {
-                                    FormattedSettingsButton(
-                                        imageResource = Res.drawable.camera_icon, text = "Upload Image"
-                                    ) {
-                                        viewModel.showCameraWarning(true)
+                                        viewModel.setCustomizeMenuState(CustomizationMenuState.BACKGROUND_COLOR_PICKER)
+                                        backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
                                     }
                                 }
                                 item {
@@ -227,10 +213,17 @@ fun PlayerCustomizationDialog(
                                 }
                                 item {
                                     FormattedSettingsButton(
-                                        imageResource = Res.drawable.reset_icon,
-                                        text = "Reset",
+                                        imageResource = Res.drawable.camera_icon, text = "Upload Image"
                                     ) {
-                                        viewModel.showResetPrefsDialog(true)
+                                        viewModel.showCameraWarning(true)
+                                    }
+                                }
+                                item {
+                                    FormattedSettingsButton(
+                                        imageResource = Res.drawable.text_icon, text = "Text Color"
+                                    ) {
+                                        viewModel.setCustomizeMenuState(CustomizationMenuState.ACCENT_COLOR_PICKER)
+                                        backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
                                     }
                                 }
                                 item {
@@ -260,6 +253,14 @@ fun PlayerCustomizationDialog(
                                         }
                                     }
                                 }
+                                item {
+                                    FormattedSettingsButton(
+                                        imageResource = Res.drawable.reset_icon,
+                                        text = "Reset",
+                                    ) {
+                                        viewModel.showResetPrefsDialog(true)
+                                    }
+                                }
                             })
                         Spacer(modifier = Modifier.weight(0.15f))
                     }
@@ -270,7 +271,10 @@ fun PlayerCustomizationDialog(
                         addAll(viewModel.settingsManager.loadPlayerPrefs().filter { !it.isDefaultOrEmptyName() })
                     }
                 }
-                LoadPlayerDialogContent(playerList = playerList, onPlayerSelected = { player ->
+                LoadPlayerDialogContent(
+                    playerList = playerList,
+                    locateImage = { viewModel.locateImage(it) },
+                    onPlayerSelected = { player ->
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     viewModel.copyPrefs(player)
                     backHandler.pop()
@@ -281,7 +285,7 @@ fun PlayerCustomizationDialog(
                     //TODO: confirm delete
                 })
             }, Pair(state.customizationMenuState == CustomizationMenuState.SCRYFALL_SEARCH) {
-                val scryfallBackStack = remember { mutableListOf("Main") }
+                val scryfallBackStack = remember { mutableListOf<String>("Main") }
                 ScryfallDialogContent(
                     modifier = Modifier.fillMaxSize(),
                     addToBackStack = { label, block ->
@@ -299,6 +303,24 @@ fun PlayerCustomizationDialog(
                         }
 //                        backHandler.pop()
 //                        backHandler.pop()
+                    }
+                )
+            }, Pair(state.customizationMenuState == CustomizationMenuState.BACKGROUND_COLOR_PICKER) {
+                ColorPickerDialogContent(
+                    title = "Background Color",
+                    initialColor = state.player.color,
+                    setColor = { viewModel.onChangeBackgroundColor(it) },
+                    onDone = {
+                        backHandler.pop()
+                    }
+                )
+            } , Pair(state.customizationMenuState == CustomizationMenuState.ACCENT_COLOR_PICKER) {
+                ColorPickerDialogContent(
+                    title = "Accent Color",
+                    initialColor = state.player.textColor,
+                    setColor = { viewModel.onChangeTextColor(it) },
+                    onDone = {
+                        backHandler.pop()
                     }
                 )
             }

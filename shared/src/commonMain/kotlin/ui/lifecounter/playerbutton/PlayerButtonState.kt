@@ -23,9 +23,10 @@ data class PlayerButtonState(
 
 enum class CustomizationMenuState {
     DEFAULT,
-    BACKGROUND,
     LOAD_PLAYER,
-    SCRYFALL_SEARCH
+    SCRYFALL_SEARCH,
+    BACKGROUND_COLOR_PICKER,
+    ACCENT_COLOR_PICKER
 }
 
 enum class PBState {
