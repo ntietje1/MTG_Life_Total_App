@@ -30,7 +30,12 @@ import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonBackground
 
 @Composable
-fun LoadPlayerDialogContent(modifier: Modifier = Modifier, playerList: List<Player>, onPlayerSelected: (Player) -> Unit, onPlayerDeleted: (Player) -> Unit) {
+fun LoadPlayerDialogContent(
+    modifier: Modifier = Modifier,
+    playerList: List<Player>,
+    locateImage: (Player) -> String?,
+    onPlayerSelected: (Player) -> Unit,
+    onPlayerDeleted: (Player) -> Unit) {
     BoxWithConstraints(
         Modifier.wrapContentSize()
     ) {
@@ -48,7 +53,7 @@ fun LoadPlayerDialogContent(modifier: Modifier = Modifier, playerList: List<Play
                     name = player.name,
                     state = PBState.NORMAL,
                     isDead = false,
-                    imageUri = player.imageString,
+                    imageUri = locateImage(player),
                     backgroundColor = player.color,
                     accentColor = player.textColor,
                     modifier = Modifier.padding(8.dp).width(buttonWidth).aspectRatio(1.75f).pointerInput(Unit) {
