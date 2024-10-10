@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
@@ -33,12 +34,13 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import ui.SettingsButton
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.checkmark
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
+import theme.scaledSp
 import theme.toHsv
+import ui.SettingsButton
 
 @Composable
 fun ColorDialog(
@@ -49,17 +51,18 @@ fun ColorDialog(
         backButtonEnabled = false,
         onDismiss = onDismiss
     ) {
-        ColorSelector(initialColor = initialColor, setColor = setColor, onDismiss = onDismiss)
+        ColorPickerDialogContent("remove this", initialColor = initialColor, setColor = setColor, onDone = onDismiss)
     }
 }
 
 @Composable
-fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {}, onDismiss: () -> Unit) {
+fun ColorPickerDialogContent(title: String, initialColor: Color, setColor: (Color) -> Unit = {}, onDone: () -> Unit) {
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val largePanelSize = remember(Unit) { maxWidth * 0.75f }
         val padding = remember(Unit) { maxWidth /15f }
         val buttonSize = remember(Unit) { maxWidth / 3.5f }
         val barHeight = remember(Unit) { maxWidth / 12f }
+        val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
 
         Column(
             modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
@@ -78,6 +81,12 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
                     Color.hsv(hsv.value.first.coerceIn(0.0f, 360f), hsv.value.second.coerceIn(0.0f, 1.0f), hsv.value.third.coerceIn(0.0f, 1.0f))
                 }
             }
+
+            Text(
+                modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
+            )
+
+            Spacer(modifier = Modifier.height(padding*1.5f))
 
             SatValPanel(
                 modifier = Modifier.size(largePanelSize),
@@ -103,7 +112,7 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
             ) {
                 Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize),
+                        modifier = Modifier.size(buttonSize).padding(bottom = padding / 2f),
                         imageVector = vectorResource(Res.drawable.x_icon),
                         shape = RoundedCornerShape(10),
                         shadowEnabled = false,
@@ -112,7 +121,7 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
                         textSizeMultiplier = 1.5f,
                         onTap = {
                             setColor(initialColor)
-                            onDismiss()
+                            onDone()
                         }
                     )
                     Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimary)
@@ -121,7 +130,7 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
                 Spacer(modifier = Modifier.width(padding))
                 Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize),
+                        modifier = Modifier.size(buttonSize).padding(bottom = padding / 2f),
                         imageVector = vectorResource(Res.drawable.checkmark),
                         shape = RoundedCornerShape(10),
                         shadowEnabled = false,
@@ -130,12 +139,14 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
                         textSizeMultiplier = 1.5f,
                         onTap = {
                             setColor(backgroundColor.value)
-                            onDismiss()
+                            onDone()
                         }
                     )
                     Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
+
+            Spacer(modifier = Modifier.height(titleSize.dp * 2f))
         }
     }
 }
