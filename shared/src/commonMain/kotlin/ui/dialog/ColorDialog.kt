@@ -120,7 +120,7 @@ fun ColorPickerDialogContent(title: String, initialColor: Color, setColor: (Colo
                         mainColor = if (initialColor.luminance() > 0.5f) Color.Black else Color.White,
                         textSizeMultiplier = 1.5f,
                         onTap = {
-                            setColor(initialColor)
+//                            setColor(initialColor)
                             onDone()
                         }
                     )
