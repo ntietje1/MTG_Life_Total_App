@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
-import data.ScryfallApiRetriever
 import data.serializable.Card
 import data.serializable.ImageUris
 import data.serializable.Ruling
@@ -98,66 +99,16 @@ fun ScryfallDialogContent(
     viewModel: ScryfallSearchViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
-//    val query = remember { mutableStateOf("") }
-//    var query = remember { TextFieldValue("") }
-    var cardResults by remember { mutableStateOf(listOf<Card>()) }
-    var rulingsResults by remember { mutableStateOf(listOf<Ruling>()) }
-    val scryfallApiRetriever = ScryfallApiRetriever()
-    val coroutineScope = rememberCoroutineScope()
-    var lastSearchWasError by remember { mutableStateOf(false) }
-    var rulingCard: Card? by remember { mutableStateOf(null) }
-    var backStackDiff by remember { mutableStateOf(0) }
-    var _printingsButtonEnabled by remember { mutableStateOf(printingsButtonEnabled) }
-
-    var isSearchInProgress by remember { mutableStateOf(false) }
-
+    val listState = rememberLazyListState(state.scrollPosition)
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
 
-    fun clearResults() {
-        cardResults = listOf()
-        rulingsResults = listOf()
+    LaunchedEffect(listState.firstVisibleItemIndex) {
+        viewModel.setScrollPosition(listState.firstVisibleItemIndex)
     }
 
-    fun searchCards(qry: String, disablePrintingsButton: Boolean = false) {
-        coroutineScope.launch {
-            clearResults()
-            focusManager.clearFocus()
-            isSearchInProgress = true
-            cardResults = scryfallApiRetriever.parseScryfallResponse<Card>(scryfallApiRetriever.searchScryfall(qry))
-            lastSearchWasError = cardResults.isEmpty()
-            _printingsButtonEnabled = !disablePrintingsButton
-            isSearchInProgress = false
-            backStackDiff += 1
-
-//            if (backStackDiff == 0) {
-//                backStackDiff += 1
-//                addToBackStack {
-//                    backStackDiff -= 1
-//                    viewModel.setTextFieldValue(TextFieldValue(""))
-//                    clearResults()
-//                }
-//            }
-        }
-    }
-
-    fun searchRulings(qry: String) {
-        coroutineScope.launch {
-            clearResults()
-            isSearchInProgress = true
-            rulingsResults = scryfallApiRetriever.parseScryfallResponse<Ruling>(scryfallApiRetriever.searchScryfall(qry))
-            lastSearchWasError = false
-            isSearchInProgress = false
-            backStackDiff += 1
-//            if (backStackDiff == 0) {
-//                backStackDiff += 1
-//                addToBackStack {
-//                    backStackDiff -= 1
-//                    viewModel.setTextFieldValue(TextFieldValue(""))
-//                    clearResults()
-//                }
-//            }
-        }
+    LaunchedEffect(Unit) {
+        viewModel.setPrintingsButtonEnabled(printingsButtonEnabled)
     }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
@@ -179,65 +130,68 @@ fun ScryfallDialogContent(
                     ),
                 query = state.textFieldValue,
                 onQueryChange = viewModel::setTextFieldValue,
-                searchInProgress = isSearchInProgress
+                searchInProgress = state.isSearchInProgress
             ) {
-                searchCards(state.textFieldValue.text)
+                focusManager.clearFocus()
+                viewModel.searchCards(state.textFieldValue.text)
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
 
             AnimatedVisibility(
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding), visible = lastSearchWasError
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding), visible = state.lastSearchWasError
             ) {
                 Text("No cards found :(", color = Color.Red, fontSize = textSize.scaledSp)
             }
-            if (lastSearchWasError) return@Column
+            if (state.lastSearchWasError) return@Column
             LazyColumn(
                 Modifier.pointerInput(Unit) {
                     detectTapGestures(onPress = { focusManager.clearFocus() })
-                }, horizontalAlignment = Alignment.CenterHorizontally
+                }, horizontalAlignment = Alignment.CenterHorizontally,
+                state = listState
             ) {
-                if (backStackDiff == 0 || isSearchInProgress) return@LazyColumn
-//                if (isSearchInProgress) return@LazyColumn
+                if (state.backStackDiff == 0 || state.isSearchInProgress) return@LazyColumn
                 item {
                     Text(
-                        "${cardResults.size + rulingsResults.size} results",
+                        "${state.cardResults.size + state.rulingsResults.size} results",
                         color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = textSize.scaledSp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(vertical = padding).align(Alignment.CenterHorizontally)
                     )
                 }
-                items(cardResults) { card ->
+                items(state.cardResults) { card ->
                     CardInfoPreview(
                         card = card,
                         selectButtonEnabled = selectButtonEnabled,
-                        printingsButtonEnabled = _printingsButtonEnabled,
+                        printingsButtonEnabled = state.printingsButtonEnabled,
                         rulingsButtonEnabled = rulingsButtonEnabled,
                         onRulings = {
-                        searchRulings(card.rulingsUri ?: "")
-                        rulingCard = card
-//                        backStackDiff += 1
-                        addToBackStack("Search: $state.textFieldValue.text") {
-                            backStackDiff -= 1
-                            searchCards(state.textFieldValue.text)
-                            rulingCard = null
-                        }
-                    }, onSelect = {
-                        onImageSelected(card.getUris().artCrop)
-                    }, onPrintings = {
-                        searchCards(card.printsSearchUri, disablePrintingsButton = true)
-//                        backStackDiff += 1
-                        addToBackStack("Search: $state.textFieldValue.text") {
-                            backStackDiff -= 1
-                            searchCards(state.textFieldValue.text)
-                        }
-                    })
+                            focusManager.clearFocus()
+                            viewModel.searchRulings(card.rulingsUri ?: "")
+                            viewModel.setRulingCard(card)
+                            addToBackStack("Search: $state.textFieldValue.text") {
+                                viewModel.incrementBackStackDiff(-1)
+                                focusManager.clearFocus()
+                                viewModel.searchCards(state.textFieldValue.text)
+                                viewModel.setRulingCard(null)
+                            }
+                        }, onSelect = {
+                            onImageSelected(card.getUris().artCrop)
+                        }, onPrintings = {
+                            focusManager.clearFocus()
+                            viewModel.searchCards(card.printsSearchUri, disablePrintingsButton = true)
+                            addToBackStack("Search: $state.textFieldValue.text") {
+                                viewModel.incrementBackStackDiff(-1)
+                                focusManager.clearFocus()
+                                viewModel.searchCards(state.textFieldValue.text)
+                            }
+                        })
                 }
-                if (cardResults.isEmpty() && rulingCard != null) {
+                if (state.cardResults.isEmpty() && state.rulingCard != null) {
                     item {
-                        CardDetails(rulingCard!!)
+                        CardDetails(state.rulingCard!!)
                     }
-                    if (rulingsResults.isNotEmpty()) {
+                    if (state.rulingsResults.isNotEmpty()) {
                         item {
                             HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = padding).align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
@@ -245,7 +199,7 @@ fun ScryfallDialogContent(
                         }
                     }
                 }
-                items(rulingsResults) { ruling ->
+                items(state.rulingsResults) { ruling ->
                     RulingPreview(ruling)
                     Spacer(modifier = Modifier.height(padding))
                 }
@@ -332,7 +286,7 @@ fun ScryfallButton(
                 onTap()
             }
         },
-        ) {
+    ) {
         val textSize = remember(Unit) { (maxWidth / 4.5f).value }
         val textPadding = remember(Unit) { maxWidth / 12f }
         Surface(
