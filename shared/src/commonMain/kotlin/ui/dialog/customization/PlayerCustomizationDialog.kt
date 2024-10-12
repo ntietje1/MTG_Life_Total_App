@@ -26,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +37,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.preat.peekaboo.image.picker.SelectionMode
+import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import data.Player
 import di.BackHandler
 import lifelinked.shared.generated.resources.Res
@@ -53,6 +56,7 @@ import org.koin.compose.koinInject
 import ui.SettingsButton
 import ui.dialog.AnimatedGridDialog
 import ui.dialog.ColorPickerDialogContent
+import ui.dialog.WarningDialog
 import ui.dialog.scryfall.ScryfallDialogContent
 import ui.dialog.startinglife.TextFieldWithButton
 import ui.lifecounter.playerbutton.CustomizationMenuState
@@ -83,6 +87,50 @@ fun PlayerCustomizationDialog(
      * 5. Change border
      * //TODO: add "stacked" player cards that you can toggle through once you choose that profile
      */
+
+    val singleImagePicker = rememberImagePickerLauncher(selectionMode = SelectionMode.Single, scope = rememberCoroutineScope(), onResult = { byteArrays ->
+        byteArrays.firstOrNull()?.let {
+            viewModel.onFileSelected(it)
+        }
+    })
+
+    if (state.showCameraWarning) {
+        if (viewModel.settingsManager.cameraRollDisabled) {
+            WarningDialog(title = "Info", message = "Camera roll access is disabled. Enable in settings.", optionOneEnabled = false, optionTwoEnabled = true, onDismiss = {
+                viewModel.showCameraWarning(false)
+            })
+        } else {
+            WarningDialog(title = "Warning",
+                message = "This will open the camera roll. Proceed?",
+                optionOneEnabled = true,
+                optionTwoEnabled = true,
+                optionOneMessage = "Proceed",
+                optionTwoMessage = "Cancel",
+                onOptionOne = {
+                    viewModel.showCameraWarning(false)
+                    singleImagePicker.launch()
+                },
+                onDismiss = {
+                    viewModel.showCameraWarning(false)
+                })
+        }
+    }
+
+    if (state.showResetPrefsDialog) {
+        WarningDialog(title = "Reset Preferences",
+            message = "Are you sure you want to reset your customizations?",
+            optionOneEnabled = true,
+            optionTwoEnabled = true,
+            optionOneMessage = "Reset",
+            optionTwoMessage = "Cancel",
+            onOptionOne = {
+                viewModel.resetPlayerPref()
+                viewModel.showResetPrefsDialog(false)
+            },
+            onDismiss = {
+                viewModel.showResetPrefsDialog(false)
+            })
+    }
 
 
     AnimatedGridDialog(
@@ -282,7 +330,6 @@ fun PlayerCustomizationDialog(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     playerList.remove(player)
                     viewModel.settingsManager.deletePlayerPref(player)
-                    //TODO: confirm delete
                 })
             }, Pair(state.customizationMenuState == CustomizationMenuState.SCRYFALL_SEARCH) {
                 val scryfallBackStack = remember { mutableListOf<String>("Main") }
