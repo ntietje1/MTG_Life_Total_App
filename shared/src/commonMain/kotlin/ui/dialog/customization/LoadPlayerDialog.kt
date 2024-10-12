@@ -1,6 +1,8 @@
 package ui.dialog.customization
 
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,22 +14,31 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import data.Player
+import kotlinx.coroutines.delay
 import theme.scaledSp
 import theme.textShadowStyle
 import ui.dialog.GridDialogContent
+import ui.dialog.WarningDialog
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonBackground
+import ui.modifier.routePointerChangesTo
 
 @Composable
 fun LoadPlayerDialogContent(
@@ -35,7 +46,35 @@ fun LoadPlayerDialogContent(
     playerList: List<Player>,
     locateImage: (Player) -> String?,
     onPlayerSelected: (Player) -> Unit,
-    onPlayerDeleted: (Player) -> Unit) {
+    onPlayerDeleted: (Player) -> Unit
+) {
+    var showDeletePlayerWarning by remember { mutableStateOf(false) }
+    var toBeDeletedPlayer by remember { mutableStateOf<Player?>(null) }
+    var highlightedPlayer by remember { mutableStateOf<Player?>(null) }
+    val haptic = LocalHapticFeedback.current
+
+    if (showDeletePlayerWarning) {
+        WarningDialog(title = "Warning",
+            message = "This will delete the player profile. Proceed?",
+            optionOneEnabled = true,
+            optionTwoEnabled = true,
+            optionOneMessage = "Delete",
+            optionTwoMessage = "Cancel",
+            onOptionOne = {
+                onPlayerDeleted(toBeDeletedPlayer!!)
+                toBeDeletedPlayer = null
+                highlightedPlayer = null
+                showDeletePlayerWarning = false
+                haptic.performHapticFeedback(hapticFeedbackType = HapticFeedbackType.LongPress)
+            },
+            onDismiss = {
+                showDeletePlayerWarning = false
+                highlightedPlayer = null
+            })
+    }
+
+
+
     BoxWithConstraints(
         Modifier.wrapContentSize()
     ) {
@@ -49,6 +88,7 @@ fun LoadPlayerDialogContent(
                 items = playerList,
                 key = { player -> player.hashCode() }
             ) { player ->
+                var isLongPressed by remember { mutableStateOf(false) }
                 SmallPlayerButtonPreview(
                     name = player.name,
                     state = PBState.NORMAL,
@@ -56,16 +96,35 @@ fun LoadPlayerDialogContent(
                     imageUri = locateImage(player),
                     backgroundColor = player.color,
                     accentColor = player.textColor,
-                    modifier = Modifier.padding(8.dp).width(buttonWidth).aspectRatio(1.75f).pointerInput(Unit) {
-                        detectTapGestures(
-                            onLongPress = {
-                                onPlayerDeleted(player)
-                            },
-                            onTap = {
-                                onPlayerSelected(player)
-                            }
+                    overlayColor = if (isLongPressed || highlightedPlayer == player) Color.Red.copy(alpha = 0.4f) else Color.Transparent,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .width(buttonWidth)
+                        .aspectRatio(1.75f)
+                        .graphicsLayer(
+                            alpha = if (isLongPressed) 0.5f else 1f
                         )
-                    },
+                        .pointerInput(Unit) {
+                            routePointerChangesTo(
+                                onDown = {
+                                },
+                                onLongPress = {
+                                    delay(500)
+                                    isLongPressed = true
+                                    haptic.performHapticFeedback(hapticFeedbackType = HapticFeedbackType.LongPress)
+                                },
+                                onUp = {
+                                    if (isLongPressed) {
+                                        toBeDeletedPlayer = player
+                                        highlightedPlayer = player
+                                        showDeletePlayerWarning = true
+                                    } else {
+                                        onPlayerSelected(player)
+                                    }
+                                    isLongPressed = false
+                                }
+                            )
+                        },
                 )
             }
         }
@@ -81,9 +140,12 @@ fun SmallPlayerButtonPreview(
     imageUri: String?,
     backgroundColor: Color,
     accentColor: Color,
-    ) {
+    overlayColor: Color = Color.Transparent
+) {
+    val animatedOverlayColor by animateColorAsState(targetValue = overlayColor)
+
     BoxWithConstraints(
-        modifier = modifier.clip(RoundedCornerShape(12)),
+        modifier = modifier.clip(RoundedCornerShape(12))
     ) {
         val largeTextSize = remember { (maxHeight.value / 2.8f + maxWidth.value / 6f + 30) * 0.45f }
         val largeTextPadding = remember { (largeTextSize / 10f).dp }
@@ -93,16 +155,20 @@ fun SmallPlayerButtonPreview(
             color = backgroundColor,
             isDead = isDead,
         )
-        Text(
-            modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(horizontal = largeTextPadding).align(Alignment.Center),
-            text = name,
-            color = accentColor,
-            fontSize = largeTextSize.scaledSp,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
-            style = textShadowStyle()
-        )
+        Box(
+            modifier = Modifier.matchParentSize().background(animatedOverlayColor)
+        ) {
+            Text(
+                modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(horizontal = largeTextPadding).align(Alignment.Center),
+                text = name,
+                color = accentColor,
+                fontSize = largeTextSize.scaledSp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                style = textShadowStyle()
+            )
+        }
     }
 }
