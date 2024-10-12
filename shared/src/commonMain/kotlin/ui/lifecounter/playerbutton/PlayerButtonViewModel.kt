@@ -93,7 +93,7 @@ class PlayerButtonViewModel(
 
     fun onSettingsButtonClicked() {
         if (state.value.buttonState == PBState.NORMAL) {
-            setPlayerButtonState(PBState.SETTINGS_DEFAULT)
+            setPlayerButtonState(PBState.SETTINGS)
             pushBackStack { setPlayerButtonState(PBState.NORMAL) }
         } else {
             closeSettingsMenu()
