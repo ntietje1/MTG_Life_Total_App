@@ -102,7 +102,7 @@ import theme.saturateColor
 import theme.scaledSp
 import theme.textShadowStyle
 import ui.SettingsButton
-import ui.dialog.ColorDialog
+import ui.dialog.color.ColorDialog
 import ui.dialog.customization.PlayerCustomizationDialog
 import ui.dialog.scryfall.ScryfallSearchDialog
 import ui.lifecounter.CounterType

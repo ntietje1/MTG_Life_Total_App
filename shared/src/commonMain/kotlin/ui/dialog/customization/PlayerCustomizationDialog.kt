@@ -55,8 +55,8 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import ui.SettingsButton
 import ui.dialog.AnimatedGridDialog
-import ui.dialog.ColorPickerDialogContent
 import ui.dialog.WarningDialog
+import ui.dialog.color.ColorPickerDialogContent
 import ui.dialog.scryfall.ScryfallDialogContent
 import ui.dialog.startinglife.TextFieldWithButton
 import ui.lifecounter.playerbutton.CustomizationMenuState
