@@ -37,15 +37,19 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import data.Player
 import di.BackHandler
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.camera_icon
 import lifelinked.shared.generated.resources.change_background_icon
 import lifelinked.shared.generated.resources.download_icon
 import lifelinked.shared.generated.resources.enter_icon
+import lifelinked.shared.generated.resources.gif_icon
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
@@ -57,6 +61,7 @@ import ui.SettingsButton
 import ui.dialog.AnimatedGridDialog
 import ui.dialog.WarningDialog
 import ui.dialog.color.ColorPickerDialogContent
+import ui.dialog.gif.GifDialogContent
 import ui.dialog.scryfall.ScryfallDialogContent
 import ui.dialog.startinglife.TextFieldWithButton
 import ui.lifecounter.playerbutton.CustomizationMenuState
@@ -309,6 +314,15 @@ fun PlayerCustomizationDialog(
                                         viewModel.showResetPrefsDialog(true)
                                     }
                                 }
+                                item {
+                                    FormattedSettingsButton(
+                                        imageResource = Res.drawable.gif_icon,
+                                        text = "Gif",
+                                    ) {
+                                        viewModel.setCustomizeMenuState(CustomizationMenuState.GIF_SEARCH)
+                                        backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
+                                    }
+                                }
                             })
                         Spacer(modifier = Modifier.weight(0.15f))
                     }
@@ -354,6 +368,7 @@ fun PlayerCustomizationDialog(
                 )
             }, Pair(state.customizationMenuState == CustomizationMenuState.BACKGROUND_COLOR_PICKER) {
                 ColorPickerDialogContent(
+                    modifier = Modifier.fillMaxSize(),
                     title = "Background Color",
                     initialColor = state.player.color,
                     setColor = { viewModel.onChangeBackgroundColor(it) },
@@ -361,8 +376,9 @@ fun PlayerCustomizationDialog(
                         backHandler.pop()
                     }
                 )
-            } , Pair(state.customizationMenuState == CustomizationMenuState.ACCENT_COLOR_PICKER) {
+            }, Pair(state.customizationMenuState == CustomizationMenuState.ACCENT_COLOR_PICKER) {
                 ColorPickerDialogContent(
+                    modifier = Modifier.fillMaxSize(),
                     title = "Accent Color",
                     initialColor = state.player.textColor,
                     setColor = { viewModel.onChangeTextColor(it) },
@@ -370,6 +386,18 @@ fun PlayerCustomizationDialog(
                         backHandler.pop()
                     }
                 )
+            }, Pair(state.customizationMenuState == CustomizationMenuState.GIF_SEARCH) {
+               GifDialogContent(
+                   modifier = Modifier.fillMaxSize(),
+                   onGifSelected = {
+                       viewModel.viewModelScope.launch {
+                           viewModel.setImageUri(null)
+                           backHandler.pop()
+                           delay(100)
+                           viewModel.setImageUri(it)
+                       }
+                   }
+               )
             }
         )
     )

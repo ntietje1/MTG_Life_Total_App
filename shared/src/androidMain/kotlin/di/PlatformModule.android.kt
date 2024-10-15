@@ -5,6 +5,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
 import ui.dialog.color.ColorDialogViewModel
+import ui.dialog.gif.GifDialogViewModel
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.dialog.scryfall.ScryfallSearchViewModel
 import ui.dialog.settings.patchnotes.PatchNotesViewModel
@@ -26,6 +27,7 @@ actual val platformModule = module {
     viewModel { StartingLifeViewModel(get()) }
     single { ScryfallSearchViewModel() }
     single { ColorDialogViewModel() }
+    single { GifDialogViewModel() }
 }
 
 actual val platform: Platform

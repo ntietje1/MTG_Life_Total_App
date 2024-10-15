@@ -26,7 +26,8 @@ enum class CustomizationMenuState {
     LOAD_PLAYER,
     SCRYFALL_SEARCH,
     BACKGROUND_COLOR_PICKER,
-    ACCENT_COLOR_PICKER
+    ACCENT_COLOR_PICKER,
+    GIF_SEARCH
 }
 
 enum class PBState {
