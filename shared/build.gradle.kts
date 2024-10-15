@@ -52,7 +52,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.livedata.ktx)
 
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.coil.gif)
+//            implementation(libs.coil.gif)
 
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
@@ -87,8 +87,13 @@ kotlin {
             implementation(libs.multiplatform.settings.no.arg)
 
 //            implementation("media.kamel:kamel-image-default:1.0.0-beta.6")
-            implementation(libs.coil.compose)
-            implementation(libs.coil.network.ktor)
+//            implementation(libs.coil.compose)
+//            implementation(libs.coil.network.ktor)
+
+            implementation("media.kamel:kamel-image-default:1.0.0")
+
+//            implementation("media.kamel:kamel-image:1.0.0")
+//            implementation("media.kamel:kamel-decoder-animated-image:1.0.0")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
