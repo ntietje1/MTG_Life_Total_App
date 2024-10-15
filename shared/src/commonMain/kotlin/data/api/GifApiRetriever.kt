@@ -114,9 +114,7 @@ class GifApiRetriever(
     }
 
     companion object {
-        private val API_KEY = "AIzaSyDWB8x293R8Jky-REjkrda8AbtwNc8QImo" //TODO: DON"T COMMIT!!
-
-//        private val API_KEY = ConfigManager().getValue("tenor.api.key")
+        private const val API_KEY = "AIzaSyDWB8x293R8Jky-REjkrda8AbtwNc8QImo"
     }
 }
 
