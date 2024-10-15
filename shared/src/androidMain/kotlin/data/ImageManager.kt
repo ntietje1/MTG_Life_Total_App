@@ -11,7 +11,7 @@ actual class ImageManager(private val context: Context) {
             context.openFileOutput(fileName, Context.MODE_PRIVATE).use {
                 it.write(bytes)
             }
-            fileName
+            fileName.also { println("Saved image $it") }
         }
     }
 
@@ -32,7 +32,8 @@ actual class ImageManager(private val context: Context) {
     }
 
     actual suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
-        return saveImage(bytes = bytes, name = fileName)
+        return saveImage(bytes = bytes, name = fileName).also {
+            println("Saved image to $it")}
     }
 
     actual fun getImagePath(fileName: String): String? {
@@ -41,7 +42,9 @@ actual class ImageManager(private val context: Context) {
         if (files != null) {
             for (file in files) {
                 if (file.name.startsWith(fileName)) {
-                    return file.absolutePath
+                    return ("file://" + file.absolutePath).also {
+                        println("Found image at $it")
+                    }
                 }
             }
         }
