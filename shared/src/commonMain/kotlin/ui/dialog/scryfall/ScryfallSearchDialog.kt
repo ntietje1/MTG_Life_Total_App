@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -54,7 +53,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil3.compose.AsyncImage
 import data.serializable.Card
 import data.serializable.ImageUris
 import data.serializable.Ruling
@@ -218,6 +216,7 @@ fun ScryfallDialogContent(
 @Composable
 fun ScryfallSearchBar(
     modifier: Modifier = Modifier,
+    label: String = "Search Scryfall",
     query: TextFieldValue,
     onQueryChange: (TextFieldValue) -> Unit,
     searchInProgress: Boolean = false,
@@ -229,7 +228,7 @@ fun ScryfallSearchBar(
             modifier = modifier,
             value = query,
             onValueChange = onQueryChange,
-            label = "Search Scryfall",
+            label = label,
             keyboardType = KeyboardType.Text,
             onDone = {
                 onSearch()
@@ -395,13 +394,10 @@ fun ExpandableCard(
                     showLargeImage = false
                 })
             }) {
-                AsyncImage(
-                    model = card.getUris().large, modifier = Modifier.clip(CutCornerShape(32)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = "",
-                    placeholder = placeholderPainter
-                )
-//                SubcomposeAsyncImage(
+                CardImage(modifier = Modifier.fillMaxSize(), imageUri = card.getUris().large, placeholderPainter = placeholderPainter)
+//                AsyncImage(
 //                    model = card.getUris().large, modifier = Modifier.clip(CutCornerShape(32)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = "",
-//                    loading = { CircularProgressIndicator(modifier = Modifier.align(Alignment.Center)) }
+//                    placeholder = placeholderPainter
 //                )
             }
         })
@@ -413,17 +409,10 @@ fun ExpandableCard(
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         })
     }) {
-//        val indicatorPadding = remember(Unit) { maxWidth / 4f }
-        AsyncImage(
-            model = card.getUris().normal, modifier = Modifier.fillMaxSize(), contentDescription = "",
-            placeholder = placeholderPainter
-        )
-//        SubcomposeAsyncImage(
+        CardImage(modifier = Modifier.fillMaxSize(), imageUri = card.getUris().small, placeholderPainter = placeholderPainter)
+//        AsyncImage(
 //            model = card.getUris().normal, modifier = Modifier.fillMaxSize(), contentDescription = "",
-//            loading = { CircularProgressIndicator(
-//                modifier = Modifier.align(Alignment.Center).padding(indicatorPadding),
-//                color = MaterialTheme.colorScheme.onPrimary
-//            ) }
+//            placeholder = placeholderPainter
 //        )
     }
 }
