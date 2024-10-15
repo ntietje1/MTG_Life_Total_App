@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -53,7 +54,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -67,11 +67,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil3.compose.AsyncImage
 import data.TurnTimer
 import di.getAnimationCorrectionFactor
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.add_icon
 import lifelinked.shared.generated.resources.back_icon
@@ -156,14 +158,16 @@ fun PlayerButton(
     }
 
     LaunchedEffect(
-        state.showResetPrefsDialog, state.showCameraWarning, state.showScryfallSearch,
-        state.showBackgroundColorPicker, state.showTextColorPicker,
-        state.showChangeNameField, state.showCustomizeMenu
+        state.showResetPrefsDialog, state.showCameraWarning, state.showScryfallSearch, state.showBackgroundColorPicker, state.showTextColorPicker, state.showChangeNameField, state.showCustomizeMenu
     ) {
         val dialogStates = listOf(
-            state.showResetPrefsDialog, state.showCameraWarning, state.showScryfallSearch,
-            state.showBackgroundColorPicker, state.showTextColorPicker,
-            state.showChangeNameField, state.showCustomizeMenu
+            state.showResetPrefsDialog,
+            state.showCameraWarning,
+            state.showScryfallSearch,
+            state.showBackgroundColorPicker,
+            state.showTextColorPicker,
+            state.showChangeNameField,
+            state.showCustomizeMenu
         )
         setBlurBackground(dialogStates.any { it })
     }
@@ -334,8 +338,7 @@ fun PlayerButton(
                 modifier = modifier.background(Color.Transparent).then(
                     if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked && !viewModel.isDead()) {
                         Modifier.bounceClick(
-                            initialBounceFactor = 3.5f,
-                            bounceAmount = 0.005f, bounceDuration = 60L, repeatEnabled = true
+                            initialBounceFactor = 3.5f, bounceAmount = 0.005f, bounceDuration = 60L, repeatEnabled = true
                         )
                     } else {
                         Modifier
@@ -359,15 +362,19 @@ fun PlayerButton(
 
                 val wideButton = remember { maxWidth / maxHeight > 1.4 }
 
-                val playerInfoPadding = remember { if (wideButton) {
-                    Modifier.padding(bottom = smallButtonSize / 2f).offset(y = -smallButtonSize / 8f)
-                } else Modifier.offset(y = smallButtonSize / 4f) }
+                val playerInfoPadding = remember {
+                    if (wideButton) {
+                        Modifier.padding(bottom = smallButtonSize / 2f).offset(y = -smallButtonSize / 8f)
+                    } else Modifier.offset(y = smallButtonSize / 4f)
+                }
 
-                val settingsPadding = remember { if (wideButton) Modifier.padding(
-                    bottom = smallButtonSize / 4, top = smallButtonSize / 8
-                ) else Modifier.padding(
-                    top = smallButtonSize / 4
-                ) }
+                val settingsPadding = remember {
+                    if (wideButton) Modifier.padding(
+                        bottom = smallButtonSize / 4, top = smallButtonSize / 8
+                    ) else Modifier.padding(
+                        top = smallButtonSize / 4
+                    )
+                }
                 if (!state.player.setDead) {
                     when (state.buttonState) {
                         PBState.NORMAL -> {
@@ -547,9 +554,7 @@ fun PlayerButton(
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = settingsButtonModifier,
-                                                imageResource = Res.drawable.transparent,
-                                                text = ""
+                                                modifier = settingsButtonModifier, imageResource = Res.drawable.transparent, text = ""
                                             ) { }
                                         }
 //                                        item {
@@ -589,9 +594,7 @@ fun PlayerButton(
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = settingsButtonModifier,
-                                                imageResource = Res.drawable.transparent,
-                                                text = ""
+                                                modifier = settingsButtonModifier, imageResource = Res.drawable.transparent, text = ""
                                             ) { }
                                         }
 
@@ -974,16 +977,12 @@ fun PlayerButton(
                     }
                 }
                 if (state.timer != null && state.buttonState == PBState.NORMAL) {
-                    Timer(modifier = turnTimerModifier.then(
-                        Modifier.pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    timerJustClicked = true
-                                }
-                            )
-                        }
-                    ), timer = state.timer!!)
+                    Timer(modifier = turnTimerModifier.then(Modifier.pointerInput(Unit) {
+                        detectTapGestures(onPress = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            timerJustClicked = true
+                        })
+                    }), timer = state.timer!!)
                 }
             }
         }
@@ -1152,8 +1151,7 @@ fun Counter(
 
 @Composable
 fun PlayerButtonBackground(
-    modifier: Modifier = Modifier,
-    state: PBState, imageUri: String?, color: Color, isDead: Boolean
+    modifier: Modifier = Modifier, state: PBState, imageUri: String?, color: Color, isDead: Boolean
 ) {
     if (imageUri == null) {
         var c = when (state) {
@@ -1187,15 +1185,39 @@ fun PlayerButtonBackground(
             }
         }
 
-        AsyncImage(
-            model = imageUri,
-            contentDescription = "Player uploaded image",
-            modifier = modifier.fillMaxSize(),
+        //TODO: local images don't work, gifs don't cause recomposition
+        println("Image uri: $imageUri")
+        KamelImage(modifier = modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
-            colorFilter = ColorFilter.colorMatrix(
-                colorMatrix = colorMatrix
-            ),
-        )
+            resource = { asyncPainterResource(data = if (imageUri.startsWith("/data/")) "file://$imageUri" else imageUri) }, //TODO: this should be in viewmodel
+            contentDescription = "Player uploaded image",
+            onLoading = { progress ->
+                CircularProgressIndicator(
+                    progress = { progress },
+                    color = color,
+                    strokeWidth = 2.dp,
+                )
+            },
+            onFailure = { error ->
+                println("Error loading image: $error")
+                Box(
+                    modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Error loading image", color = color, fontSize = 20.sp, textAlign = TextAlign.Center, style = textShadowStyle()
+                    )
+                }
+            })
+
+//        AsyncImage(
+//            model = imageUri,
+//            contentDescription = "Player uploaded image",
+//            modifier = modifier.fillMaxSize(),
+//            contentScale = ContentScale.Crop,
+//            colorFilter = ColorFilter.colorMatrix(
+//                colorMatrix = colorMatrix
+//            ),
+//        )
     }
 }
 
