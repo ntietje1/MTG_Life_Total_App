@@ -40,8 +40,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import ui.SettingsButton
-import ui.dialog.WarningDialog
 import data.Player.Companion.allPlayerColors
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
@@ -55,6 +53,8 @@ import lifelinked.shared.generated.resources.tut_6
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.vectorResource
+import ui.SettingsButton
+import ui.dialog.WarningDialog
 import kotlin.math.absoluteValue
 
 enum class SingleTutorialScreen(
@@ -114,8 +114,7 @@ fun TutorialScreen(
         ) {
             HorizontalPager(
                 modifier = Modifier.fillMaxSize().weight(0.9f).padding(15.dp),
-                state = pagerState, key = { SingleTutorialScreen.entries[it] }, pageSize = PageSize.Fill,
-                beyondBoundsPageCount = 4
+                state = pagerState, key = { SingleTutorialScreen.entries[it] }, pageSize = PageSize.Fill
             ) { index ->
                 Image(
                     modifier = Modifier.fillMaxSize().clickable {
