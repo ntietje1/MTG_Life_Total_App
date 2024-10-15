@@ -56,12 +56,13 @@ fun ColorDialog(
         backButtonEnabled = false,
         onDismiss = onDismiss
     ) {
-        ColorPickerDialogContent("remove this", initialColor = initialColor, setColor = setColor, onDone = onDismiss)
+        ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "remove this", initialColor = initialColor, setColor = setColor, onDone = onDismiss)
     }
 }
 
 @Composable
 fun ColorPickerDialogContent(
+    modifier: Modifier = Modifier,
     title: String,
     initialColor: Color,
     setColor: (Color) -> Unit = {},
@@ -82,7 +83,7 @@ fun ColorPickerDialogContent(
         val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
 
         Column(
-            modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+            modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
         ) {
 
             Text(
