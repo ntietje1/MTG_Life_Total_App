@@ -147,6 +147,9 @@ class PlayerButtonViewModel(
             if (it.startsWith("http")) {
                 return it
             }
+            else if (it.startsWith("/data/")) {
+                return "file://$it"
+            }
             else if (it.startsWith("content://")) {
                 val playerNameAndUUID = it.substringAfter("content://lifelinked.multiplatform.provider/lifelinked_multiplatform_saved_images/").substringBefore(".png")
                 val uuid = playerNameAndUUID.substringAfterLast(player.name)
@@ -198,6 +201,9 @@ class PlayerButtonViewModel(
 
     fun showCustomizeMenu(value: Boolean? = null) {
         _state.value = state.value.copy(showCustomizeMenu = value ?: !state.value.showCustomizeMenu)
+        if (!state.value.showCustomizeMenu) {
+            setCustomizeMenuState(CustomizationMenuState.DEFAULT)
+        }
     }
 
     fun showChangeNameField(value: Boolean? = null) {
