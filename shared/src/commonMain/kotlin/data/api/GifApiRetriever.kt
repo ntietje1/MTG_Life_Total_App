@@ -8,6 +8,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.errors.IOException
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -65,7 +66,6 @@ class GifApiRetriever(
      * Get Search Result GIFs
      */
     private suspend fun getSearchResults(query: String, limit: Int): JsonObject? {
-        // make search request - using default locale of EN_US
 
         val url = "https://tenor.googleapis.com/v2/search?q=${query}&key=${API_KEY}&limit=${limit}" + if (next != null) "&pos=$next" else ""
         println("URL: $url")
@@ -101,7 +101,6 @@ class GifApiRetriever(
 
             // Parse response
             val content = response.bodyAsText()
-//            println("CONTENT: $content")
             if (content.isBlank()) {
                 throw IOException("Empty response")
             }
@@ -114,7 +113,11 @@ class GifApiRetriever(
     }
 
     companion object {
-        private const val API_KEY = "AIzaSyDWB8x293R8Jky-REjkrda8AbtwNc8QImo"
+        private val API_KEY by lazy {
+            runBlocking {
+                CredentialManager().fetchTenorApiKey()
+            }
+        }
     }
 }
 
