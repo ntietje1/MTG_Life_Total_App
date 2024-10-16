@@ -191,6 +191,7 @@ fun PlayerButton(
     if (state.showCustomizeMenu) {
         PlayerCustomizationDialog(
             modifier = Modifier.fillMaxSize(), onDismiss = {
+                viewModel.popBackStack()
                 viewModel.showCustomizeMenu(false)
             }, viewModel = viewModel
         )
@@ -578,7 +579,6 @@ fun PlayerButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.star_icon, text = "Customize"
                                             ) {
                                                 viewModel.showCustomizeMenu(true)
-                                                viewModel.popBackStack()
 //                                                viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE)
 //                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_DEFAULT) }
                                             }
@@ -1185,18 +1185,24 @@ fun PlayerButtonBackground(
             }
         }
 
-        //TODO: local images don't work, gifs don't cause recomposition
         println("Image uri: $imageUri")
         KamelImage(modifier = modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
-            resource = { asyncPainterResource(data = if (imageUri.startsWith("/data/")) "file://$imageUri" else imageUri) }, //TODO: this should be in viewmodel
+            resource = { asyncPainterResource(data =imageUri) },
             contentDescription = "Player uploaded image",
             onLoading = { progress ->
-                CircularProgressIndicator(
-                    progress = { progress },
-                    color = color,
-                    strokeWidth = 2.dp,
-                )
+                if (progress == 0.0f) {
+                    CircularProgressIndicator(
+                        color = color,
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    CircularProgressIndicator(
+                        progress = { progress },
+                        color = color,
+                        strokeWidth = 2.dp,
+                    )
+                }
             },
             onFailure = { error ->
                 println("Error loading image: $error")
