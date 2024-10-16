@@ -136,6 +136,7 @@ class PlayerButtonViewModel(
         updatePlayer {
             resetPlayerColor(state.value.player)
         }
+        setChangeNameField(TextFieldValue(state.value.player.name, selection = TextRange(state.value.player.name.length)))
     }
 
     fun savePlayerPref() {
