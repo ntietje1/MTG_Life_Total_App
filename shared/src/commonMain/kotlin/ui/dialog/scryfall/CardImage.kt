@@ -22,7 +22,6 @@ fun CardImage(
     placeholderPainter: Painter = painterResource(Res.drawable.card_back),
     progressIndicatorEnabled: Boolean = false
 ) {
-
     val painter = asyncPainterResource(imageUri)
     KamelImage(
         modifier = modifier.fillMaxSize(),
@@ -37,11 +36,18 @@ fun CardImage(
                 modifier = Modifier.fillMaxSize()
             )
             if (progressIndicatorEnabled) {
-                CircularProgressIndicator(
-                    progress = { progress },
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    strokeWidth = 2.dp,
-                )
+                if (progress == 0.0f) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    CircularProgressIndicator(
+                        progress = { progress },
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp,
+                    )
+                }
             }
         }, onFailure = {
             Image(
