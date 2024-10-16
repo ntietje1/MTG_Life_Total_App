@@ -92,14 +92,8 @@ import lifelinked.shared.generated.resources.transparent
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import theme.brightenColor
-import theme.deadDealerColorMatrix
-import theme.deadNormalColorMatrix
-import theme.deadReceiverColorMatrix
-import theme.dealerColorMatrix
 import theme.defaultTextStyle
 import theme.ghostify
-import theme.normalColorMatrix
-import theme.receiverColorMatrix
 import theme.saturateColor
 import theme.scaledSp
 import theme.textShadowStyle
@@ -1153,42 +1147,45 @@ fun Counter(
 fun PlayerButtonBackground(
     modifier: Modifier = Modifier, state: PBState, imageUri: String?, color: Color, isDead: Boolean
 ) {
-    if (imageUri == null) {
-        var c = when (state) {
-            PBState.NORMAL -> color
-            PBState.COMMANDER_RECEIVER -> color.saturateColor(0.2f).brightenColor(0.3f)
-            PBState.COMMANDER_DEALER -> color.saturateColor(0.5f).brightenColor(0.6f)
+    var c = remember(isDead, state) {
+        val ghostify = isDead && state != PBState.SELECT_FIRST_PLAYER
+        when {
+            state == PBState.COMMANDER_RECEIVER && !ghostify -> color.saturateColor(0.2f).brightenColor(0.3f)
+            state == PBState.COMMANDER_RECEIVER && ghostify -> color.saturateColor(0.2f).brightenColor(0.3f).ghostify()
+            state == PBState.COMMANDER_DEALER && !ghostify -> color.saturateColor(0.5f).brightenColor(0.6f)
+            state == PBState.COMMANDER_DEALER && ghostify -> color.saturateColor(0.5f).brightenColor(0.6f).ghostify()
+            ghostify -> color.ghostify()
             else -> color
         }
-        if (isDead && state != PBState.SELECT_FIRST_PLAYER) {
-            c = c.ghostify()
-        }
-        Surface(
-            modifier = modifier.fillMaxSize(), color = c
-        ) {}
-    } else {
-        val colorMatrix = when (state) {
-            PBState.COMMANDER_RECEIVER -> {
-                if (isDead) deadReceiverColorMatrix else receiverColorMatrix
-            }
-
-            PBState.COMMANDER_DEALER -> {
-                if (isDead) deadDealerColorMatrix else dealerColorMatrix
-            }
-
-            PBState.SELECT_FIRST_PLAYER -> {
-                normalColorMatrix
-            }
-
-            else -> {
-                if (isDead) deadNormalColorMatrix else normalColorMatrix
-            }
-        }
+    }
+    Surface(
+        modifier = modifier.fillMaxSize().then(
+            if (imageUri != null) Modifier.padding(1.dp) else Modifier
+        ), color = c
+    ) {}
+    if (imageUri != null) {
+//        val colorMatrix = when (state) {
+//            PBState.COMMANDER_RECEIVER -> {
+//                if (isDead) deadReceiverColorMatrix else receiverColorMatrix
+//            }
+//
+//            PBState.COMMANDER_DEALER -> {
+//                if (isDead) deadDealerColorMatrix else dealerColorMatrix
+//            }
+//
+//            PBState.SELECT_FIRST_PLAYER -> {
+//                normalColorMatrix
+//            }
+//
+//            else -> {
+//                if (isDead) deadNormalColorMatrix else normalColorMatrix
+//            }
+//        }
 
         println("Image uri: $imageUri")
         KamelImage(modifier = modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
-            resource = { asyncPainterResource(data =imageUri) },
+            resource = { asyncPainterResource(data = imageUri) },
             contentDescription = "Player uploaded image",
             onLoading = { progress ->
                 if (progress == 0.0f) {
@@ -1213,7 +1210,22 @@ fun PlayerButtonBackground(
                         text = "Error loading image", color = color, fontSize = 20.sp, textAlign = TextAlign.Center, style = textShadowStyle()
                     )
                 }
-            })
+            }
+        )
+        val b = remember(isDead, state) {
+            val ghostify = isDead && state != PBState.SELECT_FIRST_PLAYER
+            when {
+                state == PBState.COMMANDER_RECEIVER && !ghostify -> Color.hsl(0f, 0f, 0.1f, 0.7f)
+                state == PBState.COMMANDER_RECEIVER && ghostify -> Color.hsl(0f, 0f, 0.2f, 0.9f)
+                state == PBState.COMMANDER_DEALER && !ghostify -> Color.hsl(0f, 0f, 0.0f, 0.7f)
+                state == PBState.COMMANDER_DEALER && ghostify -> Color.hsl(0f, 0f, 0.1f, 0.9f)
+                ghostify -> Color.Gray.copy(alpha = 0.7f)
+                else -> Color.Transparent
+            }
+        }
+        Box(
+            modifier = modifier.fillMaxSize().background(color = b), contentAlignment = Alignment.Center
+        ) {}
 
 //        AsyncImage(
 //            model = imageUri,
