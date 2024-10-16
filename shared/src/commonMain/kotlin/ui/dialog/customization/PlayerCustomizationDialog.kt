@@ -50,7 +50,6 @@ import lifelinked.shared.generated.resources.change_background_icon
 import lifelinked.shared.generated.resources.download_icon
 import lifelinked.shared.generated.resources.enter_icon
 import lifelinked.shared.generated.resources.gif_icon
-import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
 import lifelinked.shared.generated.resources.text_icon
@@ -142,11 +141,6 @@ fun PlayerCustomizationDialog(
         modifier = modifier, onDismiss = onDismiss, backHandler = backHandler,
         pages = listOf(
             Pair(state.customizationMenuState == CustomizationMenuState.DEFAULT) {
-                // title
-                // change name field
-                // load player profile button
-                // image background
-                // preview
                 BoxWithConstraints(modifier = modifier) {
                     val padding = remember(Unit) { maxHeight / 40f }
                     val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
@@ -249,9 +243,10 @@ fun PlayerCustomizationDialog(
                             content = {
                                 item {
                                     FormattedSettingsButton(
-                                        imageResource = Res.drawable.change_background_icon, text = "Background Color"
+                                        imageResource = Res.drawable.gif_icon,
+                                        text = "Gif",
                                     ) {
-                                        viewModel.setCustomizeMenuState(CustomizationMenuState.BACKGROUND_COLOR_PICKER)
+                                        viewModel.setCustomizeMenuState(CustomizationMenuState.GIF_SEARCH)
                                         backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
                                     }
                                 }
@@ -273,54 +268,54 @@ fun PlayerCustomizationDialog(
                                 }
                                 item {
                                     FormattedSettingsButton(
+                                        imageResource = Res.drawable.change_background_icon, text = "Background Color"
+                                    ) {
+                                        viewModel.setCustomizeMenuState(CustomizationMenuState.BACKGROUND_COLOR_PICKER)
+                                        backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
+                                    }
+                                }
+                                item {
+                                    FormattedSettingsButton(
                                         imageResource = Res.drawable.text_icon, text = "Text Color"
                                     ) {
                                         viewModel.setCustomizeMenuState(CustomizationMenuState.ACCENT_COLOR_PICKER)
                                         backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
                                     }
                                 }
-                                item {
-                                    if (viewModel.settingsManager.catGifButton && viewModel.settingsManager.devMode) {
-                                        FormattedSettingsButton(
-                                            imageResource = Res.drawable.question_icon, text = "Random Cat Gif"
-                                        ) {
-                                            val catGifs = listOf(
-                                                "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
-                                                "https://media1.tenor.com/m/Jc9jT66AJRwAAAAd/chipi-chipi-chapa-chapa.gif",
-                                                "https://media1.tenor.com/m/nisaHYy8yAYAAAAd/besito-catlove.gif",
-                                                "https://media1.tenor.com/m/goY0VJNhQSIAAAAd/bleh-bleh-cat.gif",
-                                                "https://media1.tenor.com/m/s50cn0tfWewAAAAC/cat.gif",
-                                                "https://media1.tenor.com/m/UyXyHDmPBOcAAAAC/cat-stare-stare.gif",
-                                                "https://media1.tenor.com/m/8oWF4zMAmQgAAAAd/cat-funny.gif",
-                                                "https://media1.tenor.com/m/2If2O7HO1CYAAAAC/cat-staring-at-camera-fr.gif",
-                                                "https://media1.tenor.com/m/Dm4Ahmoh3nwAAAAd/cat-awful.gif",
-                                                "https://media1.tenor.com/m/ZuXnTDxIbjQAAAAC/shocked-shocked-cat.gif",
-                                                "https://media1.tenor.com/m/OUehVPHGpQ8AAAAd/cat-cat-lick.gif"
-                                            )
-                                            viewModel.setImageUri(
-                                                if (viewModel.state.value.player.imageString != null && viewModel.state.value.player.imageString in catGifs) catGifs[catGifs.indexOf(
-                                                    viewModel.state.value.player.imageString
-                                                ).plus(1).rem(catGifs.size)]
-                                                else catGifs.random()
-                                            )
-                                        }
-                                    }
-                                }
+
+//                                item {
+//                                    if (viewModel.settingsManager.catGifButton && viewModel.settingsManager.devMode) {
+//                                        FormattedSettingsButton(
+//                                            imageResource = Res.drawable.question_icon, text = "Random Cat Gif"
+//                                        ) {
+//                                            val catGifs = listOf(
+//                                                "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
+//                                                "https://media1.tenor.com/m/Jc9jT66AJRwAAAAd/chipi-chipi-chapa-chapa.gif",
+//                                                "https://media1.tenor.com/m/nisaHYy8yAYAAAAd/besito-catlove.gif",
+//                                                "https://media1.tenor.com/m/goY0VJNhQSIAAAAd/bleh-bleh-cat.gif",
+//                                                "https://media1.tenor.com/m/s50cn0tfWewAAAAC/cat.gif",
+//                                                "https://media1.tenor.com/m/UyXyHDmPBOcAAAAC/cat-stare-stare.gif",
+//                                                "https://media1.tenor.com/m/8oWF4zMAmQgAAAAd/cat-funny.gif",
+//                                                "https://media1.tenor.com/m/2If2O7HO1CYAAAAC/cat-staring-at-camera-fr.gif",
+//                                                "https://media1.tenor.com/m/Dm4Ahmoh3nwAAAAd/cat-awful.gif",
+//                                                "https://media1.tenor.com/m/ZuXnTDxIbjQAAAAC/shocked-shocked-cat.gif",
+//                                                "https://media1.tenor.com/m/OUehVPHGpQ8AAAAd/cat-cat-lick.gif"
+//                                            )
+//                                            viewModel.setImageUri(
+//                                                if (viewModel.state.value.player.imageString != null && viewModel.state.value.player.imageString in catGifs) catGifs[catGifs.indexOf(
+//                                                    viewModel.state.value.player.imageString
+//                                                ).plus(1).rem(catGifs.size)]
+//                                                else catGifs.random()
+//                                            )
+//                                        }
+//                                    }
+//                                }
                                 item {
                                     FormattedSettingsButton(
                                         imageResource = Res.drawable.reset_icon,
                                         text = "Reset",
                                     ) {
                                         viewModel.showResetPrefsDialog(true)
-                                    }
-                                }
-                                item {
-                                    FormattedSettingsButton(
-                                        imageResource = Res.drawable.gif_icon,
-                                        text = "Gif",
-                                    ) {
-                                        viewModel.setCustomizeMenuState(CustomizationMenuState.GIF_SEARCH)
-                                        backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
                                     }
                                 }
                             })
