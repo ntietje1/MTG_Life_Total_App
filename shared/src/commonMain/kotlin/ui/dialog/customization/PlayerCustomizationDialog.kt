@@ -311,6 +311,7 @@ fun PlayerCustomizationDialog(
 //                                        }
 //                                    }
 //                                }
+                                //TODO: make this more intuitive
                                 item {
                                     FormattedSettingsButton(
                                         imageResource = Res.drawable.reset_icon,
