@@ -223,6 +223,7 @@ fun PlayerCustomizationDialog(
                             }
                         }
                         Spacer(modifier = Modifier.weight(0.01f))
+                        //TODO: reset doesn't work with color background
                         PlayerButtonPreview(
                             modifier = Modifier.fillMaxWidth(0.9f).aspectRatio(1.75f),
                             name = state.changeNameTextField.text,
