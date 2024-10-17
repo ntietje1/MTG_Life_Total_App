@@ -36,6 +36,10 @@ class PlayerButtonViewModel(
 
     private var recentChangeJob: Job? = null
 
+    init {
+        updateRecentChange()
+    }
+
     fun setTimer(timer: TurnTimer?) {
         _state.value = state.value.copy(timer = timer)
     }
@@ -120,11 +124,6 @@ class PlayerButtonViewModel(
         clearBackStack()
     }
 
-    init {
-        updateRecentChange()
-//        settingsManager.loadPlayerPref(initialPlayer)?.let { copyPrefs(it) }
-    }
-
     fun resetPlayerPref() {
         updatePlayer {
             state.value.player.copy(
@@ -192,8 +191,7 @@ class PlayerButtonViewModel(
     }
 
     fun isDead(autoKo: Boolean = settingsManager.autoKo): Boolean {
-        val playerInfo = state.value.player
-        return ((autoKo && (playerInfo.life <= 0 || playerInfo.commanderDamage.any { it >= 21 })) || playerInfo.setDead)
+        return ((autoKo && (state.value.player.life <= 0 || state.value.player.commanderDamage.any { it >= 21 })) || state.value.player.setDead)
     }
 
     fun getCounterValue(counterType: CounterType): Int {
