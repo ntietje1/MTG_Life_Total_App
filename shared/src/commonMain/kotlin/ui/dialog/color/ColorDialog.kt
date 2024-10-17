@@ -230,7 +230,7 @@ fun SatValPanel(
     setPosn: (Offset) -> Unit = {},
     setSatVal: (Float, Float) -> Unit
 ) {
-    println("GOT POSN: $posn")
+//    println("GOT POSN: $posn")
     BoxWithConstraints(
         Modifier.wrapContentSize()
     ) {
@@ -246,15 +246,16 @@ fun SatValPanel(
                         val x = position.position.x
                         val y = position.position.y
                         setPosn(Offset(x, y))
-                        val sat = x / (maxWidth.value*1.15f)
+                        val sat = x / (maxWidth.value*1.15f) / 2
                         val value = 1f - y / (maxHeight.value*1.30f)
                         setSatVal(sat, value)
+//                        println("SAT, VAL: $sat, $value")
                     }
                 }
         ) {
             LaunchedEffect(initialValue, initialSaturation, posn) {
                 if (posn == Offset.Zero) {
-                    val x = initialSaturation * maxWidth.value*1.15f
+                    val x = initialSaturation * maxWidth.value*1.15f * 2
                     val y = (1f - initialValue) * maxHeight.value*1.30f
                     setPosn(Offset(x, y))
                 }
