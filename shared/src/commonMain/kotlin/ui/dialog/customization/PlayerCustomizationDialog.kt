@@ -48,8 +48,8 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.camera_icon
 import lifelinked.shared.generated.resources.change_background_icon
 import lifelinked.shared.generated.resources.download_icon
-import lifelinked.shared.generated.resources.enter_icon
 import lifelinked.shared.generated.resources.gif_icon
+import lifelinked.shared.generated.resources.pencil_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
 import lifelinked.shared.generated.resources.text_icon
@@ -193,7 +193,7 @@ fun PlayerCustomizationDialog(
                                 focusManager.clearFocus()
                                 viewModel.setName(state.changeNameTextField.text)
                             }, button = {
-                                SettingsButton(modifier = Modifier.fillMaxSize(), imageVector = vectorResource(Res.drawable.enter_icon), //TODO: switch to a pencil icon
+                                SettingsButton(modifier = Modifier.fillMaxSize().padding(padding/6f), imageVector = vectorResource(Res.drawable.pencil_icon),
                                     shadowEnabled = false, onPress = {
                                         focusManager.clearFocus()
                                         viewModel.setName(state.changeNameTextField.text)
@@ -226,7 +226,7 @@ fun PlayerCustomizationDialog(
                         //TODO: reset doesn't work with color background
                         PlayerButtonPreview(
                             modifier = Modifier.fillMaxWidth(0.9f).aspectRatio(1.75f),
-                            name = state.changeNameTextField.text,
+                            name = state.player.name,
                             lifeNumber = state.player.life,
                             state = state.buttonState,
                             isDead = false,

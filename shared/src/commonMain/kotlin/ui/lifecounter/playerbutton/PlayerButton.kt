@@ -83,9 +83,9 @@ import lifelinked.shared.generated.resources.heart_solid_icon
 import lifelinked.shared.generated.resources.mana_icon
 import lifelinked.shared.generated.resources.monarchy_icon
 import lifelinked.shared.generated.resources.one_finger_tap
+import lifelinked.shared.generated.resources.pencil_icon
 import lifelinked.shared.generated.resources.settings_icon
 import lifelinked.shared.generated.resources.skull_icon
-import lifelinked.shared.generated.resources.star_icon
 import lifelinked.shared.generated.resources.sword_icon
 import lifelinked.shared.generated.resources.sword_icon_double
 import lifelinked.shared.generated.resources.transparent
@@ -570,7 +570,7 @@ fun PlayerButton(
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = settingsButtonModifier, imageResource = Res.drawable.star_icon, text = "Customize"
+                                                modifier = settingsButtonModifier, imageResource = Res.drawable.pencil_icon, text = "Customize"
                                             ) {
                                                 viewModel.showCustomizeMenu(true)
 //                                                viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE)
@@ -1147,7 +1147,8 @@ fun Counter(
 fun PlayerButtonBackground(
     modifier: Modifier = Modifier, state: PBState, imageUri: String?, color: Color, isDead: Boolean
 ) {
-    var c = remember(isDead, state) {
+    var errored = false
+    val c = remember(color, isDead, state) {
         val ghostify = isDead && state != PBState.SELECT_FIRST_PLAYER
         when {
             state == PBState.COMMANDER_RECEIVER && !ghostify -> color.saturateColor(0.2f).brightenColor(0.3f)
@@ -1164,26 +1165,9 @@ fun PlayerButtonBackground(
         ), color = c
     ) {}
     if (imageUri != null) {
-//        val colorMatrix = when (state) {
-//            PBState.COMMANDER_RECEIVER -> {
-//                if (isDead) deadReceiverColorMatrix else receiverColorMatrix
-//            }
-//
-//            PBState.COMMANDER_DEALER -> {
-//                if (isDead) deadDealerColorMatrix else dealerColorMatrix
-//            }
-//
-//            PBState.SELECT_FIRST_PLAYER -> {
-//                normalColorMatrix
-//            }
-//
-//            else -> {
-//                if (isDead) deadNormalColorMatrix else normalColorMatrix
-//            }
-//        }
-
         println("Image uri: $imageUri")
-        KamelImage(modifier = modifier.fillMaxSize(),
+        KamelImage(
+            modifier = modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
             resource = { asyncPainterResource(data = imageUri) },
             contentDescription = "Player uploaded image",
@@ -1202,6 +1186,7 @@ fun PlayerButtonBackground(
                 }
             },
             onFailure = { error ->
+                errored = true
                 println("Error loading image: $error")
                 Box(
                     modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
@@ -1223,9 +1208,11 @@ fun PlayerButtonBackground(
                 else -> Color.Transparent
             }
         }
-        Box(
-            modifier = modifier.fillMaxSize().background(color = b), contentAlignment = Alignment.Center
-        ) {}
+        if (!errored) {
+            Box(
+                modifier = modifier.fillMaxSize().background(color = b), contentAlignment = Alignment.Center
+            ) {}
+        }
 
 //        AsyncImage(
 //            model = imageUri,
