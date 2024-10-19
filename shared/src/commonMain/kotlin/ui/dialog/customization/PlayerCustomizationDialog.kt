@@ -46,7 +46,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.camera_icon
-import lifelinked.shared.generated.resources.change_background_icon
+import lifelinked.shared.generated.resources.color_picker_icon
 import lifelinked.shared.generated.resources.download_icon
 import lifelinked.shared.generated.resources.gif_icon
 import lifelinked.shared.generated.resources.pencil_icon
@@ -269,7 +269,7 @@ fun PlayerCustomizationDialog(
                                 }
                                 item {
                                     FormattedSettingsButton(
-                                        imageResource = Res.drawable.change_background_icon, text = "Background Color"
+                                        imageResource = Res.drawable.color_picker_icon, text = "Background Color"
                                     ) {
                                         viewModel.setCustomizeMenuState(CustomizationMenuState.BACKGROUND_COLOR_PICKER)
                                         backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
