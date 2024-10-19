@@ -33,6 +33,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -1174,13 +1175,13 @@ fun PlayerButtonBackground(
             onLoading = { progress ->
                 if (progress == 0.0f) {
                     CircularProgressIndicator(
-                        color = color,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp,
                     )
                 } else {
                     CircularProgressIndicator(
                         progress = { progress },
-                        color = color,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp,
                     )
                 }
