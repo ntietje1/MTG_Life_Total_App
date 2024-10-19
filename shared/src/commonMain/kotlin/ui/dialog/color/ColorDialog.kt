@@ -249,22 +249,22 @@ fun SatValPanel(
                         val sat = x / (maxWidth.value*1.15f) / 2
                         val value = 1f - y / (maxHeight.value*1.30f)
                         setSatVal(sat, value)
-//                        println("SAT, VAL: $sat, $value")
+                        println("SAT, VAL: $sat, $value")
                     }
                 }
         ) {
             LaunchedEffect(initialValue, initialSaturation, posn) {
                 if (posn == Offset.Zero) {
-                    val x = initialSaturation * maxWidth.value*1.15f * 2
+                    val x = initialSaturation * maxWidth.value*2*1.15f
                     val y = (1f - initialValue) * maxHeight.value*1.30f
                     setPosn(Offset(x, y))
                 }
             }
             val satShader = remember(hue) {
                 Brush.horizontalGradient(
-                    colors = listOf(Color.Transparent, Color.hsv(hue, 0.8f, 1f), Color.hsv(hue, 1f, 1f)),
+                    colors = listOf(Color.Transparent, Color.hsv(hue, 1f, 1f)),
                     startX = 0f,
-                    endX = maxWidth.value*1.15f
+                    endX = maxWidth.value*2
                 )
             }
             val valShader = remember {
