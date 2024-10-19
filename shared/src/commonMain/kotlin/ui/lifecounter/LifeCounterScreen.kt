@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -48,6 +49,7 @@ import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
 import org.jetbrains.compose.resources.vectorResource
+import theme.blendWith
 import ui.dialog.MiddleButtonDialog
 import ui.lifecounter.playerbutton.PlayerButton
 import ui.modifier.routePointerChangesTo
@@ -154,7 +156,7 @@ fun LifeCounterScreen(
                             val rotation = placement.angle
                             val turnTimerAlignment = placement.timerAlignment
                             val playerButtonViewModel = viewModel.playerButtonViewModels[placement.index]
-                            val color = playerButtonViewModel.state.value.player.textColor
+                            val timerColor = playerButtonViewModel.state.value.player.textColor
                             val topCornerRadius = (min(width, height) * 0.1f + max(width, height) * 0.01f)
                             AnimatedPlayerButton(modifier = Modifier.padding(buttonPadding),
                                 visible = state.showButtons,
@@ -169,8 +171,8 @@ fun LifeCounterScreen(
                                             })
                                         }.then(
                                             when (turnTimerAlignment) {
-                                                Alignment.TopStart -> Modifier.align(Alignment.TopStart).background(color = color.copy(alpha = 0.1f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp)).border(buttonPadding, color.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
-                                                Alignment.TopEnd -> Modifier.align(Alignment.TopEnd).background(color = color.copy(alpha = 0.1f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius)).border(buttonPadding, color.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
+                                                Alignment.TopStart -> Modifier.align(Alignment.TopStart).background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp)).border(buttonPadding, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
+                                                Alignment.TopEnd -> Modifier.align(Alignment.TopEnd).background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius)).border(buttonPadding, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
                                                 else -> Modifier
                                             }
                                         ),
