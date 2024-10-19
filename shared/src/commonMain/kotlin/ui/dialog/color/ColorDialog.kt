@@ -164,13 +164,15 @@ fun HueBar(
     initialHue: Float = 0f,
     setHue: (Float) -> Unit
 ) {
-    val pressOffset = remember { mutableStateOf(Offset(0f, 0f)) }
+    var pressOffset by remember { mutableStateOf( 0f) }
     var hueBarWidth by remember { mutableStateOf(0f) }
 
     LaunchedEffect(initialHue, hueBarWidth) {
-        val initialOffsetX = (initialHue / 360f) * hueBarWidth
-        pressOffset.value = Offset(initialOffsetX, 0f)
-//        setHue(initialHue)
+        if (pressOffset == 0.0f) {
+            val initialOffsetX = (initialHue / 360f) * hueBarWidth
+            pressOffset = initialOffsetX
+            setHue(initialHue)
+        }
     }
 
     BoxWithConstraints(
@@ -183,7 +185,7 @@ fun HueBar(
                 .pointerInput(Unit) {
                     detectDragGestures { change, _ ->
                         val x = change.position.x
-                        pressOffset.value = Offset(x, 0f)
+                        pressOffset = x
                     }
                 }
         ) {
@@ -192,7 +194,7 @@ fun HueBar(
                     .fillMaxSize()
             ) {
                 hueBarWidth = size.width
-                val selectedHue = pressOffset.value.x * 360f / size.width
+                val selectedHue = pressOffset * 360f / size.width
                 setHue(selectedHue)
 
                 val hueColors = List(size.width.toInt()) { index ->
@@ -212,7 +214,7 @@ fun HueBar(
                 drawCircle(
                     color = Color.White,
                     radius = size.height / 2,
-                    center = Offset(pressOffset.value.x, size.height / 2),
+                    center = Offset(pressOffset, size.height / 2),
                     style = Stroke(width = 2.dp.toPx())
                 )
             }
