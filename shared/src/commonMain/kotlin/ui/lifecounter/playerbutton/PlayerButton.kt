@@ -269,8 +269,8 @@ fun PlayerButton(
         })
     }
 
-    var timerTextSize by remember { mutableStateOf(15) }
-    var timerPadding by remember { mutableStateOf(5) }
+    var timerTextSize by remember(Unit) { mutableStateOf(15) }
+    var timerPadding by remember(Unit) { mutableStateOf(5) }
 
     @Composable
     fun Timer(modifier: Modifier = Modifier, timer: TurnTimer) {
@@ -341,24 +341,24 @@ fun PlayerButton(
                     }
                 ), contentAlignment = Alignment.Center
             ) {
-                timerTextSize = remember { (4.dp + maxWidth / 35f + maxHeight / 55f).value.toInt() }
-                timerPadding = remember { timerTextSize / 3 }
+                timerTextSize = remember(Unit) { (4.dp + maxWidth / 35f + maxHeight / 55f).value.toInt() }
+                timerPadding = remember(Unit) { timerTextSize / 3 }
 
                 PlayerButtonBackground(
                     modifier = Modifier.clip(RoundedCornerShape(12)),
                     state = state.buttonState,
                     imageUri = viewModel.locateImage(state.player),
                     color = state.player.color,
-                    isDead = viewModel.isDead(autoKo = true),
+                    isDead = viewModel.isDead(),
                 )
 
-                val smallButtonSize = remember { (maxWidth / 15f) + (maxHeight / 10f) }
-                val settingsStateMargin = remember { smallButtonSize / 7f }
-                val commanderStateMargin = remember { settingsStateMargin * 1.4f }
+                val smallButtonSize = remember(Unit) { (maxWidth / 15f) + (maxHeight / 10f) }
+                val settingsStateMargin = remember(Unit) { smallButtonSize / 7f }
+                val commanderStateMargin = remember(Unit) { settingsStateMargin * 1.4f }
 
-                val wideButton = remember { maxWidth / maxHeight > 1.4 }
+                val wideButton = remember(Unit) { maxWidth / maxHeight > 1.4 }
 
-                val playerInfoPadding = remember {
+                val playerInfoPadding = remember(Unit) {
                     if (wideButton) {
                         Modifier.padding(bottom = smallButtonSize / 2f).offset(y = -smallButtonSize / 8f)
                     } else Modifier.offset(y = smallButtonSize / 4f)
