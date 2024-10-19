@@ -33,15 +33,12 @@ class GifApiRetriever(
     }
 
     suspend fun searchGifs(query: String, limit: Int): List<MediaFormat> {
-//        println("SEARCHING GIFS: $query")
         clearNext()
-        val response = getSearchResults(query, limit)
-//        println("RESPONSE: $response")
-        if (response == null) {
+        val gifResponse = getSearchResults(query, limit)
+        if (gifResponse == null) {
             println("Error getting gifs. returning empty list")
             return emptyList()
         }
-        val gifResponse = json.decodeFromString<GifResponse>(response.toString())
         next = gifResponse.next
         lastQuery = query
         return gifResponse.results.map { it.formats }
@@ -51,13 +48,11 @@ class GifApiRetriever(
         if (next == null || lastQuery == null) {
             throw Exception("Attempted to get next gifs without a previous search")
         }
-        val response = getSearchResults(lastQuery!!, limit)
-        if (response == null) {
+        val gifResponse = getSearchResults(lastQuery!!, limit)
+        if (gifResponse == null) {
             println("Error getting gifs. returning empty list")
             return emptyList()
         }
-        val gifResponse = json.decodeFromString<GifResponse>(response.toString())
-        println("INCREMENTING NEXT FROM: $next TO: ${gifResponse.next}")
         next = gifResponse.next
         return gifResponse.results.map { it.formats }
     }
@@ -65,23 +60,23 @@ class GifApiRetriever(
     /**
      * Get Search Result GIFs
      */
-    private suspend fun getSearchResults(query: String, limit: Int): JsonObject? {
-
+    private suspend fun getSearchResults(query: String, limit: Int): GifResponse? {
         val url = "https://tenor.googleapis.com/v2/search?q=${query}&key=${API_KEY}&limit=${limit}" + if (next != null) "&pos=$next" else ""
         println("URL: $url")
 
-        try {
-            return get(url)
-        } catch (e: kotlinx.io.IOException) {
-            e.printStackTrace()
+        val response = get(url)
+        if (response == null) {
+            println("Error getting gifs. returning null")
+            return null
         }
-        return null
+        val gifResponse = json.decodeFromString<GifResponse>(response.toString())
+        return gifResponse
     }
 
     /**
      * Construct and run a GET request
      */
-    private suspend fun get(url: String): JsonObject {
+    private suspend fun get(url: String): JsonObject? {
         try {
             val response: HttpResponse = client.get(url) {
                 headers {
@@ -92,9 +87,7 @@ class GifApiRetriever(
 
             // Handle failure
             val statusCode = response.status.value
-            println("STATUS CODE: $statusCode")
             if (statusCode != HttpStatusCode.OK.value && statusCode != HttpStatusCode.Created.value) {
-                println("Error getting gifs!!")
                 val responseText = response.bodyAsText()
                 throw ClientRequestException(response, responseText)
             }
@@ -108,7 +101,7 @@ class GifApiRetriever(
             return jsonElement.jsonObject
         } catch (err: Exception) {
             err.printStackTrace()
-            throw err
+            return null
         }
     }
 
