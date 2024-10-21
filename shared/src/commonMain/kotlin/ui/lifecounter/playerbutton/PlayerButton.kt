@@ -3,7 +3,6 @@ package ui.lifecounter.playerbutton
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -44,7 +43,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -69,8 +67,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import data.TurnTimer
 import di.getAnimationCorrectionFactor
 import io.kamel.image.KamelImage
@@ -99,9 +95,7 @@ import theme.saturateColor
 import theme.scaledSp
 import theme.textShadowStyle
 import ui.SettingsButton
-import ui.dialog.color.ColorDialog
 import ui.dialog.customization.PlayerCustomizationDialog
-import ui.dialog.scryfall.ScryfallSearchDialog
 import ui.lifecounter.CounterType
 import ui.modifier.VerticalRotation
 import ui.modifier.animatedBorderCard
@@ -153,120 +147,22 @@ fun PlayerButton(
     }
 
     LaunchedEffect(
-        state.showResetPrefsDialog, state.showCameraWarning, state.showScryfallSearch, state.showBackgroundColorPicker, state.showTextColorPicker, state.showChangeNameField, state.showCustomizeMenu
+        state.showCustomizeMenu
     ) {
         val dialogStates = listOf(
-            state.showResetPrefsDialog,
-            state.showCameraWarning,
-            state.showScryfallSearch,
-            state.showBackgroundColorPicker,
-            state.showTextColorPicker,
-            state.showChangeNameField,
             state.showCustomizeMenu
         )
         setBlurBackground(dialogStates.any { it })
     }
 
-    if (state.showBackgroundColorPicker) {
-        ColorDialog(modifier = Modifier.fillMaxSize(), onDismiss = {
-            viewModel.showBackgroundColorPicker(false)
-        }, initialColor = state.player.color, setColor = { color ->
-            viewModel.onChangeBackgroundColor(color)
-        })
-    }
-
-    if (state.showTextColorPicker) {
-        ColorDialog(modifier = Modifier.fillMaxSize(), onDismiss = {
-            viewModel.showTextColorPicker(false)
-        }, initialColor = state.player.textColor, setColor = { color ->
-            viewModel.onChangeTextColor(color)
-        })
-    }
-
-    if (state.showCustomizeMenu) {
+    if (state.showCustomizeMenu && viewModel.customizationViewmodel != null) {
         PlayerCustomizationDialog(
             modifier = Modifier.fillMaxSize(), onDismiss = {
+                viewModel.onCustomizationApply()
                 viewModel.popBackStack()
                 viewModel.showCustomizeMenu(false)
-            }, viewModel = viewModel
+            }, viewModel = viewModel.customizationViewmodel!!
         )
-    }
-
-    if (state.showChangeNameField) {
-        Dialog(
-            onDismissRequest = { viewModel.showChangeNameField(false) }, properties = DialogProperties(
-                dismissOnBackPress = false,
-                dismissOnClickOutside = true,
-                usePlatformDefaultWidth = false,
-            )
-        ) {
-            Column(Modifier.fillMaxSize().clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
-                viewModel.showChangeNameField(false)
-            }, verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(Modifier.weight(0.7f))
-                BoxWithConstraints(
-                    modifier = Modifier.fillMaxWidth(0.8f).aspectRatio(2f).clip(RoundedCornerShape(12)),
-                ) {
-                    val buttonSize = maxWidth / 8f
-                    val padding = buttonSize / 5
-                    val textSize = (maxWidth / 20f).value.scaledSp
-                    val textFieldHeight = maxWidth / 5f
-                    PlayerButtonBackground(
-                        state = state.buttonState,
-                        imageUri = viewModel.locateImage(state.player),
-                        color = state.player.color,
-                        isDead = viewModel.isDead(autoKo = true),
-                    )
-                    SettingsButton(modifier = Modifier.size(buttonSize).padding(
-                        start = padding, bottom = padding
-                    ).align(Alignment.BottomStart),
-                        backgroundColor = Color.Transparent,
-                        mainColor = state.player.textColor,
-                        visible = true,
-                        imageVector = vectorResource(Res.drawable.back_icon),
-                        onPress = {
-                            viewModel.showChangeNameField(false)
-                            viewModel.closeSettingsMenu()
-                        })
-                    Text(
-                        modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(top = padding * 2).padding(horizontal = padding),
-                        text = "Previous name: ${state.player.name}",
-                        color = state.player.textColor,
-                        fontSize = textSize,
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        style = textShadowStyle()
-                    )
-
-                    ChangeNameField(modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.8f).height(textFieldHeight).padding(bottom = padding),
-                        name = state.changeNameTextField,
-                        showChangeNameField = state.showChangeNameField,
-                        onChangeName = viewModel::setChangeNameField,
-                        backgroundColor = state.player.color,
-                        playerTextColor = state.player.textColor,
-                        onDone = {
-                            viewModel.setName(state.changeNameTextField.text)
-                            viewModel.showChangeNameField(false)
-                            viewModel.closeSettingsMenu()
-                        })
-                }
-                Spacer(Modifier.weight(0.6f))
-            }
-        }
-    }
-
-    if (state.showScryfallSearch) {
-        val scryfallBackStack = remember { mutableStateListOf(Pair("Main") { viewModel.showScryfallSearch(false) }) }
-        ScryfallSearchDialog(modifier = Modifier.fillMaxSize(), onDismiss = {
-            viewModel.showScryfallSearch(false)
-        }, addToBackStack = { label, block ->
-            scryfallBackStack.add(Pair(label, block))
-        }, onImageSelected = {
-            viewModel.setImageUri(it)
-        })
     }
 
     var timerTextSize by remember(Unit) { mutableStateOf(15) }
@@ -347,7 +243,7 @@ fun PlayerButton(
                 PlayerButtonBackground(
                     modifier = Modifier.clip(RoundedCornerShape(12)),
                     state = state.buttonState,
-                    imageUri = viewModel.locateImage(state.player),
+                    imageUri = state.player.imageString,
                     color = state.player.color,
                     isDead = viewModel.isDead(),
                 )
@@ -553,14 +449,6 @@ fun PlayerButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.transparent, text = ""
                                             ) { }
                                         }
-//                                        item {
-//                                            FormattedSettingsButton(
-//                                                modifier = settingsButtonModifier, imageResource = Res.drawable.download_icon, text = "Load Profile"
-//                                            ) {
-//                                                viewModel.setPlayerButtonState(PBState.SETTINGS_LOAD_PLAYER)
-//                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_DEFAULT) }
-//                                            }
-//                                        }
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.mana_icon, text = "Counters"
@@ -574,8 +462,6 @@ fun PlayerButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.pencil_icon, text = "Customize"
                                             ) {
                                                 viewModel.showCustomizeMenu(true)
-//                                                viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE)
-//                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_DEFAULT) }
                                             }
                                         }
                                         item {
@@ -592,225 +478,9 @@ fun PlayerButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.transparent, text = ""
                                             ) { }
                                         }
-
-//                                        item {
-//                                            FormattedSettingsButton(
-//                                                modifier = settingsButtonModifier, imageResource = Res.drawable.change_name_icon, text = "Change Name"
-//                                            ) {
-//                                                viewModel.showChangeNameField(true)
-//                                            }
-//                                        }
                                     }
                                 }
                             }
-
-//                            PBState.SETTINGS_CUSTOMIZE -> {
-//                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
-//                                    val (settingsButtonSize, smallPadding, _) = remember { generateSizes(maxWidth, maxHeight) }
-//                                    val settingsButtonModifier = remember { Modifier.size(settingsButtonSize).padding(smallPadding / 2f) }
-//                                    LazyHorizontalGrid(
-//                                        modifier = Modifier.fillMaxSize(), rows = GridCells.Fixed(2), horizontalArrangement = Arrangement.Center, verticalArrangement = Arrangement.Center
-//                                    ) {
-//                                        item {
-//                                            FormattedSettingsButton(
-//                                                modifier = settingsButtonModifier, imageResource = Res.drawable.change_background_icon, text = "Background Color"
-//                                            ) {
-//                                                viewModel.setPlayerButtonState(PBState.SETTINGS_BACKGROUND_COLOR_PICKER)
-//                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE) }
-//                                            }
-//                                        }
-//
-//                                        item {
-//                                            FormattedSettingsButton(
-//                                                modifier = settingsButtonModifier, imageResource = Res.drawable.text_icon, text = "Text Color"
-//                                            ) {
-//                                                viewModel.setPlayerButtonState(PBState.SETTINGS_TEXT_COLOR_PICKER)
-//                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS_CUSTOMIZE) }
-//                                            }
-//                                        }
-//
-//                                        item {
-//                                            FormattedSettingsButton(
-//                                                modifier = settingsButtonModifier, imageResource = Res.drawable.camera_icon, text = "Upload Image"
-//                                            ) {
-//                                                viewModel.showCameraWarning(true)
-//                                            }
-//                                        }
-//
-//                                        item {
-//                                            if (viewModel.settingsManager.catGifButton && viewModel.settingsManager.devMode) {
-//                                                FormattedSettingsButton(
-//                                                    modifier = settingsButtonModifier, imageResource = Res.drawable.question_icon, text = "Random Cat Gif"
-//                                                ) {
-//                                                    val catGifs = listOf(
-//                                                        "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnh3NjJiYWNxZGdkaGR3eWR0NGFjczFpYmgzOXNpODY0aTRkaWNnbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/IsDjNQPc4weWPEwhWm/giphy.gif",
-//                                                        "https://media1.tenor.com/m/Jc9jT66AJRwAAAAd/chipi-chipi-chapa-chapa.gif",
-//                                                        "https://media1.tenor.com/m/nisaHYy8yAYAAAAd/besito-catlove.gif",
-//                                                        "https://media1.tenor.com/m/goY0VJNhQSIAAAAd/bleh-bleh-cat.gif",
-//                                                        "https://media1.tenor.com/m/s50cn0tfWewAAAAC/cat.gif",
-//                                                        "https://media1.tenor.com/m/UyXyHDmPBOcAAAAC/cat-stare-stare.gif",
-//                                                        "https://media1.tenor.com/m/8oWF4zMAmQgAAAAd/cat-funny.gif",
-//                                                        "https://media1.tenor.com/m/2If2O7HO1CYAAAAC/cat-staring-at-camera-fr.gif",
-//                                                        "https://media1.tenor.com/m/Dm4Ahmoh3nwAAAAd/cat-awful.gif",
-//                                                        "https://media1.tenor.com/m/ZuXnTDxIbjQAAAAC/shocked-shocked-cat.gif",
-//                                                        "https://media1.tenor.com/m/OUehVPHGpQ8AAAAd/cat-cat-lick.gif"
-//                                                    )
-//                                                    viewModel.setImageUri(
-//                                                        if (viewModel.state.value.player.imageString != null && viewModel.state.value.player.imageString in catGifs) catGifs[catGifs.indexOf(
-//                                                            viewModel.state.value.player.imageString
-//                                                        ).plus(1).rem(catGifs.size)]
-//                                                        else catGifs.random()
-//                                                    )
-//                                                }
-//                                            } else {
-//                                                FormattedSettingsButton(
-//                                                    modifier = settingsButtonModifier, imageResource = Res.drawable.transparent, text = ""
-//                                                ) {}
-//                                            }
-//                                        }
-//
-//                                        item {
-//                                            FormattedSettingsButton(
-//                                                modifier = settingsButtonModifier, imageResource = Res.drawable.search_icon, text = "Search Image"
-//                                            ) {
-//                                                viewModel.showScryfallSearch(!state.showScryfallSearch)
-//                                            }
-//                                        }
-//
-//                                        item {
-//                                            FormattedSettingsButton(
-//                                                modifier = settingsButtonModifier,
-//                                                imageResource = Res.drawable.reset_icon,
-//                                                text = "Reset",
-//                                            ) {
-//                                                viewModel.showResetPrefsDialog(true)
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-
-//                            PBState.SETTINGS_LOAD_PLAYER -> {
-//                                val playerList = remember {
-//                                    mutableStateListOf<Player>().apply {
-//                                        addAll(viewModel.settingsManager.loadPlayerPrefs().filter { !it.isDefaultOrEmptyName() })
-//                                    }
-//                                }
-//                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
-//                                    val (_, smallPadding, smallTextSize) = remember { generateSizes(maxWidth, maxHeight) }
-//                                    Column(
-//                                        Modifier.fillMaxSize().padding(bottom = smallPadding / 2f), horizontalAlignment = Alignment.CenterHorizontally
-//                                    ) {
-//                                        Box(
-//                                            Modifier.fillMaxWidth().wrapContentHeight().padding(bottom = smallPadding), contentAlignment = Alignment.Center
-//                                        ) {
-//                                            Text(
-//                                                modifier = Modifier.wrapContentSize(unbounded = true),
-//                                                text = "Saved profiles",
-//                                                color = state.player.textColor,
-//                                                fontSize = smallTextSize.scaledSp,
-//                                                textAlign = TextAlign.Center,
-//                                                style = defaultTextStyle()
-//                                            )
-//                                            Text(
-//                                                modifier = Modifier.wrapContentSize(unbounded = true).offset(y = smallPadding * 1.5f),
-//                                                text = "(hold to delete)",
-//                                                color = state.player.textColor,
-//                                                fontSize = smallTextSize.scaledSp / 2,
-//                                                textAlign = TextAlign.Center,
-//                                                style = defaultTextStyle()
-//                                            )
-//                                        }
-//                                        Box(
-//                                            Modifier.fillMaxSize().padding(horizontal = smallPadding).background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(10))
-//                                                .border(0.5.dp, state.player.textColor.copy(alpha = 0.9f), RoundedCornerShape(10))
-//                                        ) {
-//                                            LazyHorizontalGrid(modifier = Modifier.fillMaxSize().padding(smallPadding).clip(RoundedCornerShape(7)),
-//                                                rows = GridCells.Fixed(if (wideButton) 3 else 2),
-//                                                state = rememberLazyGridState(),
-//                                                horizontalArrangement = Arrangement.spacedBy(smallPadding),
-//                                                verticalArrangement = Arrangement.spacedBy(smallPadding),
-//                                                content = {
-//                                                    items(items = playerList, key = { p -> p.hashCode() }) { player ->
-//                                                        MiniPlayerButton(
-//                                                            imageUri = viewModel.locateImage(player),
-//                                                            name = player.name,
-//                                                            backgroundColor = player.color,
-//                                                            textColor = player.textColor,
-//                                                            copyPrefsToCurrentPlayer = {
-//                                                                viewModel.copyPrefs(player)
-//                                                                viewModel.closeSettingsMenu()
-//                                                            },
-//                                                            removePlayerProfile = {
-//                                                                playerList.remove(player)
-//                                                                viewModel.settingsManager.deletePlayerPref(player)
-//                                                            },
-//                                                        )
-//                                                    }
-//                                                })
-//                                            if (playerList.isEmpty()) {
-//                                                Column(
-//                                                    Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally
-//                                                ) {
-//                                                    Text(
-//                                                        modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp).padding(bottom = 5.dp),
-//                                                        text = "No saved profiles found",
-//                                                        color = state.player.textColor,
-//                                                        fontSize = smallTextSize.scaledSp * 0.7f,
-//                                                        textAlign = TextAlign.Center,
-//                                                        style = defaultTextStyle()
-//                                                    )
-//                                                    Text(
-//                                                        modifier = Modifier.wrapContentSize().padding(horizontal = 20.dp),
-//                                                        text = "Changes to name/customization will be saved automatically",
-//                                                        color = state.player.textColor,
-//                                                        lineHeight = smallTextSize.scaledSp,
-//                                                        fontSize = smallTextSize.scaledSp * 0.7f,
-//                                                        textAlign = TextAlign.Center,
-//                                                        style = defaultTextStyle()
-//                                                    )
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//
-//                            PBState.SETTINGS_BACKGROUND_COLOR_PICKER -> {
-//                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
-//                                    val (_, smallPadding, _) = remember { generateSizes(maxWidth, maxHeight) }
-//                                    ColorPicker(
-//                                        Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = if (wideButton) smallPadding * 2 else smallPadding / 4f),
-//                                        text = "Choose a Background Color",
-//                                        colorList = mutableListOf<Color>().apply {
-//                                            add(Color.Black)
-//                                            add(Color.White)
-//                                            addAll(allPlayerColors)
-//                                        },
-//                                        textColor = state.player.textColor,
-//                                        showColorPicker = viewModel::showBackgroundColorPicker,
-//                                        onPress = viewModel::onChangeBackgroundColor
-//                                    )
-//                                }
-//                            }
-//
-//                            PBState.SETTINGS_TEXT_COLOR_PICKER -> {
-//                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
-//                                    val (_, smallPadding, _) = remember { generateSizes(maxWidth, maxHeight) }
-//                                    ColorPicker(
-//                                        Modifier.wrapContentSize().align(Alignment.Center).padding(bottom = if (wideButton) smallPadding * 2 else smallPadding / 4f),
-//                                        text = "Choose a Text Color",
-//                                        colorList = mutableListOf<Color>().apply {
-//                                            add(Color.Black)
-//                                            add(Color.White)
-//                                            addAll(allPlayerColors)
-//                                        },
-//                                        textColor = state.player.textColor,
-//                                        showColorPicker = viewModel::showTextColorPicker,
-//                                        onPress = viewModel::onChangeTextColor
-//                                    )
-//                                }
-//                            }
 
                             PBState.COUNTERS_VIEW -> {
                                 CounterWrapper(
@@ -891,8 +561,6 @@ fun PlayerButton(
                                     }
                                 }
                             }
-
-                            else -> {}
                         }
                     }
                 }
@@ -1214,16 +882,6 @@ fun PlayerButtonBackground(
                 modifier = modifier.fillMaxSize().background(color = b), contentAlignment = Alignment.Center
             ) {}
         }
-
-//        AsyncImage(
-//            model = imageUri,
-//            contentDescription = "Player uploaded image",
-//            modifier = modifier.fillMaxSize(),
-//            contentScale = ContentScale.Crop,
-//            colorFilter = ColorFilter.colorMatrix(
-//                colorMatrix = colorMatrix
-//            ),
-//        )
     }
 }
 
@@ -1462,128 +1120,5 @@ private fun CustomIncrementButton(
         )
     )
 }
-
-//
-//@Composable
-//fun ColorPicker(
-//    modifier: Modifier = Modifier, text: String, colorList: List<Color>, textColor: Color, showColorPicker: (Boolean) -> Unit, onPress: (Color) -> Unit
-//) {
-//    BoxWithConstraints(modifier) {
-//        val colorPickerPadding = remember { maxWidth / 200f }
-//        val containerPadding = remember { maxWidth / 50f }
-//        val textPadding = remember { maxHeight / 25f }
-//        val smallTextSize = remember { maxHeight.value / 8f }
-//        Column(
-//            Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//            Text(
-//                modifier = Modifier.wrapContentSize(unbounded = true).padding(
-//                    bottom = textPadding, top = textPadding * 2
-//                ), text = text, color = textColor, fontSize = smallTextSize.scaledSp / 1.25f, textAlign = TextAlign.Center, style = defaultTextStyle()
-//            )
-//            Box(
-//                Modifier.wrapContentSize().weight(0.5f).background(Color.Black.copy(alpha = 0.15f), RoundedCornerShape(10)).border(0.5.dp, textColor.copy(alpha = 0.9f), RoundedCornerShape(10))
-//            ) {
-//                LazyHorizontalGrid(modifier = Modifier.padding(containerPadding * 2).clip(RoundedCornerShape(5)),
-//                    rows = GridCells.Fixed(2),
-//                    state = rememberLazyGridState(),
-//                    horizontalArrangement = Arrangement.spacedBy(colorPickerPadding),
-//                    verticalArrangement = Arrangement.spacedBy(colorPickerPadding),
-//                    content = {
-//                        item {
-//                            CustomColorPickerButton(
-//                                modifier = Modifier.padding(colorPickerPadding),
-//                                textColor = textColor,
-//                                showColorPicker = showColorPicker,
-//                            )
-//                        }
-//                        items(colorList) { color ->
-//                            ColorPickerButton(
-//                                modifier = Modifier.padding(colorPickerPadding), onClick = {
-//                                    onPress(color)
-//                                }, color = color
-//                            )
-//                        }
-//                    }
-//                )
-//            }
-//        }
-//    }
-//}
-
-//
-//@Composable
-//fun MiniPlayerButton(
-//    imageUri: String?,
-//    backgroundColor: Color,
-//    name: String,
-//    textColor: Color,
-//    copyPrefsToCurrentPlayer: () -> Unit,
-//    removePlayerProfile: () -> Unit,
-//) {
-//    val haptic = LocalHapticFeedback.current
-//    BoxWithConstraints(modifier = Modifier.fillMaxHeight().aspectRatio(2.5f).clip(RoundedCornerShape(10)).pointerInput(Unit) {
-//        detectTapGestures(onTap = {
-//            copyPrefsToCurrentPlayer()
-//        }, onLongPress = {
-//            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-//            removePlayerProfile()
-//        })
-//    }) {
-//        if (imageUri == null) {
-//            Surface(
-//                modifier = Modifier.fillMaxSize(), color = backgroundColor
-//            ) {}
-//        } else {
-//            AsyncImage(
-//                model = imageUri,
-//                contentDescription = "Player uploaded image",
-//                modifier = Modifier.fillMaxSize(),
-//                contentScale = ContentScale.Crop,
-//            )
-//        }
-//        Text(
-//            text = name,
-//            color = textColor,
-//            fontSize = maxHeight.value.scaledSp / 2f,
-//            maxLines = 1,
-//            overflow = TextOverflow.Ellipsis,
-//            modifier = Modifier.align(Alignment.Center),
-//            style = textShadowStyle()
-//        )
-//    }
-//}
-//
-//@Composable
-//fun ColorPickerButton(modifier: Modifier = Modifier, onClick: () -> Unit, color: Color) {
-//    Box(modifier = modifier.fillMaxHeight().aspectRatio(1f).background(color).pointerInput(Unit) {
-//        detectTapGestures(
-//            onTap = {
-//                onClick()
-//            },
-//        )
-//    }) {}
-//}
-//
-//@Composable
-//fun CustomColorPickerButton(
-//    modifier: Modifier = Modifier,
-//    textColor: Color,
-//    showColorPicker: (Boolean) -> Unit,
-//) {
-//    Box(
-//        modifier = modifier.fillMaxHeight().aspectRatio(1f).pointerInput(Unit) {
-//            detectTapGestures(
-//                onTap = {
-//                    showColorPicker(true)
-//                },
-//            )
-//        },
-//    ) {
-//        Icon(
-//            imageVector = vectorResource(Res.drawable.custom_color_icon), contentDescription = null, modifier = Modifier.fillMaxSize(), tint = textColor
-//        )
-//    }
-//}
 
 

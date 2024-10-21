@@ -42,11 +42,8 @@ import ui.modifier.routePointerChangesTo
 
 @Composable
 fun LoadPlayerDialogContent(
-    modifier: Modifier = Modifier,
-    playerList: List<Player>,
-    locateImage: (Player) -> String?,
-    onPlayerSelected: (Player) -> Unit,
-    onPlayerDeleted: (Player) -> Unit
+    modifier: Modifier = Modifier, playerList: List<Player>,
+    onPlayerSelected: (Player) -> Unit, onPlayerDeleted: (Player) -> Unit
 ) {
     var showDeletePlayerWarning by remember { mutableStateOf(false) }
     var toBeDeletedPlayer by remember { mutableStateOf<Player?>(null) }
@@ -80,50 +77,35 @@ fun LoadPlayerDialogContent(
     ) {
         val buttonWidth = remember { (maxWidth / 2f) - 16.dp }
         GridDialogContent(
-            modifier = modifier,
-            title = "Load Profile",
-            columns = 2
+            modifier = modifier, title = "Load Profile", columns = 2
         ) {
-            items(
-                items = playerList,
-                key = { player -> player.hashCode() }
-            ) { player ->
+            items(items = playerList, key = { player -> player.hashCode() }) { player ->
                 var isLongPressed by remember { mutableStateOf(false) }
                 SmallPlayerButtonPreview(
                     name = player.name,
                     state = PBState.NORMAL,
                     isDead = false,
-                    imageUri = locateImage(player),
+                    imageUri = player.imageString,
                     backgroundColor = player.color,
                     accentColor = player.textColor,
                     overlayColor = if (isLongPressed || highlightedPlayer == player) Color.Red.copy(alpha = 0.4f) else Color.Transparent,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .width(buttonWidth)
-                        .aspectRatio(1.75f)
-                        .graphicsLayer(
+                    modifier = Modifier.padding(8.dp).width(buttonWidth).aspectRatio(1.75f).graphicsLayer(
                             alpha = if (isLongPressed) 0.5f else 1f
-                        )
-                        .pointerInput(Unit) {
-                            routePointerChangesTo(
-                                onDown = {
-                                },
-                                onLongPress = {
-                                    delay(500)
-                                    isLongPressed = true
-                                    haptic.performHapticFeedback(hapticFeedbackType = HapticFeedbackType.LongPress)
-                                },
-                                onUp = {
-                                    if (isLongPressed) {
-                                        toBeDeletedPlayer = player
-                                        highlightedPlayer = player
-                                        showDeletePlayerWarning = true
-                                    } else {
-                                        onPlayerSelected(player)
-                                    }
-                                    isLongPressed = false
+                        ).pointerInput(Unit) {
+                            routePointerChangesTo(onDown = {}, onLongPress = {
+                                delay(500)
+                                isLongPressed = true
+                                haptic.performHapticFeedback(hapticFeedbackType = HapticFeedbackType.LongPress)
+                            }, onUp = {
+                                if (isLongPressed) {
+                                    toBeDeletedPlayer = player
+                                    highlightedPlayer = player
+                                    showDeletePlayerWarning = true
+                                } else {
+                                    onPlayerSelected(player)
                                 }
-                            )
+                                isLongPressed = false
+                            })
                         },
                 )
             }
@@ -133,14 +115,7 @@ fun LoadPlayerDialogContent(
 
 @Composable
 fun SmallPlayerButtonPreview(
-    modifier: Modifier = Modifier,
-    name: String,
-    state: PBState,
-    isDead: Boolean,
-    imageUri: String?,
-    backgroundColor: Color,
-    accentColor: Color,
-    overlayColor: Color = Color.Transparent
+    modifier: Modifier = Modifier, name: String, state: PBState, isDead: Boolean, imageUri: String?, backgroundColor: Color, accentColor: Color, overlayColor: Color = Color.Transparent
 ) {
     val animatedOverlayColor by animateColorAsState(targetValue = overlayColor)
 

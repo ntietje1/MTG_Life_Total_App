@@ -1,8 +1,6 @@
 package ui.lifecounter.playerbutton
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.ImageManager
@@ -16,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import ui.dialog.customization.CustomizationViewModel
 import ui.lifecounter.CounterType
 
 class PlayerButtonViewModel(
@@ -34,6 +33,8 @@ class PlayerButtonViewModel(
     private var _state = MutableStateFlow(PlayerButtonState(initialPlayer))
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
 
+    var customizationViewmodel: CustomizationViewModel? = null
+
     private var recentChangeJob: Job? = null
 
     init {
@@ -49,16 +50,8 @@ class PlayerButtonViewModel(
         updateCurrentDealerMode(state.value.player.partnerMode)
     }
 
-    fun setCustomizeMenuState(menuState: CustomizationMenuState) {
-        _state.value = state.value.copy(customizationMenuState = menuState)
-    }
-
     private fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
-    }
-
-    private fun updatePlayer(update: Player.() -> Player) {
-        setPlayer(state.value.player.update())
     }
 
     fun onCommanderButtonClicked() {
@@ -74,17 +67,9 @@ class PlayerButtonViewModel(
                     PBState.NORMAL
                 }
 
-                else -> throw Exception("Invalid state for commanderButtonOnClick")
+                else -> state.value.buttonState // do nothing
             }
         )
-    }
-
-    fun onFileSelected(file: ByteArray) {
-        var copiedUri = ""
-        viewModelScope.launch {
-            copiedUri = imageManager.copyImageToLocalStorage(file, state.value.player.name)
-            println("copiedUri: $copiedUri")
-        }.invokeOnCompletion { setImageUri(copiedUri) }
     }
 
     fun onMonarchyButtonClicked(value: Boolean? = null) {
@@ -125,69 +110,21 @@ class PlayerButtonViewModel(
     }
 
     fun resetPlayerPref() {
-        updatePlayer {
+        setPlayer(
             state.value.player.copy(
                 name = "P${state.value.player.playerNum}",
                 textColor = Color.White,
                 imageString = null
             )
-        }
-        updatePlayer {
+        )
+        setPlayer(
             resetPlayerColor(state.value.player)
-        }
-        setChangeNameField(TextFieldValue(state.value.player.name, selection = TextRange(state.value.player.name.length)))
+        )
+        resetCustomizationMenuViewModel()
     }
 
     fun savePlayerPref() {
         settingsManager.savePlayerPref(state.value.player)
-    }
-
-    fun locateImage(player: Player): String? {
-        return player.imageString?.let {
-            if (it.startsWith("http")) {
-                return it
-            }
-            else if (it.startsWith("/data/")) {
-                return "file://$it"
-            }
-            else if (it.startsWith("content://")) {
-                val playerNameAndUUID = it.substringAfter("content://lifelinked.multiplatform.provider/lifelinked_multiplatform_saved_images/").substringBefore(".png")
-                val uuid = playerNameAndUUID.substringAfterLast(player.name)
-                val newImageString = "${player.name}-${uuid}"
-                setImageUri(newImageString)
-                savePlayerPref()
-                return imageManager.getImagePath(player.name).apply {
-                }
-            }
-            else {
-                return imageManager.getImagePath(it)
-            }
-        }
-    }
-
-    fun setImageUri(uri: String?) {
-        setPlayer(state.value.player.copy(imageString = uri))
-        savePlayerPref()
-    }
-
-    private fun setBackgroundColor(color: Color) {
-        setPlayer(state.value.player.copy(color = color))
-        savePlayerPref()
-    }
-
-    private fun setTextColor(color: Color) {
-        setPlayer(state.value.player.copy(textColor = color))
-        savePlayerPref()
-    }
-
-
-    fun setChangeNameField(value: TextFieldValue) {
-        _state.value = state.value.copy(changeNameTextField = value)
-    }
-
-    fun setName(name: String) {
-        setPlayer(state.value.player.copy(name = name))
-        savePlayerPref()
     }
 
     fun isDead(autoKo: Boolean = settingsManager.autoKo): Boolean {
@@ -198,35 +135,30 @@ class PlayerButtonViewModel(
         return state.value.player.counters[counterType.ordinal]
     }
 
-    fun showCustomizeMenu(value: Boolean? = null) {
-        _state.value = state.value.copy(showCustomizeMenu = value ?: !state.value.showCustomizeMenu)
-        if (!state.value.showCustomizeMenu) {
-            setCustomizeMenuState(CustomizationMenuState.DEFAULT)
+    private fun resetCustomizationMenuViewModel() {
+        customizationViewmodel = CustomizationViewModel(
+            initialPlayer = state.value.player,
+            imageManager = imageManager,
+            settingsManager = settingsManager,
+        )
+    }
+
+    fun onCustomizationApply() {
+        val player = customizationViewmodel?.state?.value?.player ?: throw IllegalStateException("CustomizationViewModel is null")
+        viewModelScope.launch {
+            copyPrefs(player.copy(imageString = null))
+            delay(50)
+            copyPrefs(player)
+            resetCustomizationMenuViewModel()
+            settingsManager.savePlayerPref(state.value.player)
         }
     }
 
-    fun showChangeNameField(value: Boolean? = null) {
-        _state.value = state.value.copy(showChangeNameField = value ?: !state.value.showChangeNameField)
-    }
-
-    fun showBackgroundColorPicker(value: Boolean? = null) {
-        _state.value = state.value.copy(showBackgroundColorPicker = value ?: !state.value.showBackgroundColorPicker)
-    }
-
-    fun showTextColorPicker(value: Boolean? = null) {
-        _state.value = state.value.copy(showTextColorPicker = value ?: !state.value.showTextColorPicker)
-    }
-
-    fun showScryfallSearch(value: Boolean? = null) {
-        _state.value = state.value.copy(showScryfallSearch = value ?: !state.value.showScryfallSearch)
-    }
-
-    fun showCameraWarning(value: Boolean? = null) {
-        _state.value = state.value.copy(showCameraWarning = value ?: !state.value.showCameraWarning)
-    }
-
-    fun showResetPrefsDialog(value: Boolean? = null) {
-        _state.value = state.value.copy(showResetPrefsDialog = value ?: !state.value.showResetPrefsDialog)
+    fun showCustomizeMenu(value: Boolean? = null) {
+        if (value == true && customizationViewmodel == null) {
+            resetCustomizationMenuViewModel()
+        }
+        _state.value = state.value.copy(showCustomizeMenu = value ?: !state.value.showCustomizeMenu)
     }
 
     fun toggleMonarch(value: Boolean? = null) {
@@ -288,17 +220,6 @@ class PlayerButtonViewModel(
         triggerSave()
     }
 
-    fun onChangeBackgroundColor(color: Color) {
-        setImageUri(null)
-        setBackgroundColor(color)
-        savePlayerPref()
-    }
-
-    fun onChangeTextColor(color: Color) {
-        setTextColor(color)
-        savePlayerPref()
-    }
-
     fun copyPrefs(other: Player) {
         setPlayer(
             state.value.player.copy(
@@ -308,7 +229,6 @@ class PlayerButtonViewModel(
                 name = other.name
             )
         )
-        setChangeNameField(TextFieldValue(other.name, selection = TextRange(other.name.length)))
     }
 
     fun incrementLife(value: Int) {
@@ -335,7 +255,7 @@ class PlayerButtonViewModel(
     }
 
     fun resetState(startingLife: Int) {
-        updatePlayer {
+        setPlayer(
             state.value.player.copy(
                 life = startingLife,
                 recentChange = 0,
@@ -345,8 +265,7 @@ class PlayerButtonViewModel(
                 counters = List(CounterType.entries.size) { 0 },
                 activeCounters = listOf()
             )
-        }
-        setChangeNameField(TextFieldValue(state.value.player.name, selection = TextRange(state.value.player.name.length)))
+        )
         triggerSave()
     }
 }
