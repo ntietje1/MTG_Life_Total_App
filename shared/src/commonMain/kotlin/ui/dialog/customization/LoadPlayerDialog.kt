@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -90,9 +91,11 @@ fun LoadPlayerDialogContent(
                     accentColor = player.textColor,
                     overlayColor = if (isLongPressed || highlightedPlayer == player) Color.Red.copy(alpha = 0.4f) else Color.Transparent,
                     modifier = Modifier.padding(8.dp).width(buttonWidth).aspectRatio(1.75f).graphicsLayer(
-                            alpha = if (isLongPressed) 0.5f else 1f
-                        ).pointerInput(Unit) {
-                            routePointerChangesTo(onDown = {}, onLongPress = {
+                        alpha = if (isLongPressed) 0.6f else 1f
+                    ).pointerInput(Unit) {
+                        routePointerChangesTo(
+                            onDown = {},
+                            onLongPress = {
                                 delay(500)
                                 isLongPressed = true
                                 haptic.performHapticFeedback(hapticFeedbackType = HapticFeedbackType.LongPress)
@@ -105,8 +108,13 @@ fun LoadPlayerDialogContent(
                                     onPlayerSelected(player)
                                 }
                                 isLongPressed = false
-                            })
-                        },
+                            }, onMove = { pointerInputChange ->
+                                if (isLongPressed && pointerInputChange.isOutOfBounds(size = size, extendedTouchPadding = extendedTouchPadding)) {
+                                    isLongPressed = false
+                                }
+                            }
+                        )
+                    },
                 )
             }
         }
