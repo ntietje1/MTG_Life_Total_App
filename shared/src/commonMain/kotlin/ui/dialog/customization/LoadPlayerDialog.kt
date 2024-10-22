@@ -98,7 +98,6 @@ fun LoadPlayerDialogContent(
                             onLongPress = {
                                 delay(500)
                                 isLongPressed = true
-                                haptic.performHapticFeedback(hapticFeedbackType = HapticFeedbackType.LongPress)
                             }, onUp = {
                                 if (isLongPressed) {
                                     toBeDeletedPlayer = player
