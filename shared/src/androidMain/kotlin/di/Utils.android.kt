@@ -15,8 +15,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import java.io.File
+import java.util.Properties
 
 @SuppressLint("ComposableNaming")
 @Composable
@@ -48,6 +48,21 @@ actual fun getAnimationCorrectionFactor(): Float {
 
 actual fun legacyMonarchyIndicator(): Boolean {
     return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+}
+
+actual fun getTenorApiKey(): String {
+    try {
+        val properties = Properties().apply {
+            val localPropertiesFile = File("local.properties")
+            if (localPropertiesFile.exists()) {
+                load(localPropertiesFile.inputStream())
+            }
+        }
+        return properties.getProperty("tenor.api.key")
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return ""
 }
 
 @SuppressLint("ComposableNaming")

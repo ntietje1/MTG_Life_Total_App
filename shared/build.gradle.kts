@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
@@ -9,19 +11,29 @@ plugins {
 
 kotlin {
 
-    targets.all {
-        compilations.all {
-            compilerOptions.configure {
-                freeCompilerArgs.add("-Xexpect-actual-classes")
-            }
-        }
-    }
+//    targets.all {
+//        compilations.all {
+//            tasks.withType<KotlinJvmCompile>().configureEach {
+//                compilerOptions {
+//                    freeCompilerArgs.add("-Xexpect-actual-classes")
+//                }
+//            }
+////            compilerOptions.configure {
+////                freeCompilerArgs.add("-Xexpect-actual-classes")
+////            }
+//        }
+//    }
 
     androidTarget {
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.JVM_1_8)
+                }
             }
+//            kotlinOptions {
+//                jvmTarget = "1.8"
+//            }
         }
     }
 
@@ -52,7 +64,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.livedata.ktx)
 
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.coil.gif)
+//            implementation(libs.coil.gif)
 
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
@@ -86,9 +98,10 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
 
-//            implementation("media.kamel:kamel-image-default:1.0.0-beta.6")
-            implementation(libs.coil.compose)
-            implementation(libs.coil.network.ktor)
+//            implementation(libs.coil.compose)
+//            implementation(libs.coil.network.ktor)
+
+            implementation(libs.kamel.image.default)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

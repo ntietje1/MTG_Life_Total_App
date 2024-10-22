@@ -1,9 +1,11 @@
 package di
 
 import data.ImageManager
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
+import ui.dialog.color.ColorDialogViewModel
+import ui.dialog.gif.GifDialogViewModel
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.dialog.scryfall.ScryfallSearchViewModel
 import ui.dialog.settings.patchnotes.PatchNotesViewModel
@@ -23,7 +25,9 @@ actual val platformModule = module {
     viewModel { LifeCounterViewModel(get(), get(), get()) }
     viewModel { PatchNotesViewModel(get()) }
     viewModel { StartingLifeViewModel(get()) }
-    viewModel { ScryfallSearchViewModel() }
+    single { ScryfallSearchViewModel() }
+    single { ColorDialogViewModel() }
+    single { GifDialogViewModel() }
 }
 
 actual val platform: Platform

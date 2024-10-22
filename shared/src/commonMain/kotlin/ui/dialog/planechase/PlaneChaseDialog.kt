@@ -46,7 +46,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil3.compose.AsyncImage
 import data.serializable.Card
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
@@ -65,6 +64,7 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.scaledSp
 import ui.SettingsButton
+import ui.dialog.scryfall.CardImage
 import ui.dialog.scryfall.ScryfallSearchBar
 
 private enum class PlanarDieResult(
@@ -348,9 +348,10 @@ fun PlaneChaseCardPreview(
                     showLargeImage = false
                 })
             }) {
-                AsyncImage(
-                    model = card!!.getUris().large, modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = ""
-                )
+                CardImage(modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), imageUri = card!!.getUris().large)
+//                AsyncImage(
+//                    model = card!!.getUris().large, modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = ""
+//                )
             }
 
         })
@@ -379,17 +380,24 @@ fun PlaneChaseCardPreview(
                     }
                 )
             ) {
-                AsyncImage(
-                    modifier = Modifier.fillMaxSize().then(
-                        if (selected) {
-                            Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
-                        } else {
-                            Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
-                        }
-                    ), model = card.getUris().normal, contentDescription = "",
-                    alignment = Alignment.TopCenter
-
-                )
+                CardImage(modifier = Modifier.fillMaxSize().then(
+                    if (selected) {
+                        Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
+                    } else {
+                        Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
+                    }
+                ), imageUri = card.getUris().normal)
+//                AsyncImage(
+//                    modifier = Modifier.fillMaxSize().then(
+//                        if (selected) {
+//                            Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
+//                        } else {
+//                            Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
+//                        }
+//                    ), model = card.getUris().normal, contentDescription = "",
+//                    alignment = Alignment.TopCenter
+//
+//                )
             }
 
         }

@@ -1,4 +1,4 @@
-package ui.dialog
+package ui.dialog.color
 
 
 import androidx.compose.foundation.Canvas
@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
@@ -18,9 +19,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,12 +37,15 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import ui.SettingsButton
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.checkmark
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
+import org.koin.compose.koinInject
+import theme.scaledSp
 import theme.toHsv
+import ui.SettingsButton
+import ui.dialog.SettingsDialog
 
 @Composable
 fun ColorDialog(
@@ -49,51 +56,61 @@ fun ColorDialog(
         backButtonEnabled = false,
         onDismiss = onDismiss
     ) {
-        ColorSelector(initialColor = initialColor, setColor = setColor, onDismiss = onDismiss)
+        ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "remove this", initialColor = initialColor, setColor = setColor, onDone = onDismiss)
     }
 }
 
 @Composable
-fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {}, onDismiss: () -> Unit) {
+fun ColorPickerDialogContent(
+    modifier: Modifier = Modifier,
+    title: String,
+    initialColor: Color,
+    setColor: (Color) -> Unit = {},
+    onDone: () -> Unit,
+    viewModel: ColorDialogViewModel = koinInject()
+) {
+    val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.init(initialColor)
+    }
+
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val largePanelSize = remember(Unit) { maxWidth * 0.75f }
-        val padding = remember(Unit) { maxWidth /15f }
+        val padding = remember(Unit) { maxWidth / 15f }
         val buttonSize = remember(Unit) { maxWidth / 3.5f }
         val barHeight = remember(Unit) { maxWidth / 12f }
+        val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
 
         Column(
-            modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+            modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
         ) {
 
-            val hsv = remember {
-                val hsv = initialColor.toHsv()
+            Text(
+                modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
+            )
 
-                mutableStateOf(
-                    Triple(hsv[0].coerceIn(0.0f, 360f), hsv[1], hsv[2])
-                )
-            }
-
-            val backgroundColor = remember {
-                derivedStateOf {
-                    Color.hsv(hsv.value.first.coerceIn(0.0f, 360f), hsv.value.second.coerceIn(0.0f, 1.0f), hsv.value.third.coerceIn(0.0f, 1.0f))
-                }
-            }
+            Spacer(modifier = Modifier.height(padding * 1.5f))
 
             SatValPanel(
                 modifier = Modifier.size(largePanelSize),
-                hue = hsv.value.first.coerceIn(0.0f, 360f)
+                hue = state.hue,
+                initialSaturation = initialColor.toHsv()[1],
+                initialValue = initialColor.toHsv()[2],
+                posn = state.satValPosn,
+                setPosn = { posn -> viewModel.setSatValPosn(posn) },
             ) { sat, value ->
-                hsv.value = Triple(hsv.value.first.coerceIn(0.0f, 360f), sat.coerceIn(0.0f, 1.0f), value.coerceIn(0.0f, 1.0f))
-                println("hue = ${hsv.value.first}, sat = $sat, value = $value")
+                viewModel.setSaturation(sat)
+                viewModel.setValue(value)
             }
 
             Spacer(modifier = Modifier.height(padding))
 
             HueBar(
                 modifier = Modifier.width(largePanelSize).height(barHeight),
+                initialHue = initialColor.toHsv()[0]
             ) { hue ->
-                hsv.value = Triple(hue.coerceIn(0.0f, 360f), hsv.value.second.coerceIn(0.0f, 1.0f), hsv.value.third.coerceIn(0.0f, 1.0f))
-                println("hue = $hue, sat = ${hsv.value.second}, value = ${hsv.value.third}")
+                viewModel.setHue(hue)
             }
 
             Spacer(modifier = Modifier.height(padding))
@@ -103,7 +120,7 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
             ) {
                 Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize),
+                        modifier = Modifier.size(buttonSize).padding(bottom = padding / 2f),
                         imageVector = vectorResource(Res.drawable.x_icon),
                         shape = RoundedCornerShape(10),
                         shadowEnabled = false,
@@ -111,8 +128,7 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
                         mainColor = if (initialColor.luminance() > 0.5f) Color.Black else Color.White,
                         textSizeMultiplier = 1.5f,
                         onTap = {
-                            setColor(initialColor)
-                            onDismiss()
+                            onDone()
                         }
                     )
                     Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimary)
@@ -121,21 +137,23 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
                 Spacer(modifier = Modifier.width(padding))
                 Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize),
+                        modifier = Modifier.size(buttonSize).padding(bottom = padding / 2f),
                         imageVector = vectorResource(Res.drawable.checkmark),
                         shape = RoundedCornerShape(10),
                         shadowEnabled = false,
-                        backgroundColor = backgroundColor.value,
-                        mainColor = if (backgroundColor.value.luminance() > 0.5f) Color.Black else Color.White,
+                        backgroundColor = state.newColor,
+                        mainColor = if (state.newColor.luminance() > 0.5f) Color.Black else Color.White,
                         textSizeMultiplier = 1.5f,
                         onTap = {
-                            setColor(backgroundColor.value)
-                            onDismiss()
+                            setColor(state.newColor)
+                            onDone()
                         }
                     )
                     Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
+
+            Spacer(modifier = Modifier.height(titleSize.dp * 2f))
         }
     }
 }
@@ -143,9 +161,19 @@ fun ColorSelector(initialColor: Color = Color.Red, setColor: (Color) -> Unit = {
 @Composable
 fun HueBar(
     modifier: Modifier = Modifier,
-    setColor: (Float) -> Unit
+    initialHue: Float = 0f,
+    setHue: (Float) -> Unit
 ) {
-    val pressOffset = remember { mutableStateOf(Offset.Zero) }
+    var pressOffset by remember { mutableStateOf( 0f) }
+    var hueBarWidth by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(initialHue, hueBarWidth) {
+        if (pressOffset == 0.0f) {
+            val initialOffsetX = (initialHue / 360f) * hueBarWidth
+            pressOffset = initialOffsetX
+            setHue(initialHue)
+        }
+    }
 
     BoxWithConstraints(
         modifier = modifier
@@ -157,17 +185,17 @@ fun HueBar(
                 .pointerInput(Unit) {
                     detectDragGestures { change, _ ->
                         val x = change.position.x
-                        pressOffset.value = Offset(x, 0f)
+                        pressOffset = x
                     }
                 }
         ) {
-
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                val selectedHue = pressOffset.value.x * 360f / size.width
-                setColor(selectedHue)
+                hueBarWidth = size.width
+                val selectedHue = pressOffset * 360f / size.width
+                setHue(selectedHue)
 
                 val hueColors = List(size.width.toInt()) { index ->
                     val hue = 360f * index / size.width.toInt()
@@ -186,7 +214,7 @@ fun HueBar(
                 drawCircle(
                     color = Color.White,
                     radius = size.height / 2,
-                    center = Offset(pressOffset.value.x, size.height / 2),
+                    center = Offset(pressOffset, size.height / 2),
                     style = Stroke(width = 2.dp.toPx())
                 )
             }
@@ -197,18 +225,21 @@ fun HueBar(
 @Composable
 fun SatValPanel(
     modifier: Modifier = Modifier,
-    hue: Float, setSatVal: (Float, Float) -> Unit
+    hue: Float = 0f,
+    initialSaturation: Float = 1f,
+    initialValue: Float = 1f,
+    posn: Offset = Offset(0f, 0f),
+    setPosn: (Offset) -> Unit = {},
+    setSatVal: (Float, Float) -> Unit
 ) {
+//    println("GOT POSN: $posn")
     BoxWithConstraints(
         Modifier.wrapContentSize()
     ) {
         val maxWidth = maxWidth
         val maxHeight = maxHeight
 //        val size = Size(maxWidth.value, maxHeight.value)
-        val pressPosn = remember {
-            mutableStateOf(Offset.Zero)
-        }
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .wrapContentSize()
                 .clip(RoundedCornerShape(5))
@@ -216,24 +247,35 @@ fun SatValPanel(
                     detectDragGestures { position, _ ->
                         val x = position.position.x
                         val y = position.position.y
-                        pressPosn.value = Offset(x, y)
-                        val sat = x / maxWidth.value
-                        val value = 1f - y / maxHeight.value
+                        setPosn(Offset(x, y))
+                        val sat = x / (maxWidth.value*1.15f) / 2
+                        val value = 1f - y / (maxHeight.value*1.30f)
                         setSatVal(sat, value)
+                        println("SAT, VAL: $sat, $value")
                     }
                 }
         ) {
-            val color = Color.hsv(hue, 1f, 1f)
-            val satShader = Brush.horizontalGradient(
-                colors = listOf(Color.Transparent, color),
-                startX = 0f,
-                endX = maxWidth.value
-            )
-            val valShader = Brush.verticalGradient(
-                colors = listOf(Color.White, Color.Black),
-                startY = 0f,
-                endY = maxHeight.value
-            )
+            LaunchedEffect(initialValue, initialSaturation, posn) {
+                if (posn == Offset.Zero) {
+                    val x = initialSaturation * maxWidth.value*2*1.15f
+                    val y = (1f - initialValue) * maxHeight.value*1.30f
+                    setPosn(Offset(x, y))
+                }
+            }
+            val satShader = remember(hue) {
+                Brush.horizontalGradient(
+                    colors = listOf(Color.Transparent, Color.hsv(hue, 1f, 1f)),
+                    startX = 0f,
+                    endX = maxWidth.value*2
+                )
+            }
+            val valShader = remember {
+                Brush.verticalGradient(
+                    colors = listOf(Color.White, Color.Black),
+                    startY = 0f,
+                    endY = maxHeight.value*1.30f
+                )
+            }
 
             Canvas(
                 modifier = modifier
@@ -256,7 +298,7 @@ fun SatValPanel(
                 )
 
                 drawCircle(
-                    color = Color.White, radius = 8.dp.toPx(), center = pressPosn.value, style = Stroke(
+                    color = Color.White, radius = 8.dp.toPx(), center = posn, style = Stroke(
                         width = 2.dp.toPx()
                     )
                 )
@@ -264,7 +306,7 @@ fun SatValPanel(
                 drawCircle(
                     color = Color.White,
                     radius = 2.dp.toPx(),
-                    center = pressPosn.value,
+                    center = posn,
                 )
             }
         }
