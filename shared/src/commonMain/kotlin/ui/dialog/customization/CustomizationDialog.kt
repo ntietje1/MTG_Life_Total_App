@@ -182,7 +182,7 @@ fun PlayerCustomizationDialog(
                     modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding / 2f),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
-                ) {
+                ) { //TODO: check if the  name is currently taken or invalid
                     TextFieldWithButton(modifier = Modifier.fillMaxWidth(0.75f).height(textFieldHeight).clip(RoundedCornerShape(8))
                         .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(8)), value = state.changeNameTextField, onValueChange = {
                         viewModel.setChangeNameField(it)
@@ -290,7 +290,9 @@ fun PlayerCustomizationDialog(
     }, Pair(state.customizationMenuState == CustomizationMenuState.LOAD_PLAYER) {
         val playerList = remember {
             mutableStateListOf<Player>().apply {
-                addAll(viewModel.settingsManager.loadPlayerPrefs().filter { !it.isDefaultOrEmptyName() })
+                addAll(viewModel.settingsManager.loadPlayerPrefs().filter { it.name == "P${state.player.playerNum}" })
+                addAll(viewModel.settingsManager.loadPlayerPrefs().filter { !it.isDefaultOrEmptyName()  })
+//                addAll(viewModel.settingsManager.loadPlayerPrefs())
             }
         }
         LoadPlayerDialogContent(playerList = playerList, onPlayerSelected = { player ->
