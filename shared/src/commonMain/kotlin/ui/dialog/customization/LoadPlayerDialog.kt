@@ -98,13 +98,15 @@ fun LoadPlayerDialogContent(
                             onLongPress = {
                                 delay(500)
                                 isLongPressed = true
-                            }, onUp = {
-                                if (isLongPressed) {
-                                    toBeDeletedPlayer = player
-                                    highlightedPlayer = player
-                                    showDeletePlayerWarning = true
-                                } else {
-                                    onPlayerSelected(player)
+                            }, onUp = { pointerInputChange ->
+                                if (!pointerInputChange.isOutOfBounds(size = size, extendedTouchPadding = extendedTouchPadding)) {
+                                    if (isLongPressed) {
+                                        toBeDeletedPlayer = player
+                                        highlightedPlayer = player
+                                        showDeletePlayerWarning = true
+                                    } else {
+                                        onPlayerSelected(player)
+                                    }
                                 }
                                 isLongPressed = false
                             }, onMove = { pointerInputChange ->
