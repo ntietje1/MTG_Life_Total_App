@@ -53,9 +53,9 @@ fun GifDialogContent(
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val searchBarHeight = remember(Unit) { maxWidth / 9f + 30.dp }
         val padding = remember(Unit) { searchBarHeight / 10f }
-        val buttonWidth = remember { (maxWidth / 2f) - 16.dp }
-        val buttonHeight = remember { buttonWidth / 1.75f }
-        val numberToQuery = remember { (maxHeight / buttonHeight).toInt() * 2 }
+        val buttonWidth = remember(Unit)  { (maxWidth / 2f) - 16.dp }
+        val buttonHeight = remember(Unit)  { buttonWidth / 1.75f }
+        val numberToQuery = remember(Unit)  { (maxHeight / buttonHeight).toInt() * 2 }
 
         LaunchedEffect(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
             val endReached = listState.firstVisibleItemIndex + listState.firstVisibleItemScrollOffset >= state.gifResults.size - numberToQuery

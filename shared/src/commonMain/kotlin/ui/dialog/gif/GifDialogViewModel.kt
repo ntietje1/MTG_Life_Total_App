@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.api.GifApiRetriever
 import data.api.MediaFormat
-import di.Platform
-import di.platform
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,9 +15,6 @@ class GifDialogViewModel(private val gifApiRetriever: GifApiRetriever = GifApiRe
     val state: StateFlow<GifDialogState> = _state.asStateFlow()
 
     fun searchGifs(qry: String, amount: Int) {
-        if (platform == Platform.IOS) {
-            return
-        }
         viewModelScope.launch {
             clearResults()
             setIsSearchInProgress(true)
