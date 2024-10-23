@@ -11,5 +11,3 @@ expect fun getAnimationCorrectionFactor(): Float
 expect fun keepScreenOn(keepScreenOn: Boolean)
 
 expect fun legacyMonarchyIndicator(): Boolean
-
-expect fun getTenorApiKey(): String

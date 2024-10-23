@@ -18,11 +18,6 @@ actual fun legacyMonarchyIndicator(): Boolean {
     return false
 }
 
-actual fun getTenorApiKey(): String {
-    val userDefaults = NSUserDefaults.standardUserDefaults()
-    return userDefaults.stringForKey("tenor.api.key") ?: ""
-}
-
 @Composable
 actual fun keepScreenOn(keepScreenOn: Boolean) {
     DisposableEffect(keepScreenOn) {
