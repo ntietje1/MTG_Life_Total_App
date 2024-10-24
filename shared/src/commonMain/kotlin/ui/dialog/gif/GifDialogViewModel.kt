@@ -18,23 +18,34 @@ class GifDialogViewModel(private val gifApiRetriever: GifApiRetriever = GifApiRe
         viewModelScope.launch {
             clearResults()
             setIsSearchInProgress(true)
+            setLastSearchWasError(false)
 //            println("searchGifs: $qry")
-            val result = gifApiRetriever.searchGifs(qry, amount).toSet()
-//            println("searchGifs result: $result")
-            setGifResults(result)
+            val result = gifApiRetriever.searchGifs(qry, amount)
+            if (result.error != null) {
+                setLastSearchWasError(true)
+            } else {
+                result.result?.let { setGifResults(it.toSet()) }
+            }
             setIsSearchInProgress(false)
         }
     }
 
     fun getNextGifs(amount: Int) {
-        if (state.value.isSearchInProgress || state.value.additionalSearchInProgress || state.value.gifResults.isEmpty()) { return }
+        if (state.value.isSearchInProgress || state.value.additionalSearchInProgress || state.value.lastSearchWasError || state.value.gifResults.isEmpty()) { return }
         viewModelScope.launch {
 //            println("getNextGifs")
             setAdditionalSearchInProgress(true)
-            val result = gifApiRetriever.getNextGifs(amount)
-            setAdditionalSearchInProgress(false)
+//            val result = gifApiRetriever.getNextGifs(amount)
+//            setAdditionalSearchInProgress(false)
 //            println("getNextGifs result: $result")
-            setGifResults(state.value.gifResults + result)
+//            setGifResults(state.value.gifResults + result)
+            val result = gifApiRetriever.getNextGifs(amount)
+            if (result.error != null) {
+                setLastSearchWasError(true)
+            } else {
+                result.result?.let { setGifResults(state.value.gifResults + it) }
+            }
+            setAdditionalSearchInProgress(false)
         }
     }
 
@@ -58,6 +69,10 @@ class GifDialogViewModel(private val gifApiRetriever: GifApiRetriever = GifApiRe
 
     fun setScrollPosition(scrollPosition: Int) {
         _state.value = _state.value.copy(scrollPosition = scrollPosition)
+    }
+
+    private fun setLastSearchWasError(lastSearchWasError: Boolean) {
+        _state.value = _state.value.copy(lastSearchWasError = lastSearchWasError)
     }
 
     private fun clearResults() {

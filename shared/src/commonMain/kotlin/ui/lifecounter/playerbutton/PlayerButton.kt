@@ -66,7 +66,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import data.TurnTimer
 import di.getAnimationCorrectionFactor
 import io.kamel.image.KamelImage
@@ -77,6 +76,7 @@ import lifelinked.shared.generated.resources.back_icon
 import lifelinked.shared.generated.resources.commander_solid_icon
 import lifelinked.shared.generated.resources.enter_icon
 import lifelinked.shared.generated.resources.heart_solid_icon
+import lifelinked.shared.generated.resources.image_error_icon
 import lifelinked.shared.generated.resources.mana_icon
 import lifelinked.shared.generated.resources.monarchy_icon
 import lifelinked.shared.generated.resources.one_finger_tap
@@ -814,7 +814,7 @@ fun Counter(
 
 @Composable
 fun PlayerButtonBackground(
-    modifier: Modifier = Modifier, state: PBState, imageUri: String?, color: Color, isDead: Boolean
+    modifier: Modifier = Modifier, state: PBState, imageUri: String?, color: Color, isDead: Boolean, showError: Boolean = false
 ) {
     var errored = false
     val c = remember(color, isDead, state) {
@@ -856,13 +856,15 @@ fun PlayerButtonBackground(
             },
             onFailure = { error ->
                 errored = true
-                println("Error loading image: $error")
-                Box(
-                    modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Error loading image", color = color, fontSize = 20.sp, textAlign = TextAlign.Center, style = textShadowStyle()
-                    )
+                if (showError) {
+                    println("Error loading image: $error")
+                    Box(
+                        modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                    ) {
+                        SettingsButton(
+                            modifier = Modifier.fillMaxHeight(0.4f), backgroundColor = Color.Transparent, mainColor = MaterialTheme.colorScheme.onPrimary, imageVector = vectorResource(Res.drawable.image_error_icon), visible = true, onPress = {}
+                        )
+                    }
                 }
             }
         )

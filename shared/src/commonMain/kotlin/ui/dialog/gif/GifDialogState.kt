@@ -8,5 +8,6 @@ data class GifDialogState(
     val gifResults: Set<MediaFormat> = setOf(),
     val isSearchInProgress: Boolean = false,
     val additionalSearchInProgress: Boolean = false,
-    val scrollPosition: Int = 0
+    val scrollPosition: Int = 0,
+    val lastSearchWasError: Boolean = false
 )

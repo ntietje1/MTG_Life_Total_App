@@ -1,5 +1,6 @@
 package ui.dialog.gif
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,6 +33,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
+import theme.scaledSp
 import ui.dialog.scryfall.ScryfallSearchBar
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonBackground
@@ -53,6 +56,7 @@ fun GifDialogContent(
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val searchBarHeight = remember(Unit) { maxWidth / 9f + 30.dp }
         val padding = remember(Unit) { searchBarHeight / 10f }
+        val textSize = remember(Unit) { (maxHeight / 50f).value }
         val buttonWidth = remember(Unit)  { (maxWidth / 2f) - 16.dp }
         val buttonHeight = remember(Unit)  { buttonWidth / 1.75f }
         val numberToQuery = remember(Unit)  { (maxHeight / buttonHeight).toInt() * 2 }
@@ -85,6 +89,11 @@ fun GifDialogContent(
                 viewModel.searchGifs(state.textFieldValue.text, numberToQuery)
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
+            AnimatedVisibility(
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding), visible = state.lastSearchWasError
+            ) {
+                Text("An error occurred while searching :(", color = Color.Red, fontSize = textSize.scaledSp)
+            }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 Modifier.pointerInput(Unit) {
@@ -112,6 +121,7 @@ fun GifDialogContent(
                         isDead = false,
                         imageUri = mediaFormats.getPreviewGif().url,
                         color = Color.Unspecified,
+                        showError = true
                     )
                 }
             }

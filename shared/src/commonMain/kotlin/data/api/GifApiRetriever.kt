@@ -17,6 +17,12 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
 
+class ListResultOrError<T>(val result: List<T>? = listOf(), val error: Exception? = null)
+enum class GifError {
+    SEARCH_FAILED,
+    NEXT_SEARCH_FAILED
+}
+
 class GifApiRetriever(
     private val client: HttpClient = HttpClient()
 ) {
@@ -32,45 +38,50 @@ class GifApiRetriever(
         lastQuery = null
     }
 
-    suspend fun searchGifs(query: String, limit: Int): List<MediaFormat> {
+    suspend fun searchGifs(query: String, limit: Int): ListResultOrError<MediaFormat> {
         clearNext()
         val gifResponse = getSearchResults(query, limit)
         if (gifResponse == null) {
             println("Error getting gifs. returning empty list")
-            return emptyList()
+            return ListResultOrError(error = Exception(GifError.SEARCH_FAILED.name))
         }
         next = gifResponse.next
         lastQuery = query
-        return gifResponse.results.map { it.formats }
+        return ListResultOrError(gifResponse.results.map { it.formats })
     }
 
-    suspend fun getNextGifs(limit: Int): List<MediaFormat> {
+    suspend fun getNextGifs(limit: Int): ListResultOrError<MediaFormat> {
         if (next == null || lastQuery == null) {
             throw Exception("Attempted to get next gifs without a previous search")
         }
         val gifResponse = getSearchResults(lastQuery!!, limit)
         if (gifResponse == null) {
             println("Error getting gifs. returning empty list")
-            return emptyList()
+            return ListResultOrError(error = Exception(GifError.NEXT_SEARCH_FAILED.name))
         }
         next = gifResponse.next
-        return gifResponse.results.map { it.formats }
+        return ListResultOrError(gifResponse.results.map { it.formats })
     }
 
     /**
      * Get Search Result GIFs
      */
     private suspend fun getSearchResults(query: String, limit: Int): GifResponse? {
-        val url = "https://tenor.googleapis.com/v2/search?q=${query}&key=${API_KEY}&limit=${limit}" + if (next != null) "&pos=$next" else ""
-        println("URL: $url")
+        try {
+            val url = "https://tenor.googleapis.com/v2/search?q=${query}&key=${API_KEY}&limit=${limit}" + if (next != null) "&pos=$next" else ""
+            println("URL: $url")
 
-        val response = get(url)
-        if (response == null) {
-            println("Error getting gifs. returning null")
+            val response = get(url)
+            if (response == null) {
+                println("Error getting gifs. returning null")
+                return null
+            }
+            val gifResponse = json.decodeFromString<GifResponse>(response.toString())
+            return gifResponse
+        } catch (err: Exception) {
+            err.printStackTrace()
             return null
         }
-        val gifResponse = json.decodeFromString<GifResponse>(response.toString())
-        return gifResponse
     }
 
     /**
