@@ -24,6 +24,7 @@ class CustomizationViewModel(
 
     fun revertChanges() {
         setPlayer(initialPlayer)
+        setChangeWasMade(false)
     }
 
     fun onImageFileSelected(file: ByteArray) {
@@ -63,15 +64,18 @@ class CustomizationViewModel(
     }
 
     private fun setImageUri(uri: String?) {
+        setChangeWasMade(true)
         setPlayer(state.value.player.copy(imageString = uri))
     }
 
 
     private fun setBackgroundColor(color: Color) {
+        setChangeWasMade(true)
         setPlayer(state.value.player.copy(color = color))
     }
 
     private fun setTextColor(color: Color) {
+        setChangeWasMade(true)
         setPlayer(state.value.player.copy(textColor = color))
     }
 
@@ -79,8 +83,13 @@ class CustomizationViewModel(
         _state.value = state.value.copy(showCameraWarning = value ?: !state.value.showCameraWarning)
     }
 
+    private fun setChangeWasMade(value: Boolean) {
+        _state.value = state.value.copy(changeWasMade = value)
+    }
+
     //TODO: show an error if an illegal name (i.e. empty) is entered
     fun setChangeNameField(value: TextFieldValue) {
+        setChangeWasMade(true)
         _state.value = state.value.copy(changeNameTextField = value)
         if (value.text != state.value.player.name) setPlayer(state.value.player.copy(name = value.text))
     }

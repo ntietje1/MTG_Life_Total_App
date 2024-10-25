@@ -12,6 +12,7 @@ data class CustomizationDialogState(
     val showBackgroundColorPicker: Boolean = false,
     val showTextColorPicker: Boolean = false,
     val changeNameTextField: TextFieldValue = TextFieldValue(player.name, selection = TextRange(player.name.length)),
+    val changeWasMade: Boolean = false
 )
 
 enum class CustomizationMenuState {

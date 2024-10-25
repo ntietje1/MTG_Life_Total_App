@@ -276,11 +276,19 @@ fun PlayerCustomizationDialog(
                             }
                         }
                         item {
-                            FormattedSettingsButton(
-                                imageResource = Res.drawable.reset_icon,
-                                text = "Undo Changes",
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center,
                             ) {
-                                viewModel.revertChanges()
+                                SettingsButton(
+                                    modifier = buttonModifier.height(textFieldHeight * 1.25f).padding(horizontal = padding / 4f).padding(bottom = padding / 2f),
+                                    imageVector = vectorResource(Res.drawable.reset_icon),
+                                    text = "Undo Changes",
+                                    shadowEnabled = false,
+                                    onPress = { viewModel.revertChanges() },
+                                    enabled = state.changeWasMade,
+                                    mainColor = if (state.changeWasMade) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha=0.5f)
+                                )
                             }
                         }
                     })
