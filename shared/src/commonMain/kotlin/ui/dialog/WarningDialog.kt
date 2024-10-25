@@ -49,7 +49,7 @@ fun WarningDialog(
             BoxWithConstraints(Modifier
                 .wrapContentSize()
                 .clip(RoundedCornerShape(15))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 1.0f), RoundedCornerShape(15))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), RoundedCornerShape(15))
                 .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f), RoundedCornerShape(15))
             ) {
                 val textSize = remember(Unit) { (maxWidth / 25f).value }
