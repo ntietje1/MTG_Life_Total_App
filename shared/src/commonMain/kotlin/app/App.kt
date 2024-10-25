@@ -73,7 +73,7 @@ fun LifeLinkedApp() {
                                     it.destination.route == null ||
                                             !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route)
                                 }) {
-                                navController.navigate(getStartScreen())
+                                navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
                             } else {
                                 navController.popBackStack()
                             }
