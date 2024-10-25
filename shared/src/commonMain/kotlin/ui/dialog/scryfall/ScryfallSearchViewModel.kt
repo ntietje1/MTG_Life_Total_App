@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import data.api.ScryfallApiRetriever
 import data.serializable.Card
 import data.serializable.Ruling
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +18,7 @@ class ScryfallSearchViewModel(
     private val _state = MutableStateFlow(ScryfallSearchState())
     val state: StateFlow<ScryfallSearchState> = _state.asStateFlow()
 
-    fun searchCards(qry: String, disablePrintingsButton: Boolean = false) {
+    fun searchCards(qry: String, disablePrintingsButton: Boolean = false, onDone: suspend () -> Unit = {}) {
         viewModelScope.launch {
             clearResults()
             setIsSearchInProgress(true)
@@ -27,10 +28,15 @@ class ScryfallSearchViewModel(
             setPrintingsButtonEnabled(!disablePrintingsButton)
             setIsSearchInProgress(false)
             incrementBackStackDiff()
+        }.invokeOnCompletion {
+            viewModelScope.launch {
+                delay(10)
+                onDone()
+            }
         }
     }
 
-    fun searchRulings(qry: String) {
+    fun searchRulings(qry: String, onDone: suspend () -> Unit = {}) {
         viewModelScope.launch {
             clearResults()
             setIsSearchInProgress(true)
@@ -39,6 +45,11 @@ class ScryfallSearchViewModel(
             setLastSearchWasError(false)
             setIsSearchInProgress(false)
             incrementBackStackDiff()
+        }.invokeOnCompletion {
+            viewModelScope.launch {
+                delay(10)
+                onDone()
+            }
         }
     }
 
@@ -47,7 +58,6 @@ class ScryfallSearchViewModel(
     }
 
     private fun clearResults() {
-        println("clearResults")
         setCardResults(listOf())
         setRulingsResults(listOf())
     }
@@ -57,9 +67,7 @@ class ScryfallSearchViewModel(
     }
 
     private fun setCardResults(cardResults: List<Card>) {
-        println("setCardResults: $cardResults")
         _state.value = _state.value.copy(cardResults = cardResults)
-        println("setCardResults2: ${_state.value.cardResults}")
     }
 
     private fun setRulingsResults(rulingsResults: List<Ruling>) {

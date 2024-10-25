@@ -167,21 +167,29 @@ fun ScryfallDialogContent(
                             focusManager.clearFocus()
                             viewModel.searchRulings(card.rulingsUri ?: "")
                             viewModel.setRulingCard(card)
+                            val scrollPosition = listState.firstVisibleItemIndex
                             addToBackStack("Search: $state.textFieldValue.text") {
                                 viewModel.incrementBackStackDiff(-1)
                                 focusManager.clearFocus()
-                                viewModel.searchCards(state.textFieldValue.text)
                                 viewModel.setRulingCard(null)
+                                viewModel.searchCards(state.textFieldValue.text) {
+                                    println("scrolling to $scrollPosition")
+                                    listState.scrollToItem(scrollPosition)
+                                }
                             }
                         }, onSelect = {
                             onImageSelected(card.getUris().artCrop)
                         }, onPrintings = {
                             focusManager.clearFocus()
                             viewModel.searchCards(card.printsSearchUri, disablePrintingsButton = true)
+                            val scrollPosition = listState.firstVisibleItemIndex
                             addToBackStack("Search: $state.textFieldValue.text") {
                                 viewModel.incrementBackStackDiff(-1)
                                 focusManager.clearFocus()
-                                viewModel.searchCards(state.textFieldValue.text)
+                                viewModel.searchCards(state.textFieldValue.text) {
+                                    println("scrolling to $scrollPosition")
+                                    listState.scrollToItem(scrollPosition)
+                                }
                             }
                         })
                 }
