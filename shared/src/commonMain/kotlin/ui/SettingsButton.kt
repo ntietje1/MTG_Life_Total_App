@@ -96,8 +96,7 @@ fun SettingsButton(
         } else {
             Modifier
         })) {
-        val fontSize = (maxWidth / 9f).value.scaledSp
-        val fontPadding = (maxWidth / 5.5f)
+        val fontSize = remember(Unit) { (maxWidth / 9f).value }
         Column(
             modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -123,7 +122,7 @@ fun SettingsButton(
                         .wrapContentWidth(),
                     text = text,
                     color = mainColor,
-                    fontSize = fontSize * textSizeMultiplier,
+                    fontSize = fontSize.scaledSp * textSizeMultiplier,
                     maxLines = 1,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
