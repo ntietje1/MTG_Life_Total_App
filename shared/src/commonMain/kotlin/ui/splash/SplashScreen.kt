@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import di.VersionNumber
 import lifelinked.shared.generated.resources.Res
@@ -60,7 +61,8 @@ fun SplashScreen(
                 fontSize = textSize.scaledSp*1.5f,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onPrimary,
-                style = defaultTextStyle()
+                style = defaultTextStyle(),
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.size(buttonSize / 2f))
             Button(
