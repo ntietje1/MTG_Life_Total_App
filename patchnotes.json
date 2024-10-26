@@ -13,9 +13,11 @@
       "date": "2024-10-25",
       "title": "Player Customization",
       "notes": [
+        "Added splash screen",
         "Added improved player customization menu",
         "Added Gif support + browser",
-        "Improved color picker dialog"
+        "Improved color picker dialog",
+        "Improved UI for tablet users"
       ]
     },
     {
