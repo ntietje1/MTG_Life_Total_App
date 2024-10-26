@@ -52,7 +52,7 @@ fun LifeLinkedApp() {
             val settingsManager = SettingsManager.instance
             val currentVersionNumber = koinInject<VersionNumber>()
             fun getStartScreen(): String {
-                return if (currentVersionNumber.isHigherThan(VersionNumber(settingsManager.lastSplashScreenShown))) {
+                return if (!currentVersionNumber.isSame(VersionNumber(settingsManager.lastSplashScreenShown))) {
                     LifeLinkedScreen.SPLASH.route
                 } else if (!settingsManager.autoSkip) {
                     LifeLinkedScreen.PLAYER_SELECT.route
