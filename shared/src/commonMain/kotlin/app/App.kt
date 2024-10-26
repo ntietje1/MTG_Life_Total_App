@@ -13,15 +13,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import data.SettingsManager
 import di.BackHandler
+import di.VersionNumber
 import di.keepScreenOn
 import di.updateSystemBarsColors
 import org.koin.compose.KoinContext
 import org.koin.compose.currentKoinScope
+import org.koin.compose.koinInject
 import theme.LifeLinkedTheme
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterViewModel
 import ui.playerselect.PlayerSelectScreen
 import ui.playerselect.PlayerSelectViewModel
+import ui.splash.SplashScreen
 import ui.tutorial.TutorialScreen
 import ui.tutorial.TutorialViewModel
 
@@ -29,7 +32,8 @@ import ui.tutorial.TutorialViewModel
 private enum class LifeLinkedScreen(val route: String) {
     PLAYER_SELECT("player_select"),
     LIFE_COUNTER("life_counter"),
-    TUTORIAL("tutorial")
+    TUTORIAL("tutorial"),
+    SPLASH("splash")
 }
 
 @Composable
@@ -46,9 +50,10 @@ fun LifeLinkedApp() {
 
             val navController = rememberNavController()
             val settingsManager = SettingsManager.instance
+            val currentVersionNumber = koinInject<VersionNumber>()
             fun getStartScreen(): String {
-                return if (!settingsManager.tutorialSkip) {
-                    LifeLinkedScreen.TUTORIAL.route
+                return if (currentVersionNumber.isHigherThan(VersionNumber(settingsManager.lastSplashScreenShown))) {
+                    LifeLinkedScreen.SPLASH.route
                 } else if (!settingsManager.autoSkip) {
                     LifeLinkedScreen.PLAYER_SELECT.route
                 } else {
@@ -63,6 +68,19 @@ fun LifeLinkedApp() {
                 navController = navController,
                 startDestination = getStartScreen()
             ) {
+                composable(LifeLinkedScreen.SPLASH.route) {
+                    SplashScreen(
+                        goToTutorial = {
+                            settingsManager.lastSplashScreenShown = currentVersionNumber.value
+                            navController.navigate(LifeLinkedScreen.TUTORIAL.route)
+                        },
+                        goToLifeCounter = {
+                            settingsManager.tutorialSkip = true
+                            settingsManager.lastSplashScreenShown = currentVersionNumber.value
+                            navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
+                        }
+                    )
+                }
                 composable(LifeLinkedScreen.TUTORIAL.route) {
                     val viewModel = koinViewModel<TutorialViewModel>()
                     TutorialScreen(

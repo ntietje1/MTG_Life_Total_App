@@ -2,12 +2,12 @@ package theme
 
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorMatrix
 import kotlin.math.min
 
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
-
+val MainColor = Color(252, 76, 97)
+val MainColorLight = Color(247, 101, 162)
 
 val PlayerColor1 = Color(0xFFf289e2)
 val PlayerColor2 = Color(0xFFee4c87)
@@ -19,34 +19,11 @@ val PlayerColor7 = Color(0xFF46e7db)
 val PlayerColor8 = Color(0xFF625FF7)
 val PlayerColor9 = Color(0xFFc28efc)
 
-val normalColorMatrix = ColorMatrix().generateColorMatrix(1.0f, 1.0f)
-
-val receiverColorMatrix = ColorMatrix().generateColorMatrix(0.0f, 0.3f)
-
-val dealerColorMatrix = ColorMatrix().generateColorMatrix(0.6f, 0.4f)
-
-val deadNormalColorMatrix = ColorMatrix().generateColorMatrix(1.0f, 1.0f, true)
-
-val deadReceiverColorMatrix = ColorMatrix().generateColorMatrix(0.0f, 0.3f, true)
-
-val deadDealerColorMatrix = ColorMatrix().generateColorMatrix(0.6f, 0.4f, true)
-
 fun Color.ghostify(): Color {
     return this.copy().blendWith(Color.Gray)
 }
 
-fun ColorMatrix.generateColorMatrix(sat: Float, lum: Float, dead: Boolean = false): ColorMatrix {
-    val s = if (dead) sat * 0.2f else sat
-    val l = if (dead) lum * 1.05f else lum
-    val a = 1.0f
-    return this.apply {
-        timesAssign(ColorMatrix().apply { setToSaturation(s) })
-        timesAssign(ColorMatrix().apply { setToScale(l, l, l, a) })
-    }
-}
-
 fun generateShadow(): Color {
-//    return this.invert().saturateColor(0.0f).brightenColor(0.6f).copy(alpha = 0.7f)
     return Color.Black.copy(alpha = 0.5f)
 }
 
@@ -70,22 +47,6 @@ fun Color.saturateColor(factor: Float): Color {
         Color.hsv(it[0], it[1] * factor, it[2])
     }
 }
-
-//fun Color.brightenColor(factor: Float): Color {
-//    return this.toHsv().let {
-//        Color.hsv(it[0], it[1], min(it[2] + (1.0f - it[2]) * factor, 1.0f))
-//    }
-//}
-//
-//fun Color.saturateColor(factor: Float): Color {
-//    return this.toHsv().let {
-//        Color.hsv(it[0], it[1] + (1.0f - it[1]) * factor, it[2])
-//    }
-//}
-
-//fun Color.invert(): Color {
-//    return this.copy(red = 1f - this.red, green = 1f - this.green, blue = 1f - this.blue)
-//}
 
 fun Color.toHsv(): FloatArray {
     val r = this.red

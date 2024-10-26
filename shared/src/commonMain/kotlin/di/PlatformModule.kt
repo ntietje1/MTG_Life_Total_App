@@ -17,6 +17,9 @@ data class VersionNumber(val value: String) {
         val otherParts = other.value.split(".").map { it.toInt() }
         return thisParts[0] > otherParts[0] || (thisParts[0] == otherParts[0] && thisParts[1] > otherParts[1]) || (thisParts[0] == otherParts[0] && thisParts[1] == otherParts[1] && thisParts[2] > otherParts[2])
     }
+    companion object {
+        val zero = VersionNumber("0.0.0")
+    }
 }
 
 expect val platform: Platform

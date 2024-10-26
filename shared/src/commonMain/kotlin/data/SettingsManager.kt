@@ -3,6 +3,7 @@ package data
 
 import com.russhwolf.settings.Settings
 import data.serializable.Card
+import di.VersionNumber
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.encodeToString
@@ -57,6 +58,10 @@ class SettingsManager private constructor() {
     var tutorialSkip: Boolean
         get() = settings.getBoolean("tutorialSkip", false)
         set(value) = settings.putBoolean("tutorialSkip", value)
+
+    var lastSplashScreenShown: String
+        get() = settings.getString("lastSplashScreenShown", VersionNumber.zero.value)
+        set(value) = settings.putString("lastSplashScreenShown", value)
 
 //    var turnTimer: Boolean
 //        get() = settings.getBoolean("turnTimer", false)

@@ -54,7 +54,7 @@ import lifelinked.shared.generated.resources.timer_icon
 import lifelinked.shared.generated.resources.visible_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
-import theme.blendWith
+import theme.MainColorLight
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.SettingsButton
@@ -367,7 +367,7 @@ fun SettingsDialogButtonWithToggle(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary.blendWith(Color.Magenta).copy(alpha = 0.5f),
+                        checkedThumbColor = MainColorLight.copy(alpha = 0.5f),
                         checkedTrackColor = MaterialTheme.colorScheme.background.copy(alpha = 0.3f),
                         uncheckedThumbColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
                         uncheckedTrackColor = MaterialTheme.colorScheme.background.copy(alpha = 0.3f),
