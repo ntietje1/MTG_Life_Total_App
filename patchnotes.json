@@ -1,7 +1,6 @@
 {
   "in-progress": [
     "Improved 1 player features",
-    "Improved player customization menu and options",
     "Bounties, city's blessing, the ring, and dungeon progress tracking",
     "Improved tutorial",
     "Game statistics tracking",
@@ -9,6 +8,16 @@
     "Make sure to request new features you want to see in the app!"
   ],
   "patch-notes": [
+    {
+      "version": "1.9.0",
+      "date": "2024-10-25",
+      "title": "Player Customization",
+      "notes": [
+        "Added improved player customization menu",
+        "Added Gif support + browser",
+        "Improved color picker dialog"
+      ]
+    },
     {
       "version": "1.8.3",
       "date": "2024-09-29",

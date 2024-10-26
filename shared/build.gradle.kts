@@ -122,8 +122,8 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         compileSdk = libs.versions.android.compileSdk.get().toInt()
-        versionCode = 15
-        versionName = "1.8.3"
+        versionCode = 16
+        versionName = "1.9.0"
     }
     packaging {
         resources {
