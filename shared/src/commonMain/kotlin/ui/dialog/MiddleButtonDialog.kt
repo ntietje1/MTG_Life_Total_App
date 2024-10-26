@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -103,14 +102,23 @@ fun MiddleButtonDialog(
     BoxWithConstraints(
         modifier = modifier
     ) {
+        val buttonSize4x3 = minOf(maxWidth / 4f, maxHeight / 3f)
+        val buttonSize3x4 = minOf(maxHeight / 4f, maxWidth / 3f)
+
+        val numColumns = remember(Unit) {
+            if (buttonSize3x4 * 4 < maxHeight*0.9f) {
+                3
+            } else {
+                4
+            }
+        }
+
         val buttonModifier = remember(Unit) {
-            Modifier.then(
-                if (maxWidth / 3f < maxHeight / 4f) {
-                    Modifier.fillMaxHeight(0.75f).padding(maxWidth / 50f)
-                } else {
-                    Modifier.fillMaxWidth(0.75f).padding(maxHeight / 50f)
-                }
-            )
+            if (buttonSize3x4 * 4 < maxHeight*0.9f)  {
+                Modifier.size(buttonSize4x3)
+            } else {
+                Modifier.size(buttonSize3x4)
+            }
         }
 
         AnimatedGridDialog(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, backHandler = backHandler, pages = listOf(Pair(
@@ -219,7 +227,7 @@ fun MiddleButtonDialog(
             middleButtonDialogState == MiddleButtonDialogState.Default
         ) {
             GridDialogContent(
-                Modifier.fillMaxSize(), title = "Settings", items = listOf({
+                Modifier.fillMaxSize(), title = "Settings", columns = numColumns, items = listOf({
                     SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
                         viewModel.savePlayerStates()
                         viewModel.savePlayerPrefs()

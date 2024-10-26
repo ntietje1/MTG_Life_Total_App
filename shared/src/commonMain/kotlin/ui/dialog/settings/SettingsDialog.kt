@@ -75,7 +75,7 @@ fun SettingsDialogContent(
     val uriHandler = LocalUriHandler.current
 
     BoxWithConstraints(modifier) {
-        val buttonHeight = remember(Unit) { maxWidth / 7f }
+        val buttonHeight = remember(Unit) { 10.dp + maxWidth / 10f }
         val textSize = remember(Unit) { (maxWidth / 30f).value }
         val smallPadding = remember(Unit) { maxWidth / 50f }
         LazyColumn(
@@ -322,10 +322,10 @@ fun SettingsDialogButtonWithToggle(
     val isChecked = remember { mutableStateOf(initialState) }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val iconSize = remember(Unit) { maxHeight / 2f }
-        val padding = remember(Unit) { maxWidth / 25f }
-        val textSize = remember(Unit) { (maxWidth / 24f).value }
-        val toggleScale = remember(Unit) { maxWidth.value / 450.dp.value }
+        val iconSize = remember(Unit) { 10.dp + maxHeight / 3f }
+        val padding = remember(Unit) { 5.dp + maxWidth / 35f }
+        val textSize = remember(Unit) { 7 + (maxWidth / 32f).value }
+        val toggleScale = remember(Unit) { (maxWidth.value + 5) / 500.dp.value }
         Row(
             modifier = modifier
                 .fillMaxWidth()
