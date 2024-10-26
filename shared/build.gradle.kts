@@ -122,7 +122,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         compileSdk = libs.versions.android.compileSdk.get().toInt()
-        versionCode = 17
+        versionCode = 18
         versionName = "1.9.0"
     }
     packaging {
