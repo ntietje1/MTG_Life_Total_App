@@ -21,7 +21,7 @@ class PlayerButtonViewModel(
     initialPlayer: Player,
     val settingsManager: SettingsManager,
     val imageManager: ImageManager,
-    private val setAllButtonStates: (PBState) -> Unit,
+    val onCommanderButtonClicked: (PlayerButtonViewModel) -> Unit,
     private val setAllMonarchy: (Boolean) -> Unit,
     private val getCurrentDealer: () -> PlayerButtonViewModel?,
     private val updateCurrentDealerMode: (Boolean) -> Unit,
@@ -52,24 +52,6 @@ class PlayerButtonViewModel(
 
     private fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
-    }
-
-    fun onCommanderButtonClicked() {
-        setPlayerButtonState(
-            buttonState = when (state.value.buttonState) {
-                PBState.NORMAL -> {
-                    setAllButtonStates(PBState.COMMANDER_RECEIVER)
-                    PBState.COMMANDER_DEALER
-                }
-
-                PBState.COMMANDER_DEALER -> {
-                    setAllButtonStates(PBState.NORMAL)
-                    PBState.NORMAL
-                }
-
-                else -> state.value.buttonState // do nothing
-            }
-        )
     }
 
     fun onMonarchyButtonClicked(value: Boolean? = null) {

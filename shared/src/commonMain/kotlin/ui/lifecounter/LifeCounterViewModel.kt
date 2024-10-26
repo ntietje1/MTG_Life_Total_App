@@ -177,17 +177,38 @@ class LifeCounterViewModel(
         return player.copy(color = allPlayerColors.filter { it !in getUsedColors() }.random())
     }
 
-    private val currentDealer: PlayerButtonViewModel?
-        get() = playerButtonViewModels.find { it.state.value.buttonState == PBState.COMMANDER_DEALER }
+    private fun onNormalCommanderButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
+        setCurrentDealer(playerButtonViewModel)
+        setAllButtonStates(PBState.COMMANDER_RECEIVER)
+        playerButtonViewModel.setPlayerButtonState(PBState.COMMANDER_DEALER)
+    }
+
+    fun onCommanderDealerButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
+        setCurrentDealer(null)
+        setAllButtonStates(PBState.NORMAL)
+        playerButtonViewModel.setPlayerButtonState(PBState.NORMAL)
+    }
+
+    private fun onCommanderButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
+            when (playerButtonViewModel.state.value.buttonState) {
+                PBState.NORMAL -> {
+                    onNormalCommanderButtonClicked(playerButtonViewModel)
+                }
+                PBState.COMMANDER_DEALER -> {
+                    onCommanderDealerButtonClicked(playerButtonViewModel)
+                }
+                else -> {} // do nothing
+            }
+    }
 
     private fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
         return PlayerButtonViewModel(
             initialPlayer = player,
             settingsManager = settingsManager,
             imageManager = imageManager,
-            setAllButtonStates = { setAllButtonStates(it) },
+            onCommanderButtonClicked = { onCommanderButtonClicked(it) },
             setAllMonarchy = { setAllMonarchy(it) },
-            getCurrentDealer = { currentDealer },
+            getCurrentDealer = { state.value.currentDealer },
             updateCurrentDealerMode = { setDealerMode(it) },
             currentDealerIsPartnered = currentDealerIsPartnered,
             triggerSave = { savePlayerStates() },
@@ -236,6 +257,10 @@ class LifeCounterViewModel(
 
     private fun showLoadingScreen(value: Boolean) {
         _state.value = _state.value.copy(showLoadingScreen = value)
+    }
+
+    private fun setCurrentDealer(dealer: PlayerButtonViewModel?) {
+        _state.value = _state.value.copy(currentDealer = dealer)
     }
 
     fun setNumPlayers(value: Int) {

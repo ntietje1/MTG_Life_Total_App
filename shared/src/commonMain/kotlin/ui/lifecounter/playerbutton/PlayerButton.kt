@@ -400,7 +400,6 @@ fun PlayerButton(
                             }
 
                             PBState.COMMANDER_DEALER -> {
-                                val iconResource = remember { if (currentDealerIsPartnered) Res.drawable.sword_icon_double else Res.drawable.sword_icon }
                                 Column(
                                     Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
                                 ) {
@@ -415,7 +414,7 @@ fun PlayerButton(
                                     )
                                     Spacer(modifier = Modifier.height(smallButtonSize / 4f))
                                     SettingsButton(modifier = Modifier.size(smallButtonSize * 1.5f),
-                                        imageVector = vectorResource(iconResource),
+                                        imageVector = vectorResource(if (currentDealerIsPartnered) Res.drawable.sword_icon_double else Res.drawable.sword_icon),
                                         backgroundColor = Color.Transparent,
                                         mainColor = state.player.textColor,
                                         onPress = {
@@ -587,7 +586,7 @@ fun PlayerButton(
                             bottom = commanderStateMargin,
                         ), visible = commanderButtonVisible, iconResource = Res.drawable.commander_solid_icon, color = state.player.textColor, size = smallButtonSize
                     ) {
-                        viewModel.onCommanderButtonClicked()
+                        viewModel.onCommanderButtonClicked(viewModel)
                     }
                 }
 

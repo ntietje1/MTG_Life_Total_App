@@ -48,8 +48,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
+import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.blendWith
+import ui.SettingsButton
 import ui.dialog.MiddleButtonDialog
 import ui.lifecounter.playerbutton.PlayerButton
 import ui.modifier.routePointerChangesTo
@@ -95,9 +97,10 @@ fun LifeCounterScreen(
     }
 
     if (showMiddleDialog) {
-        MiddleButtonDialog(modifier = Modifier.onGloballyPositioned { _ ->
-            viewModel.setBlurBackground(showMiddleDialog)
-        },
+        MiddleButtonDialog(
+            modifier = Modifier.onGloballyPositioned { _ ->
+                viewModel.setBlurBackground(showMiddleDialog)
+            },
             onDismiss = { showMiddleDialog = false },
             viewModel = viewModel,
             toggleTheme = { toggleTheme() },
@@ -171,8 +174,14 @@ fun LifeCounterScreen(
                                             })
                                         }.then(
                                             when (turnTimerAlignment) {
-                                                Alignment.TopStart -> Modifier.align(Alignment.TopStart).background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp)).border(buttonPadding, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
-                                                Alignment.TopEnd -> Modifier.align(Alignment.TopEnd).background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius)).border(buttonPadding, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
+                                                Alignment.TopStart -> Modifier.align(Alignment.TopStart)
+                                                    .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
+                                                    .border(buttonPadding, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
+
+                                                Alignment.TopEnd -> Modifier.align(Alignment.TopEnd)
+                                                    .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
+                                                    .border(buttonPadding, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
+
                                                 else -> Modifier
                                             }
                                         ),
@@ -192,9 +201,22 @@ fun LifeCounterScreen(
             })
             val middleButtonOffset = m.middleButtonOffset(middleButtonSize)
 
-            AnimatedMiddleButton(modifier = Modifier.offset(middleButtonOffset.first, middleButtonOffset.second).size(middleButtonSize), visible = state.showButtons, onMiddleButtonClick = {
-                showMiddleDialog = true
-            })
+            Box(
+                modifier = Modifier.offset(middleButtonOffset.first, middleButtonOffset.second).size(middleButtonSize)
+            ) {
+                AnimatedMiddleButton(modifier = Modifier.fillMaxSize(), visible = state.showButtons && state.currentDealer == null, onMiddleButtonClick = {
+                    showMiddleDialog = true
+                })
+
+                val settingsButtonVisible = state.showButtons && state.currentDealer != null
+                AnimatedExitButton(
+                    modifier = Modifier.fillMaxSize(),
+                    visible = settingsButtonVisible,
+                    onPress = {
+                        viewModel.onCommanderDealerButtonClicked(state.currentDealer!!)
+                    }
+                )
+            }
 
             if (!state.showButtons || state.showLoadingScreen) {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
@@ -212,6 +234,48 @@ fun LifeCounterScreen(
         }
     }
 }
+
+@Composable
+fun AnimatedExitButton(
+    modifier: Modifier = Modifier,
+    visible: Boolean,
+    onPress: () -> Unit
+) {
+    val settingsButtonScale = remember { Animatable(0f) }
+    val duration = (300 / getAnimationCorrectionFactor()).toInt()
+
+    LaunchedEffect(visible) {
+        if (visible) {
+            settingsButtonScale.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = duration, easing = LinearOutSlowInEasing)
+            )
+        } else {
+            settingsButtonScale.snapTo(0f)
+        }
+    }
+
+    SettingsButton(
+        modifier = modifier.graphicsLayer {
+            scaleX = settingsButtonScale.value
+            scaleY = settingsButtonScale.value
+        },
+        shape = CircleShape,
+        backgroundColor = MaterialTheme.colorScheme.primary,
+        imageVector = vectorResource(Res.drawable.x_icon),
+        text = "",
+        textSizeMultiplier = 1f,
+        mainColor = MaterialTheme.colorScheme.onPrimary,
+        visible = visible,
+        enabled = true,
+        shadowEnabled = true,
+        hapticEnabled = true,
+        onPress = {
+            onPress()
+        },
+    )
+}
+
 
 @Composable
 fun AnimatedPlayerButton(
@@ -274,13 +338,6 @@ fun AnimatedPlayerButton(
         translationY = offsetY.value
     }) {
         playerButton(Modifier.size(width, height))
-//        PlayerButton(
-//            modifier = Modifier.size(width, height), viewModel = playerButtonViewModel, rotation = rotation,
-//            borderWidth = borderWidth,
-//            setBlurBackground = {
-//                setBlurBackground(it)
-//            }
-//        )
     }
 }
 
@@ -290,11 +347,10 @@ fun AnimatedMiddleButton(
 ) {
     var animationFinished by remember { mutableStateOf(false) }
 
-    val popInDuration = (1100 / getAnimationCorrectionFactor()).toInt()
+    val popInDuration = (900 / getAnimationCorrectionFactor()).toInt()
     var angle by remember { mutableFloatStateOf(0f) }
     var scale by remember { mutableFloatStateOf(0f) }
 
-    // Use Animatable for smooth animation
     val animatableAngle = remember { Animatable(0f) }
     val animatableScale = remember { Animatable(0f) }
 
