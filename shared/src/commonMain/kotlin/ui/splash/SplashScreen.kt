@@ -1,6 +1,7 @@
 package ui.splash
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -47,8 +48,9 @@ fun SplashScreen(
         val textSize = remember(Unit) { buttonSize.value * 0.08f }
         val iconSize = remember(Unit) { maxWidth * 0.4f }
         val haptic  = LocalHapticFeedback.current
+
         Column(
-            modifier = Modifier.fillMaxSize().align(Alignment.Center),
+            modifier = Modifier.fillMaxSize().align(Alignment.Center).background(MaterialTheme.colorScheme.background),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
