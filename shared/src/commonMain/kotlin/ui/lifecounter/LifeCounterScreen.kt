@@ -137,10 +137,10 @@ fun LifeCounterScreen(
         val m = LifeCounterMeasurements(
             maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = state.numPlayers, alt4Layout = viewModel.settingsManager.alt4PlayerLayout
         )
-        val buttonPadding = maxWidth / 750f + maxHeight / 750f
-        val buttonPlacements = m.buttonPlacements()
-        val blurRadius = maxHeight / 50f
-        val middleButtonSize = (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5
+        val buttonPadding = remember(maxHeight) { maxWidth / 750f + maxHeight / 750f }
+        val buttonPlacements = remember(maxHeight) { m.buttonPlacements() }
+        val blurRadius = remember(Unit) { maxHeight / 50f }
+        val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }
         Box(
             Modifier.fillMaxSize().then(
                 if (state.blurBackground) {
@@ -154,13 +154,13 @@ fun LifeCounterScreen(
                 items(buttonPlacements, key = { it.hashCode() }) { buttonPlacements ->
                     LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
                         items(buttonPlacements, key = { it.index }) { placement ->
-                            val width = placement.width - buttonPadding * 4
-                            val height = placement.height - buttonPadding * 4
-                            val rotation = placement.angle
-                            val turnTimerAlignment = placement.timerAlignment
+                            val width = remember(Unit) { placement.width - buttonPadding * 4 }
+                            val height = remember(Unit) { placement.height - buttonPadding * 4 }
+                            val rotation = remember(Unit) { placement.angle }
+                            val turnTimerAlignment = remember(Unit) { placement.timerAlignment }
+                            val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
                             val playerButtonViewModel = viewModel.playerButtonViewModels[placement.index]
                             val timerColor = playerButtonViewModel.state.value.player.textColor
-                            val topCornerRadius = (min(width, height) * 0.1f + max(width, height) * 0.01f)
                             AnimatedPlayerButton(modifier = Modifier.padding(buttonPadding),
                                 visible = state.showButtons,
                                 rotation = placement.angle,
