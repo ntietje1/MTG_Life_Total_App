@@ -171,10 +171,8 @@ class PlayerButtonViewModel(
             val previousValue = this.contains(counterType)
             val targetValue = active ?: !previousValue
             if (targetValue) {
-                println("adding counterType: $counterType")
                 this.add(counterType)
             } else {
-                println("removing counterType: $counterType")
                 this.remove(counterType)
             }
         }))
