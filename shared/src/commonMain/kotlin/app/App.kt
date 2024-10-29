@@ -25,7 +25,7 @@ import ui.lifecounter.LifeCounterViewModel
 import ui.playerselect.PlayerSelectScreen
 import ui.playerselect.PlayerSelectViewModel
 import ui.splash.SplashScreen
-import ui.tutorial.TutorialScreen
+import ui.tutorial.TutorialScreen2
 import ui.tutorial.TutorialViewModel
 
 
@@ -75,7 +75,6 @@ fun LifeLinkedApp() {
                             navController.navigate(LifeLinkedScreen.TUTORIAL.route)
                         },
                         goToLifeCounter = {
-                            settingsManager.tutorialSkip = true
                             settingsManager.lastSplashScreenShown = currentVersionNumber.value
                             navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
                         }
@@ -83,7 +82,7 @@ fun LifeLinkedApp() {
                 }
                 composable(LifeLinkedScreen.TUTORIAL.route) {
                     val viewModel = koinViewModel<TutorialViewModel>()
-                    TutorialScreen(
+                    TutorialScreen2(
                         viewModel = viewModel,
                         onFinishTutorial = {
                             settingsManager.tutorialSkip = true
