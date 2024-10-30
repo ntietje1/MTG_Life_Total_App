@@ -20,35 +20,65 @@ import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
+interface ILifeCounterViewModel {
+    val state: StateFlow<LifeCounterState>
+    val currentDealerIsPartnered: StateFlow<Boolean>
+    var playerButtonViewModels: List<PlayerButtonViewModel>
+
+    fun promptFirstPlayer()
+    fun setFirstPlayer(index: Int?)
+    fun setTimerEnabled(value: Boolean = true)
+    fun killTimer()
+    fun onNavigate(firstNavigation: Boolean)
+    fun onCommanderDealerButtonClicked(playerButtonViewModel: PlayerButtonViewModel)
+    fun savePlayerPrefs()
+    fun savePlayerStates()
+    fun resetAllPrefs()
+    fun setFirstPlayerSelectionActive(value: Boolean)
+    fun openMiddleButtonDialog(value: Boolean = true)
+    fun setNumPlayers(value: Int)
+    fun resetGameState()
+    fun setShowButtons(value: Boolean)
+    fun setBlurBackground(value: Boolean)
+    fun setDayNight(value: DayNightState)
+    fun incrementCounter(index: Int, value: Int)
+    fun resetCounters()
+    fun toggleDayNight()
+}
+
 class LifeCounterViewModel(
-    val settingsManager: SettingsManager,
+    private val settingsManager: SettingsManager,
     private val imageManager: ImageManager,
     private val planeChaseViewModel: PlaneChaseViewModel
-) : ViewModel() {
+) : ViewModel(), ILifeCounterViewModel {
     private val _state = MutableStateFlow(LifeCounterState())
-    val state: StateFlow<LifeCounterState> = _state.asStateFlow()
+    override val state: StateFlow<LifeCounterState> = _state.asStateFlow()
 
     private val _currentDealerIsPartnered = MutableStateFlow(false)
-    private val currentDealerIsPartnered = _currentDealerIsPartnered.asStateFlow()
+    override val currentDealerIsPartnered = _currentDealerIsPartnered.asStateFlow()
 
-    lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
+    override lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
 
     init {
         generatePlayers()
     }
 
-    fun askForFirstPlayer() {
-        for (i in playerButtonViewModels.indices) {
-            playerButtonViewModels[i].pushBackStack { playerButtonViewModels[i].setPlayerButtonState(PBState.NORMAL) }
-            playerButtonViewModels[i].setPlayerButtonState(PBState.SELECT_FIRST_PLAYER)
+    override fun promptFirstPlayer() {
+        if (settingsManager.numPlayers.value == 1) {
+            setFirstPlayer(0)
+            setTimerEnabled(settingsManager.turnTimer.value)
+        } else if (state.value.firstPlayer == null) {
+            for (i in playerButtonViewModels.indices) {
+                playerButtonViewModels[i].pushBackStack { playerButtonViewModels[i].setPlayerButtonState(PBState.NORMAL) }
+                playerButtonViewModels[i].setPlayerButtonState(PBState.SELECT_FIRST_PLAYER)
+            }
+            setFirstPlayerSelectionActive(true)
+        } else {
+            setTimerEnabled(settingsManager.turnTimer.value)
         }
     }
 
-    private fun setActiveTimerIndex(index: Int?) {
-        _state.value = _state.value.copy(activeTimerIndex = index)
-    }
-
-    fun setFirstPlayer(index: Int?) {
+    override fun setFirstPlayer(index: Int?) {
         _state.value = _state.value.copy(firstPlayer = index)
         if (index != null) {
             for (i in playerButtonViewModels.indices) {
@@ -56,10 +86,12 @@ class LifeCounterViewModel(
                     playerButtonViewModels[i].popBackStack()
                 }
             }
+            setTimerEnabled(settingsManager.turnTimer.value)
+            setFirstPlayerSelectionActive(false)
         }
     }
 
-    fun setTimerEnabled(value: Boolean = true) {
+    override fun setTimerEnabled(value: Boolean) {
         if (value) {
             if (_state.value.activeTimerIndex == null) {
                 setActiveTimerIndex(_state.value.firstPlayer)
@@ -72,6 +104,7 @@ class LifeCounterViewModel(
 
     private var timerJob: Job? = null
 
+    //TODO: move timer logic to it's own module, also save it's state to local storage
     private fun initTimer() {
         if (_state.value.turnTimer == null) {
             _state.value = _state.value.copy(turnTimer = TurnTimer(-1, 1))
@@ -89,7 +122,7 @@ class LifeCounterViewModel(
         }
     }
 
-    fun killTimer() {
+    override fun killTimer() {
         timerJob?.cancel()
         timerJob = null
         updatePlayerButtonTimers(-1, null)
@@ -110,15 +143,15 @@ class LifeCounterViewModel(
     private fun getNextPlayerIndex(currentIndex: Int): Int {
         var nextPlayerIndex = currentIndex
         do {
-            nextPlayerIndex = (nextPlayerIndex + 1) % _state.value.numPlayers
-        } while (playerButtonViewModels[nextPlayerIndex].isDead() && !playerButtonViewModels.subList(0, state.value.numPlayers).all { it.isDead() })
+            nextPlayerIndex = (nextPlayerIndex + 1) % settingsManager.numPlayers.value
+        } while (playerButtonViewModels[nextPlayerIndex].isDead() && !playerButtonViewModels.subList(0, settingsManager.numPlayers.value).all { it.isDead() })
         return nextPlayerIndex
     }
 
     private fun moveTimer() {
         if (_state.value.activeTimerIndex == null || _state.value.firstPlayer == null) throw IllegalStateException("Attempted to move timer when no one has an active timer")
         val nextPlayerIndex = getNextPlayerIndex(_state.value.activeTimerIndex!!)
-        val firstActivePlayerIndex = getNextPlayerIndex((_state.value.firstPlayer!! - 1 + _state.value.numPlayers) % _state.value.numPlayers)
+        val firstActivePlayerIndex = getNextPlayerIndex((_state.value.firstPlayer!! - 1 + settingsManager.numPlayers.value) % settingsManager.numPlayers.value)
         if (nextPlayerIndex == firstActivePlayerIndex) {
             incrementTurn()
         }
@@ -138,7 +171,7 @@ class LifeCounterViewModel(
         }
     }
 
-    fun onNavigate(firstNavigation: Boolean) {
+    override fun onNavigate(firstNavigation: Boolean) {
         if (settingsManager.loadPlayerStates().isEmpty()) generatePlayers()
         if (firstNavigation) {
             viewModelScope.launch {
@@ -183,7 +216,7 @@ class LifeCounterViewModel(
         playerButtonViewModel.setPlayerButtonState(PBState.COMMANDER_DEALER)
     }
 
-    fun onCommanderDealerButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
+    override fun onCommanderDealerButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
         setCurrentDealer(null)
         setAllButtonStates(PBState.NORMAL)
         playerButtonViewModel.setPlayerButtonState(PBState.NORMAL)
@@ -217,13 +250,13 @@ class LifeCounterViewModel(
         )
     }
 
-    fun savePlayerPrefs() {
+    override fun savePlayerPrefs() {
         playerButtonViewModels.forEach {
             it.savePlayerPref()
         }
     }
 
-    fun savePlayerStates() {
+    override fun savePlayerStates() {
         settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
     }
 
@@ -231,11 +264,23 @@ class LifeCounterViewModel(
         playerButtonViewModels.forEach { it.resetState(settingsManager.startingLife) }
     }
 
-    fun resetAllPrefs() {
+    override fun resetAllPrefs() {
         playerButtonViewModels.forEach {
             it.resetPlayerPref()
             it.copyPrefs(it.state.value.player)
         }
+    }
+
+    override fun setFirstPlayerSelectionActive(value: Boolean) {
+        _state.value = _state.value.copy(firstPlayerSelectionActive = value)
+    }
+
+    override fun openMiddleButtonDialog(value: Boolean) {
+        _state.value = _state.value.copy(showMiddleButtonDialog = value)
+    }
+
+    private fun setActiveTimerIndex(index: Int?) {
+        _state.value = _state.value.copy(activeTimerIndex = index)
     }
 
     private fun setAllButtonStates(pbState: PBState) {
@@ -263,12 +308,13 @@ class LifeCounterViewModel(
         _state.value = _state.value.copy(currentDealer = dealer)
     }
 
-    fun setNumPlayers(value: Int) {
-        _state.value = _state.value.copy(numPlayers = value)
-        settingsManager.numPlayers = value
+    override fun setNumPlayers(value: Int) {
+        println("SETTING NUM PLAYERS: $value")
+//        _state.value = _state.value.copy(numPlayers = value)
+        settingsManager.setNumPlayers(value)
     }
 
-    fun restartButtons() {
+    private fun restartButtons() {
         setShowButtons(false)
         viewModelScope.launch {
             delay(10)
@@ -276,7 +322,7 @@ class LifeCounterViewModel(
         }
     }
 
-    fun resetGameState() {
+    override fun resetGameState() {
         //TODO: reset counters?
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
@@ -284,29 +330,30 @@ class LifeCounterViewModel(
         savePlayerStates()
         setFirstPlayer(null)
         resetTimer()
+        restartButtons()
     }
 
-    fun setShowButtons(value: Boolean) {
+    override fun setShowButtons(value: Boolean) {
         _state.value = _state.value.copy(showButtons = value)
     }
 
-    fun setBlurBackground(value: Boolean) {
+    override fun setBlurBackground(value: Boolean) {
         _state.value = _state.value.copy(blurBackground = value)
     }
 
-    fun setDayNight(value: DayNightState) {
+    override fun setDayNight(value: DayNightState) {
         _state.value = _state.value.copy(dayNight = value)
     }
 
-    fun incrementCounter(index: Int, value: Int) {
+    override fun incrementCounter(index: Int, value: Int) {
         _state.value = _state.value.copy(counters = _state.value.counters.toMutableList().apply { set(index, _state.value.counters[index] + value) }.toList())
     }
 
-    fun resetCounters() {
+    override fun resetCounters() {
         _state.value = _state.value.copy(counters = List(COUNTER_DIALOG_ENTRIES) { 0 })
     }
 
-    fun toggleDayNight() {
+    override fun toggleDayNight() {
         setDayNight(
             when (_state.value.dayNight) {
                 DayNightState.NONE -> DayNightState.DAY

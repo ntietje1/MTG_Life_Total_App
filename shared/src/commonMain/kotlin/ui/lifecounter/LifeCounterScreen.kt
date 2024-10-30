@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
+import data.SettingsManager
 import di.getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -50,6 +51,7 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
+import org.koin.compose.koinInject
 import theme.blendWith
 import ui.SettingsButton
 import ui.dialog.MiddleButtonDialog
@@ -58,35 +60,22 @@ import ui.modifier.routePointerChangesTo
 
 @Composable
 fun LifeCounterScreen(
-    viewModel: LifeCounterViewModel,
+    viewModel: ILifeCounterViewModel,
     toggleTheme: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     numPlayers: Int,
     timerEnabled: Boolean,
-    firstNavigation: Boolean
+    firstNavigation: Boolean,
+    settingsManager: SettingsManager = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
-    var showMiddleDialog by remember { mutableStateOf(false) }
-    var firstPlayerSelectionActive by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    fun promptFirstPlayer() {
-        if (state.numPlayers == 1) {
-            viewModel.setFirstPlayer(0)
-            viewModel.setTimerEnabled(timerEnabled)
-        } else if (state.firstPlayer == null) {
-            viewModel.askForFirstPlayer()
-            firstPlayerSelectionActive = true
-        } else {
-            viewModel.setTimerEnabled(timerEnabled)
-        }
-    }
-
     if (timerEnabled) { // Features that require first player
-        if (state.firstPlayer == null && !firstPlayerSelectionActive) {
-            promptFirstPlayer()
+        if (state.firstPlayer == null && !state.firstPlayerSelectionActive) {
+            viewModel.promptFirstPlayer()
         }
     } else {
         viewModel.killTimer()
@@ -96,12 +85,12 @@ fun LifeCounterScreen(
         viewModel.setNumPlayers(numPlayers)
     }
 
-    if (showMiddleDialog) {
+    if (state.showMiddleButtonDialog) {
         MiddleButtonDialog(
             modifier = Modifier.onGloballyPositioned { _ ->
-                viewModel.setBlurBackground(showMiddleDialog)
+                viewModel.setBlurBackground(state.showMiddleButtonDialog)
             },
-            onDismiss = { showMiddleDialog = false },
+            onDismiss = { viewModel.openMiddleButtonDialog(false) },
             viewModel = viewModel,
             toggleTheme = { toggleTheme() },
             toggleKeepScreenOn = { toggleKeepScreenOn() },
@@ -109,10 +98,11 @@ fun LifeCounterScreen(
                 viewModel.setShowButtons(false)
                 goToPlayerSelectScreen(changeNumPlayers)
             },
+            setAlt4PlayerLayout = { settingsManager.alt4PlayerLayout = it },
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
-                    showMiddleDialog = false
+                    viewModel.openMiddleButtonDialog(false)
                     viewModel.setShowButtons(false)
                     delay(10)
                     viewModel.setShowButtons(true)
@@ -127,18 +117,17 @@ fun LifeCounterScreen(
         viewModel.onNavigate(firstNavigation)
     }
 
-    LaunchedEffect(showMiddleDialog) {
-        viewModel.setBlurBackground(showMiddleDialog)
+    LaunchedEffect(state.showMiddleButtonDialog) {
+        viewModel.setBlurBackground(state.showMiddleButtonDialog)
     }
 
     BoxWithConstraints(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ) {
-        val m = LifeCounterMeasurements(
-            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = state.numPlayers, alt4Layout = viewModel.settingsManager.alt4PlayerLayout
-        )
+        val m = remember(maxHeight, maxWidth, settingsManager.numPlayers.value, settingsManager.alt4PlayerLayout) { LifeCounterMeasurements(
+            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = settingsManager.numPlayers.value, alt4Layout = settingsManager.alt4PlayerLayout
+        ) }
         val buttonPadding = remember(maxHeight) { maxWidth / 750f + maxHeight / 750f }
-        val buttonPlacements = remember(maxHeight) { m.buttonPlacements() }
         val blurRadius = remember(Unit) { maxHeight / 50f }
         val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }
         Box(
@@ -151,7 +140,7 @@ fun LifeCounterScreen(
             )
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
-                items(buttonPlacements, key = { it.hashCode() }) { buttonPlacements ->
+                items(m.buttonPlacements(), key = { it.hashCode() }) { buttonPlacements ->
                     LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
                         items(buttonPlacements, key = { it.index }) { placement ->
                             val width = remember(Unit) { placement.width - buttonPadding * 4 }
@@ -191,8 +180,6 @@ fun LifeCounterScreen(
                                         setBlurBackground = { viewModel.setBlurBackground(it) },
                                         setFirstPlayer = {
                                             viewModel.setFirstPlayer(placement.index)
-                                            viewModel.setTimerEnabled(timerEnabled)
-                                            firstPlayerSelectionActive = false
                                         })
                                 })
                         }
@@ -205,7 +192,7 @@ fun LifeCounterScreen(
                 modifier = Modifier.offset(middleButtonOffset.first, middleButtonOffset.second).size(middleButtonSize)
             ) {
                 AnimatedMiddleButton(modifier = Modifier.fillMaxSize(), visible = state.showButtons && state.currentDealer == null, onMiddleButtonClick = {
-                    showMiddleDialog = true
+                    viewModel.openMiddleButtonDialog(true)
                 })
 
                 val settingsButtonVisible = state.showButtons && state.currentDealer != null

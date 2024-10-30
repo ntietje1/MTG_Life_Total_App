@@ -50,6 +50,7 @@ import data.Player.Companion.allPlayerColors
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.placeholder_icon
+import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.vectorResource
@@ -92,6 +93,8 @@ fun TutorialScreen2(
         )
     }
 
+    var showInstructions by remember { mutableStateOf(true) }
+
     Box(Modifier.fillMaxSize().background(Color.Black)) { // Background color has to be hard-coded since images have black background
         SettingsButton(modifier = Modifier.align(Alignment.TopEnd).size(90.dp).padding(horizontal = 15.dp),
             mainColor = Color.White,
@@ -106,6 +109,15 @@ fun TutorialScreen2(
                     viewModel.showWarningDialog()
                 }
             })
+        SettingsButton(modifier = Modifier.align(Alignment.BottomStart).size(90.dp).padding(15.dp),
+            mainColor = if (!showInstructions) Color.White else Color.White.copy(alpha=0.7f),
+            backgroundColor = Color.Transparent,
+            text = "Show Instructions",
+            shadowEnabled = false,
+            imageVector = vectorResource(Res.drawable.question_icon),
+            onTap = {
+                showInstructions = !showInstructions
+            })
         Column(
             modifier = Modifier.fillMaxSize().padding(top=90.dp).align(Alignment.TopCenter),
             verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally
@@ -116,7 +128,6 @@ fun TutorialScreen2(
             ) { index ->
                 if (index == 0) {
                     //TODO: add a button to show instructions again
-                    var showInstructions by remember { mutableStateOf(true) }
                     Box(Modifier.fillMaxSize()) {
                         LifeCounterScreen(
                             viewModel = koinInject(),
@@ -178,6 +189,7 @@ fun TutorialScreen2(
                     )
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.offset(y = -(16).dp).wrapContentWidth().height(50.dp).clip(RoundedCornerShape(100))

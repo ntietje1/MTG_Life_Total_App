@@ -5,6 +5,7 @@ import com.russhwolf.settings.Settings
 import data.serializable.Card
 import di.VersionNumber
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -37,11 +38,19 @@ class SettingsManager private constructor() {
         get() = settings.getBoolean("fastCoinFlip", false)
         set(value) = settings.putBoolean("fastCoinFlip", value)
 
-    var numPlayers: Int
-        get() = settings.getInt("numPlayers", 4)
-        set(value) = settings.putInt("numPlayers", value).apply {
-            println("numPlayers: $value")
-        }
+    private val _numPlayers = MutableStateFlow(settings.getInt("numPlayers", 4))
+    var numPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
+
+    fun setNumPlayers(value: Int) {
+        settings.putInt("numPlayers", value)
+        _numPlayers.value = value
+    }
+
+//    var numPlayers: Int
+//        get() = settings.getInt("numPlayers", 4)
+//        set(value) = settings.putInt("numPlayers", value).apply {
+//            println("numPlayers: $value")
+//        }
 
     var alt4PlayerLayout: Boolean
         get() = settings.getBoolean("alt4PlayerLayout", false)

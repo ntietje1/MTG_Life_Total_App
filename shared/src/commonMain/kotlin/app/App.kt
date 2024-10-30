@@ -113,9 +113,10 @@ fun LifeLinkedApp() {
                 composable(LifeLinkedScreen.LIFE_COUNTER.route) {
                     val viewModel = koinViewModel<LifeCounterViewModel>()
                     val turnTimerEnabled by settingsManager.turnTimer.collectAsState()
+                    val numPlayers by settingsManager.numPlayers.collectAsState()
                     LifeCounterScreen(
                         viewModel = viewModel,
-                        numPlayers = settingsManager.numPlayers,
+                        numPlayers = numPlayers,
                         toggleTheme = {
                             SettingsManager.instance.darkTheme = !darkTheme
                             darkTheme = !darkTheme
