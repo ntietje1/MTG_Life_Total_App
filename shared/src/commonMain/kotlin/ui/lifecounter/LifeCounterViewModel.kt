@@ -22,7 +22,6 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 interface ILifeCounterViewModel {
     val state: StateFlow<LifeCounterState>
-    val currentDealerIsPartnered: StateFlow<Boolean>
     var playerButtonViewModels: List<PlayerButtonViewModel>
 
     fun promptFirstPlayer()
@@ -53,9 +52,6 @@ class LifeCounterViewModel(
 ) : ViewModel(), ILifeCounterViewModel {
     private val _state = MutableStateFlow(LifeCounterState())
     override val state: StateFlow<LifeCounterState> = _state.asStateFlow()
-
-    private val _currentDealerIsPartnered = MutableStateFlow(false)
-    override val currentDealerIsPartnered = _currentDealerIsPartnered.asStateFlow()
 
     override lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
 
@@ -242,8 +238,7 @@ class LifeCounterViewModel(
             onCommanderButtonClicked = { onCommanderButtonClicked(it) },
             setAllMonarchy = { setAllMonarchy(it) },
             getCurrentDealer = { state.value.currentDealer },
-            updateCurrentDealerMode = { setDealerMode(it) },
-            currentDealerIsPartnered = currentDealerIsPartnered,
+            updateCurrentDealerMode = { setCurrentDealerIsPartnered(it) },
             triggerSave = { savePlayerStates() },
             resetPlayerColor = { resetPlayerColor(it) },
             moveTimer = { moveTimer() },
@@ -287,8 +282,8 @@ class LifeCounterViewModel(
         playerButtonViewModels.forEach { it.setPlayerButtonState(pbState) }
     }
 
-    private fun setDealerMode(value: Boolean) {
-        _currentDealerIsPartnered.value = value
+    private fun setCurrentDealerIsPartnered(value: Boolean) {
+        _state.value = _state.value.copy(currentDealerIsPartnered = value)
     }
 
     private fun setAllMonarchy(value: Boolean) {

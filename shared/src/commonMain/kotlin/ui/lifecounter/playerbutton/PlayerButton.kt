@@ -111,11 +111,10 @@ fun PlayerButton(
     borderWidth: Dp,
     turnTimerModifier: Modifier,
     setBlurBackground: (Boolean) -> Unit,
-    setFirstPlayer: () -> Unit
+    setFirstPlayer: () -> Unit,
+    currentDealerIsPartnered: Boolean,
 ) {
     val state by viewModel.state.collectAsState()
-    val currentDealerIsPartnered by viewModel.currentDealerIsPartnered.collectAsState()
-
     val haptic = LocalHapticFeedback.current
 
     val commanderButtonVisible by remember {

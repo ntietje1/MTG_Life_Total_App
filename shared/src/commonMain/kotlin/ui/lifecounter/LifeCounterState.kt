@@ -17,6 +17,7 @@ data class LifeCounterState(
     val turnTimer: TurnTimer? = null,
     val showMiddleButtonDialog: Boolean = false,
     val firstPlayerSelectionActive: Boolean = false,
+    val currentDealerIsPartnered: Boolean = false,
 )
 
 enum class DayNightState {

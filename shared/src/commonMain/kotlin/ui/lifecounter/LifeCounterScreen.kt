@@ -180,7 +180,9 @@ fun LifeCounterScreen(
                                         setBlurBackground = { viewModel.setBlurBackground(it) },
                                         setFirstPlayer = {
                                             viewModel.setFirstPlayer(placement.index)
-                                        })
+                                        },
+                                        currentDealerIsPartnered = state.currentDealerIsPartnered,
+                                    )
                                 })
                         }
                     })

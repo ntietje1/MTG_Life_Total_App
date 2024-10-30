@@ -25,7 +25,6 @@ class PlayerButtonViewModel(
     private val setAllMonarchy: (Boolean) -> Unit,
     private val getCurrentDealer: () -> PlayerButtonViewModel?,
     private val updateCurrentDealerMode: (Boolean) -> Unit,
-    val currentDealerIsPartnered: StateFlow<Boolean>,
     private val triggerSave: () -> Unit,
     private val resetPlayerColor: (Player) -> Player,
     val moveTimer: () -> Unit,
