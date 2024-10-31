@@ -540,7 +540,7 @@ fun PlayerButton(
                                                         }
                                                     ).pointerInput(Unit) {
                                                         detectTapGestures {
-                                                            selected = viewModel.setActiveCounter(counterType)
+                                                            selected = viewModel.setActiveCounter(counterType, true)
                                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                                         }
                                                     }) {

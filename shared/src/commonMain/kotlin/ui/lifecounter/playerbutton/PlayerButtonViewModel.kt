@@ -17,13 +17,44 @@ import kotlinx.coroutines.launch
 import ui.dialog.customization.CustomizationViewModel
 import ui.lifecounter.CounterType
 
+
+interface IPlayerButtonViewModel {
+    val state: StateFlow<PlayerButtonState>
+    var customizationViewmodel: CustomizationViewModel?
+
+    fun setTimer(timer: TurnTimer?)
+    fun setPlayerButtonState(buttonState: PBState)
+    fun onMonarchyButtonClicked(value: Boolean? = null)
+    fun onSettingsButtonClicked()
+    fun popBackStack()
+    fun pushBackStack(back: () -> Unit)
+    fun clearBackStack()
+    fun closeSettingsMenu()
+    fun resetPlayerPref()
+    fun savePlayerPref()
+    fun isDead(autoKo: Boolean): Boolean
+    fun getCounterValue(counterType: CounterType): Int
+    fun onCustomizationApply()
+    fun showCustomizeMenu(value: Boolean? = null)
+    fun toggleMonarch(value: Boolean? = null)
+    fun togglePartnerMode(value: Boolean? = null)
+    fun toggleSetDead(value: Boolean? = null)
+    fun incrementCounterValue(counterType: CounterType, value: Int)
+    fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean
+    fun getCommanderDamage(partner: Boolean = false): Int
+    fun incrementCommanderDamage(value: Int, partner: Boolean = false)
+    fun copyPrefs(other: Player)
+    fun incrementLife(value: Int)
+    fun resetState(startingLife: Int)
+}
+
 class PlayerButtonViewModel(
     initialPlayer: Player,
     val settingsManager: SettingsManager,
     val imageManager: ImageManager,
     val onCommanderButtonClicked: (PlayerButtonViewModel) -> Unit,
     private val setAllMonarchy: (Boolean) -> Unit,
-    private val getCurrentDealer: () -> PlayerButtonViewModel?,
+    val getCurrentDealer: () -> PlayerButtonViewModel?,
     private val updateCurrentDealerMode: (Boolean) -> Unit,
     private val triggerSave: () -> Unit,
     private val resetPlayerColor: (Player) -> Player,
@@ -32,6 +63,8 @@ class PlayerButtonViewModel(
     private var _state = MutableStateFlow(PlayerButtonState(initialPlayer))
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
 
+
+    //TODO: fix undo button not getting rid of gif
     var customizationViewmodel: CustomizationViewModel? = null
 
     private var recentChangeJob: Job? = null
@@ -165,7 +198,7 @@ class PlayerButtonViewModel(
         triggerSave()
     }
 
-    fun setActiveCounter(counterType: CounterType, active: Boolean? = null): Boolean {
+    fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
         setPlayer(state.value.player.copy(activeCounters = state.value.player.activeCounters.toMutableList().apply {
             val previousValue = this.contains(counterType)
             val targetValue = active ?: !previousValue
@@ -179,14 +212,14 @@ class PlayerButtonViewModel(
         return state.value.player.activeCounters.contains(counterType)
     }
 
-    fun getCommanderDamage(currentDealer: PlayerButtonViewModel? = getCurrentDealer(), partner: Boolean = false): Int {
-        if (currentDealer == null) return 0
+    fun getCommanderDamage(partner: Boolean = false): Int {
+        val currentDealer: PlayerButtonViewModel = getCurrentDealer() ?: return 0
         val index = (currentDealer.state.value.player.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
         return state.value.player.commanderDamage[index]
     }
 
-    fun incrementCommanderDamage(currentDealer: PlayerButtonViewModel? = getCurrentDealer(), value: Int, partner: Boolean = false) {
-        if (currentDealer == null) return
+    fun incrementCommanderDamage(value: Int, partner: Boolean = false) {
+        val currentDealer: PlayerButtonViewModel = getCurrentDealer() ?: return
         val index = (currentDealer.state.value.player.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
         this.receiveCommanderDamage(index, value)
         triggerSave()
