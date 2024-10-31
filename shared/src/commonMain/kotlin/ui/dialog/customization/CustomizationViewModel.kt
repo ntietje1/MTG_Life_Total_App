@@ -24,6 +24,7 @@ class CustomizationViewModel(
 
     fun revertChanges() {
         setPlayer(initialPlayer)
+        initialPlayer.imageString?.let { onChangeImage(it) }
         setChangeWasMade(false)
     }
 
@@ -32,7 +33,9 @@ class CustomizationViewModel(
         viewModelScope.launch {
             copiedUri = imageManager.copyImageToLocalStorage(file, state.value.player.name)
             println("copiedUri: $copiedUri")
-        }.invokeOnCompletion { onChangeImage(copiedUri) }
+        }.invokeOnCompletion {
+            onChangeImage(copiedUri)
+        }
     }
 
     fun setPlayer(player: Player) {
@@ -67,7 +70,6 @@ class CustomizationViewModel(
         setChangeWasMade(true)
         setPlayer(state.value.player.copy(imageString = uri))
     }
-
 
     private fun setBackgroundColor(color: Color) {
         setChangeWasMade(true)
