@@ -25,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -337,20 +336,28 @@ fun AnimatedMiddleButton(
     var animationFinished by remember { mutableStateOf(false) }
 
     val popInDuration = (900 / getAnimationCorrectionFactor()).toInt()
-    var angle by remember { mutableFloatStateOf(0f) }
-    var scale by remember { mutableFloatStateOf(0f) }
+//    var angle by remember { mutableFloatStateOf(0f) }
+//    var scale by remember { mutableFloatStateOf(0f) }
 
-    val animatableAngle = remember { Animatable(0f) }
-    val animatableScale = remember { Animatable(0f) }
+    fun targetAngle(visible: Boolean): Float {
+        return if (visible) 360f else 0f
+    }
+
+    fun targetScale(visible: Boolean): Float {
+        return if (visible) 1f else 0f
+    }
+
+    val animatableAngle = remember { Animatable(targetAngle(visible)) }
+    val animatableScale = remember { Animatable(targetScale(visible)) }
 
     LaunchedEffect(visible) {
         launch {
             if (visible) {
                 animatableAngle.animateTo(
-                    targetValue = 360f, animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
+                    targetValue = targetAngle(visible), animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
                 )
             } else {
-                animatableAngle.snapTo(0f)
+                animatableAngle.snapTo(targetAngle(visible))
             }
         }
 
@@ -358,23 +365,20 @@ fun AnimatedMiddleButton(
             if (visible) {
                 animationFinished = false
                 animatableScale.animateTo(
-                    targetValue = 1f, animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
+                    targetValue = targetScale(visible), animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
                 )
             } else {
-                animatableScale.snapTo(0f)
+                animatableScale.snapTo(targetScale(visible))
             }
             animationFinished = true
         }
     }
 
-    scale = animatableScale.value
-    angle = animatableAngle.value
-
     Box(modifier = modifier.background(
         color = MaterialTheme.colorScheme.background, shape = CircleShape
-    ).rotate(angle).graphicsLayer {
-        scaleX = scale
-        scaleY = scale
+    ).rotate(animatableAngle.value).graphicsLayer {
+        scaleX = animatableScale.value
+        scaleY = animatableScale.value
     }.pointerInput(Unit) {
         detectTapGestures(onPress = {
             onMiddleButtonClick()
