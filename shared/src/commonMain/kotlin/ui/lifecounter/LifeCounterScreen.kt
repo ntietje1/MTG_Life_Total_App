@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
-import data.SettingsManager
 import di.getAnimationCorrectionFactor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -50,7 +49,6 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
-import org.koin.compose.koinInject
 import theme.blendWith
 import ui.SettingsButton
 import ui.dialog.MiddleButtonDialog
@@ -62,12 +60,13 @@ fun LifeCounterScreen(
     viewModel: ILifeCounterViewModel,
     toggleTheme: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
+    toggleAlt4PlayerLayout: () -> Unit,
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     numPlayers: Int,
+    alt4PlayerLayout: Boolean,
     timerEnabled: Boolean,
-    firstNavigation: Boolean,
-    settingsManager: SettingsManager = koinInject()
+    firstNavigation: Boolean
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
@@ -97,7 +96,7 @@ fun LifeCounterScreen(
                 viewModel.setShowButtons(false)
                 goToPlayerSelectScreen(changeNumPlayers)
             },
-            setAlt4PlayerLayout = { settingsManager.alt4PlayerLayout = it },
+            setAlt4PlayerLayout = { toggleAlt4PlayerLayout() },
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
@@ -123,8 +122,8 @@ fun LifeCounterScreen(
     BoxWithConstraints(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ) {
-        val m = remember(maxHeight, maxWidth, settingsManager.numPlayers.value, settingsManager.alt4PlayerLayout) { LifeCounterMeasurements(
-            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = settingsManager.numPlayers.value, alt4Layout = settingsManager.alt4PlayerLayout
+        val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) { LifeCounterMeasurements(
+            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
         ) }
         val buttonPadding = remember(maxHeight) { maxWidth / 750f + maxHeight / 750f }
         val blurRadius = remember(Unit) { maxHeight / 50f }
@@ -158,7 +157,7 @@ fun LifeCounterScreen(
                                     PlayerButton(modifier = Modifier.size(width, height),
                                         turnTimerModifier = Modifier.align(turnTimerAlignment).pointerInput(Unit) {
                                             routePointerChangesTo(onDown = {
-                                                playerButtonViewModel.moveTimer()
+                                                playerButtonViewModel.onMoveTimer()
                                             })
                                         }.then(
                                             when (turnTimerAlignment) {

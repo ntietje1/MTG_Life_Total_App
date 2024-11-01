@@ -106,7 +106,7 @@ import ui.modifier.rotateVertically
 @Composable
 fun PlayerButton(
     modifier: Modifier = Modifier,
-    viewModel: PlayerButtonViewModel,
+    viewModel: AbstractPlayerButtonViewModel,
     rotation: Float = 0f,
     borderWidth: Dp,
     turnTimerModifier: Modifier,
@@ -157,8 +157,6 @@ fun PlayerButton(
     if (state.showCustomizeMenu && viewModel.customizationViewmodel != null) {
         PlayerCustomizationDialog(
             modifier = Modifier.fillMaxSize(), onDismiss = {
-                viewModel.onCustomizationApply()
-                viewModel.popBackStack()
                 viewModel.showCustomizeMenu(false)
             }, viewModel = viewModel.customizationViewmodel!!
         )
@@ -193,10 +191,6 @@ fun PlayerButton(
                 modifier = Modifier.padding(horizontal = padding * 3.5f).padding(bottom = padding * 1.5f)
             )
         }
-    }
-
-    LaunchedEffect(state.buttonState) {
-        if (state.buttonState == PBState.COMMANDER_RECEIVER) viewModel.clearBackStack()
     }
 
     // Jank way of stopping the repeating bounce if long pressing on timer
@@ -282,13 +276,15 @@ fun PlayerButton(
                             Row(Modifier.fillMaxSize()) {
                                 LifeChangeButtons(Modifier.then(if (currentDealerIsPartnered) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()), onIncrementLife = {
                                     viewModel.incrementCommanderDamage(
-                                        value = 1
+                                        value = 1,
+                                        partner = false
                                     )
                                     viewModel.incrementLife(-1)
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 }, onDecrementLife = {
                                     viewModel.incrementCommanderDamage(
-                                        value = -1
+                                        value = -1,
+                                        partner = false
                                     )
                                     viewModel.incrementLife(1)
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -296,13 +292,15 @@ fun PlayerButton(
                                 if (currentDealerIsPartnered) {
                                     LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
                                         viewModel.incrementCommanderDamage(
-                                            value = 1, partner = true
+                                            value = 1,
+                                            partner = true
                                         )
                                         viewModel.incrementLife(-1)
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     }, onDecrementLife = {
                                         viewModel.incrementCommanderDamage(
-                                            value = -1, partner = true
+                                            value = -1,
+                                            partner = true
                                         )
                                         viewModel.incrementLife(1)
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -417,7 +415,7 @@ fun PlayerButton(
                                         backgroundColor = Color.Transparent,
                                         mainColor = state.player.textColor,
                                         onPress = {
-                                            viewModel.togglePartnerMode()
+                                            viewModel.togglePartnerMode(!currentDealerIsPartnered)
                                         })
                                     Text(
                                         modifier = Modifier.wrapContentSize(unbounded = true),
@@ -440,7 +438,7 @@ fun PlayerButton(
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.monarchy_icon, text = "Monarchy"
-                                            ) { viewModel.onMonarchyButtonClicked() }
+                                            ) { viewModel.onMonarchyButtonClicked(!state.player.monarch) }
                                         }
                                         item {
                                             FormattedSettingsButton(
@@ -466,9 +464,7 @@ fun PlayerButton(
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.skull_icon, text = "KO Player"
                                             ) {
-                                                viewModel.toggleSetDead()
-                                                viewModel.closeSettingsMenu()
-                                                viewModel.clearBackStack()
+                                                viewModel.onKOButtonClicked()
                                             }
                                         }
                                         item {
@@ -504,11 +500,10 @@ fun PlayerButton(
                                             item {
                                                 AddCounter(
                                                     textColor = state.player.textColor,
-                                                    onTap = {
-                                                        viewModel.setPlayerButtonState(PBState.COUNTERS_SELECT)
-                                                        viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW) }
-                                                    },
-                                                )
+                                                ) {
+                                                    viewModel.setPlayerButtonState(PBState.COUNTERS_SELECT)
+                                                    viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW) }
+                                                }
                                             }
                                         }
                                     }
@@ -585,7 +580,7 @@ fun PlayerButton(
                             bottom = commanderStateMargin,
                         ), visible = commanderButtonVisible, iconResource = Res.drawable.commander_solid_icon, color = state.player.textColor, size = smallButtonSize
                     ) {
-                        viewModel.onCommanderButtonClicked(viewModel)
+                        viewModel.onCommanderButtonClicked()
                     }
                 }
 

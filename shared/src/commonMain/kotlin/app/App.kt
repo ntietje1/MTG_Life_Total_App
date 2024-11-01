@@ -117,6 +117,7 @@ fun LifeLinkedApp() {
                     LifeCounterScreen(
                         viewModel = viewModel,
                         numPlayers = numPlayers,
+                        alt4PlayerLayout = settingsManager.alt4PlayerLayout,
                         toggleTheme = {
                             SettingsManager.instance.darkTheme = !darkTheme
                             darkTheme = !darkTheme
@@ -124,6 +125,9 @@ fun LifeLinkedApp() {
                         toggleKeepScreenOn = {
                             SettingsManager.instance.keepScreenOn = !keepScreenOn
                             keepScreenOn = !keepScreenOn
+                        },
+                        toggleAlt4PlayerLayout = {
+                            SettingsManager.instance.alt4PlayerLayout = !settingsManager.alt4PlayerLayout
                         },
                         goToPlayerSelectScreen = { changeNumPlayers ->
                             allowChangeNumPlayers = changeNumPlayers

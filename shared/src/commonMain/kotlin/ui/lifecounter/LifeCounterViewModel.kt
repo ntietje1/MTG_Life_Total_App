@@ -17,19 +17,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ui.dialog.COUNTER_DIALOG_ENTRIES
 import ui.dialog.planechase.PlaneChaseViewModel
+import ui.lifecounter.playerbutton.AbstractPlayerButtonViewModel
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 interface ILifeCounterViewModel {
     val state: StateFlow<LifeCounterState>
-    var playerButtonViewModels: List<PlayerButtonViewModel>
+    val playerButtonViewModels: List<AbstractPlayerButtonViewModel>
 
     fun promptFirstPlayer()
     fun setFirstPlayer(index: Int?)
     fun setTimerEnabled(value: Boolean = true)
     fun killTimer()
     fun onNavigate(firstNavigation: Boolean)
-    fun onCommanderDealerButtonClicked(playerButtonViewModel: PlayerButtonViewModel)
+    fun onCommanderDealerButtonClicked(playerButtonViewModel: AbstractPlayerButtonViewModel)
     fun savePlayerPrefs()
     fun savePlayerStates()
     fun resetAllPrefs()
@@ -53,10 +54,24 @@ class LifeCounterViewModel(
     private val _state = MutableStateFlow(LifeCounterState())
     override val state: StateFlow<LifeCounterState> = _state.asStateFlow()
 
-    override lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
+    override val playerButtonViewModels: List<AbstractPlayerButtonViewModel>
 
     init {
-        generatePlayers()
+        playerButtonViewModels = generatePlayers()
+        savePlayerStates()
+    }
+
+    private fun generatePlayers(): List<AbstractPlayerButtonViewModel> {
+        val startingLife = settingsManager.startingLife
+        val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
+        val viewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
+        while (savedPlayers.size < MAX_PLAYERS) {
+            val playerNum = savedPlayers.size + 1
+            val newColor = allPlayerColors.filter { it !in getUsedColors(viewModels) }.random()
+            savedPlayers += generatePlayer(startingLife, playerNum, newColor)
+            viewModels += generatePlayerButtonViewModel(savedPlayers.last())
+        }
+        return viewModels
     }
 
     override fun promptFirstPlayer() {
@@ -185,40 +200,27 @@ class LifeCounterViewModel(
         }
     }
 
-    private fun getUsedColors(): List<Color> {
-        return playerButtonViewModels.map { it.state.value.player.color }
-    }
-
-    private fun generatePlayers() {
-        val startingLife = settingsManager.startingLife
-        val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
-        playerButtonViewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }
-        while (savedPlayers.size < MAX_PLAYERS) {
-            val playerNum = savedPlayers.size + 1
-            val newColor = allPlayerColors.filter { it !in getUsedColors() }.random()
-            savedPlayers += generatePlayer(startingLife, playerNum, newColor)
-            playerButtonViewModels += generatePlayerButtonViewModel(savedPlayers.last())
-        }
-        savePlayerStates()
+    private fun getUsedColors(viewModels: List<AbstractPlayerButtonViewModel> = playerButtonViewModels): List<Color> {
+        return viewModels.map { it.state.value.player.color }
     }
 
     private fun resetPlayerColor(player: Player): Player {
         return player.copy(color = allPlayerColors.filter { it !in getUsedColors() }.random())
     }
 
-    private fun onNormalCommanderButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
+    private fun onNormalCommanderButtonClicked(playerButtonViewModel: AbstractPlayerButtonViewModel) {
         setCurrentDealer(playerButtonViewModel)
         setAllButtonStates(PBState.COMMANDER_RECEIVER)
         playerButtonViewModel.setPlayerButtonState(PBState.COMMANDER_DEALER)
     }
 
-    override fun onCommanderDealerButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
+    override fun onCommanderDealerButtonClicked(playerButtonViewModel: AbstractPlayerButtonViewModel) {
         setCurrentDealer(null)
         setAllButtonStates(PBState.NORMAL)
         playerButtonViewModel.setPlayerButtonState(PBState.NORMAL)
     }
 
-    private fun onCommanderButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
+    private fun onCommanderButtonClicked(playerButtonViewModel: AbstractPlayerButtonViewModel) {
             when (playerButtonViewModel.state.value.buttonState) {
                 PBState.NORMAL -> {
                     onNormalCommanderButtonClicked(playerButtonViewModel)
@@ -235,13 +237,13 @@ class LifeCounterViewModel(
             initialPlayer = player,
             settingsManager = settingsManager,
             imageManager = imageManager,
-            onCommanderButtonClicked = { onCommanderButtonClicked(it) },
+            onCommanderButtonClickedCallback = { onCommanderButtonClicked(it) },
             setAllMonarchy = { setAllMonarchy(it) },
             getCurrentDealer = { state.value.currentDealer },
             updateCurrentDealerMode = { setCurrentDealerIsPartnered(it) },
             triggerSave = { savePlayerStates() },
             resetPlayerColor = { resetPlayerColor(it) },
-            moveTimer = { moveTimer() },
+            moveTimerCallback = { moveTimer() },
         )
     }
 
@@ -299,7 +301,7 @@ class LifeCounterViewModel(
         _state.value = _state.value.copy(showLoadingScreen = value)
     }
 
-    private fun setCurrentDealer(dealer: PlayerButtonViewModel?) {
+    private fun setCurrentDealer(dealer: AbstractPlayerButtonViewModel?) {
         _state.value = _state.value.copy(currentDealer = dealer)
     }
 
