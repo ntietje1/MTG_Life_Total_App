@@ -28,7 +28,6 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,24 +41,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.Player.Companion.allPlayerColors
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
-import lifelinked.shared.generated.resources.placeholder_icon
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.vectorResource
-import org.koin.compose.koinInject
-import theme.defaultTextStyle
-import theme.scaledSp
 import ui.SettingsButton
 import ui.dialog.WarningDialog
-import ui.lifecounter.LifeCounterScreen
+import ui.tutorial.pages.TutorialPage1
 import kotlin.math.absoluteValue
 
 
@@ -110,7 +103,7 @@ fun TutorialScreen2(
                 }
             })
         SettingsButton(modifier = Modifier.align(Alignment.BottomStart).size(90.dp).padding(15.dp),
-            mainColor = if (!showInstructions) Color.White else Color.White.copy(alpha=0.7f),
+            mainColor = if (!showInstructions) Color.White else Color.White.copy(alpha = 0.7f),
             backgroundColor = Color.Transparent,
             text = "Show Instructions",
             shadowEnabled = false,
@@ -119,7 +112,7 @@ fun TutorialScreen2(
                 showInstructions = !showInstructions
             })
         Column(
-            modifier = Modifier.fillMaxSize().padding(top=90.dp).align(Alignment.TopCenter),
+            modifier = Modifier.fillMaxSize().padding(top = 90.dp).align(Alignment.TopCenter),
             verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally
         ) {
             HorizontalPager(
@@ -127,48 +120,12 @@ fun TutorialScreen2(
                 state = pagerState, key = { SingleTutorialScreen.entries[it] }, pageSize = PageSize.Fill
             ) { index ->
                 if (index == 0) {
-                    //TODO: add a button to show instructions again
                     Box(Modifier.fillMaxSize()) {
-                        LifeCounterScreen(
-                            viewModel = koinInject(),
-                            toggleTheme = {},
-                            toggleKeepScreenOn = {},
-                            goToPlayerSelectScreen = {},
-                            goToTutorialScreen = {},
-                            numPlayers = 4,
-                            timerEnabled = false,
-                            firstNavigation = false
+                        TutorialPage1(
+                            showInstructions = showInstructions,
+                            onInstructionsDismiss = { showInstructions = false },
+                            onComplete = { println("Tutorial page 1 complete") }
                         )
-
-                        if (showInstructions) {
-                        Box(
-                            Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.7f)).pointerInput(Unit) {
-                                showInstructions = false
-                            }
-                        ) {
-                            Column(
-                                Modifier.fillMaxSize().padding(16.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                SettingsButton(
-                                    modifier = Modifier.size(90.dp),
-                                    mainColor = Color.White,
-                                    backgroundColor = Color.Transparent,
-                                    shadowEnabled = false,
-                                    imageVector = vectorResource(Res.drawable.placeholder_icon),
-                                    enabled = false)
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "Tap up/down on a player to adjust their life total",
-                                    fontSize = 20.scaledSp,
-                                    textAlign = TextAlign.Center,
-                                    color = Color.White,
-                                    style = defaultTextStyle(),
-                                )
-                            }
-                        }
-                    }
                     }
                 } else {
                     Image(
