@@ -10,7 +10,59 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class SettingsManager private constructor() {
+
+interface ISettingsManager {
+    val autoKo: StateFlow<Boolean>
+    fun setAutoKo(value: Boolean)
+
+    val autoSkip: StateFlow<Boolean>
+    fun setAutoSkip(value: Boolean)
+
+    val keepScreenOn: StateFlow<Boolean>
+    fun setKeepScreenOn(value: Boolean)
+
+    val cameraRollDisabled: StateFlow<Boolean>
+    fun setCameraRollDisabled(value: Boolean)
+
+    val fastCoinFlip: StateFlow<Boolean>
+    fun setFastCoinFlip(value: Boolean)
+
+    val numPlayers: StateFlow<Int>
+    fun setNumPlayers(value: Int)
+
+    val alt4PlayerLayout: StateFlow<Boolean>
+    fun setAlt4PlayerLayout(value: Boolean)
+
+    val darkTheme: StateFlow<Boolean>
+    fun setDarkTheme(value: Boolean)
+
+    val startingLife: StateFlow<Int>
+    fun setStartingLife(value: Int)
+
+    val tutorialSkip: StateFlow<Boolean>
+    fun setTutorialSkip(value: Boolean)
+
+    val lastSplashScreenShown: StateFlow<String>
+    fun setLastSplashScreenShown(value: String)
+
+    val turnTimer: StateFlow<Boolean>
+    fun setTurnTimer(value: Boolean)
+
+    val devMode: StateFlow<Boolean>
+    fun setDevMode(value: Boolean)
+
+    fun loadPlayerStates(): List<Player>
+    fun savePlayerStates(players: List<Player>)
+
+    fun savePlanechaseState(planarDeck: List<Card>, planarBackStack: List<Card>)
+    fun loadPlanechaseState(): Pair<List<Card>, List<Card>>
+
+    fun savePlayerPref(player: Player)
+    fun deletePlayerPref(player: Player)
+    fun loadPlayerPrefs(): ArrayList<Player>
+}
+
+class SettingsManager private constructor() : ISettingsManager {
 
     companion object {
         val instance: SettingsManager by lazy { SettingsManager() }
@@ -18,104 +70,126 @@ class SettingsManager private constructor() {
 
     private val settings: Settings = Settings()
 
-    var autoKo: Boolean
-        get() = settings.getBoolean("autoKo", false)
-        set(value) = settings.putBoolean("autoKo", value)
+    private val _autoKo = MutableStateFlow(settings.getBoolean("autoKo", true))
+    override val autoKo: StateFlow<Boolean> = _autoKo.asStateFlow()
+    override fun setAutoKo(value: Boolean) {
+        settings.putBoolean("autoKo", value)
+        _autoKo.value = value
+    }
 
-    var autoSkip: Boolean
-        get() = settings.getBoolean("autoSkip", false)
-        set(value) = settings.putBoolean("autoSkip", value)
+    private val _autoSkip = MutableStateFlow(settings.getBoolean("autoSkip", false))
+    override val autoSkip: StateFlow<Boolean> = _autoSkip.asStateFlow()
+    override fun setAutoSkip(value: Boolean) {
+        settings.putBoolean("autoSkip", value)
+        _autoSkip.value = value
+    }
 
-    var keepScreenOn: Boolean
-        get() = settings.getBoolean("keepScreenOn", false)
-        set(value) = settings.putBoolean("keepScreenOn", value)
+    private val _keepScreenOn = MutableStateFlow(settings.getBoolean("keepScreenOn", false))
+    override val keepScreenOn: StateFlow<Boolean> = _keepScreenOn.asStateFlow()
+    override fun setKeepScreenOn(value: Boolean) {
+        settings.putBoolean("keepScreenOn", value)
+        _keepScreenOn.value = value
+    }
 
-    var cameraRollDisabled: Boolean
-        get() = settings.getBoolean("cameraRollDisabled", false)
-        set(value) = settings.putBoolean("cameraRollDisabled", value)
+    private val _cameraRollDisabled = MutableStateFlow(settings.getBoolean("cameraRollDisabled", false))
+    override val cameraRollDisabled: StateFlow<Boolean> = _cameraRollDisabled.asStateFlow()
+    override fun setCameraRollDisabled(value: Boolean) {
+        settings.putBoolean("cameraRollDisabled", value)
+        _cameraRollDisabled.value = value
+    }
 
-    var fastCoinFlip: Boolean
-        get() = settings.getBoolean("fastCoinFlip", false)
-        set(value) = settings.putBoolean("fastCoinFlip", value)
+    private val _fastCoinFlip = MutableStateFlow(settings.getBoolean("fastCoinFlip", false))
+    override val fastCoinFlip: StateFlow<Boolean> = _fastCoinFlip.asStateFlow()
+    override fun setFastCoinFlip(value: Boolean) {
+        settings.putBoolean("fastCoinFlip", value)
+        _fastCoinFlip.value = value
+    }
 
     private val _numPlayers = MutableStateFlow(settings.getInt("numPlayers", 4))
-    var numPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
-
-    fun setNumPlayers(value: Int) {
+    override var numPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
+    override fun setNumPlayers(value: Int) {
         settings.putInt("numPlayers", value)
         _numPlayers.value = value
     }
 
-//    var numPlayers: Int
-//        get() = settings.getInt("numPlayers", 4)
-//        set(value) = settings.putInt("numPlayers", value).apply {
-//            println("numPlayers: $value")
-//        }
+    private val _alt4PlayerLayout = MutableStateFlow(settings.getBoolean("alt4PlayerLayout", false))
+    override val alt4PlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
+    override fun setAlt4PlayerLayout(value: Boolean) {
+        settings.putBoolean("alt4PlayerLayout", value)
+        _alt4PlayerLayout.value = value
+    }
 
-    var alt4PlayerLayout: Boolean
-        get() = settings.getBoolean("alt4PlayerLayout", false)
-        set(value) = settings.putBoolean("alt4PlayerLayout", value)
+    private val _darkTheme = MutableStateFlow(settings.getBoolean("darkTheme", true))
+    override val darkTheme: StateFlow<Boolean> = _darkTheme.asStateFlow()
+    override fun setDarkTheme(value: Boolean) {
+        settings.putBoolean("darkTheme", value)
+        _darkTheme.value = value
+    }
 
-    var darkTheme: Boolean
-        get() = settings.getBoolean("darkTheme", true)
-        set(value) = settings.putBoolean("darkTheme", value)
+    private val _startingLife = MutableStateFlow(settings.getInt("startingLife", 40))
+    override val startingLife: StateFlow<Int> = _startingLife.asStateFlow()
+    override fun setStartingLife(value: Int) {
+        settings.putInt("startingLife", value)
+        _startingLife.value = value
+    }
 
-    var startingLife: Int
-        get() = settings.getInt("startingLife", 40)
-        set(value) = settings.putInt("startingLife", value)
+    private val _tutorialSkip = MutableStateFlow(settings.getBoolean("tutorialSkip", false))
+    override val tutorialSkip: StateFlow<Boolean> = _tutorialSkip.asStateFlow()
+    override fun setTutorialSkip(value: Boolean) {
+        settings.putBoolean("tutorialSkip", value)
+        _tutorialSkip.value = value
+    }
 
-    var tutorialSkip: Boolean
-        get() = settings.getBoolean("tutorialSkip", false)
-        set(value) = settings.putBoolean("tutorialSkip", value)
-
-    var lastSplashScreenShown: String
-        get() = settings.getString("lastSplashScreenShown", VersionNumber.zero.value)
-        set(value) = settings.putString("lastSplashScreenShown", value)
-
-//    var turnTimer: Boolean
-//        get() = settings.getBoolean("turnTimer", false)
-//        set(value) = settings.putBoolean("turnTimer", value)
+    private val _lastSplashScreenShown = MutableStateFlow(settings.getString("lastSplashScreenShown", VersionNumber.zero.value))
+    override val lastSplashScreenShown: StateFlow<String> = _lastSplashScreenShown.asStateFlow()
+    override fun setLastSplashScreenShown(value: String) {
+        settings.putString("lastSplashScreenShown", value)
+        _lastSplashScreenShown.value = value
+    }
 
     private val _turnTimer = MutableStateFlow(settings.getBoolean("turnTimer", false))
-    val turnTimer = _turnTimer.asStateFlow()
-
-    fun setTurnTimer(value: Boolean) {
+    override val turnTimer: StateFlow<Boolean> = _turnTimer.asStateFlow()
+    override fun setTurnTimer(value: Boolean) {
         settings.putBoolean("turnTimer", value)
         _turnTimer.value = value
     }
 
-    var devMode: Boolean
-        get() = settings.getBoolean("devMode", false)
-        set(value) = settings.putBoolean("devMode", value)
+    private val _devMode = MutableStateFlow(settings.getBoolean("devMode", false))
+    override val devMode: StateFlow<Boolean> = _devMode.asStateFlow()
+    override fun setDevMode(value: Boolean) {
+        settings.putBoolean("devMode", value)
+        _devMode.value = value
+    }
 
-    var catGifButton: Boolean
-        get() = settings.getBoolean("catGifButton", false)
-        set(value) = settings.putBoolean("catGifButton", value)
-
-    fun loadPlayerStates(): List<Player> {
+    override fun loadPlayerStates(): List<Player> {
         val allPrefString = settings.getString("playerStates", "[]")
         return Json.decodeFromString<List<Player>>(allPrefString)
     }
 
-    fun savePlayerStates(players: List<Player>) {
+    override fun savePlayerStates(players: List<Player>) {
         val allPrefString = Json.encodeToString(players)
         settings.putString("playerStates", allPrefString)
     }
 
-    fun savePlanechaseState(planarDeck: List<Card>, planarBackStack: List<Card>) {
+    override fun savePlanechaseState(planarDeck: List<Card>, planarBackStack: List<Card>) {
         val allPrefString = Json.encodeToString(planarDeck)
         settings.putString("planarDeck", allPrefString)
         val backPrefString = Json.encodeToString(planarBackStack)
         settings.putString("planarBackStack", backPrefString)
     }
 
-    fun loadPlanechaseState(): Pair<List<Card>, List<Card>> {
+    override fun loadPlanechaseState(): Pair<List<Card>, List<Card>> {
         val deckPrefString = settings.getString("planarDeck", "[]")
         val backPrefString = settings.getString("planarBackStack", "[]")
         return Pair(Json.decodeFromString(deckPrefString), Json.decodeFromString(backPrefString))
     }
 
-    fun savePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
+    override fun savePlayerPref(player: Player) {
+        val playerList = loadPlayerPrefs()
+        internalSavePlayerPref(player, playerList)
+    }
+
+    private fun internalSavePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
         removePlayerPref(player, playerList)
         playerList.add(player)
         savePlayerPrefs(playerList)
@@ -130,17 +204,17 @@ class SettingsManager private constructor() {
         }
     }
 
-    fun deletePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
+    override fun deletePlayerPref(player: Player) {
+        val playerList = loadPlayerPrefs()
+        internalDeletePlayerPref(player, playerList)
+    }
+
+    private fun internalDeletePlayerPref(player: Player, playerList: ArrayList<Player> = loadPlayerPrefs()) {
         removePlayerPref(player, playerList)
         savePlayerPrefs(playerList)
     }
 
-//    fun loadPlayerPref(player: Player): Player? {
-//        val playerList = loadPlayerPrefs()
-//        return playerList.find { it.name == player.name }
-//    }
-
-    fun loadPlayerPrefs(): ArrayList<Player> {
+    override fun loadPlayerPrefs(): ArrayList<Player> {
         val allPrefString = settings.getString("playerPrefs", "[]")
         return Json.decodeFromString<List<Player>>(allPrefString).reversed().toCollection(ArrayList())
     }

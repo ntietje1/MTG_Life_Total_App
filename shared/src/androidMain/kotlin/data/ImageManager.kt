@@ -4,7 +4,7 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-actual class ImageManager(private val context: Context) {
+actual class ImageManager(private val context: Context) : IImageManager {
     private suspend fun saveImage(bytes: ByteArray, name: String): String {
         return withContext(context = Dispatchers.IO) {
             val fileName = "$name-${getNextNumber(name)}"
@@ -31,12 +31,12 @@ actual class ImageManager(private val context: Context) {
         return res
     }
 
-    actual suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
+    actual override suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
         return saveImage(bytes = bytes, name = fileName).also {
             println("Saved image to $it")}
     }
 
-    actual fun getImagePath(fileName: String): String? {
+    actual override fun getImagePath(fileName: String): String? {
         val filesDir = context.filesDir
         val files = filesDir.listFiles()
         if (files != null) {

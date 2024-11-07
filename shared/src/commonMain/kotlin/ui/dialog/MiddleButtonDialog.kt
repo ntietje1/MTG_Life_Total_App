@@ -72,7 +72,7 @@ import ui.dialog.settings.SettingsDialogContent
 import ui.dialog.settings.patchnotes.PatchNotesDialogContent
 import ui.dialog.startinglife.StartingLifeDialogContent
 import ui.lifecounter.DayNightState
-import ui.lifecounter.ILifeCounterViewModel
+import ui.lifecounter.LifeCounterViewModel
 
 private enum class MiddleButtonDialogState {
     Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, PatchNotes, AboutMe, PlaneChase, PlanarDeck
@@ -82,7 +82,7 @@ private enum class MiddleButtonDialogState {
 fun MiddleButtonDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    viewModel: ILifeCounterViewModel,
+    viewModel: LifeCounterViewModel,
     toggleTheme: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: (Boolean) -> Unit,

@@ -30,7 +30,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -38,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -106,7 +106,7 @@ import ui.modifier.rotateVertically
 @Composable
 fun PlayerButton(
     modifier: Modifier = Modifier,
-    viewModel: AbstractPlayerButtonViewModel,
+    viewModel: PlayerButtonViewModel,
     rotation: Float = 0f,
     borderWidth: Dp,
     turnTimerModifier: Modifier,
@@ -115,6 +115,7 @@ fun PlayerButton(
     currentDealerIsPartnered: Boolean,
 ) {
     val state by viewModel.state.collectAsState()
+    val isDead by viewModel.isDead.collectAsState()
     val haptic = LocalHapticFeedback.current
 
     val commanderButtonVisible by remember {
@@ -221,7 +222,7 @@ fun PlayerButton(
         ) {
             BoxWithConstraints(
                 modifier = modifier.background(Color.Transparent).then(
-                    if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked && !viewModel.isDead()) {
+                    if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked && !isDead) {
                         Modifier.bounceClick(
                             initialBounceFactor = 3.5f, bounceAmount = 0.005f, bounceDuration = 60L, repeatEnabled = true
                         )
@@ -238,7 +239,7 @@ fun PlayerButton(
                     state = state.buttonState,
                     imageUri = state.player.imageString,
                     color = state.player.color,
-                    isDead = viewModel.isDead(),
+                    isDead = isDead,
                 )
 
                 val smallButtonSize = remember(Unit) { (maxWidth / 15f) + (maxHeight / 10f) }
@@ -338,7 +339,7 @@ fun PlayerButton(
                         val textSize = remember { (maxWidth / 15f).value }
                         when (state.buttonState) {
                             PBState.NORMAL -> {
-                                if (viewModel.isDead()) {
+                                if (isDead) {
                                     Skull()
                                 } else {
                                     LifeNumber(
@@ -379,7 +380,7 @@ fun PlayerButton(
                             }
 
                             PBState.COMMANDER_RECEIVER -> {
-                                if (viewModel.isDead()) {
+                                if (isDead) {
                                     Skull()
                                 } else {
                                     CommanderDamageNumber(
@@ -415,7 +416,7 @@ fun PlayerButton(
                                         backgroundColor = Color.Transparent,
                                         mainColor = state.player.textColor,
                                         onPress = {
-                                            viewModel.togglePartnerMode(!currentDealerIsPartnered)
+                                            viewModel.togglePartnerMode(!state.player.partnerMode)
                                         })
                                     Text(
                                         modifier = Modifier.wrapContentSize(unbounded = true),
@@ -1108,7 +1109,7 @@ private fun CustomIncrementButton(
     modifier: Modifier = Modifier, onIncrementLife: () -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val ripple = rememberRipple(color = Color.Black)
+    val ripple = remember { ripple(color = Color.Black) }
     Box(
         modifier = modifier.repeatingClickable(
             interactionSource = interactionSource, indication = ripple, enabled = true, onPress = onIncrementLife

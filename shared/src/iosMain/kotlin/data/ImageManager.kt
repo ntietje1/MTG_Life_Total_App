@@ -10,8 +10,8 @@ import platform.Foundation.*
 import platform.UIKit.UIImage
 import platform.UIKit.UIImagePNGRepresentation
 
-actual class ImageManager {
-    actual fun getImagePath(fileName: String): String? {
+actual class ImageManager: IImageManager {
+    actual override fun getImagePath(fileName: String): String? {
         val documentsDir = NSSearchPathForDirectoriesInDomains(
             NSDocumentDirectory, NSUserDomainMask, true
         ).firstOrNull()
@@ -23,7 +23,7 @@ actual class ImageManager {
     }
 
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-    actual suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
+    actual override suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
         val documentsDir = NSSearchPathForDirectoriesInDomains(
             NSDocumentDirectory, NSUserDomainMask, true
         ).firstOrNull() ?: throw IllegalStateException("Document directory not found.")

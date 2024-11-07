@@ -57,19 +57,17 @@ import ui.modifier.routePointerChangesTo
 
 @Composable
 fun LifeCounterScreen(
-    viewModel: ILifeCounterViewModel,
-    toggleTheme: () -> Unit,
-    toggleKeepScreenOn: () -> Unit,
-    toggleAlt4PlayerLayout: () -> Unit,
+    modifier: Modifier = Modifier.fillMaxSize(),
+    viewModel: LifeCounterViewModel,
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
-    numPlayers: Int,
-    alt4PlayerLayout: Boolean,
-    timerEnabled: Boolean,
     firstNavigation: Boolean
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
+    val numPlayers by viewModel.numPlayers.collectAsState()
+    val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
+    val timerEnabled by viewModel.turnTimerEnabled.collectAsState()
 
     if (timerEnabled) { // Features that require first player
         if (state.firstPlayer == null && !state.firstPlayerSelectionActive) {
@@ -79,10 +77,6 @@ fun LifeCounterScreen(
         viewModel.killTimer()
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.setNumPlayers(numPlayers)
-    }
-
     if (state.showMiddleButtonDialog) {
         MiddleButtonDialog(
             modifier = Modifier.onGloballyPositioned { _ ->
@@ -90,13 +84,13 @@ fun LifeCounterScreen(
             },
             onDismiss = { viewModel.openMiddleButtonDialog(false) },
             viewModel = viewModel,
-            toggleTheme = { toggleTheme() },
-            toggleKeepScreenOn = { toggleKeepScreenOn() },
+            toggleTheme = { viewModel.toggleDarkTheme() },
+            toggleKeepScreenOn = { viewModel.toggleKeepScreenOn() },
             goToPlayerSelectScreen = { changeNumPlayers ->
                 viewModel.setShowButtons(false)
                 goToPlayerSelectScreen(changeNumPlayers)
             },
-            setAlt4PlayerLayout = { toggleAlt4PlayerLayout() },
+            setAlt4PlayerLayout = { viewModel.setAlt4PlayerLayout(it) },
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
@@ -120,7 +114,7 @@ fun LifeCounterScreen(
     }
 
     BoxWithConstraints(
-        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+        modifier.background(MaterialTheme.colorScheme.background)
     ) {
         val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) { LifeCounterMeasurements(
             maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout

@@ -5,9 +5,9 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import data.ImageManager
+import data.IImageManager
+import data.ISettingsManager
 import data.Player
-import data.SettingsManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +16,8 @@ import kotlinx.coroutines.launch
 
 class CustomizationViewModel(
     private val initialPlayer: Player,
-    val imageManager: ImageManager,
-    val settingsManager: SettingsManager
+    val imageManager: IImageManager,
+    val settingsManager: ISettingsManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(CustomizationDialogState(initialPlayer))
     val state: StateFlow<CustomizationDialogState> = _state.asStateFlow()

@@ -106,7 +106,7 @@ fun PlayerCustomizationDialog(
     })
 
     if (state.showCameraWarning) {
-        if (viewModel.settingsManager.cameraRollDisabled) {
+        if (viewModel.settingsManager.cameraRollDisabled.value) {
             WarningDialog(title = "Info", message = "Camera roll access is disabled. Enable in settings.", optionOneEnabled = false, optionTwoEnabled = true, onDismiss = {
                 viewModel.showCameraWarning(false)
             })
