@@ -21,68 +21,6 @@ import kotlinx.coroutines.launch
 import ui.dialog.customization.CustomizationViewModel
 import ui.lifecounter.CounterType
 
-//abstract class AbstractPlayerButtonViewModel(state: PlayerButtonState) : ViewModel() {
-//    internal var _state = MutableStateFlow(state)
-//    val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
-//
-//    abstract val customizationViewmodel: CustomizationViewModel?
-//
-//    private var recentChangeJob: Job? = null
-//
-//    init {
-//        updateRecentChange()
-//    }
-//
-//    internal fun setPlayer(player: Player) {
-//        _state.value = state.value.copy(player = player)
-//    }
-//
-//    private fun updateRecentChange() {
-//        recentChangeJob?.cancel()
-//        recentChangeJob = viewModelScope.launch {
-//            delay(1500)
-//            setPlayer(
-//                state.value.player.copy(
-//                    recentChange = 0
-//                )
-//            )
-//        }
-//    }
-//
-//    open fun incrementLife(value: Int) {
-//        setPlayer(
-//            state.value.player.copy(
-//                life = state.value.player.life + value,
-//                recentChange = state.value.player.recentChange + value
-//            )
-//        )
-//        updateRecentChange()
-//    }
-//
-//    abstract fun setTimer(timer: TurnTimer?)
-//    abstract fun setPlayerButtonState(buttonState: PBState)
-//    abstract fun onMoveTimer()
-//    abstract fun onMonarchyButtonClicked(value: Boolean)
-//    abstract fun onCommanderButtonClicked()
-//    abstract fun onSettingsButtonClicked()
-//    abstract fun onKOButtonClicked()
-//    abstract fun popBackStack()
-//    abstract fun pushBackStack(back: () -> Unit)
-//    abstract fun resetPlayerPref()
-//    abstract fun savePlayerPref()
-//    abstract fun isDead(): Boolean
-//    abstract fun getCounterValue(counterType: CounterType): Int
-//    abstract fun showCustomizeMenu(value: Boolean)
-//    abstract fun toggleMonarch(value: Boolean)
-//    abstract fun togglePartnerMode(value: Boolean)
-//    abstract fun incrementCounterValue(counterType: CounterType, value: Int)
-//    abstract fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean
-//    abstract fun getCommanderDamage(partner: Boolean): Int
-//    abstract fun incrementCommanderDamage(value: Int, partner: Boolean)
-//    abstract fun copyPrefs(other: Player)
-//    abstract fun resetState(startingLife: Int)
-//}
-
 open class PlayerButtonViewModel(
     initialPlayer: Player,
     private val settingsManager: ISettingsManager,
@@ -168,7 +106,7 @@ open class PlayerButtonViewModel(
     }
 
     private var _customizationViewmodel: CustomizationViewModel? = null
-    val customizationViewmodel: CustomizationViewModel?
+    open val customizationViewmodel: CustomizationViewModel?
         get() = _customizationViewmodel
 
     fun setTimer(timer: TurnTimer?) {
@@ -187,7 +125,7 @@ open class PlayerButtonViewModel(
         moveTimerCallback()
     }
 
-    fun onMonarchyButtonClicked(value: Boolean) {
+    open fun onMonarchyButtonClicked(value: Boolean) {
         if (value) {
             setAllMonarchy(false)
         }
@@ -207,20 +145,20 @@ open class PlayerButtonViewModel(
         }
     }
 
-    fun onKOButtonClicked() {
+    open fun onKOButtonClicked() {
         toggleSetDead()
         closeSettingsMenu()
         clearBackStack()
     }
 
-    fun popBackStack() {
+    open fun popBackStack() {
         if (state.value.backStack.isEmpty()) return
         val back = state.value.backStack.last()
         _state.value = state.value.copy(backStack = state.value.backStack.dropLast(1))
         back.invoke()
     }
 
-    fun pushBackStack(back: () -> Unit) {
+    private fun pushBackStack(back: () -> Unit) {
         _state.value = state.value.copy(backStack = state.value.backStack + back)
     }
 
@@ -274,7 +212,7 @@ open class PlayerButtonViewModel(
         }
     }
 
-    fun showCustomizeMenu(value: Boolean) {
+    open fun onShowCustomizeMenu(value: Boolean) {
         if (value && customizationViewmodel == null) {
             resetCustomizationMenuViewModel()
         }
@@ -288,12 +226,28 @@ open class PlayerButtonViewModel(
 
 
     fun toggleMonarch(value: Boolean) {
+        setPlayerButtonState(PBState.NORMAL)
         setPlayer(state.value.player.copy(monarch = value))
         triggerSave()
     }
 
+    fun onFirstPlayerPrompt() {
+        pushBackStack { setPlayerButtonState(PBState.NORMAL) }
+        setPlayerButtonState(PBState.SELECT_FIRST_PLAYER)
+    }
+
+    open fun onCountersButtonClicked() {
+        setPlayerButtonState(PBState.COUNTERS_VIEW)
+        pushBackStack { setPlayerButtonState(PBState.SETTINGS) }
+    }
+
+    open fun onAddCounterButtonClicked() {
+        setPlayerButtonState(PBState.COUNTERS_SELECT)
+        pushBackStack { setPlayerButtonState(PBState.COUNTERS_VIEW) }
+    }
+
+
     fun togglePartnerMode(value: Boolean) {
-        println("togglePartnerMode: $value")
         setPlayer(state.value.player.copy(partnerMode = value))
         updateCurrentDealerMode(state.value.player.partnerMode)
         triggerSave()
@@ -346,7 +300,7 @@ open class PlayerButtonViewModel(
         }
     }
 
-    fun copyPrefs(other: Player) {
+    open fun copyPrefs(other: Player) {
         setPlayer(
             state.value.player.copy(
                 imageString = other.imageString,

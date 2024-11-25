@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class CustomizationViewModel(
+open class CustomizationViewModel(
     private val initialPlayer: Player,
     val imageManager: IImageManager,
     val settingsManager: ISettingsManager
@@ -32,13 +32,12 @@ class CustomizationViewModel(
         var copiedUri = ""
         viewModelScope.launch {
             copiedUri = imageManager.copyImageToLocalStorage(file, state.value.player.name)
-            println("copiedUri: $copiedUri")
         }.invokeOnCompletion {
             onChangeImage(copiedUri)
         }
     }
 
-    fun setPlayer(player: Player) {
+    open fun setPlayer(player: Player) {
         _state.value = _state.value.copy(player = player)
         setChangeNameField(TextFieldValue(player.name, selection = TextRange(player.name.length)))
     }

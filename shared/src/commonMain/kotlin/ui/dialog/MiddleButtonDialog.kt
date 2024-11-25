@@ -74,7 +74,7 @@ import ui.dialog.startinglife.StartingLifeDialogContent
 import ui.lifecounter.DayNightState
 import ui.lifecounter.LifeCounterViewModel
 
-private enum class MiddleButtonDialogState {
+enum class MiddleButtonDialogState {
     Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, PatchNotes, AboutMe, PlaneChase, PlanarDeck
 }
 
@@ -83,6 +83,8 @@ fun MiddleButtonDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     viewModel: LifeCounterViewModel,
+    dialogState: MiddleButtonDialogState,
+    setDialogState: (MiddleButtonDialogState) -> Unit,
     toggleTheme: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: (Boolean) -> Unit,
@@ -95,7 +97,6 @@ fun MiddleButtonDialog(
 ) {
 
     val state by viewModel.state.collectAsState()
-    var middleButtonDialogState by remember { mutableStateOf(MiddleButtonDialogState.Default) }
     val haptic = LocalHapticFeedback.current
     var showResetDialog by remember { mutableStateOf(false) }
     var showChooseFirstPlayerDialog by remember { mutableStateOf(false) }
@@ -124,20 +125,20 @@ fun MiddleButtonDialog(
 
         AnimatedGridDialog(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, backHandler = backHandler, pages = listOf(
             Pair(
-                middleButtonDialogState == MiddleButtonDialogState.CoinFlip
+                dialogState == MiddleButtonDialogState.CoinFlip
             ) {
                 CoinFlipDialogContent(modifier = modifier, goToCoinFlipTutorial = {
-                    backHandler.push { middleButtonDialogState = MiddleButtonDialogState.CoinFlip }
-                    middleButtonDialogState = MiddleButtonDialogState.CoinFlipTutorial
+                    backHandler.push { setDialogState(MiddleButtonDialogState.CoinFlip) }
+                    setDialogState(MiddleButtonDialogState.CoinFlipTutorial)
                 })
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.CoinFlipTutorial
+                dialogState == MiddleButtonDialogState.CoinFlipTutorial
             ) {
                 CoinFlipTutorialContent(
                     modifier = modifier
                 )
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.PlayerNumber
+                dialogState == MiddleButtonDialogState.PlayerNumber
             ) {
                 PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
@@ -146,9 +147,9 @@ fun MiddleButtonDialog(
                 }, resetPlayers = {
                     viewModel.resetGameState()
                     triggerEnterAnimation()
-                }, show4PlayerDialog = { middleButtonDialogState = MiddleButtonDialogState.FourPlayerLayout })
+                }, show4PlayerDialog = { setDialogState(MiddleButtonDialogState.FourPlayerLayout) })
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.FourPlayerLayout
+                dialogState == MiddleButtonDialogState.FourPlayerLayout
             ) {
                 FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
@@ -156,24 +157,24 @@ fun MiddleButtonDialog(
                     triggerEnterAnimation()
                 }, setAlt4PlayerLayout = { setAlt4PlayerLayout(it) })
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.StartingLife
+                dialogState == MiddleButtonDialogState.StartingLife
             ) {
                 StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, resetGameState = {
                     viewModel.resetGameState()
                     triggerEnterAnimation()
                 })
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.DiceRoll
+                dialogState == MiddleButtonDialogState.DiceRoll
             ) {
                 DiceRollDialogContent(Modifier.fillMaxSize())
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.Counter
+                dialogState == MiddleButtonDialogState.Counter
             ) {
                 CounterDialogContent(modifier = Modifier.fillMaxSize(),
                     counters = state.counters,
                     incrementCounter = { index, value -> viewModel.incrementCounter(index, value) },
                     resetCounters = { viewModel.resetCounters() })
-            }, Pair(middleButtonDialogState == MiddleButtonDialogState.Scryfall) {
+            }, Pair(dialogState == MiddleButtonDialogState.Scryfall) {
                 ScryfallDialogContent(
                     Modifier.fillMaxSize(),
                     selectButtonEnabled = false,
@@ -183,13 +184,13 @@ fun MiddleButtonDialog(
                     viewModel = koinInject()
                 )
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.Settings
+                dialogState == MiddleButtonDialogState.Settings
             ) {
                 SettingsDialogContent(
                     Modifier.fillMaxSize(),
-                    goToPatchNotes = { middleButtonDialogState = MiddleButtonDialogState.PatchNotes },
-                    goToAboutMe = { middleButtonDialogState = MiddleButtonDialogState.AboutMe },
-                    addGoToSettingsToBackStack = { backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Settings } },
+                    goToPatchNotes = { setDialogState(MiddleButtonDialogState.PatchNotes) },
+                    goToAboutMe = { setDialogState(MiddleButtonDialogState.AboutMe) },
+                    addGoToSettingsToBackStack = { backHandler.push { setDialogState(MiddleButtonDialogState.Settings) } },
                     goToTutorialScreen = {
                         onDismiss()
                         goToTutorialScreen()
@@ -198,35 +199,35 @@ fun MiddleButtonDialog(
                     toggleKeepScreenOn = toggleKeepScreenOn
                 )
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.PatchNotes
+                dialogState == MiddleButtonDialogState.PatchNotes
             ) {
                 PatchNotesDialogContent(
                     Modifier.fillMaxSize()
                 )
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.AboutMe
+                dialogState == MiddleButtonDialogState.AboutMe
             ) {
                 AboutMeDialogContent(
                     Modifier.fillMaxSize()
                 )
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.PlaneChase
+                dialogState == MiddleButtonDialogState.PlaneChase
             ) {
                 PlaneChaseDialogContent(
                     modifier = Modifier.fillMaxSize(),
                     goToChoosePlanes = {
-                        middleButtonDialogState = MiddleButtonDialogState.PlanarDeck
-                        backHandler.push { middleButtonDialogState = MiddleButtonDialogState.PlaneChase }
+                        setDialogState(MiddleButtonDialogState.PlanarDeck)
+                        backHandler.push { setDialogState(MiddleButtonDialogState.PlaneChase) }
                     },
                 )
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.PlanarDeck
+                dialogState == MiddleButtonDialogState.PlanarDeck
             ) {
                 ChoosePlanesDialogContent(
                     modifier = Modifier.fillMaxSize(), addToBackStack = backHandler::push, popBackStack = backHandler::pop
                 )
             }, Pair(
-                middleButtonDialogState == MiddleButtonDialogState.Default
+                dialogState == MiddleButtonDialogState.Default
             ) {
                 GridDialogContent(
                     Modifier.fillMaxSize(), title = "Settings", columns = numColumns, items = listOf({
@@ -242,8 +243,8 @@ fun MiddleButtonDialog(
                         })
                     }, {
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.StartingLife
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            setDialogState(MiddleButtonDialogState.StartingLife)
+                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(
@@ -257,23 +258,23 @@ fun MiddleButtonDialog(
                         )
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.player_count_icon), text = "Player Number", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.PlayerNumber
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            setDialogState(MiddleButtonDialogState.PlayerNumber)
+                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.mana_icon), text = "Mana & Storm", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.Counter
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            setDialogState(MiddleButtonDialogState.Counter)
+                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.die_icon), text = "Dice roll", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.DiceRoll
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            setDialogState(MiddleButtonDialogState.DiceRoll)
+                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.coin_icon), text = "Coin Flip", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.CoinFlip
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            setDialogState(MiddleButtonDialogState.CoinFlip)
+                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
@@ -292,18 +293,18 @@ fun MiddleButtonDialog(
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.search_icon), text = "Card Search", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.Scryfall
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            setDialogState(MiddleButtonDialogState.Scryfall)
+                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.planeswalker_icon), text = "Planechase", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.PlaneChase
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            setDialogState(MiddleButtonDialogState.PlaneChase)
+                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.settings_icon_small), text = "Settings", shadowEnabled = false, onPress = {
-                            middleButtonDialogState = MiddleButtonDialogState.Settings
-                            backHandler.push { middleButtonDialogState = MiddleButtonDialogState.Default }
+                            setDialogState(MiddleButtonDialogState.Settings)
+                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     })
                 )

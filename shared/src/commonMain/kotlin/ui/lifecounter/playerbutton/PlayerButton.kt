@@ -158,7 +158,7 @@ fun PlayerButton(
     if (state.showCustomizeMenu && viewModel.customizationViewmodel != null) {
         PlayerCustomizationDialog(
             modifier = Modifier.fillMaxSize(), onDismiss = {
-                viewModel.showCustomizeMenu(false)
+                viewModel.onShowCustomizeMenu(false)
             }, viewModel = viewModel.customizationViewmodel!!
         )
     }
@@ -450,15 +450,14 @@ fun PlayerButton(
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.mana_icon, text = "Counters"
                                             ) {
-                                                viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW)
-                                                viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.SETTINGS) }
+                                                viewModel.onCountersButtonClicked()
                                             }
                                         }
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.pencil_icon, text = "Customize"
                                             ) {
-                                                viewModel.showCustomizeMenu(true)
+                                                viewModel.onShowCustomizeMenu(true)
                                             }
                                         }
                                         item {
@@ -502,8 +501,7 @@ fun PlayerButton(
                                                 AddCounter(
                                                     textColor = state.player.textColor,
                                                 ) {
-                                                    viewModel.setPlayerButtonState(PBState.COUNTERS_SELECT)
-                                                    viewModel.pushBackStack { viewModel.setPlayerButtonState(PBState.COUNTERS_VIEW) }
+                                                    viewModel.onAddCounterButtonClicked()
                                                 }
                                             }
                                         }

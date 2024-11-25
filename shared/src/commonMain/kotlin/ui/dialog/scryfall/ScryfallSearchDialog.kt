@@ -22,6 +22,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -47,6 +49,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -237,10 +240,11 @@ fun ScryfallSearchBar(
             value = query,
             onValueChange = onQueryChange,
             label = label,
-            keyboardType = KeyboardType.Text,
-            onDone = {
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Text, imeAction = ImeAction.Search
+            ), keyboardActions = KeyboardActions(onSearch = {
                 onSearch()
-            }
+            })
         ) {
             IconButton(
                 onClick = {

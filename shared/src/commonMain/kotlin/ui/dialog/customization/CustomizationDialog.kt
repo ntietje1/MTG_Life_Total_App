@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,12 +38,14 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import data.Player
 import di.BackHandler
+import di.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.camera_icon
 import lifelinked.shared.generated.resources.color_picker_icon
@@ -65,12 +69,14 @@ import ui.lifecounter.playerbutton.LifeNumber
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonBackground
 
+// TODO: add notification when player has been modified
 @Composable
 fun PlayerCustomizationDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     viewModel: CustomizationViewModel,
     backHandler: BackHandler = koinInject(),
+    notificationManager: NotificationManager = koinInject(),
 ) {
     val state by viewModel.state.collectAsState()
     val haptic = LocalHapticFeedback.current
@@ -102,6 +108,7 @@ fun PlayerCustomizationDialog(
     val singleImagePicker = rememberImagePickerLauncher(selectionMode = SelectionMode.Single, scope = rememberCoroutineScope(), onResult = { byteArrays ->
         byteArrays.firstOrNull()?.let {
             viewModel.onImageFileSelected(it)
+            notificationManager.showNotification("Image successfully uploaded", 3000)
         }
     })
 
@@ -126,22 +133,6 @@ fun PlayerCustomizationDialog(
                 })
         }
     }
-
-//    if (state.showResetPrefsDialog) {
-//        WarningDialog(title = "Reset Preferences",
-//            message = "Are you sure you want to reset your customizations?",
-//            optionOneEnabled = true,
-//            optionTwoEnabled = true,
-//            optionOneMessage = "Reset",
-//            optionTwoMessage = "Cancel",
-//            onOptionOne = {
-//                viewModel.resetPlayerPref()
-//                viewModel.showResetPrefsDialog(false)
-//            },
-//            onDismiss = {
-//                viewModel.showResetPrefsDialog(false)
-//            })
-//    }
 
     AnimatedGridDialog(modifier = modifier, onDismiss = onDismiss, backHandler = backHandler, pages = listOf(Pair(state.customizationMenuState == CustomizationMenuState.DEFAULT) {
         BoxWithConstraints(modifier = modifier) {
@@ -179,20 +170,18 @@ fun PlayerCustomizationDialog(
                 Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding / 2f),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding / 2f), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically
                 ) { //TODO: check if the  name is currently taken or invalid
                     TextFieldWithButton(modifier = Modifier.fillMaxWidth(0.75f).height(textFieldHeight).clip(RoundedCornerShape(8))
                         .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(8)), value = state.changeNameTextField, onValueChange = {
                         viewModel.setChangeNameField(it)
-                    }, label = "Name", keyboardType = KeyboardType.Text, onDone = {
+                    }, label = "Name", keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
+                    ), keyboardActions = KeyboardActions(onDone = {
                         focusManager.clearFocus()
-//                                viewModel.setName(state.changeNameTextField.text)
-                    }, button = {
+                    }), button = {
                         SettingsButton(modifier = Modifier.fillMaxSize().padding(padding / 6f), imageVector = vectorResource(Res.drawable.pencil_icon), shadowEnabled = false, onPress = {
                             focusManager.clearFocus()
-//                                        viewModel.setName(state.changeNameTextField.text)
                         })
                     })
                     Spacer(modifier = Modifier.width(padding / 4f))
@@ -217,6 +206,7 @@ fun PlayerCustomizationDialog(
                     }
                 }
                 Spacer(modifier = Modifier.weight(0.01f))
+                //TODO: make this draggable
                 PlayerButtonPreview(
                     modifier = Modifier.fillMaxWidth(0.9f).aspectRatio(1.75f),
                     name = state.changeNameTextField.text,
@@ -285,9 +275,17 @@ fun PlayerCustomizationDialog(
                                     imageVector = vectorResource(Res.drawable.reset_icon),
                                     text = "Undo Changes",
                                     shadowEnabled = false,
-                                    onPress = { viewModel.revertChanges() },
-                                    enabled = state.changeWasMade,
-                                    mainColor = if (state.changeWasMade) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha=0.5f)
+                                    onPress = {
+                                        if (state.changeWasMade) {
+                                            viewModel.revertChanges()
+                                            notificationManager.showNotification("Changes successfully reverted", 3000)
+                                        } else {
+                                            notificationManager.showNotification("No changes to revert", 1500)
+                                        }
+                                    },
+                                    hapticEnabled = state.changeWasMade,
+                                    enabled = true,
+                                    mainColor = if (state.changeWasMade) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
                                 )
                             }
                         }
@@ -299,7 +297,7 @@ fun PlayerCustomizationDialog(
         val playerList = remember {
             mutableStateListOf<Player>().apply {
                 addAll(viewModel.settingsManager.loadPlayerPrefs().filter { it.name == "P${state.player.playerNum}" })
-                addAll(viewModel.settingsManager.loadPlayerPrefs().filter { !it.isDefaultOrEmptyName()  })
+                addAll(viewModel.settingsManager.loadPlayerPrefs().filter { !it.isDefaultOrEmptyName() })
 //                addAll(viewModel.settingsManager.loadPlayerPrefs())
             }
         }
@@ -307,10 +305,12 @@ fun PlayerCustomizationDialog(
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             viewModel.setPlayer(player)
             backHandler.pop()
+            notificationManager.showNotification("Selected ${player.name} Successfully", 3000)
         }, onPlayerDeleted = { player ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             playerList.remove(player)
             viewModel.settingsManager.deletePlayerPref(player)
+            notificationManager.showNotification("Deleted ${player.name} Successfully", 3000)
         })
     }, Pair(state.customizationMenuState == CustomizationMenuState.SCRYFALL_SEARCH) {
         val scryfallBackStack = remember { mutableListOf("Main") }
@@ -318,6 +318,7 @@ fun PlayerCustomizationDialog(
             backHandler.push(label, block)
             scryfallBackStack.add(label)
         }, selectButtonEnabled = true, printingsButtonEnabled = true, rulingsButtonEnabled = false, onImageSelected = {
+            notificationManager.showNotification("Selected Image Successfully", 3000)
             viewModel.onChangeImage(it)
             while (scryfallBackStack.isNotEmpty()) {
                 backHandler.pop()
@@ -326,14 +327,17 @@ fun PlayerCustomizationDialog(
         })
     }, Pair(state.customizationMenuState == CustomizationMenuState.BACKGROUND_COLOR_PICKER) {
         ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Background Color", initialColor = state.player.color, setColor = { viewModel.onChangeBackgroundColor(it) }, onDone = {
+            notificationManager.showNotification("Modified Background Color Successfully", 3000)
             backHandler.pop()
         })
     }, Pair(state.customizationMenuState == CustomizationMenuState.ACCENT_COLOR_PICKER) {
         ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Accent Color", initialColor = state.player.textColor, setColor = { viewModel.onChangeTextColor(it) }, onDone = {
+            notificationManager.showNotification("Modified Accent Color Successfully", 3000)
             backHandler.pop()
         })
     }, Pair(state.customizationMenuState == CustomizationMenuState.GIF_SEARCH) {
         GifDialogContent(modifier = Modifier.fillMaxSize(), onGifSelected = {
+            notificationManager.showNotification("Selected Gif Successfully", 3000)
             viewModel.onChangeImage(it)
             backHandler.pop()
         })

@@ -52,6 +52,7 @@ import org.jetbrains.compose.resources.vectorResource
 import theme.blendWith
 import ui.SettingsButton
 import ui.dialog.MiddleButtonDialog
+import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.playerbutton.PlayerButton
 import ui.modifier.routePointerChangesTo
 
@@ -77,12 +78,14 @@ fun LifeCounterScreen(
         viewModel.killTimer()
     }
 
-    if (state.showMiddleButtonDialog) {
+    if (state.middleButtonDialogState != null) {
         MiddleButtonDialog(
+            dialogState = state.middleButtonDialogState!!,
+            setDialogState = { viewModel.setMiddleButtonDialogState(it) },
             modifier = Modifier.onGloballyPositioned { _ ->
-                viewModel.setBlurBackground(state.showMiddleButtonDialog)
+                viewModel.setBlurBackground(state.middleButtonDialogState != null)
             },
-            onDismiss = { viewModel.openMiddleButtonDialog(false) },
+            onDismiss = { viewModel.setMiddleButtonDialogState(null) },
             viewModel = viewModel,
             toggleTheme = { viewModel.toggleDarkTheme() },
             toggleKeepScreenOn = { viewModel.toggleKeepScreenOn() },
@@ -94,7 +97,7 @@ fun LifeCounterScreen(
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
-                    viewModel.openMiddleButtonDialog(false)
+                    viewModel.setMiddleButtonDialogState(null)
                     viewModel.setShowButtons(false)
                     delay(10)
                     viewModel.setShowButtons(true)
@@ -109,8 +112,8 @@ fun LifeCounterScreen(
         viewModel.onNavigate(firstNavigation)
     }
 
-    LaunchedEffect(state.showMiddleButtonDialog) {
-        viewModel.setBlurBackground(state.showMiddleButtonDialog)
+    LaunchedEffect(state.middleButtonDialogState) {
+        viewModel.setBlurBackground(state.middleButtonDialogState != null)
     }
 
     BoxWithConstraints(
@@ -186,7 +189,7 @@ fun LifeCounterScreen(
                 modifier = Modifier.offset(middleButtonOffset.first, middleButtonOffset.second).size(middleButtonSize)
             ) {
                 AnimatedMiddleButton(modifier = Modifier.fillMaxSize(), visible = state.showButtons && state.currentDealer == null, onMiddleButtonClick = {
-                    viewModel.openMiddleButtonDialog(true)
+                    viewModel.setMiddleButtonDialogState(MiddleButtonDialogState.Default)
                 })
 
                 val settingsButtonVisible = state.showButtons && state.currentDealer != null

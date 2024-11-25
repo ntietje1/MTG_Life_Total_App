@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ui.dialog.COUNTER_DIALOG_ENTRIES
+import ui.dialog.MiddleButtonDialogState
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
@@ -72,9 +73,8 @@ open class LifeCounterViewModel(
             setFirstPlayer(0)
             setTimerEnabled(settingsManager.turnTimer.value)
         } else if (state.value.firstPlayer == null) {
-            for (i in playerButtonViewModels.indices) {
-                playerButtonViewModels[i].pushBackStack { playerButtonViewModels[i].setPlayerButtonState(PBState.NORMAL) }
-                playerButtonViewModels[i].setPlayerButtonState(PBState.SELECT_FIRST_PLAYER)
+            for (playerButtonViewModel in playerButtonViewModels) {
+                playerButtonViewModel.onFirstPlayerPrompt()
             }
             setFirstPlayerSelectionActive(true)
         } else {
@@ -283,8 +283,8 @@ open class LifeCounterViewModel(
         _state.value = _state.value.copy(firstPlayerSelectionActive = value)
     }
 
-    open fun openMiddleButtonDialog(value: Boolean) {
-        _state.value = _state.value.copy(showMiddleButtonDialog = value)
+    open fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
+        _state.value = _state.value.copy(middleButtonDialogState = value)
     }
 
     private fun setActiveTimerIndex(index: Int?) {
@@ -296,7 +296,6 @@ open class LifeCounterViewModel(
     }
 
     protected fun setCurrentDealerIsPartnered(value: Boolean) {
-        println("setCurrentDealerIsPartnered: $value")
         _state.value = _state.value.copy(currentDealerIsPartnered = value)
     }
 
@@ -317,7 +316,7 @@ open class LifeCounterViewModel(
         _state.value = _state.value.copy(currentDealer = dealer)
     }
 
-    fun setNumPlayers(value: Int) {
+    open fun setNumPlayers(value: Int) {
         if (value < 1 || value > MAX_PLAYERS) throw IllegalArgumentException("Invalid number of players")
         settingsManager.setNumPlayers(value)
     }
@@ -345,7 +344,7 @@ open class LifeCounterViewModel(
         settingsManager.setKeepScreenOn(value ?: !settingsManager.keepScreenOn.value)
     }
 
-    fun toggleDarkTheme(value: Boolean? = null) {
+    open fun toggleDarkTheme(value: Boolean? = null) {
         settingsManager.setDarkTheme(value ?: !settingsManager.darkTheme.value)
     }
 
