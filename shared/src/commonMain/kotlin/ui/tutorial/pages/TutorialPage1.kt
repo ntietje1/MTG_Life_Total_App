@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,13 +26,10 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.sword_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
-import theme.PlayerColor2
-import theme.PlayerColor5
-import theme.PlayerColor6
-import theme.PlayerColor7
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.SettingsButton
+import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PlayerButtonState
@@ -44,35 +44,9 @@ fun TutorialPage1(
     onComplete: () -> Unit,
     notificationManager: NotificationManager = koinInject()
 ) {
+    val gameState = MockGameState()
 
-    val playerStates = listOf(
-        Player(
-            life = 40, name = "Player 1", color = PlayerColor7, playerNum = 1
-        ),
-        Player(
-            life = 40, name = "Player 2", color = PlayerColor2, playerNum = 2
-        ),
-        Player(
-            life = 40, name = "Player 3", color = PlayerColor5, playerNum = 3
-        ),
-        Player(
-            life = 40, name = "Player 4", color = PlayerColor6, playerNum = 4
-        ),
-    )
-
-    val mockSettingsManagerPage1 = MockSettingsManager(
-        autoKo = false,
-        numPlayers = 4,
-        alt4PlayerLayout = false,
-        startingLife = 40,
-        turnTimer = false,
-        playerStates = playerStates,
-        planarDeck = emptyList(),
-        planarBackStack = emptyList(),
-        playerPrefs = arrayListOf()
-    )
-
-    val mockImageManager = MockImageManager()
+    var complete by remember { mutableStateOf(false) }
 
     class MockLifeCounterViewModelPage1(
         lifeCounterState: LifeCounterState,
@@ -82,7 +56,7 @@ fun TutorialPage1(
     ) : MockLifeCounterViewModel(
         lifeCounterState, settingsManager, imageManager, notificationManager
     ) {
-        override fun openMiddleButtonDialog(value: Boolean) {
+        override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
             this.notificationManager.showNotification("Settings menu disabled", 3000)
         }
 
@@ -113,19 +87,17 @@ fun TutorialPage1(
         ) {
 
             private fun checkComplete() {
-                if (state.value.player.life <= 20) {
+                if (state.value.player.life == 20) {
                     onComplete()
+                    complete = true
                 }
             }
 
             override fun incrementLife(value: Int) {
                 super.incrementLife(value)
-                checkComplete()
-            }
-
-            override fun incrementCommanderDamage(value: Int, partner: Boolean) {
-                super.incrementCommanderDamage(value, partner)
-                checkComplete()
+                if (value < 0) {
+                    checkComplete()
+                }
             }
 
             override fun onCommanderButtonClicked() {
@@ -133,15 +105,15 @@ fun TutorialPage1(
             }
 
             override fun onSettingsButtonClicked() {
-                this. notificationManager.showNotification("Settings disabled", 3000)
+                this.notificationManager.showNotification("Settings disabled", 3000)
             }
         }
 
         override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
             return MockPlayerButtonViewModelPage1(
-                state = PlayerButtonState(player),
-                settingsManager = mockSettingsManagerPage1,
-                imageManager = mockImageManager,
+                state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
+                settingsManager = gameState.mockSettingsManager,
+                imageManager = gameState.mockImageManager,
                 notificationManager = this.notificationManager,
                 onCommanderButtonClickedCallback = { this.onCommanderButtonClicked(it) },
                 setAllMonarchy = { this.setAllMonarchy(it) },
@@ -154,43 +126,50 @@ fun TutorialPage1(
         }
     }
 
-    LifeCounterScreen(
+    TutorialScreenWrapper(
         modifier = modifier,
-        viewModel = remember {
-            MockLifeCounterViewModelPage1(
-                lifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-                settingsManager = mockSettingsManagerPage1,
-                imageManager = mockImageManager,
-                notificationManager = notificationManager
-            )
-        },
-        goToPlayerSelectScreen = {},
-        goToTutorialScreen = {},
-        firstNavigation = false
-    )
-    if (showHint) {
-        TutorialOverlayScreen(
-            onDismiss = onHintDismiss
-        ) {
-            Column(
-                Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+        blur = showHint,
+        instructions = if (complete) "Complete" else "Reduce a player's life total to 20"
+    ) {
+        LifeCounterScreen(
+            modifier = Modifier.fillMaxSize(),
+            viewModel = remember {
+                MockLifeCounterViewModelPage1(
+                    lifeCounterState = gameState.lifeCounterState,
+                    settingsManager = gameState.mockSettingsManager,
+                    imageManager = gameState.mockImageManager,
+                    notificationManager = notificationManager
+                )
+            },
+            goToPlayerSelectScreen = {},
+            goToTutorialScreen = {},
+            firstNavigation = false
+        )
+        if (showHint) {
+            TutorialOverlayScreen(
+                onDismiss = onHintDismiss
             ) {
-                SettingsButton(
-                    modifier = Modifier.size(90.dp),
-                    mainColor = Color.White,
-                    backgroundColor = Color.Transparent,
-                    shadowEnabled = false,
-                    imageVector = vectorResource(Res.drawable.sword_icon),
-                    enabled = false
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Tap up/down on a player to adjust their life total",
-                    fontSize = 20.scaledSp,
-                    textAlign = TextAlign.Center,
-                    color = Color.White,
-                    style = defaultTextStyle(),
-                )
+                Column(
+                    Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    SettingsButton(
+                        modifier = Modifier.size(90.dp),
+                        mainColor = Color.White,
+                        backgroundColor = Color.Transparent,
+                        shadowEnabled = false,
+                        imageVector = vectorResource(Res.drawable.sword_icon),
+                        enabled = false
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Tap up/down on a player to adjust their life total",
+                        fontSize = 20.scaledSp,
+                        textAlign = TextAlign.Center,
+                        color = Color.White,
+                        style = defaultTextStyle(),
+                    )
+                    Spacer(modifier = Modifier.height(120.dp))
+                }
             }
         }
     }

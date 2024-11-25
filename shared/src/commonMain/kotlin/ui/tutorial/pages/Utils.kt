@@ -1,11 +1,26 @@
 package ui.tutorial.pages
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import data.IImageManager
@@ -16,6 +31,15 @@ import data.serializable.Card
 import di.NotificationManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import theme.PlayerColor2
+import theme.PlayerColor5
+import theme.PlayerColor6
+import theme.PlayerColor7
+import theme.PlayerColor8
+import theme.PlayerColor9
+import theme.defaultTextStyle
+import theme.scaledSp
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.LifeCounterViewModel
@@ -41,44 +65,57 @@ class MockSettingsManager(
     private var planarBackStack: List<Card> = emptyList(),
     private val playerPrefs: ArrayList<Player> = arrayListOf()
 ) : ISettingsManager {
-    override val autoKo: StateFlow<Boolean> = MutableStateFlow(autoKo)
-    override fun setAutoKo(value: Boolean) {}
+    private val _autoKo = MutableStateFlow(autoKo)
+    override val autoKo: StateFlow<Boolean> = _autoKo.asStateFlow()
+    override fun setAutoKo(value: Boolean) { _autoKo.value = value }
 
-    override val autoSkip: StateFlow<Boolean> = MutableStateFlow(autoSkip)
-    override fun setAutoSkip(value: Boolean) {}
+    private val _autoSkip = MutableStateFlow(autoSkip)
+    override val autoSkip: StateFlow<Boolean> = _autoSkip.asStateFlow()
+    override fun setAutoSkip(value: Boolean) { _autoSkip.value = value }
 
-    override val keepScreenOn: StateFlow<Boolean> = MutableStateFlow(keepScreenOn)
-    override fun setKeepScreenOn(value: Boolean) {}
+    private val _keepScreenOn = MutableStateFlow(keepScreenOn)
+    override val keepScreenOn: StateFlow<Boolean> = _keepScreenOn.asStateFlow()
+    override fun setKeepScreenOn(value: Boolean) { _keepScreenOn.value = value }
 
-    override val cameraRollDisabled: StateFlow<Boolean> = MutableStateFlow(cameraRollDisabled)
-    override fun setCameraRollDisabled(value: Boolean) {}
+    private val _cameraRollDisabled = MutableStateFlow(cameraRollDisabled)
+    override val cameraRollDisabled: StateFlow<Boolean> = _cameraRollDisabled.asStateFlow()
+    override fun setCameraRollDisabled(value: Boolean) { _cameraRollDisabled.value = value }
 
-    override val fastCoinFlip: StateFlow<Boolean> = MutableStateFlow(fastCoinFlip)
-    override fun setFastCoinFlip(value: Boolean) {}
+    private val _fastCoinFlip = MutableStateFlow(fastCoinFlip)
+    override val fastCoinFlip: StateFlow<Boolean> = _fastCoinFlip.asStateFlow()
+    override fun setFastCoinFlip(value: Boolean) { _fastCoinFlip.value = value }
 
-    override val numPlayers: StateFlow<Int> = MutableStateFlow(numPlayers)
-    override fun setNumPlayers(value: Int) {}
+    private val _numPlayers = MutableStateFlow(numPlayers)
+    override val numPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
+    override fun setNumPlayers(value: Int) { _numPlayers.value = value }
 
-    override val alt4PlayerLayout: StateFlow<Boolean> = MutableStateFlow(alt4PlayerLayout)
-    override fun setAlt4PlayerLayout(value: Boolean) {}
+    private val _alt4PlayerLayout = MutableStateFlow(alt4PlayerLayout)
+    override val alt4PlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
+    override fun setAlt4PlayerLayout(value: Boolean) { _alt4PlayerLayout.value = value }
 
-    override val darkTheme: StateFlow<Boolean> = MutableStateFlow(darkTheme)
-    override fun setDarkTheme(value: Boolean) {}
+    private val _darkTheme = MutableStateFlow(darkTheme)
+    override val darkTheme: StateFlow<Boolean> = _darkTheme.asStateFlow()
+    override fun setDarkTheme(value: Boolean) { _darkTheme.value = value }
 
-    override val startingLife: StateFlow<Int> = MutableStateFlow(startingLife)
-    override fun setStartingLife(value: Int) {}
+    private val _startingLife = MutableStateFlow(startingLife)
+    override val startingLife: StateFlow<Int> = _startingLife.asStateFlow()
+    override fun setStartingLife(value: Int) { _startingLife.value = value }
 
-    override val tutorialSkip: StateFlow<Boolean> = MutableStateFlow(tutorialSkip)
-    override fun setTutorialSkip(value: Boolean) {}
+    private val _tutorialSkip = MutableStateFlow(tutorialSkip)
+    override val tutorialSkip: StateFlow<Boolean> = _tutorialSkip.asStateFlow()
+    override fun setTutorialSkip(value: Boolean) { _tutorialSkip.value = value }
 
-    override val lastSplashScreenShown: StateFlow<String> = MutableStateFlow(lastSplashScreenShown)
-    override fun setLastSplashScreenShown(value: String) {}
+    private val _lastSplashScreenShown = MutableStateFlow(lastSplashScreenShown)
+    override val lastSplashScreenShown: StateFlow<String> = _lastSplashScreenShown.asStateFlow()
+    override fun setLastSplashScreenShown(value: String) { _lastSplashScreenShown.value = value }
 
-    override val turnTimer: StateFlow<Boolean> = MutableStateFlow(turnTimer)
-    override fun setTurnTimer(value: Boolean) {}
+    private val _turnTimer = MutableStateFlow(turnTimer)
+    override val turnTimer: StateFlow<Boolean> = _turnTimer.asStateFlow()
+    override fun setTurnTimer(value: Boolean) { _turnTimer.value = value }
 
-    override val devMode: StateFlow<Boolean> = MutableStateFlow(devMode)
-    override fun setDevMode(value: Boolean) {}
+    private val _devMode = MutableStateFlow(devMode)
+    override val devMode: StateFlow<Boolean> = _devMode.asStateFlow()
+    override fun setDevMode(value: Boolean) { _devMode.value = value }
 
     override fun loadPlayerStates(): List<Player> {
         return playerStates
@@ -162,15 +199,50 @@ abstract class MockLifeCounterViewModel(
 }
 
 @Composable
+fun TutorialScreenWrapper(
+    modifier: Modifier = Modifier,
+    blur: Boolean,
+    instructions: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    BoxWithConstraints(
+        modifier = Modifier.wrapContentSize()
+    ) {
+        val blurRadius = remember(Unit) { maxHeight / 150f }
+        Column(
+            modifier.then(if (blur) Modifier.blur(blurRadius) else Modifier),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier.height(60.dp).wrapContentWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = instructions,
+                    fontSize = 20.scaledSp,
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    style = defaultTextStyle()
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            content()
+        }
+    }
+}
+
+@Composable
 fun TutorialOverlayScreen(
     onDismiss: () -> Unit,
-    content: @Composable BoxScope.() -> Unit
+    content: @Composable BoxWithConstraintsScope.() -> Unit
 ) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true, usePlatformDefaultWidth = false)
     ) {
-        Box(
+        BoxWithConstraints(
             Modifier.fillMaxSize().pointerInput(Unit) {
                 onDismiss()
             }
@@ -179,3 +251,51 @@ fun TutorialOverlayScreen(
         }
     }
 }
+
+data class MockGameState(
+    val playerStates: List<PlayerButtonState> = listOf(
+        PlayerButtonState(
+            player = Player(
+                life = 40, name = "Player 1", color = PlayerColor7, playerNum = 1
+            )
+        ),
+        PlayerButtonState(
+            Player(
+                life = 40, name = "Player 2", color = PlayerColor2, playerNum = 2
+            )
+        ),
+        PlayerButtonState(
+            Player(
+                life = 40, name = "Player 3", color = PlayerColor5, playerNum = 3
+            )
+        ),
+        PlayerButtonState(
+            Player(
+                life = 40, name = "Player 4", color = PlayerColor6, playerNum = 4
+            )
+        ),
+        PlayerButtonState(
+            Player(
+                life = 40, name = "Player 5", color = PlayerColor9, playerNum = 5
+            )
+        ),
+        PlayerButtonState(
+            Player(
+                life = 40, name = "Player 6", color = PlayerColor8, playerNum = 6
+            )
+        ),
+    ),
+    val lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
+    val mockSettingsManager: ISettingsManager = MockSettingsManager(
+        autoKo = false,
+        numPlayers = 4,
+        alt4PlayerLayout = false,
+        startingLife = 40,
+        turnTimer = false,
+        playerStates = playerStates.map { it.player },
+        planarDeck = emptyList(),
+        planarBackStack = emptyList(),
+        playerPrefs = arrayListOf()
+    ),
+    val mockImageManager: IImageManager = MockImageManager()
+)

@@ -27,9 +27,9 @@ import data.ISettingsManager
 import data.Player
 import di.NotificationManager
 import lifelinked.shared.generated.resources.Res
-import lifelinked.shared.generated.resources.commander_solid_icon
 import lifelinked.shared.generated.resources.down_arrow_icon
-import lifelinked.shared.generated.resources.sword_icon
+import lifelinked.shared.generated.resources.monarchy_icon
+import lifelinked.shared.generated.resources.settings_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
@@ -44,7 +44,7 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 
 @Composable
-fun TutorialPage2(
+fun TutorialPage3(
     modifier: Modifier = Modifier,
     showHint: Boolean,
     onHintDismiss: () -> Unit,
@@ -56,7 +56,7 @@ fun TutorialPage2(
     var stepOneComplete by remember { mutableStateOf(false) }
     var complete by remember { mutableStateOf(false) }
 
-    class MockLifeCounterViewModelPage2(
+    class MockLifeCounterViewModelPage3(
         lifeCounterState: LifeCounterState,
         settingsManager: ISettingsManager,
         imageManager: IImageManager,
@@ -69,10 +69,10 @@ fun TutorialPage2(
         }
 
         private fun checkStepOneComplete() {
-            stepOneComplete = playerButtonViewModels.any { it.state.value.buttonState == PBState.COMMANDER_DEALER }
+            stepOneComplete = playerButtonViewModels.any { it.state.value.buttonState == PBState.SETTINGS }
         }
 
-        inner class MockPlayerButtonViewModelPage2(
+        inner class MockPlayerButtonViewModelPage3(
             state: PlayerButtonState,
             settingsManager: ISettingsManager,
             imageManager: IImageManager,
@@ -99,35 +99,41 @@ fun TutorialPage2(
         ) {
 
             private fun checkComplete() {
-                if (state.value.player.commanderDamage.any { it >= 21 }) {
+                if (state.value.player.monarch) {
                     onComplete()
                     complete = true
                 }
             }
 
             override fun onCommanderButtonClicked() {
-                super.onCommanderButtonClicked()
+                this.notificationManager.showNotification("Commander damage disabled", 3000)
+            }
+
+            override fun onSettingsButtonClicked() {
+                super.onSettingsButtonClicked()
                 checkStepOneComplete()
             }
 
-            override fun popBackStack() {
-                super.popBackStack()
-                checkStepOneComplete()
-            }
-
-            override fun receiveCommanderDamage(index: Int, value: Int) {
-                super.receiveCommanderDamage(index, value)
+            override fun onMonarchyButtonClicked(value: Boolean) {
+                super.onMonarchyButtonClicked(value)
                 checkComplete()
             }
 
+            override fun onKOButtonClicked() {
+                this.notificationManager.showNotification("Auto KO disabled", 3000)
+            }
 
-            override fun onSettingsButtonClicked() {
-                this.notificationManager.showNotification("Settings disabled", 3000)
+            override fun onShowCustomizeMenu(value: Boolean) {
+                this.notificationManager.showNotification("Customize menu disabled", 3000)
+            }
+
+            override fun onCountersButtonClicked() {
+                this.notificationManager.showNotification("Counters disabled", 3000)
             }
         }
 
         override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-            return MockPlayerButtonViewModelPage2(
+            return MockPlayerButtonViewModelPage3(
                 state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
                 settingsManager = gameState.mockSettingsManager,
                 imageManager = gameState.mockImageManager,
@@ -144,7 +150,7 @@ fun TutorialPage2(
     }
 
     val lifeCounterViewModel = remember {
-        MockLifeCounterViewModelPage2(
+        MockLifeCounterViewModelPage3(
             lifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
             settingsManager = gameState.mockSettingsManager,
             imageManager = gameState.mockImageManager,
@@ -155,7 +161,7 @@ fun TutorialPage2(
     TutorialScreenWrapper(
         modifier = modifier,
         blur = showHint,
-        instructions = if (complete) "Complete" else if (stepOneComplete) "Deal 21 commander damage to a player" else "Open a player's commander damage menu",
+        instructions =if (complete) "Complete" else if (stepOneComplete) "Make a player the monarch" else "Open a player's settings menu",
     ) {
         LifeCounterScreen(
             modifier = modifier,
@@ -191,13 +197,13 @@ fun TutorialPage2(
                                 mainColor = Color.White,
                                 backgroundColor = Color.Transparent,
                                 shadowEnabled = false,
-                                imageVector = vectorResource(Res.drawable.commander_solid_icon),
+                                imageVector = vectorResource(Res.drawable.settings_icon),
                                 enabled = false
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Tap this button to deal commander damage as that player",
+                            text = "Tap this button to open a player's settings menu",
                             fontSize = 20.scaledSp,
                             textAlign = TextAlign.Center,
                             color = Color.White,
@@ -209,31 +215,38 @@ fun TutorialPage2(
                     Column(
                         Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        SettingsButton(
-                            modifier = Modifier.size(100.dp),
-                            mainColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            shadowEnabled = false,
-                            imageVector = vectorResource(Res.drawable.sword_icon),
-                            enabled = false
-                        )
+                        Row(
+                            modifier = Modifier.wrapContentSize(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            SettingsButton(
+                                modifier = Modifier.size(70.dp).rotate(-90f),
+                                mainColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                shadowEnabled = false,
+                                imageVector = vectorResource(Res.drawable.down_arrow_icon),
+                                enabled = false
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            SettingsButton(
+                                modifier = Modifier.size(90.dp),
+                                mainColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                shadowEnabled = false,
+                                imageVector = vectorResource(Res.drawable.monarchy_icon),
+                                enabled = false
+                            )
+                        }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Increment a player's commander damage in the same way as life total",
+                            text = "Tap this button to move the monarchy to this player",
                             fontSize = 20.scaledSp,
                             textAlign = TextAlign.Center,
                             color = Color.White,
                             style = defaultTextStyle(),
                         )
-                        Spacer(modifier = Modifier.height(48.dp))
-                        Text(
-                            text = "Damage dealt here also applies to the player's life total",
-                            fontSize = 20.scaledSp,
-                            textAlign = TextAlign.Center,
-                            color = Color.White,
-                            style = defaultTextStyle(),
-                        )
-                        Spacer(modifier = Modifier.height(50.dp))
+                        Spacer(modifier = Modifier.height(120.dp))
                     }
                 }
             }

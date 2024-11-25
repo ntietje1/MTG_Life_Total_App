@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class TutorialViewModel(
     val settingsManager: SettingsManager
 ) : ViewModel() {
-    private val _state = MutableStateFlow(TutorialState(0, SingleTutorialScreen.entries.size))
+    private val _state = MutableStateFlow(TutorialState(currentPage = 0, totalPages = 5))
     val state: StateFlow<TutorialState> = _state.asStateFlow()
 
     fun setCurrentPage(page: Int) {
@@ -19,21 +19,25 @@ class TutorialViewModel(
 
     fun onChangePage() {
         showHint(false)
-        showSuccess(false)
     }
 
     fun showWarningDialog(value: Boolean) {
         _state.value = _state.value.copy(showWarningDialog = value)
     }
 
-    fun showHint(value: Boolean) {
-        _state.value = _state.value.copy(showHint = value)
-        if (value) {
-            showSuccess(false)
-        }
+    fun showCloseDialog(value: Boolean) {
+        _state.value = _state.value.copy(showCloseDialog = value)
     }
 
-    fun showSuccess(value: Boolean) {
+    fun showHint(value: Boolean) {
+        _state.value = _state.value.copy(showHint = value)
+    }
+
+    fun setBlur(value: Boolean) {
+        _state.value = _state.value.copy(blur = value)
+    }
+
+    fun setSuccess(value: Boolean) {
         if (state.value.completed[state.value.currentPage]) return
         _state.value = _state.value.copy(showSuccess = value)
         if (value) {
