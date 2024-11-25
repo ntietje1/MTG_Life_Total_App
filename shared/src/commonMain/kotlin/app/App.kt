@@ -1,6 +1,7 @@
 package app
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,8 +40,10 @@ private enum class LifeLinkedScreen(val route: String) {
 fun LifeLinkedApp() {
     KoinContext {
         val settingsManager: ISettingsManager by currentKoinScope().inject()
-        keepScreenOn(settingsManager.keepScreenOn.value)
-        LifeLinkedTheme(darkTheme = settingsManager.darkTheme.value) {
+        val keepScreenOn by settingsManager.keepScreenOn.collectAsState()
+        val darkTheme by settingsManager.darkTheme.collectAsState()
+        keepScreenOn(keepScreenOn)
+        LifeLinkedTheme(darkTheme = darkTheme) {
             updateSystemBarsColors(true)
 
             val navController = rememberNavController()
