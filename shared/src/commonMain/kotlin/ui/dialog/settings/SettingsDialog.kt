@@ -96,38 +96,38 @@ fun SettingsDialogContent(
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Fast Coin Flip",
-                        initialState = settingsManager.fastCoinFlip,
-                        toggle = { settingsManager.fastCoinFlip = it },
+                        initialState = settingsManager.fastCoinFlip.value,
+                        toggle = { settingsManager.setFastCoinFlip(it) },
                         icon = vectorResource(Res.drawable.coin_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Disable Camera Roll",
-                        initialState = settingsManager.cameraRollDisabled,
-                        toggle = { settingsManager.cameraRollDisabled = it },
+                        initialState = settingsManager.cameraRollDisabled.value,
+                        toggle = { settingsManager.setCameraRollDisabled(it) },
                         icon = vectorResource(Res.drawable.invisible_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Auto KO",
-                        initialState = settingsManager.autoKo,
-                        toggle = { settingsManager.autoKo = it },
+                        initialState = settingsManager.autoKo.value,
+                        toggle = { settingsManager.setAutoKo(it) },
                         icon = vectorResource(Res.drawable.skull_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Auto Skip Player Select",
-                        initialState = settingsManager.autoSkip,
-                        toggle = { settingsManager.autoSkip = it },
+                        initialState = settingsManager.autoSkip.value,
+                        toggle = { settingsManager.setAutoSkip(it) },
                         icon = vectorResource(Res.drawable.player_select_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Keep Screen On",
-                        initialState = settingsManager.keepScreenOn,
+                        initialState = settingsManager.keepScreenOn.value,
                         toggle = {
                             toggleKeepScreenOn()
-                            settingsManager.keepScreenOn = it
+                            settingsManager.setKeepScreenOn(it)
                         },
                         icon = vectorResource(Res.drawable.sun_icon)
                     )
@@ -216,7 +216,7 @@ fun SettingsDialogContent(
                 }
             }
 
-            if (settingsManager.devMode && false) {
+            if (settingsManager.devMode.value && false) {
                 item {
                     SettingsDialogHeader(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),

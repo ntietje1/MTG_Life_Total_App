@@ -5,25 +5,26 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import data.ImageManager
+import data.IImageManager
+import data.ISettingsManager
 import data.Player
-import data.SettingsManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class CustomizationViewModel(
+open class CustomizationViewModel(
     private val initialPlayer: Player,
-    val imageManager: ImageManager,
-    val settingsManager: SettingsManager
+    val imageManager: IImageManager,
+    val settingsManager: ISettingsManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(CustomizationDialogState(initialPlayer))
     val state: StateFlow<CustomizationDialogState> = _state.asStateFlow()
 
     fun revertChanges() {
         setPlayer(initialPlayer)
+        initialPlayer.imageString?.let { onChangeImage(it) }
         setChangeWasMade(false)
     }
 
@@ -31,11 +32,12 @@ class CustomizationViewModel(
         var copiedUri = ""
         viewModelScope.launch {
             copiedUri = imageManager.copyImageToLocalStorage(file, state.value.player.name)
-            println("copiedUri: $copiedUri")
-        }.invokeOnCompletion { onChangeImage(copiedUri) }
+        }.invokeOnCompletion {
+            onChangeImage(copiedUri)
+        }
     }
 
-    fun setPlayer(player: Player) {
+    open fun setPlayer(player: Player) {
         _state.value = _state.value.copy(player = player)
         setChangeNameField(TextFieldValue(player.name, selection = TextRange(player.name.length)))
     }
@@ -67,7 +69,6 @@ class CustomizationViewModel(
         setChangeWasMade(true)
         setPlayer(state.value.player.copy(imageString = uri))
     }
-
 
     private fun setBackgroundColor(color: Color) {
         setChangeWasMade(true)

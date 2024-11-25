@@ -11,7 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import data.SettingsManager
+import data.ISettingsManager
 import di.BackHandler
 import di.VersionNumber
 import di.keepScreenOn
@@ -39,22 +39,19 @@ private enum class LifeLinkedScreen(val route: String) {
 @Composable
 fun LifeLinkedApp() {
     KoinContext {
-        var darkTheme by remember { mutableStateOf(SettingsManager.instance.darkTheme) }
-        var keepScreenOn by remember { mutableStateOf(SettingsManager.instance.keepScreenOn) }
-        var allowChangeNumPlayers by remember { mutableStateOf(true) }
-        var firstLifeCounterNavigation by remember { mutableStateOf(true) }
+        val settingsManager: ISettingsManager by currentKoinScope().inject()
+        val keepScreenOn by settingsManager.keepScreenOn.collectAsState()
+        val darkTheme by settingsManager.darkTheme.collectAsState()
         keepScreenOn(keepScreenOn)
-
         LifeLinkedTheme(darkTheme = darkTheme) {
             updateSystemBarsColors(true)
 
             val navController = rememberNavController()
-            val settingsManager = SettingsManager.instance
             val currentVersionNumber = koinInject<VersionNumber>()
             fun getStartScreen(): String {
-                return if (!currentVersionNumber.isSame(VersionNumber(settingsManager.lastSplashScreenShown))) {
+                return if (!currentVersionNumber.isSame(VersionNumber(settingsManager.lastSplashScreenShown.value))) {
                     LifeLinkedScreen.SPLASH.route
-                } else if (!settingsManager.autoSkip) {
+                } else if (!settingsManager.autoSkip.value) {
                     LifeLinkedScreen.PLAYER_SELECT.route
                 } else {
                     LifeLinkedScreen.LIFE_COUNTER.route
@@ -64,6 +61,9 @@ fun LifeLinkedApp() {
             val backHandler: BackHandler by currentKoinScope().inject()
             backHandler.attachNavigation(navController)
 
+            var allowChangeNumPlayers by remember { mutableStateOf(true) }
+            var firstLifeCounterNavigation by remember { mutableStateOf(true) }
+
             NavHost(
                 navController = navController,
                 startDestination = getStartScreen()
@@ -71,12 +71,11 @@ fun LifeLinkedApp() {
                 composable(LifeLinkedScreen.SPLASH.route) {
                     SplashScreen(
                         goToTutorial = {
-                            settingsManager.lastSplashScreenShown = currentVersionNumber.value
+                            settingsManager.setLastSplashScreenShown(currentVersionNumber.value)
                             navController.navigate(LifeLinkedScreen.TUTORIAL.route)
                         },
                         goToLifeCounter = {
-                            settingsManager.tutorialSkip = true
-                            settingsManager.lastSplashScreenShown = currentVersionNumber.value
+                            settingsManager.setLastSplashScreenShown(currentVersionNumber.value)
                             navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
                         }
                     )
@@ -86,7 +85,7 @@ fun LifeLinkedApp() {
                     TutorialScreen(
                         viewModel = viewModel,
                         onFinishTutorial = {
-                            settingsManager.tutorialSkip = true
+                            settingsManager.setTutorialSkip(true)
                             if (navController.currentBackStack.value.all {
                                     it.destination.route == null ||
                                             !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route)
@@ -101,7 +100,6 @@ fun LifeLinkedApp() {
 
                 composable(LifeLinkedScreen.PLAYER_SELECT.route) {
                     val viewModel = koinViewModel<PlayerSelectViewModel>()
-                    println("Navigating to player select screen with allowChangeNumPlayers: $allowChangeNumPlayers")
                     PlayerSelectScreen(
                         viewModel = viewModel,
                         allowChangeNumPlayers = allowChangeNumPlayers,
@@ -113,18 +111,8 @@ fun LifeLinkedApp() {
 
                 composable(LifeLinkedScreen.LIFE_COUNTER.route) {
                     val viewModel = koinViewModel<LifeCounterViewModel>()
-                    val turnTimerEnabled by settingsManager.turnTimer.collectAsState()
                     LifeCounterScreen(
                         viewModel = viewModel,
-                        numPlayers = settingsManager.numPlayers,
-                        toggleTheme = {
-                            SettingsManager.instance.darkTheme = !darkTheme
-                            darkTheme = !darkTheme
-                        },
-                        toggleKeepScreenOn = {
-                            SettingsManager.instance.keepScreenOn = !keepScreenOn
-                            keepScreenOn = !keepScreenOn
-                        },
                         goToPlayerSelectScreen = { changeNumPlayers ->
                             allowChangeNumPlayers = changeNumPlayers
                             navController.navigate(LifeLinkedScreen.PLAYER_SELECT.route)
@@ -133,7 +121,6 @@ fun LifeLinkedApp() {
                         goToTutorialScreen = {
                             navController.navigate(LifeLinkedScreen.TUTORIAL.route)
                         },
-                        timerEnabled = turnTimerEnabled,
                         firstNavigation = firstLifeCounterNavigation
                     )
                 }

@@ -38,8 +38,8 @@ class PatchNotesViewModel(
     fun onSecretPatchNotesClick(): Boolean? {
         _state.value = _state.value.copy(secretPatchNotesClicks = state.value.secretPatchNotesClicks + 1)
         if (state.value.secretPatchNotesClicks > 0 && state.value.secretPatchNotesClicks % 5 == 0) {
-            settingsManager.devMode = !settingsManager.devMode
-            return settingsManager.devMode
+            settingsManager.setDevMode(!settingsManager.devMode.value)
+            return settingsManager.devMode.value
         }
         return null
     }

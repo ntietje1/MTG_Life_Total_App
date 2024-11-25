@@ -71,15 +71,19 @@ fun StartingLifeDialogContent(
                 })
             }))
 
-            TextFieldWithButton(modifier = Modifier.fillMaxWidth(0.8f).height(textFieldHeight), value = state.textFieldValue, onValueChange = {
-                viewModel.setTextFieldValue(it)
-            }, label = "Custom Starting Life", keyboardType = KeyboardType.Number, onDone = {
-                viewModel.parseStartingLife()?.let {
-                    viewModel.setStartingLife(it)
-                    resetGameState(it)
-                    onDismiss()
-                }
-            }) {
+            TextFieldWithButton(
+                modifier = Modifier.fillMaxWidth(0.8f).height(textFieldHeight), value = state.textFieldValue, onValueChange = {
+                    viewModel.setTextFieldValue(it)
+                }, label = "Custom Starting Life", keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
+                ), keyboardActions = KeyboardActions(onDone = {
+                    viewModel.parseStartingLife()?.let {
+                        viewModel.setStartingLife(it)
+                        resetGameState(it)
+                        onDismiss()
+                    }
+                })
+            ) {
                 SettingsButton(modifier = Modifier.fillMaxSize(), imageVector = vectorResource(Res.drawable.enter_icon), shadowEnabled = false, onPress = {
                     viewModel.parseStartingLife()?.let {
                         viewModel.setStartingLife(it)
@@ -92,29 +96,6 @@ fun StartingLifeDialogContent(
         }
     }
 }
-//
-//@Composable
-//fun TextFieldWithButton(
-//    modifier: Modifier = Modifier,
-//    value: String,
-//    onValueChange: (String) -> Unit,
-//    label: String,
-//    keyboardType: KeyboardType,
-//    onDone: () -> Unit,
-//    button: @Composable () -> Unit,
-//) {
-//    TextFieldWithButton(
-//        modifier = modifier,
-//        value = TextFieldValue(value),
-//        onValueChange = {
-//            onValueChange(it.text)
-//        },
-//        label = label,
-//        keyboardType = keyboardType,
-//        onDone = onDone,
-//        button = button
-//    )
-//}
 
 @Composable
 fun TextFieldWithButton(
@@ -122,8 +103,10 @@ fun TextFieldWithButton(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     label: String,
-    keyboardType: KeyboardType,
-    onDone: () -> Unit,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(
+        capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
+    ),
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     button: @Composable () -> Unit,
 ) {
     BoxWithConstraints(
@@ -153,9 +136,7 @@ fun TextFieldWithButton(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
-            ), keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = keyboardType, capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
-            ), keyboardActions = KeyboardActions(onDone = { onDone() }), modifier = Modifier.fillMaxSize()
+            ), keyboardOptions = keyboardOptions, keyboardActions = keyboardActions, modifier = Modifier.fillMaxSize()
         )
         Box(
             Modifier.align(Alignment.CenterEnd).fillMaxHeight().aspectRatio(1.0f)

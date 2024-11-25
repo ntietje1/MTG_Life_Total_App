@@ -25,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,66 +52,52 @@ import org.jetbrains.compose.resources.vectorResource
 import theme.blendWith
 import ui.SettingsButton
 import ui.dialog.MiddleButtonDialog
+import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.playerbutton.PlayerButton
 import ui.modifier.routePointerChangesTo
 
 @Composable
 fun LifeCounterScreen(
+    modifier: Modifier = Modifier.fillMaxSize(),
     viewModel: LifeCounterViewModel,
-    toggleTheme: () -> Unit,
-    toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
-    numPlayers: Int,
-    timerEnabled: Boolean,
     firstNavigation: Boolean
 ) {
     val state by viewModel.state.collectAsState()
-    var showMiddleDialog by remember { mutableStateOf(false) }
-    var firstPlayerSelectionActive by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
-    fun promptFirstPlayer() {
-        if (state.numPlayers == 1) {
-            viewModel.setFirstPlayer(0)
-            viewModel.setTimerEnabled(timerEnabled)
-        } else if (state.firstPlayer == null) {
-            viewModel.askForFirstPlayer()
-            firstPlayerSelectionActive = true
-        } else {
-            viewModel.setTimerEnabled(timerEnabled)
-        }
-    }
+    val numPlayers by viewModel.numPlayers.collectAsState()
+    val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
+    val timerEnabled by viewModel.turnTimerEnabled.collectAsState()
 
     if (timerEnabled) { // Features that require first player
-        if (state.firstPlayer == null && !firstPlayerSelectionActive) {
-            promptFirstPlayer()
+        if (state.firstPlayer == null && !state.firstPlayerSelectionActive) {
+            viewModel.promptFirstPlayer()
         }
     } else {
         viewModel.killTimer()
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.setNumPlayers(numPlayers)
-    }
-
-    if (showMiddleDialog) {
+    if (state.middleButtonDialogState != null) {
         MiddleButtonDialog(
+            dialogState = state.middleButtonDialogState!!,
+            setDialogState = { viewModel.setMiddleButtonDialogState(it) },
             modifier = Modifier.onGloballyPositioned { _ ->
-                viewModel.setBlurBackground(showMiddleDialog)
+                viewModel.setBlurBackground(state.middleButtonDialogState != null)
             },
-            onDismiss = { showMiddleDialog = false },
+            onDismiss = { viewModel.setMiddleButtonDialogState(null) },
             viewModel = viewModel,
-            toggleTheme = { toggleTheme() },
-            toggleKeepScreenOn = { toggleKeepScreenOn() },
+            toggleTheme = { viewModel.toggleDarkTheme() },
+            toggleKeepScreenOn = { viewModel.toggleKeepScreenOn() },
             goToPlayerSelectScreen = { changeNumPlayers ->
                 viewModel.setShowButtons(false)
                 goToPlayerSelectScreen(changeNumPlayers)
             },
+            setAlt4PlayerLayout = { viewModel.setAlt4PlayerLayout(it) },
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
-                    showMiddleDialog = false
+                    viewModel.setMiddleButtonDialogState(null)
                     viewModel.setShowButtons(false)
                     delay(10)
                     viewModel.setShowButtons(true)
@@ -127,20 +112,19 @@ fun LifeCounterScreen(
         viewModel.onNavigate(firstNavigation)
     }
 
-    LaunchedEffect(showMiddleDialog) {
-        viewModel.setBlurBackground(showMiddleDialog)
+    LaunchedEffect(state.middleButtonDialogState) {
+        viewModel.setBlurBackground(state.middleButtonDialogState != null)
     }
 
     BoxWithConstraints(
-        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+        modifier.background(MaterialTheme.colorScheme.background)
     ) {
-        val m = LifeCounterMeasurements(
-            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = state.numPlayers, alt4Layout = viewModel.settingsManager.alt4PlayerLayout
-        )
-        val buttonPadding = maxWidth / 750f + maxHeight / 750f
-        val buttonPlacements = m.buttonPlacements()
-        val blurRadius = maxHeight / 50f
-        val middleButtonSize = (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5
+        val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) { LifeCounterMeasurements(
+            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
+        ) }
+        val buttonPadding = remember(maxHeight) { maxWidth / 750f + maxHeight / 750f }
+        val blurRadius = remember(Unit) { maxHeight / 50f }
+        val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }
         Box(
             Modifier.fillMaxSize().then(
                 if (state.blurBackground) {
@@ -151,16 +135,16 @@ fun LifeCounterScreen(
             )
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
-                items(buttonPlacements, key = { it.hashCode() }) { buttonPlacements ->
+                items(m.buttonPlacements(), key = { it.hashCode() }) { buttonPlacements ->
                     LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
                         items(buttonPlacements, key = { it.index }) { placement ->
-                            val width = placement.width - buttonPadding * 4
-                            val height = placement.height - buttonPadding * 4
-                            val rotation = placement.angle
-                            val turnTimerAlignment = placement.timerAlignment
+                            val width = remember(Unit) { placement.width - buttonPadding * 4 }
+                            val height = remember(Unit) { placement.height - buttonPadding * 4 }
+                            val rotation = remember(Unit) { placement.angle }
+                            val turnTimerAlignment = remember(Unit) { placement.timerAlignment }
+                            val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
                             val playerButtonViewModel = viewModel.playerButtonViewModels[placement.index]
                             val timerColor = playerButtonViewModel.state.value.player.textColor
-                            val topCornerRadius = (min(width, height) * 0.1f + max(width, height) * 0.01f)
                             AnimatedPlayerButton(modifier = Modifier.padding(buttonPadding),
                                 visible = state.showButtons,
                                 rotation = placement.angle,
@@ -170,7 +154,7 @@ fun LifeCounterScreen(
                                     PlayerButton(modifier = Modifier.size(width, height),
                                         turnTimerModifier = Modifier.align(turnTimerAlignment).pointerInput(Unit) {
                                             routePointerChangesTo(onDown = {
-                                                playerButtonViewModel.moveTimer()
+                                                playerButtonViewModel.onMoveTimer()
                                             })
                                         }.then(
                                             when (turnTimerAlignment) {
@@ -191,9 +175,9 @@ fun LifeCounterScreen(
                                         setBlurBackground = { viewModel.setBlurBackground(it) },
                                         setFirstPlayer = {
                                             viewModel.setFirstPlayer(placement.index)
-                                            viewModel.setTimerEnabled(timerEnabled)
-                                            firstPlayerSelectionActive = false
-                                        })
+                                        },
+                                        currentDealerIsPartnered = state.currentDealerIsPartnered,
+                                    )
                                 })
                         }
                     })
@@ -205,7 +189,7 @@ fun LifeCounterScreen(
                 modifier = Modifier.offset(middleButtonOffset.first, middleButtonOffset.second).size(middleButtonSize)
             ) {
                 AnimatedMiddleButton(modifier = Modifier.fillMaxSize(), visible = state.showButtons && state.currentDealer == null, onMiddleButtonClick = {
-                    showMiddleDialog = true
+                    viewModel.setMiddleButtonDialogState(MiddleButtonDialogState.Default)
                 })
 
                 val settingsButtonVisible = state.showButtons && state.currentDealer != null
@@ -348,20 +332,28 @@ fun AnimatedMiddleButton(
     var animationFinished by remember { mutableStateOf(false) }
 
     val popInDuration = (900 / getAnimationCorrectionFactor()).toInt()
-    var angle by remember { mutableFloatStateOf(0f) }
-    var scale by remember { mutableFloatStateOf(0f) }
+//    var angle by remember { mutableFloatStateOf(0f) }
+//    var scale by remember { mutableFloatStateOf(0f) }
 
-    val animatableAngle = remember { Animatable(0f) }
-    val animatableScale = remember { Animatable(0f) }
+    fun targetAngle(visible: Boolean): Float {
+        return if (visible) 360f else 0f
+    }
+
+    fun targetScale(visible: Boolean): Float {
+        return if (visible) 1f else 0f
+    }
+
+    val animatableAngle = remember { Animatable(targetAngle(visible)) }
+    val animatableScale = remember { Animatable(targetScale(visible)) }
 
     LaunchedEffect(visible) {
         launch {
             if (visible) {
                 animatableAngle.animateTo(
-                    targetValue = 360f, animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
+                    targetValue = targetAngle(visible), animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
                 )
             } else {
-                animatableAngle.snapTo(0f)
+                animatableAngle.snapTo(targetAngle(visible))
             }
         }
 
@@ -369,23 +361,20 @@ fun AnimatedMiddleButton(
             if (visible) {
                 animationFinished = false
                 animatableScale.animateTo(
-                    targetValue = 1f, animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
+                    targetValue = targetScale(visible), animationSpec = tween(durationMillis = popInDuration, easing = LinearOutSlowInEasing)
                 )
             } else {
-                animatableScale.snapTo(0f)
+                animatableScale.snapTo(targetScale(visible))
             }
             animationFinished = true
         }
     }
 
-    scale = animatableScale.value
-    angle = animatableAngle.value
-
     Box(modifier = modifier.background(
         color = MaterialTheme.colorScheme.background, shape = CircleShape
-    ).rotate(angle).graphicsLayer {
-        scaleX = scale
-        scaleY = scale
+    ).rotate(animatableAngle.value).graphicsLayer {
+        scaleX = animatableScale.value
+        scaleY = animatableScale.value
     }.pointerInput(Unit) {
         detectTapGestures(onPress = {
             onMiddleButtonClick()

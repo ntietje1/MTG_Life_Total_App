@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +44,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -153,23 +156,26 @@ fun DiceRollDialogContent(
                             setLastResult(it, 20)
                             focusManager.clearFocus()
                         })
-                    }
-                    ))
+                    }))
                 }
             }
             Spacer(modifier = Modifier.weight(0.005f))
 
-            TextFieldWithButton(modifier = Modifier.width(diceRollButtonSize * 3).height(textFieldHeight), value = textFieldValue, onValueChange = {
-                if (it.text.toIntOrNull() != null) {
-                    textFieldValue = it
-                    customDieValue = it.text.toInt()
-                } else if (it.text.isEmpty()) {
-                    textFieldValue = TextFieldValue("")
-                    customDieValue = 0
-                }
-            }, label = "Custom Die Value", keyboardType = KeyboardType.Number, onDone = {
-                focusManager.clearFocus()
-            }) {
+            TextFieldWithButton(
+                modifier = Modifier.width(diceRollButtonSize * 3).height(textFieldHeight), value = textFieldValue, onValueChange = {
+                    if (it.text.toIntOrNull() != null) {
+                        textFieldValue = it
+                        customDieValue = it.text.toInt()
+                    } else if (it.text.isEmpty()) {
+                        textFieldValue = TextFieldValue("")
+                        customDieValue = 0
+                    }
+                }, label = "Custom Die Value", keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
+                ), keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                })
+            ) {
                 IconButton(
                     onClick = {
                         focusManager.clearFocus()

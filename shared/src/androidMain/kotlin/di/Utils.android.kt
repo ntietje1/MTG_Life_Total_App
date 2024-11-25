@@ -68,7 +68,16 @@ actual fun keepScreenOn(keepScreenOn: Boolean) {
 }
 
 actual class NotificationManager(private val context: Context) {
+    private var currentToast: Toast? = null
+
     actual fun showNotification(message: String, duration: Long) {
-        Toast.makeText(context, message, duration.toInt()).show()
+        currentToast?.cancel()
+        currentToast = Toast.makeText(context, message, duration.toInt())
+        currentToast?.show()
+    }
+
+    fun cancelCurrentNotification() {
+        currentToast?.cancel()
+        currentToast = null
     }
 }

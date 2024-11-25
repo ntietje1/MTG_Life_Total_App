@@ -60,6 +60,7 @@ fun ColorDialog(
     }
 }
 
+//TODO: color picker doesn't work when tapping, only dragging
 @Composable
 fun ColorPickerDialogContent(
     modifier: Modifier = Modifier,

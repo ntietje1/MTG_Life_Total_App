@@ -3,12 +3,13 @@ package ui.lifecounter
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import data.ImageManager
+import data.IImageManager
+import data.ISettingsManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
 import data.Player.Companion.allPlayerColors
-import data.SettingsManager
 import data.TurnTimer
+import di.NotificationManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,36 +17,69 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ui.dialog.COUNTER_DIALOG_ENTRIES
+import ui.dialog.MiddleButtonDialogState
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
-class LifeCounterViewModel(
-    val settingsManager: SettingsManager,
-    private val imageManager: ImageManager,
-    private val planeChaseViewModel: PlaneChaseViewModel
+open class LifeCounterViewModel(
+    private val settingsManager: ISettingsManager,
+    private val imageManager: IImageManager,
+    protected val notificationManager: NotificationManager,
+    private val planeChaseViewModel: PlaneChaseViewModel,
 ) : ViewModel() {
     private val _state = MutableStateFlow(LifeCounterState())
     val state: StateFlow<LifeCounterState> = _state.asStateFlow()
 
-    private val _currentDealerIsPartnered = MutableStateFlow(false)
-    private val currentDealerIsPartnered = _currentDealerIsPartnered.asStateFlow()
+    val numPlayers: StateFlow<Int> = settingsManager.numPlayers
+    val alt4PlayerLayout: StateFlow<Boolean> = settingsManager.alt4PlayerLayout
+    val turnTimerEnabled: StateFlow<Boolean> = settingsManager.turnTimer
 
-    lateinit var playerButtonViewModels: List<PlayerButtonViewModel>
+    private var _playerButtonViewModels: List<PlayerButtonViewModel>
+    val playerButtonViewModels: List<PlayerButtonViewModel>
+        get() = _playerButtonViewModels
 
     init {
-        generatePlayers()
+        _playerButtonViewModels = generatePlayers()
+//        savePlayerStates()
     }
 
-    fun askForFirstPlayer() {
-        for (i in playerButtonViewModels.indices) {
-            playerButtonViewModels[i].pushBackStack { playerButtonViewModels[i].setPlayerButtonState(PBState.NORMAL) }
-            playerButtonViewModels[i].setPlayerButtonState(PBState.SELECT_FIRST_PLAYER)
+    constructor(
+        initialState: LifeCounterState,
+        settingsManager: ISettingsManager,
+        imageManager: IImageManager,
+        notificationManager: NotificationManager,
+        planeChaseViewModel: PlaneChaseViewModel
+    ) : this(settingsManager, imageManager, notificationManager, planeChaseViewModel) {
+        _state.value = initialState
+        _playerButtonViewModels = settingsManager.loadPlayerStates().map { generatePlayerButtonViewModel(it) }
+    }
+
+    private fun generatePlayers(): List<PlayerButtonViewModel> {
+        val startingLife = settingsManager.startingLife.value
+        val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
+        val viewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
+        while (savedPlayers.size < MAX_PLAYERS) {
+            val playerNum = savedPlayers.size + 1
+            val newColor = allPlayerColors.filter { it !in getUsedColors(viewModels) }.random()
+            savedPlayers += generatePlayer(startingLife, playerNum, newColor)
+            viewModels += generatePlayerButtonViewModel(savedPlayers.last())
         }
+        return viewModels
     }
 
-    private fun setActiveTimerIndex(index: Int?) {
-        _state.value = _state.value.copy(activeTimerIndex = index)
+    fun promptFirstPlayer() {
+        if (settingsManager.numPlayers.value == 1) {
+            setFirstPlayer(0)
+            setTimerEnabled(settingsManager.turnTimer.value)
+        } else if (state.value.firstPlayer == null) {
+            for (playerButtonViewModel in playerButtonViewModels) {
+                playerButtonViewModel.onFirstPlayerPrompt()
+            }
+            setFirstPlayerSelectionActive(true)
+        } else {
+            setTimerEnabled(settingsManager.turnTimer.value)
+        }
     }
 
     fun setFirstPlayer(index: Int?) {
@@ -56,10 +90,12 @@ class LifeCounterViewModel(
                     playerButtonViewModels[i].popBackStack()
                 }
             }
+            setTimerEnabled(settingsManager.turnTimer.value)
+            setFirstPlayerSelectionActive(false)
         }
     }
 
-    fun setTimerEnabled(value: Boolean = true) {
+    fun setTimerEnabled(value: Boolean) {
         if (value) {
             if (_state.value.activeTimerIndex == null) {
                 setActiveTimerIndex(_state.value.firstPlayer)
@@ -72,6 +108,7 @@ class LifeCounterViewModel(
 
     private var timerJob: Job? = null
 
+    //TODO: move timer logic to it's own module, also save it's state to local storage
     private fun initTimer() {
         if (_state.value.turnTimer == null) {
             _state.value = _state.value.copy(turnTimer = TurnTimer(-1, 1))
@@ -110,15 +147,15 @@ class LifeCounterViewModel(
     private fun getNextPlayerIndex(currentIndex: Int): Int {
         var nextPlayerIndex = currentIndex
         do {
-            nextPlayerIndex = (nextPlayerIndex + 1) % _state.value.numPlayers
-        } while (playerButtonViewModels[nextPlayerIndex].isDead() && !playerButtonViewModels.subList(0, state.value.numPlayers).all { it.isDead() })
+            nextPlayerIndex = (nextPlayerIndex + 1) % settingsManager.numPlayers.value
+        } while (playerButtonViewModels[nextPlayerIndex].isDead.value && !playerButtonViewModels.subList(0, settingsManager.numPlayers.value).all { it.isDead.value })
         return nextPlayerIndex
     }
 
-    private fun moveTimer() {
+    protected fun moveTimer() {
         if (_state.value.activeTimerIndex == null || _state.value.firstPlayer == null) throw IllegalStateException("Attempted to move timer when no one has an active timer")
         val nextPlayerIndex = getNextPlayerIndex(_state.value.activeTimerIndex!!)
-        val firstActivePlayerIndex = getNextPlayerIndex((_state.value.firstPlayer!! - 1 + _state.value.numPlayers) % _state.value.numPlayers)
+        val firstActivePlayerIndex = getNextPlayerIndex((_state.value.firstPlayer!! - 1 + settingsManager.numPlayers.value) % settingsManager.numPlayers.value)
         if (nextPlayerIndex == firstActivePlayerIndex) {
             incrementTurn()
         }
@@ -156,24 +193,11 @@ class LifeCounterViewModel(
         }
     }
 
-    private fun getUsedColors(): List<Color> {
-        return playerButtonViewModels.map { it.state.value.player.color }
+    private fun getUsedColors(viewModels: List<PlayerButtonViewModel> = playerButtonViewModels): List<Color> {
+        return viewModels.map { it.state.value.player.color }
     }
 
-    private fun generatePlayers() {
-        val startingLife = settingsManager.startingLife
-        val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
-        playerButtonViewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }
-        while (savedPlayers.size < MAX_PLAYERS) {
-            val playerNum = savedPlayers.size + 1
-            val newColor = allPlayerColors.filter { it !in getUsedColors() }.random()
-            savedPlayers += generatePlayer(startingLife, playerNum, newColor)
-            playerButtonViewModels += generatePlayerButtonViewModel(savedPlayers.last())
-        }
-        savePlayerStates()
-    }
-
-    private fun resetPlayerColor(player: Player): Player {
+    protected fun resetPlayerColor(player: Player): Player {
         return player.copy(color = allPlayerColors.filter { it !in getUsedColors() }.random())
     }
 
@@ -189,33 +213,50 @@ class LifeCounterViewModel(
         playerButtonViewModel.setPlayerButtonState(PBState.NORMAL)
     }
 
-    private fun onCommanderButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
-            when (playerButtonViewModel.state.value.buttonState) {
-                PBState.NORMAL -> {
-                    onNormalCommanderButtonClicked(playerButtonViewModel)
-                }
-                PBState.COMMANDER_DEALER -> {
-                    onCommanderDealerButtonClicked(playerButtonViewModel)
-                }
-                else -> {} // do nothing
+    protected fun onCommanderButtonClicked(playerButtonViewModel: PlayerButtonViewModel) {
+        when (playerButtonViewModel.state.value.buttonState) {
+            PBState.NORMAL -> {
+                onNormalCommanderButtonClicked(playerButtonViewModel)
             }
+
+            PBState.COMMANDER_DEALER -> {
+                onCommanderDealerButtonClicked(playerButtonViewModel)
+            }
+
+            else -> {} // do nothing
+        }
     }
 
-    private fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
+    open fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
         return PlayerButtonViewModel(
             initialPlayer = player,
             settingsManager = settingsManager,
             imageManager = imageManager,
-            onCommanderButtonClicked = { onCommanderButtonClicked(it) },
+            notificationManager = notificationManager,
+            onCommanderButtonClickedCallback = { onCommanderButtonClicked(it) },
             setAllMonarchy = { setAllMonarchy(it) },
             getCurrentDealer = { state.value.currentDealer },
-            updateCurrentDealerMode = { setDealerMode(it) },
-            currentDealerIsPartnered = currentDealerIsPartnered,
+            updateCurrentDealerMode = { setCurrentDealerIsPartnered(it) },
             triggerSave = { savePlayerStates() },
             resetPlayerColor = { resetPlayerColor(it) },
-            moveTimer = { moveTimer() },
+            moveTimerCallback = { moveTimer() },
         )
     }
+
+//    private fun generatePlayerButtonViewModel(playerButtonState: PlayerButtonState): PlayerButtonViewModel {
+//        return PlayerButtonViewModel(
+//            initialState = playerButtonState,
+//            settingsManager = settingsManager,
+//            imageManager = imageManager,
+//            onCommanderButtonClickedCallback = { onCommanderButtonClicked(it) },
+//            setAllMonarchy = { setAllMonarchy(it) },
+//            getCurrentDealer = { state.value.currentDealer },
+//            updateCurrentDealerMode = { setCurrentDealerIsPartnered(it) },
+//            triggerSave = { savePlayerStates() },
+//            resetPlayerColor = { resetPlayerColor(it) },
+//            moveTimerCallback = { moveTimer() },
+//        )
+//    }
 
     fun savePlayerPrefs() {
         playerButtonViewModels.forEach {
@@ -228,7 +269,7 @@ class LifeCounterViewModel(
     }
 
     private fun resetAllPlayerStates() {
-        playerButtonViewModels.forEach { it.resetState(settingsManager.startingLife) }
+        playerButtonViewModels.forEach { it.resetState(settingsManager.startingLife.value) }
     }
 
     fun resetAllPrefs() {
@@ -238,15 +279,27 @@ class LifeCounterViewModel(
         }
     }
 
+    private fun setFirstPlayerSelectionActive(value: Boolean) {
+        _state.value = _state.value.copy(firstPlayerSelectionActive = value)
+    }
+
+    open fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
+        _state.value = _state.value.copy(middleButtonDialogState = value)
+    }
+
+    private fun setActiveTimerIndex(index: Int?) {
+        _state.value = _state.value.copy(activeTimerIndex = index)
+    }
+
     private fun setAllButtonStates(pbState: PBState) {
         playerButtonViewModels.forEach { it.setPlayerButtonState(pbState) }
     }
 
-    private fun setDealerMode(value: Boolean) {
-        _currentDealerIsPartnered.value = value
+    protected fun setCurrentDealerIsPartnered(value: Boolean) {
+        _state.value = _state.value.copy(currentDealerIsPartnered = value)
     }
 
-    private fun setAllMonarchy(value: Boolean) {
+    protected fun setAllMonarchy(value: Boolean) {
         playerButtonViewModels.forEach { it.toggleMonarch(value) }
     }
 
@@ -263,12 +316,12 @@ class LifeCounterViewModel(
         _state.value = _state.value.copy(currentDealer = dealer)
     }
 
-    fun setNumPlayers(value: Int) {
-        _state.value = _state.value.copy(numPlayers = value)
-        settingsManager.numPlayers = value
+    open fun setNumPlayers(value: Int) {
+        if (value < 1 || value > MAX_PLAYERS) throw IllegalArgumentException("Invalid number of players")
+        settingsManager.setNumPlayers(value)
     }
 
-    fun restartButtons() {
+    private fun restartButtons() {
         setShowButtons(false)
         viewModelScope.launch {
             delay(10)
@@ -284,6 +337,19 @@ class LifeCounterViewModel(
         savePlayerStates()
         setFirstPlayer(null)
         resetTimer()
+        restartButtons()
+    }
+
+    fun toggleKeepScreenOn(value: Boolean? = null) {
+        settingsManager.setKeepScreenOn(value ?: !settingsManager.keepScreenOn.value)
+    }
+
+    open fun toggleDarkTheme(value: Boolean? = null) {
+        settingsManager.setDarkTheme(value ?: !settingsManager.darkTheme.value)
+    }
+
+    fun setAlt4PlayerLayout(value: Boolean) {
+        settingsManager.setAlt4PlayerLayout(value)
     }
 
     fun setShowButtons(value: Boolean) {

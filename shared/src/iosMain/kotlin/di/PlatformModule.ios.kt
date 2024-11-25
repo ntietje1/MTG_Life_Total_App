@@ -1,5 +1,8 @@
 package di
+import data.IImageManager
+import data.ISettingsManager
 import data.ImageManager
+import data.SettingsManager
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
 import ui.dialog.color.ColorDialogViewModel
@@ -14,13 +17,14 @@ import ui.tutorial.TutorialViewModel
 
 actual val platformModule = module {
     single { platform }
+    single<ISettingsManager> { SettingsManager.instance }
+    single<IImageManager> { ImageManager() }
     single { NotificationManager() }
-    single { ImageManager() }
-    single { PlaneChaseViewModel(get(), get()) }
+    single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
     single { TutorialViewModel(get()) }
     single { PlayerSelectViewModel(get()) }
-    single { LifeCounterViewModel(get(), get(), get()) }
+    single { LifeCounterViewModel(get(), get(), get(), get()) }
     single { PatchNotesViewModel(get()) }
     single { StartingLifeViewModel(get()) }
     single { ScryfallSearchViewModel() }

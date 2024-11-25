@@ -1,15 +1,12 @@
 package ui.lifecounter
 
-import data.SettingsManager
 import data.TurnTimer
 import ui.dialog.COUNTER_DIALOG_ENTRIES
+import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 data class LifeCounterState(
     val showButtons: Boolean = false,
-    val numPlayers: Int = SettingsManager.instance.numPlayers.apply {
-        println("GOT NUM PLAYERS: $this")
-    },
     val showLoadingScreen: Boolean = true,
     val currentDealer: PlayerButtonViewModel? = null,
     val blurBackground: Boolean = false,
@@ -19,6 +16,9 @@ data class LifeCounterState(
     val firstPlayer: Int? = null,
     val activeTimerIndex: Int? = null,
     val turnTimer: TurnTimer? = null,
+    val middleButtonDialogState: MiddleButtonDialogState? = null,
+    val firstPlayerSelectionActive: Boolean = false,
+    val currentDealerIsPartnered: Boolean = false,
 )
 
 enum class DayNightState {
