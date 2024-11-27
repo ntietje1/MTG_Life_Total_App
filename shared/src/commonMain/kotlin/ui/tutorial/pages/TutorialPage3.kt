@@ -161,6 +161,7 @@ fun TutorialPage3(
     TutorialScreenWrapper(
         modifier = modifier,
         blur = showHint,
+        step = Pair(if (complete) 2 else if (stepOneComplete) 1 else 0, 2),
         instructions =if (complete) "Complete" else if (stepOneComplete) "Make a player the monarch" else "Open a player's settings menu",
     ) {
         LifeCounterScreen(

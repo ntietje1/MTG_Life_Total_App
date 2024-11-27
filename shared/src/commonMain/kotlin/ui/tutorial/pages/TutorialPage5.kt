@@ -194,6 +194,7 @@ fun TutorialPage5(
     TutorialScreenWrapper(
         modifier = modifier,
         blur = showHint,
+        step = Pair(if (complete) 3 else if (stepTwoComplete) 2 else if (stepOneComplete) 1 else 0, 3),
         instructions = if (complete) "Complete" else if (stepTwoComplete) "Change the number of players" else if (stepOneComplete) "Navigate to the player number menu" else "Open the middle settings menu",
     ) {
         LifeCounterScreen(

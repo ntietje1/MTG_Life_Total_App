@@ -129,6 +129,7 @@ fun TutorialPage1(
     TutorialScreenWrapper(
         modifier = modifier,
         blur = showHint,
+        step = Pair(if (complete) 1 else 0, 1),
         instructions = if (complete) "Complete" else "Reduce a player's life total to 20"
     ) {
         LifeCounterScreen(

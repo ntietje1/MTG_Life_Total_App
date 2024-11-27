@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Text
@@ -60,6 +61,7 @@ class MockSettingsManager(
     lastSplashScreenShown: String = SettingsManager.instance.lastSplashScreenShown.value,
     turnTimer: Boolean = SettingsManager.instance.turnTimer.value,
     devMode: Boolean = SettingsManager.instance.devMode.value,
+    patchNotes: String = SettingsManager.instance.patchNotes.value,
     private var playerStates: List<Player> = emptyList(),
     private var planarDeck: List<Card> = emptyList(),
     private var planarBackStack: List<Card> = emptyList(),
@@ -116,6 +118,10 @@ class MockSettingsManager(
     private val _devMode = MutableStateFlow(devMode)
     override val devMode: StateFlow<Boolean> = _devMode.asStateFlow()
     override fun setDevMode(value: Boolean) { _devMode.value = value }
+
+    private val _patchNotes = MutableStateFlow(patchNotes)
+    override val patchNotes: StateFlow<String> = _patchNotes.asStateFlow()
+    override fun setPatchNotes(value: String) { _patchNotes.value = value }
 
     override fun loadPlayerStates(): List<Player> {
         return playerStates
@@ -202,6 +208,7 @@ abstract class MockLifeCounterViewModel(
 fun TutorialScreenWrapper(
     modifier: Modifier = Modifier,
     blur: Boolean,
+    step: Pair<Int, Int>,
     instructions: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -214,10 +221,19 @@ fun TutorialScreenWrapper(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier.height(60.dp).wrapContentWidth(),
-                contentAlignment = Alignment.Center
+            Column(
+                modifier = Modifier.height(70.dp).offset(y = (-20).dp).wrapContentWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
             ) {
+                Text(
+                    text = "Step ${step.first} of ${step.second}",
+                    fontSize = 16.scaledSp,
+                    textAlign = TextAlign.Center,
+                    color = Color.White.copy(alpha = 0.9f),
+                    style = defaultTextStyle()
+                )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = instructions,
                     fontSize = 20.scaledSp,
@@ -227,7 +243,7 @@ fun TutorialScreenWrapper(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+//            Spacer(modifier = Modifier.height(16.dp))
             content()
         }
     }

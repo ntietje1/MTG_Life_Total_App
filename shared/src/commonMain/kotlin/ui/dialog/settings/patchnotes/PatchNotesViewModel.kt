@@ -23,8 +23,21 @@ class PatchNotesViewModel(
     suspend fun getPatchNotes(): Pair<List<PatchNotesItem>, List<String>>? {
         if (state.value.patchNotes.isEmpty()) {
             try {
+                val currentPatchNotesJson = settingsManager.patchNotes.value
+                if (currentPatchNotesJson.isNotEmpty()) {
+                    val currentPatchNotesResponse = Json.decodeFromString<PatchNotesResponse>(currentPatchNotesJson)
+                    val currentPatchNotes = currentPatchNotesResponse.patchNotes
+                    val currentInProgress = currentPatchNotesResponse.inProgress
+                    _state.value = _state.value.copy(patchNotes = currentPatchNotes, inProgress = currentInProgress)
+                }
+            } catch (e: Exception) {
+                println("Error loading patch notes from cache: $e")
+            }
+            try {
                 val response: HttpResponse = client.get(patchnotesUrl)
-                val patchNotesResponse = Json.decodeFromString<PatchNotesResponse>(response.bodyAsText())
+                val patchNotesJson = response.bodyAsText()
+                settingsManager.setPatchNotes(patchNotesJson)
+                val patchNotesResponse = Json.decodeFromString<PatchNotesResponse>(patchNotesJson)
                 val patchNotes = patchNotesResponse.patchNotes
                 val inProgress = patchNotesResponse.inProgress
                 _state.value = _state.value.copy(patchNotes = patchNotes, inProgress = inProgress)

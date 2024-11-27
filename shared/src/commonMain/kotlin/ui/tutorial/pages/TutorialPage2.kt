@@ -155,6 +155,7 @@ fun TutorialPage2(
     TutorialScreenWrapper(
         modifier = modifier,
         blur = showHint,
+        step = Pair(if (complete) 2 else if (stepOneComplete) 1 else 0, 2),
         instructions = if (complete) "Complete" else if (stepOneComplete) "Deal 21 commander damage to a player" else "Open a player's commander damage menu",
     ) {
         LifeCounterScreen(

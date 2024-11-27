@@ -60,6 +60,9 @@ interface ISettingsManager {
     fun savePlayerPref(player: Player)
     fun deletePlayerPref(player: Player)
     fun loadPlayerPrefs(): ArrayList<Player>
+
+    val patchNotes: StateFlow<String>
+    fun setPatchNotes(value: String)
 }
 
 class SettingsManager private constructor() : ISettingsManager {
@@ -159,6 +162,13 @@ class SettingsManager private constructor() : ISettingsManager {
     override fun setDevMode(value: Boolean) {
         settings.putBoolean("devMode", value)
         _devMode.value = value
+    }
+
+    private val _patchNotes = MutableStateFlow(settings.getString("patchNotes", ""))
+    override val patchNotes: StateFlow<String> = _patchNotes.asStateFlow()
+    override fun setPatchNotes(value: String) {
+        settings.putString("patchNotes", value)
+        _patchNotes.value = value
     }
 
     override fun loadPlayerStates(): List<Player> {
