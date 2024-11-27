@@ -35,7 +35,7 @@ class BackHandler() {
 //        println("backhandler.pop()")
         if (backStack.isNotEmpty()) {
 //            println("backstack removeLast()")
-            backStack.removeLast().second.invoke()
+            backStack.removeAt(backStack.size - 1).second.invoke()
         } else {
 //            println("nav.navigateUp()")
             nav.popBackStack()
@@ -45,7 +45,7 @@ class BackHandler() {
     fun popUntil(label: String) {
 //        println("backhandler.popUntil()")
         while (backStack.isNotEmpty() && backStack.last().first != label) {
-            backStack.removeLast().second.invoke()
+            backStack.removeAt(backStack.size - 1).second.invoke()
         }
     }
 }
