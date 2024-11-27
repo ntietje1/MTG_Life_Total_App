@@ -203,7 +203,7 @@ fun TutorialScreen(
             content = {
                 TutorialPage5(
                     modifier = Modifier.fillMaxSize(),
-                    showHint = state.showHint && showSingleHint(3),
+                    showHint = state.showHint && showSingleHint(4),
                     onHintDismiss = { viewModel.showHint(false) },
                     setBlurUI = { viewModel.setBlur(it) },
                     onComplete = {
