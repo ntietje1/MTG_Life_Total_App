@@ -46,6 +46,7 @@ import theme.scaledSp
 import theme.toHsv
 import ui.SettingsButton
 import ui.dialog.SettingsDialog
+import ui.modifier.routePointerChangesTo
 
 @Composable
 fun ColorDialog(
@@ -239,21 +240,26 @@ fun SatValPanel(
     ) {
         val maxWidth = maxWidth
         val maxHeight = maxHeight
+        fun updatePosn(x: Float, y: Float) {
+            setPosn(Offset(x, y))
+            val sat = x / (maxWidth.value*1.15f) / 2
+            val value = 1f - y / (maxHeight.value*1.30f)
+            setSatVal(sat, value)
+        }
 //        val size = Size(maxWidth.value, maxHeight.value)
         Box(
             modifier = Modifier
                 .wrapContentSize()
                 .clip(RoundedCornerShape(5))
                 .pointerInput(Unit) {
-                    detectDragGestures { position, _ ->
-                        val x = position.position.x
-                        val y = position.position.y
-                        setPosn(Offset(x, y))
-                        val sat = x / (maxWidth.value*1.15f) / 2
-                        val value = 1f - y / (maxHeight.value*1.30f)
-                        setSatVal(sat, value)
-                        println("SAT, VAL: $sat, $value")
-                    }
+                    routePointerChangesTo(
+                        onDown = {
+                            updatePosn(it.position.x, it.position.y)
+                        },
+                        onMove = {
+                            updatePosn(it.position.x, it.position.y)
+                        }
+                    )
                 }
         ) {
             LaunchedEffect(initialValue, initialSaturation, posn) {
