@@ -222,7 +222,7 @@ fun TutorialScreenWrapper(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
-                modifier = Modifier.height(70.dp).offset(y = (-20).dp).wrapContentWidth(),
+                modifier = Modifier.wrapContentSize().offset(y = (-15).dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -239,6 +239,7 @@ fun TutorialScreenWrapper(
                     fontSize = 20.scaledSp,
                     textAlign = TextAlign.Center,
                     color = Color.White,
+                    minLines = 2,
                     style = defaultTextStyle()
                 )
             }
