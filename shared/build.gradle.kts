@@ -29,6 +29,7 @@ kotlin {
             compileTaskProvider.configure {
                 compilerOptions {
                     jvmTarget.set(JvmTarget.JVM_1_8)
+                    freeCompilerArgs.add("-Xexpect-actual-classes")
                 }
             }
 //            kotlinOptions {
@@ -145,4 +146,3 @@ android {
         "kapt"(libs.androidx.lifecycle.compiler)
     }
 }
-
