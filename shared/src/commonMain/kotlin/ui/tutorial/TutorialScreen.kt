@@ -9,14 +9,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
@@ -44,8 +45,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
+import androidx.compose.ui.unit.times
 import di.NotificationManager
+import di.getAnimationCorrectionFactor
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.question_icon
@@ -74,14 +79,15 @@ fun TutorialScreen(
     val state by viewModel.state.collectAsState()
     val pagerState = rememberPagerState(initialPage = state.currentPage, initialPageOffsetFraction = 0f, pageCount = { state.totalPages })
     val scope = rememberCoroutineScope()
-    val animationSpec = remember { tween<Float>(durationMillis = 750, easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)) }
-    val fastAnimationSpec = remember { tween<Float>(durationMillis = 400, easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)) }
+    val animScale = getAnimationCorrectionFactor()
+    val animationSpec = remember { tween<Float>(durationMillis = (375 / animScale).toInt(), easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)) }
+    val fastAnimationSpec = remember { tween<Float>(durationMillis = (200 / animScale).toInt(), easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)) }
 
     suspend fun animateToNextPage(increment: Int) {
         viewModel.onChangePage()
         pagerState.animateScrollToPage(
             page = pagerState.currentPage + increment,
-            animationSpec = if (pagerState.currentPageOffsetFraction.absoluteValue > 0f) fastAnimationSpec else  animationSpec
+            animationSpec = if (pagerState.currentPageOffsetFraction.absoluteValue > 0f) fastAnimationSpec else animationSpec
         )
     }
 
@@ -220,37 +226,30 @@ fun TutorialScreen(
 
     BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) { // Background color has to be hard-coded since images have black background
         val blurRadius = remember(Unit) { maxHeight / 75f }
+        val buttonSize = remember(Unit) { min(maxHeight / 8f, maxWidth / 4.5f) }
+        val padding = remember(Unit) { buttonSize / 10f }
         Box(
             Modifier.wrapContentSize().then(if (state.blur) Modifier.blur(blurRadius) else Modifier)
         ) {
-            SettingsButton(modifier = Modifier.align(Alignment.TopEnd).size(100.dp).padding(horizontal = 15.dp),
-                mainColor = Color.White,
-                backgroundColor = Color.Transparent,
-                text = if (state.currentPage == state.totalPages - 1) "Close Tutorial" else "Skip Tutorial",
-                shadowEnabled = false,
-                imageVector = vectorResource(Res.drawable.x_icon),
-                onTap = {
-                    if (state.currentPage == state.totalPages - 1) {
-                        viewModel.showCloseDialog(true)
-                    } else {
-                        viewModel.showWarningDialog(true)
-                    }
-                })
-            SettingsButton(modifier = Modifier.align(Alignment.BottomStart).size(90.dp).padding(15.dp),
-                mainColor = if (!state.showHint) Color.White else Color.White.copy(alpha = 0.7f),
-                backgroundColor = Color.Transparent,
-                text = "Show Hint",
-                shadowEnabled = false,
-                imageVector = vectorResource(Res.drawable.question_icon),
-                onTap = {
-                    viewModel.showHint(!state.showHint)
-                })
             Column(
-                modifier = Modifier.fillMaxSize().padding(top = 80.dp).align(Alignment.TopCenter),
+                modifier = Modifier.fillMaxSize().align(Alignment.TopCenter),
                 verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                SettingsButton(modifier = Modifier.align(Alignment.End).size(buttonSize).padding(horizontal = padding),
+                    mainColor = Color.White,
+                    backgroundColor = Color.Transparent,
+                    text = if (state.currentPage == state.totalPages - 1) "Close Tutorial" else "Skip Tutorial",
+                    shadowEnabled = false,
+                    imageVector = vectorResource(Res.drawable.x_icon),
+                    onTap = {
+                        if (state.currentPage == state.totalPages - 1) {
+                            viewModel.showCloseDialog(true)
+                        } else {
+                            viewModel.showWarningDialog(true)
+                        }
+                    })
                 HorizontalPager(
-                    modifier = Modifier.fillMaxSize().weight(0.9f).padding(15.dp),
+                    modifier = Modifier.fillMaxSize().weight(0.9f).padding(start = padding, end = padding, bottom = padding / 2f),
                     state = pagerState,
                     pageSpacing = 20.dp,
                     pageSize = PageSize.Fill,
@@ -259,99 +258,127 @@ fun TutorialScreen(
                 ) { index ->
                     tutorialSteps[index].content()
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.offset(y = -(16).dp).wrapContentWidth().height(50.dp).clip(RoundedCornerShape(100))
-                        .padding(8.dp)
-                        .background(color = Color.White, shape = CircleShape)
-                        .pointerInput(Unit) {
-                            detectHorizontalDragGestures { change, dragAmount ->
-                                change.consume()
-                                if (dragAmount > 0 && !change.isOutOfBounds(size, extendedTouchPadding)) {
-                                    scope.launch {
-                                        viewModel.onChangePage()
-                                        animateToNextPage(-1)
-                                    }
-                                } else if (dragAmount < 0 && !change.isOutOfBounds(size, extendedTouchPadding)) {
-                                    scope.launch {
-                                        viewModel.onChangePage()
-                                        animateToNextPage(1)
-                                    }
+                Box(
+                    Modifier.fillMaxWidth().wrapContentHeight(),
+                ) {
+                    SettingsButton(modifier = Modifier.align(Alignment.BottomStart).size(buttonSize).padding(padding),
+                        mainColor = if (!state.showHint) Color.White else Color.White.copy(alpha = 0.7f),
+                        backgroundColor = Color.Transparent,
+                        text = "Show Hint",
+                        shadowEnabled = false,
+                        imageVector = vectorResource(Res.drawable.question_icon),
+                        onTap = {
+                            viewModel.showHint(!state.showHint)
+                        })
+                    dotNavBar(
+                        modifier = Modifier.align(Alignment.Center),
+                        pagerState = pagerState,
+                        completed = state.completed,
+                        onMoveLeft = {
+                            scope.launch {
+                                scope.launch {
+                                    viewModel.onChangePage()
+                                    animateToNextPage(-1)
                                 }
                             }
                         },
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    IconButton(
-                        modifier = Modifier.size(40.dp),
-                        onClick = {
+                        onMoveRight = {
                             scope.launch {
-                                viewModel.onChangePage()
-                                animateToNextPage(-1)
+                                if (pagerState.currentPage + 1 >= pagerState.pageCount && !state.completed.all { it }) {
+                                    viewModel.showCloseDialog(true)
+                                }
+                                scope.launch {
+                                    viewModel.onChangePage()
+                                    animateToNextPage(1)
+                                }
                             }
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Go back"
-                        )
-                    }
-                    Box(
-                        Modifier.fillMaxHeight().width(22.dp * tutorialSteps.size),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        tutorialSteps.forEachIndexed { index, _ ->
-                            if (index != pagerState.currentPage) {
-                                Box(
-                                    Modifier
-                                        .offset(x = (index * 22).dp)
-                                        .size(20.dp)
-                                        .background(
-                                            color = Color.Black.copy(alpha = 0.2f),
-                                            shape = CircleShape,
-                                        )
-                                )
-                            }
-                        }
-                        Box(
-                            Modifier
-                                .jumpingDotTransition(pagerState, 0.35f)
-                                .size(20.dp)
-                                .background(
-                                    color = (if (state.completed[state.currentPage]) Color.Green else Color.Red).copy(alpha = 0.7f),
-                                    shape = CircleShape,
-                                )
-                        )
-                    }
-
-                    IconButton(
-                        modifier = Modifier.size(40.dp),
-                        onClick = {
-                            if (pagerState.currentPage + 1 >= state.totalPages) {
-                                viewModel.showCloseDialog(true)
-                            }
-                            scope.launch {
-                                viewModel.onChangePage()
-                                animateToNextPage(1)
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = "Go forward"
-                        )
-                    }
+                    )
                 }
             }
         }
     }
 }
 
-private fun Modifier.jumpingDotTransition(pagerState: PagerState, jumpScale: Float) =
+@Composable
+fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: List<Boolean>, onMoveLeft: () -> Unit, onMoveRight: () -> Unit) {
+    val dotDistance = 2.dp
+    val dotSize = 20.dp
+    val buttonSize = 40.dp
+    Row(
+        modifier = modifier.wrapContentWidth().height(50.dp).clip(RoundedCornerShape(100))
+            .padding(8.dp)
+            .background(color = Color.White, shape = CircleShape)
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures { change, dragAmount ->
+                    change.consume()
+                    if (dragAmount > 0 && !change.isOutOfBounds(size, extendedTouchPadding)) {
+                        onMoveLeft()
+                    } else if (dragAmount < 0 && !change.isOutOfBounds(size, extendedTouchPadding)) {
+                        onMoveRight()
+                    }
+                }
+            },
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        IconButton(
+            modifier = Modifier.size(buttonSize),
+            onClick = {
+                onMoveLeft()
+            }
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Go back"
+            )
+        }
+        Box(
+            Modifier.fillMaxHeight().width(dotSize * pagerState.pageCount),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            for (i in 0 until pagerState.pageCount) {
+                if (i != pagerState.currentPage) {
+                    Box(
+                        Modifier
+                            .offset(x = (i * (dotSize + dotDistance)))
+                            .size(dotSize)
+                            .background(
+                                color = Color.Black.copy(alpha = 0.2f),
+                                shape = CircleShape,
+                            )
+                    )
+                }
+            }
+            Box(
+                Modifier
+                    .jumpingDotTransition(pagerState, 0.35f, dotDistance)
+                    .size(dotSize)
+                    .background(
+                        color = (if (completed[pagerState.currentPage]) Color.Green else Color.Red).copy(alpha = 0.7f),
+                        shape = CircleShape,
+                    )
+            )
+        }
+
+        IconButton(
+            modifier = Modifier.size(buttonSize),
+            onClick = {
+                onMoveRight()
+            }
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = "Go forward"
+            )
+        }
+    }
+}
+
+private fun Modifier.jumpingDotTransition(pagerState: PagerState, jumpScale: Float, jumpDistance: Dp) =
     graphicsLayer {
         val pageOffset = pagerState.currentPageOffsetFraction
         val scrollPosition = pagerState.currentPage + pageOffset
 
-        translationX = (scrollPosition * (size.width + 2.dp.roundToPx()))
+        translationX = (scrollPosition * (size.width + jumpDistance.roundToPx()))
 
         val scale: Float
         val targetScale = jumpScale - 1f

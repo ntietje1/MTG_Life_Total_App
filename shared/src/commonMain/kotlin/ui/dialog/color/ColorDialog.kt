@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.checkmark
 import lifelinked.shared.generated.resources.x_icon
@@ -78,15 +79,17 @@ fun ColorPickerDialogContent(
     }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val largePanelSize = remember(Unit) { maxWidth * 0.75f }
-        val padding = remember(Unit) { maxWidth / 15f }
-        val buttonSize = remember(Unit) { maxWidth / 3.5f }
+        val largePanelSize = remember(Unit) { min(maxWidth * 0.75f, maxHeight * 0.5f) }
+        val padding = remember(Unit) { min(maxWidth / 15f, maxHeight / 25f) }
+        val buttonSize = remember(Unit) { min(maxWidth / 3.5f, maxHeight / 6f) }
         val barHeight = remember(Unit) { maxWidth / 12f }
         val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
 
         Column(
             modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
         ) {
+
+            Spacer(modifier = Modifier.height(padding * 0.5f))
 
             Text(
                 modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
@@ -133,7 +136,7 @@ fun ColorPickerDialogContent(
                             onDone()
                         }
                     )
-                    Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimary)
+                    Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimary, fontSize = titleSize.scaledSp / 2f)
                 }
 
                 Spacer(modifier = Modifier.width(padding))
@@ -151,7 +154,7 @@ fun ColorPickerDialogContent(
                             onDone()
                         }
                     )
-                    Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimary)
+                    Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimary, fontSize = titleSize.scaledSp / 2f)
                 }
             }
 
@@ -256,8 +259,8 @@ fun SatValPanel(
                         onDown = {
                             updatePosn(it.position.x, it.position.y)
                         },
-                        onMove = {
-                            updatePosn(it.position.x, it.position.y)
+                        onMove = { pointerInputChange, _ ->
+                            updatePosn(pointerInputChange.position.x, pointerInputChange.position.y)
                         }
                     )
                 }

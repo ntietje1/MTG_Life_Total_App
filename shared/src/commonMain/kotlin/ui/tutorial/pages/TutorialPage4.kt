@@ -185,7 +185,7 @@ fun TutorialPage4(
         modifier = modifier,
         blur = showHint,
         step = Pair(if (complete) 3 else if (stepTwoComplete) 2 else if (stepOneComplete) 1 else 0, 3),
-        instructions = if (complete) "Complete" else if (stepTwoComplete) "Change the appearance of the player" else if (stepOneComplete) "Open the player's customization menu & change their appearance" else "Open a player's settings menu",
+        instructions = if (complete) "Complete" else if (stepTwoComplete) "Change the appearance of the player" else if (stepOneComplete) "Open the player's customization menu &\nchange their appearance" else "Open a player's settings menu",
     ) {
         LifeCounterScreen(
             modifier = modifier,

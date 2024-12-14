@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -189,7 +190,7 @@ fun PlayerSelectScreenBase(
     var previousCircleCount by remember { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
-    val circleSize: Dp = 80.dp + (20.dp * LocalDensity.current.density )
+    val circleSize: Dp = 80.dp + (20.dp * LocalDensity.current.density)
 
     fun applyRandomColor(circle: Circle) {
         do {
@@ -264,13 +265,21 @@ fun PlayerSelectScreenBase(
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(circles) {
-        routePointerChangesTo(onDown = { onDown(it, circleSize) }, onMove = { onMove(it) }, onUp = { onUp(it) }, countCallback = {
-            for (id in circles.keys) {
-                if (!it.contains(id)) {
-                    onUp(id) // secondary check to remove circles that should be removed
+        routePointerChangesTo(
+            onDown = { onDown(it, circleSize) },
+            onMove = { pointerInputChange, _ -> onMove(pointerInputChange) },
+            onUp = {
+                if (!it.isOutOfBounds(size, extendedTouchPadding)) { //TODO: is this necessary?
+                    onUp(it)
                 }
-            }
-        })
+            },
+            countCallback = {
+                for (id in circles.keys) {
+                    if (!it.contains(id)) {
+                        onUp(id) // secondary check to remove circles that should be removed
+                    }
+                }
+            })
     })
     {
         LaunchedEffect(circles.size) {
@@ -279,11 +288,12 @@ fun PlayerSelectScreenBase(
             val helperTextScope = CoroutineScope(coroutineContext)
 
             if (selectedId == null) {
-                when(circles.size) {
+                when (circles.size) {
                     0 -> helperTextScope.launch {
                         delay(showHelperTextDelay)
                         setHelperText(HelperTextState.FULL)
                     }
+
                     1 -> {
                         if (previousCircleCount > 0) helperTextScope.launch {
                             delay(showHelperTextDelay / 4)
@@ -291,6 +301,7 @@ fun PlayerSelectScreenBase(
                         }
                         else setHelperText(HelperTextState.FADED)
                     }
+
                     else -> setHelperText(HelperTextState.HIDDEN)
                 }
             }

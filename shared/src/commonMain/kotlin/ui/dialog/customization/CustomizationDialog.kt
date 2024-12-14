@@ -1,5 +1,6 @@
 package ui.dialog.customization
 
+import PhysicsDraggable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +42,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.min
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import data.Player
@@ -69,7 +72,6 @@ import ui.lifecounter.playerbutton.LifeNumber
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonBackground
 
-// TODO: add notification when player has been modified
 @Composable
 fun PlayerCustomizationDialog(
     modifier: Modifier = Modifier,
@@ -134,10 +136,14 @@ fun PlayerCustomizationDialog(
         }
     }
 
-    AnimatedGridDialog(modifier = modifier, onDismiss = onDismiss, backHandler = backHandler, pages = listOf(Pair(state.customizationMenuState == CustomizationMenuState.DEFAULT) {
+    AnimatedGridDialog(modifier = modifier, onDismiss = {
+        onDismiss()
+        if (state.changeWasMade) notificationManager.showNotification("Changes saved successfully", 3000)
+    }, backHandler = backHandler, pages = listOf(Pair(state.customizationMenuState == CustomizationMenuState.DEFAULT) {
         BoxWithConstraints(modifier = modifier) {
             val padding = remember(Unit) { maxHeight / 40f }
             val textFieldHeight = remember(Unit) { maxWidth / 9f + 30.dp }
+            val playerButtonPreviewHeight = remember(Unit) { min(maxWidth / 2f, maxHeight / 3f) }
             val focusManager = LocalFocusManager.current
 
             val buttonModifier = remember(Unit) {
@@ -206,17 +212,20 @@ fun PlayerCustomizationDialog(
                     }
                 }
                 Spacer(modifier = Modifier.weight(0.01f))
-                //TODO: make this draggable
-                PlayerButtonPreview(
-                    modifier = Modifier.fillMaxWidth(0.9f).aspectRatio(1.75f),
-                    name = state.changeNameTextField.text,
-                    lifeNumber = state.player.life,
-                    state = PBState.NORMAL,
-                    isDead = false,
-                    imageUri = state.player.imageString,
-                    backgroundColor = state.player.color,
-                    accentColor = state.player.textColor,
-                )
+                PhysicsDraggable(
+                    Modifier.height(playerButtonPreviewHeight).aspectRatio(1.75f)
+                ) {
+                    PlayerButtonPreview(
+                        modifier = Modifier.fillMaxSize(),
+                        name = state.changeNameTextField.text,
+                        lifeNumber = state.player.life,
+                        state = PBState.NORMAL,
+                        isDead = false,
+                        imageUri = state.player.imageString,
+                        backgroundColor = state.player.color,
+                        accentColor = state.player.textColor,
+                    )
+                }
                 Spacer(modifier = Modifier.weight(0.1f))
                 LazyVerticalGrid(modifier = Modifier.padding(horizontal = padding / 2f).wrapContentSize(),
                     columns = GridCells.Fixed(3),

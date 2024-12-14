@@ -94,12 +94,11 @@ fun LoadPlayerDialogContent(
                         alpha = if (isLongPressed) 0.6f else 1f
                     ).pointerInput(Unit) {
                         routePointerChangesTo(
-                            onDown = {},
                             onLongPress = {
                                 delay(500)
                                 isLongPressed = true
-                            }, onUp = { pointerInputChange ->
-                                if (!pointerInputChange.isOutOfBounds(size = size, extendedTouchPadding = extendedTouchPadding)) {
+                            }, onUp = {
+                                if (!it.isOutOfBounds(size = size, extendedTouchPadding = extendedTouchPadding)) {
                                     if (isLongPressed) {
                                         toBeDeletedPlayer = player
                                         highlightedPlayer = player
@@ -109,7 +108,7 @@ fun LoadPlayerDialogContent(
                                     }
                                 }
                                 isLongPressed = false
-                            }, onMove = { pointerInputChange ->
+                            }, onMove = { pointerInputChange, _ ->
                                 if (isLongPressed && pointerInputChange.isOutOfBounds(size = size, extendedTouchPadding = extendedTouchPadding)) {
                                     isLongPressed = false
                                 }

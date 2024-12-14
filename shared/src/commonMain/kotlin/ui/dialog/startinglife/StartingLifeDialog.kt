@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -114,6 +115,7 @@ fun TextFieldWithButton(
     ) {
         val textSize = remember(Unit) { (maxHeight / 3.75f).value }
         TextField(
+            modifier = Modifier.fillMaxSize().padding(textSize.dp / 4f),
             value = value, onValueChange = onValueChange, label = {
                 Text(
                     modifier = Modifier.wrapContentSize(), text = label, color = MaterialTheme.colorScheme.onPrimary, fontSize = (textSize * 0.9f).scaledSp
@@ -136,7 +138,7 @@ fun TextFieldWithButton(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
-            ), keyboardOptions = keyboardOptions, keyboardActions = keyboardActions, modifier = Modifier.fillMaxSize()
+            ), keyboardOptions = keyboardOptions, keyboardActions = keyboardActions
         )
         Box(
             Modifier.align(Alignment.CenterEnd).fillMaxHeight().aspectRatio(1.0f)
