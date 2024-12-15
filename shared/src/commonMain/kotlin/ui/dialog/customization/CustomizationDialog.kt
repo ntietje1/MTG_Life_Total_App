@@ -61,6 +61,7 @@ import lifelinked.shared.generated.resources.text_icon
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import theme.toHsv
 import ui.SettingsButton
 import ui.dialog.AnimatedGridDialog
 import ui.dialog.WarningDialog
@@ -218,7 +219,7 @@ fun PlayerCustomizationDialog(
                     PlayerButtonPreview(
                         modifier = Modifier.fillMaxSize(),
                         name = state.changeNameTextField.text,
-                        lifeNumber = state.player.life,
+                        lifeNumber = 40,
                         state = PBState.NORMAL,
                         isDead = false,
                         imageUri = state.player.imageString,
@@ -338,12 +339,18 @@ fun PlayerCustomizationDialog(
         ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Background Color", initialColor = state.player.color, setColor = { viewModel.onChangeBackgroundColor(it) }, onDone = {
             notificationManager.showNotification("Modified Background Color Successfully", 3000)
             backHandler.pop()
-        })
+        }, initialPlayer = state.player, updatePlayerColor = { state.player.copy(color = it) }
+        ).apply {
+            println("ColorPickerDialogContent hue: ${state.player.color.toHsv()[0]}")
+        }
     }, Pair(state.customizationMenuState == CustomizationMenuState.ACCENT_COLOR_PICKER) {
         ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Accent Color", initialColor = state.player.textColor, setColor = { viewModel.onChangeTextColor(it) }, onDone = {
             notificationManager.showNotification("Modified Accent Color Successfully", 3000)
             backHandler.pop()
-        })
+        }, initialPlayer = state.player, updatePlayerColor = { state.player.copy(textColor = it) }
+        ).apply {
+            println("ColorPickerDialogContent hue: ${state.player.color.toHsv()[0]}")
+        }
     }, Pair(state.customizationMenuState == CustomizationMenuState.GIF_SEARCH) {
         GifDialogContent(modifier = Modifier.fillMaxSize(), onGifSelected = {
             notificationManager.showNotification("Selected Gif Successfully", 3000)

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.zIndex
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import ui.modifier.averagedRoutePointerChangesTo
@@ -42,62 +43,63 @@ fun PhysicsDraggable(
         )
     }.graphicsLayer(
         rotationZ = rotation.value, scaleX = scale.value, scaleY = scale.value
-    ).pointerInput(Unit) {
-        averagedRoutePointerChangesTo(countCallback = {
-            numPointers = it.size
-        }, onDown = {
-            scope.launch {
-                coroutineScope {
-                    launch { offsetX.stop() }
-                    launch { offsetY.stop() }
-                    launch { rotation.stop() }
-                    launch {
-                        scale.animateTo(
-                            targetValue = 1f + 0.05f, animationSpec = liftSpec
-                        )
+    ).zIndex(if (numPointers != 0) 1f else 0f)
+        .pointerInput(Unit) {
+            averagedRoutePointerChangesTo(countCallback = {
+                numPointers = it.size
+            }, onDown = {
+                scope.launch {
+                    coroutineScope {
+                        launch { offsetX.stop() }
+                        launch { offsetY.stop() }
+                        launch { rotation.stop() }
+                        launch {
+                            scale.animateTo(
+                                targetValue = 1f + 0.05f, animationSpec = liftSpec
+                            )
+                        }
                     }
                 }
-            }
-        }, onMove = { _, positionChange ->
-            scope.launch {
-                coroutineScope {
-                    launch {
-                        offsetX.snapTo(offsetX.value + positionChange.x)
-                    }
-                    launch {
-                        offsetY.snapTo(offsetY.value + positionChange.y)
-                    }
-                }
-            }
-        }, onUp = {
-            if (numPointers == 1) {
+            }, onMove = { _, positionChange ->
                 scope.launch {
                     coroutineScope {
                         launch {
-                            offsetX.animateTo(
-                                targetValue = 0f, animationSpec = springSpec
-                            )
+                            offsetX.snapTo(offsetX.value + positionChange.x)
                         }
                         launch {
-                            offsetY.animateTo(
-                                targetValue = 0f, animationSpec = springSpec
-                            )
-                        }
-                        launch {
-                            rotation.animateTo(
-                                targetValue = 0f, animationSpec = springSpec
-                            )
-                        }
-                        launch {
-                            scale.animateTo(
-                                targetValue = 1f, animationSpec = springSpec
-                            )
+                            offsetY.snapTo(offsetY.value + positionChange.y)
                         }
                     }
                 }
-            }
-        })
-    }) {
+            }, onUp = {
+                if (numPointers == 1) {
+                    scope.launch {
+                        coroutineScope {
+                            launch {
+                                offsetX.animateTo(
+                                    targetValue = 0f, animationSpec = springSpec
+                                )
+                            }
+                            launch {
+                                offsetY.animateTo(
+                                    targetValue = 0f, animationSpec = springSpec
+                                )
+                            }
+                            launch {
+                                rotation.animateTo(
+                                    targetValue = 0f, animationSpec = springSpec
+                                )
+                            }
+                            launch {
+                                scale.animateTo(
+                                    targetValue = 1f, animationSpec = springSpec
+                                )
+                            }
+                        }
+                    }
+                }
+            })
+        }) {
         content()
     }
 }
