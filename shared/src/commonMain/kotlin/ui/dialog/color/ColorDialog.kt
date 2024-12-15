@@ -135,14 +135,14 @@ fun ColorPickerDialogContent(
                 viewModel.setValue(value)
             }
 
-            Spacer(modifier = Modifier.height(padding))
+            Spacer(modifier = Modifier.height(padding*1.5f))
 
             Row(
                 modifier = Modifier.wrapContentSize(), horizontalArrangement = Arrangement.Center
             ) {
                 Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize).padding(bottom = padding / 2f),
+                        modifier = Modifier.width(buttonSize).height(buttonSize / 1.75f).padding(bottom = padding / 4f),
                         imageVector = vectorResource(Res.drawable.x_icon),
                         shape = RoundedCornerShape(10),
                         shadowEnabled = false,
@@ -159,7 +159,7 @@ fun ColorPickerDialogContent(
                 Spacer(modifier = Modifier.width(padding))
                 Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     SettingsButton(
-                        modifier = Modifier.size(buttonSize).padding(bottom = padding / 2f),
+                        modifier = Modifier.width(buttonSize).height(buttonSize / 1.75f).padding(bottom = padding / 4f),
                         imageVector = vectorResource(Res.drawable.checkmark),
                         shape = RoundedCornerShape(10),
                         shadowEnabled = false,

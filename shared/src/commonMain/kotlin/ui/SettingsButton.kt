@@ -75,7 +75,6 @@ fun SettingsButton(
 
     BoxWithConstraints(modifier = modifier
         .alpha(if (visible) 1f else 0f)
-        .aspectRatio(1.0f)
         .clip(shape)
         .background(backgroundColor)
         .then(if (enabled && visible) {
@@ -98,7 +97,9 @@ fun SettingsButton(
         })) {
         val fontSize = remember(Unit) { (maxWidth / 9f).value }
         Column(
-            modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 Modifier
@@ -128,7 +129,6 @@ fun SettingsButton(
                     textAlign = TextAlign.Center,
                     style = if (shadowEnabled) textShadowStyle() else defaultTextStyle(),
                 )
-//                Spacer(Modifier.height(fontPadding))
             }
         }
     }
