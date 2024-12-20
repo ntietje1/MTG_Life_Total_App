@@ -2,6 +2,7 @@ package theme
 
 
 import androidx.compose.ui.graphics.Color
+import kotlin.math.max
 import kotlin.math.min
 
 val White = Color(0xFFFFFFFF)
@@ -53,24 +54,19 @@ fun Color.toHsv(): FloatArray {
     val g = this.green
     val b = this.blue
 
-    val maxc = maxOf(r, g, b)
-    val minc = minOf(r, g, b)
-    val v = maxc
+    val cmax = max(r, max(g, b))
+    val cmin = min(r, min(g, b))
+    val diff = cmax - cmin
 
-    if (minc == maxc) {
-        return floatArrayOf(0.0f, 0.0f, v)
+    val h = when {
+        cmax == cmin -> 0.0f
+        cmax == r -> (60 * ((g - b) / diff) + 360) % 360
+        cmax == g -> (60 * ((b - r) / diff) + 120) % 360
+        else -> (60 * ((r - g) / diff) + 240) % 360
     }
 
-    val s = (maxc - minc) / maxc
-    val rc = (maxc - r) / (maxc - minc)
-    val gc = (maxc - g) / (maxc - minc)
-    val bc = (maxc - b) / (maxc - minc)
-
-    val h = ((when {
-        r == maxc -> bc - gc
-        g == maxc -> 2.0f + rc - bc
-        else -> 4.0f + gc - rc
-    } / 6.0f % 1.0f) * 360f).coerceIn(0.0f..360.0f)
+    val s = if (cmax == 0.0f) 0.0f else diff / cmax
+    val v = cmax
 
     return floatArrayOf(h, s, v)
 }

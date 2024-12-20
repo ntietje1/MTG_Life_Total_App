@@ -29,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -42,7 +43,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
@@ -61,10 +61,10 @@ import lifelinked.shared.generated.resources.text_icon
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
-import theme.toHsv
 import ui.SettingsButton
 import ui.dialog.AnimatedGridDialog
 import ui.dialog.WarningDialog
+import ui.dialog.color.ColorDialogViewModel
 import ui.dialog.color.ColorPickerDialogContent
 import ui.dialog.gif.GifDialogContent
 import ui.dialog.scryfall.ScryfallDialogContent
@@ -249,7 +249,6 @@ fun PlayerCustomizationDialog(
                             ) {
                                 viewModel.setCustomizeMenuState(CustomizationMenuState.SCRYFALL_SEARCH)
                                 backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
-//                                        viewModel.showScryfallSearch(!state.showScryfallSearch)
                             }
                         }
                         item {
@@ -264,7 +263,10 @@ fun PlayerCustomizationDialog(
                                 imageResource = Res.drawable.color_picker_icon, text = "Background Color"
                             ) {
                                 viewModel.setCustomizeMenuState(CustomizationMenuState.BACKGROUND_COLOR_PICKER)
-                                backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
+                                backHandler.push {
+                                    viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
+                                    notificationManager.showNotification("Changes saved successfully", 3000)
+                                }
                             }
                         }
                         item {
@@ -272,7 +274,10 @@ fun PlayerCustomizationDialog(
                                 imageResource = Res.drawable.text_icon, text = "Text Color"
                             ) {
                                 viewModel.setCustomizeMenuState(CustomizationMenuState.ACCENT_COLOR_PICKER)
-                                backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
+                                backHandler.push {
+                                    viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
+                                    notificationManager.showNotification("Changes saved successfully", 3000)
+                                }
                             }
                         }
                         item {
@@ -336,21 +341,21 @@ fun PlayerCustomizationDialog(
             }
         })
     }, Pair(state.customizationMenuState == CustomizationMenuState.BACKGROUND_COLOR_PICKER) {
-        ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Background Color", initialColor = state.player.color, setColor = { viewModel.onChangeBackgroundColor(it) }, onDone = {
-            notificationManager.showNotification("Modified Background Color Successfully", 3000)
-            backHandler.pop()
-        }, initialPlayer = state.player, updatePlayerColor = { state.player.copy(color = it) }
-        ).apply {
-            println("ColorPickerDialogContent hue: ${state.player.color.toHsv()[0]}")
-        }
+        val colorViewModel = remember { ColorDialogViewModel() }
+        val initialColor by remember(Unit) { mutableStateOf(state.player.color) }
+        ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Background Color", initialColor = initialColor, initialPlayer = state.player, updateColor = {
+            viewModel.onChangeBackgroundColor(it)
+            state.player.copy(color = it)
+        }, viewModel = colorViewModel
+        )
     }, Pair(state.customizationMenuState == CustomizationMenuState.ACCENT_COLOR_PICKER) {
-        ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Accent Color", initialColor = state.player.textColor, setColor = { viewModel.onChangeTextColor(it) }, onDone = {
-            notificationManager.showNotification("Modified Accent Color Successfully", 3000)
-            backHandler.pop()
-        }, initialPlayer = state.player, updatePlayerColor = { state.player.copy(textColor = it) }
-        ).apply {
-            println("ColorPickerDialogContent hue: ${state.player.color.toHsv()[0]}")
-        }
+        val colorViewModel = remember { ColorDialogViewModel() }
+        val initialColor by remember(Unit) { mutableStateOf(state.player.textColor) }
+        ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Accent Color", initialColor = initialColor, initialPlayer = state.player, updateColor = {
+            viewModel.onChangeTextColor(it)
+            state.player.copy(textColor = it)
+        }, viewModel = colorViewModel
+        )
     }, Pair(state.customizationMenuState == CustomizationMenuState.GIF_SEARCH) {
         GifDialogContent(modifier = Modifier.fillMaxSize(), onGifSelected = {
             notificationManager.showNotification("Selected Gif Successfully", 3000)

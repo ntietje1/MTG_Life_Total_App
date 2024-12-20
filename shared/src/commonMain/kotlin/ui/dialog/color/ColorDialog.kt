@@ -3,6 +3,9 @@ package ui.dialog.color
 
 import PhysicsDraggable
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -12,10 +15,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,19 +37,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import data.Player
-import lifelinked.shared.generated.resources.Res
-import lifelinked.shared.generated.resources.checkmark
-import lifelinked.shared.generated.resources.x_icon
-import org.jetbrains.compose.resources.vectorResource
+import data.Player.Companion.allPlayerColors
 import org.koin.compose.koinInject
 import theme.scaledSp
 import theme.toHsv
-import ui.SettingsButton
 import ui.dialog.customization.PlayerButtonPreview
 import ui.lifecounter.playerbutton.PBState
 import ui.modifier.routePointerChangesTo
@@ -56,30 +54,32 @@ fun ColorPickerDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     initialColor: Color,
-    setColor: (Color) -> Unit = {},
     initialPlayer: Player,
-    updatePlayerColor: (Color) -> Player,
-    onDone: () -> Unit,
+    updateColor: (Color) -> Player,
     viewModel: ColorDialogViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
     var previewPlayer by remember { mutableStateOf(initialPlayer) }
 
     LaunchedEffect(initialColor) {
-        viewModel.init(initialColor)
+        if (state.oldColor == Color.Unspecified) {
+            viewModel.init(initialColor)
+        }
     }
 
     LaunchedEffect(state.newColor) {
-        previewPlayer = updatePlayerColor(state.newColor)
+        if (state.newColor != Color.Unspecified) {
+            previewPlayer = updateColor(state.newColor)
+        }
     }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val largePanelSize = remember(Unit) { min(maxWidth * 0.75f, maxHeight * 0.5f) }
+        val barWidth = remember(Unit) { min(maxWidth * 0.75f, maxHeight * 0.5f) }
         val padding = remember(Unit) { min(maxWidth / 15f, maxHeight / 25f) }
-        val buttonSize = remember(Unit) { min(maxWidth / 3.5f, maxHeight / 6f) }
+//        val buttonSize = remember(Unit) { min(maxWidth / 3.5f, maxHeight / 6f) }
         val barHeight = remember(Unit) { maxWidth / 12f }
         val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
-        val playerButtonPreviewHeight = remember(Unit) { min(maxWidth / 2f, maxHeight / 3f) }
+        val playerButtonPreviewHeight = remember(Unit) { min(maxWidth / 2f, maxHeight / 3.35f) }
 
         Column(
             modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
@@ -110,72 +110,50 @@ fun ColorPickerDialogContent(
 
             Spacer(modifier = Modifier.height(padding))
 
+            ColorGrid(
+                modifier = Modifier.width(barWidth).height(barHeight * 2.5f).align(Alignment.CenterHorizontally),
+                colors = listOf(state.oldColor, Color.White, Color.Black) + allPlayerColors,
+                selectedColor = state.newColor,
+                onColorSelected = { color ->
+                    val (h, s, v) = color.toHsv()
+                    viewModel.setHue(h, false)
+                    viewModel.setSaturation(s, false)
+                    viewModel.setValue(v, false)
+                    updateColor(state.newColor)
+                }
+            )
+
+            Spacer(modifier = Modifier.height(padding))
+
             HueBar(
-                modifier = Modifier.width(largePanelSize).height(barHeight),
+                modifier = Modifier.width(barWidth).height(barHeight),
                 color = state.newColor
             ) { value ->
                 viewModel.setHue(value)
+                updateColor(state.newColor)
             }
 
             Spacer(modifier = Modifier.height(padding))
 
             SatBar(
-                modifier = Modifier.width(largePanelSize).height(barHeight),
+                modifier = Modifier.width(barWidth).height(barHeight),
                 color = state.newColor
             ) { value ->
                 viewModel.setSaturation(value)
+                updateColor(state.newColor)
             }
 
             Spacer(modifier = Modifier.height(padding))
 
             ValBar(
-                modifier = Modifier.width(largePanelSize).height(barHeight),
+                modifier = Modifier.width(barWidth).height(barHeight),
                 color = state.newColor
             ) { value ->
                 viewModel.setValue(value)
+                updateColor(state.newColor)
             }
 
-            Spacer(modifier = Modifier.height(padding*1.5f))
-
-            Row(
-                modifier = Modifier.wrapContentSize(), horizontalArrangement = Arrangement.Center
-            ) {
-                Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    SettingsButton(
-                        modifier = Modifier.width(buttonSize).height(buttonSize / 1.75f).padding(bottom = padding / 4f),
-                        imageVector = vectorResource(Res.drawable.x_icon),
-                        shape = RoundedCornerShape(10),
-                        shadowEnabled = false,
-                        backgroundColor = initialColor,
-                        mainColor = if (initialColor.luminance() > 0.5f) Color.Black else Color.White,
-                        textSizeMultiplier = 1.5f,
-                        onTap = {
-                            onDone()
-                        }
-                    )
-                    Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimary, fontSize = titleSize.scaledSp / 2f)
-                }
-
-                Spacer(modifier = Modifier.width(padding))
-                Column(Modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    SettingsButton(
-                        modifier = Modifier.width(buttonSize).height(buttonSize / 1.75f).padding(bottom = padding / 4f),
-                        imageVector = vectorResource(Res.drawable.checkmark),
-                        shape = RoundedCornerShape(10),
-                        shadowEnabled = false,
-                        backgroundColor = state.newColor,
-                        mainColor = if (state.newColor.luminance() > 0.5f) Color.Black else Color.White,
-                        textSizeMultiplier = 1.5f,
-                        onTap = {
-                            setColor(state.newColor)
-                            onDone()
-                        }
-                    )
-                    Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimary, fontSize = titleSize.scaledSp / 2f)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(titleSize.dp * 2f))
+            Spacer(modifier = Modifier.height(padding * 3f))
         }
     }
 }
@@ -188,8 +166,12 @@ fun FloatBar(
     setValue: (Float) -> Unit
 ) {
     var barSize by remember { mutableStateOf(Size.Zero) }
-    var pressOffset by remember(barSize) {
+    var pressOffset by remember(barSize, initialValue) {
         mutableStateOf(initialValue * barSize.width)
+    }
+
+    LaunchedEffect(barSize, initialValue) {
+        pressOffset = initialValue * barSize.width
     }
 
     BoxWithConstraints(modifier = modifier) {
@@ -304,4 +286,70 @@ fun ValBar(
         initialValue = value,
         setValue = setValue
     )
+}
+
+@Composable
+fun ColorGrid(
+    colors: List<Color>,
+    selectedColor: Color,
+    onColorSelected: (Color) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val rows = 2
+    val columns = 6
+
+    BoxWithConstraints(modifier) {
+        val padding = remember(Unit) { (min(maxWidth / columns, maxHeight / rows) / 5) }
+        val circleSize = remember(Unit) {
+            (min(maxWidth / columns, maxHeight / rows) - padding)
+        }
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(padding)
+        ) {
+            for (row in 0 until rows) {
+                Row(
+                    Modifier.wrapContentSize().align(Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(padding)
+                ) {
+                    for (col in 0 until columns) {
+                        val index = row * columns + col
+                        if (index < colors.size) {
+                            ColorCircle(
+                                modifier = Modifier.size(circleSize),
+                                color = colors[index],
+                                isSelected = colors[index] == selectedColor,
+                                onClick = { onColorSelected(colors[index]) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ColorCircle(
+    color: Color,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BoxWithConstraints(modifier) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(color)
+                .then(
+                    if (isSelected) {
+                        Modifier.border(maxHeight / 15f, MaterialTheme.colorScheme.onSurface, CircleShape)
+                    } else {
+                        Modifier
+                    }
+                )
+                .clickable(onClick = onClick)
+        )
+    }
 }
