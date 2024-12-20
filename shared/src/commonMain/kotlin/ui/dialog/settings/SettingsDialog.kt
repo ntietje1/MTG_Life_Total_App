@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -343,7 +344,8 @@ fun SettingsDialogButtonWithToggle(
             Box(Modifier.wrapContentSize().padding(horizontal = padding / 2f, vertical = padding / 4f)) {
                 SettingsButton(
                     modifier = Modifier
-                        .size(iconSize),
+                        .size(iconSize)
+                        .aspectRatio(1.0f),
                     shadowEnabled = false,
                     imageVector = icon,
                     enabled = false
