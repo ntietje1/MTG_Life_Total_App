@@ -1,7 +1,7 @@
 package ui.lifecounter.playerbutton
 
 import data.Player
-import data.timer.TurnTimer
+import features.timer.TurnTimer
 
 data class PlayerButtonState(
     val player: Player,

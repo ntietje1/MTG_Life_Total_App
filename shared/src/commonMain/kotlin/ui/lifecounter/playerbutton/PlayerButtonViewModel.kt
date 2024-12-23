@@ -1,14 +1,17 @@
 package ui.lifecounter.playerbutton
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
-import data.timer.TurnTimer
 import di.NotificationManager
+import domain.player.CommanderDamageManager
+import domain.player.CounterManager
+import domain.player.PlayerCustomizationManager
+import domain.player.PlayerManager
+import features.timer.TurnTimer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +19,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ui.dialog.customization.CustomizationViewModel
@@ -25,14 +29,15 @@ open class PlayerButtonViewModel(
     initialPlayer: Player,
     private val settingsManager: ISettingsManager,
     private val imageManager: IImageManager,
-    private val onCommanderButtonClickedCallback: (PlayerButtonViewModel) -> Unit,
-    private val setAllMonarchy: (Boolean) -> Unit,
-    val getCurrentDealer: () -> PlayerButtonViewModel?,
-    private val updateCurrentDealerMode: (Boolean) -> Unit,
+    private val counterManager: CounterManager,
+    private val commanderManager: CommanderDamageManager,
+    private val setMonarchy: (Boolean) -> Unit,
     private val triggerSave: () -> Unit,
     private val resetPlayerColor: (Player) -> Player,
     private val moveTimerCallback: () -> Unit,
-    protected val notificationManager: NotificationManager
+    protected val notificationManager: NotificationManager,
+    private val playerManager: PlayerManager,
+    private val playerCustomizationManager: PlayerCustomizationManager,
 ) : ViewModel() {
     private var _state = MutableStateFlow(PlayerButtonState(initialPlayer))
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
@@ -41,8 +46,10 @@ open class PlayerButtonViewModel(
         settingsManager.autoKo,
         state
     ) { autoKo, playerState ->
-        (autoKo && (playerState.player.life <= 0 || playerState.player.commanderDamage.any { it >= 21 })) || playerState.player.setDead
+        playerManager.isPlayerDead(playerState.player, autoKo)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val currentDealer: StateFlow<Player?> = commanderManager.currentDealer
 
     private var recentChangeJob: Job? = null
 
@@ -50,35 +57,42 @@ open class PlayerButtonViewModel(
         updateRecentChange()
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        recentChangeJob?.cancel()
+    }
+
     constructor(
         initialState: PlayerButtonState,
         settingsManager: ISettingsManager,
         imageManager: IImageManager,
-        onCommanderButtonClickedCallback: (PlayerButtonViewModel) -> Unit,
-        setAllMonarchy: (Boolean) -> Unit,
-        getCurrentDealer: () -> PlayerButtonViewModel?,
-        updateCurrentDealerMode: (Boolean) -> Unit,
+        counterManager: CounterManager,
+        commanderManager: CommanderDamageManager,
+        setMonarchy: (Boolean) -> Unit,
         triggerSave: () -> Unit,
         resetPlayerColor: (Player) -> Player,
         moveTimerCallback: () -> Unit,
-        notificationManager: NotificationManager
+        notificationManager: NotificationManager,
+        playerManager: PlayerManager,
+        playerCustomizationManager: PlayerCustomizationManager,
     ) : this(
         initialState.player,
         settingsManager,
         imageManager,
-        onCommanderButtonClickedCallback,
-        setAllMonarchy,
-        getCurrentDealer,
-        updateCurrentDealerMode,
+        counterManager,
+        commanderManager,
+        setMonarchy,
         triggerSave,
         resetPlayerColor,
         moveTimerCallback,
-        notificationManager
+        notificationManager,
+        playerManager,
+        playerCustomizationManager
     ) {
         _state.value = initialState
     }
 
-    private fun setPlayer(player: Player) {
+    internal fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
     }
 
@@ -95,12 +109,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun incrementLife(value: Int) {
-        setPlayer(
-            state.value.player.copy(
-                life = state.value.player.life + value,
-                recentChange = state.value.player.recentChange + value
-            )
-        )
+        setPlayer(playerManager.incrementLife(state.value.player, value))
         updateRecentChange()
         triggerSave()
     }
@@ -117,8 +126,8 @@ open class PlayerButtonViewModel(
         if (buttonState == PBState.COMMANDER_RECEIVER) {
             clearBackStack()
         }
+
         _state.value = state.value.copy(buttonState = buttonState)
-        updateCurrentDealerMode(state.value.player.partnerMode)
     }
 
     fun onMoveTimer() {
@@ -126,14 +135,20 @@ open class PlayerButtonViewModel(
     }
 
     open fun onMonarchyButtonClicked(value: Boolean) {
-        if (value) {
-            setAllMonarchy(false)
-        }
-        toggleMonarch(value)
+        setPlayerButtonState(PBState.NORMAL)
+        setMonarchy(value)
     }
 
     open fun onCommanderButtonClicked() {
-        onCommanderButtonClickedCallback(this)
+        when (state.value.buttonState) {
+            PBState.NORMAL -> {
+                commanderManager.setCurrentDealer(state.value.player)
+            }
+            PBState.COMMANDER_DEALER -> {
+                commanderManager.setCurrentDealer(null)
+            }
+            else -> {} // do nothing
+        }
     }
 
     open fun onSettingsButtonClicked() {
@@ -146,9 +161,10 @@ open class PlayerButtonViewModel(
     }
 
     open fun onKOButtonClicked() {
-        toggleSetDead()
+        setPlayer(playerManager.toggleSetDead(state.value.player))
         closeSettingsMenu()
         clearBackStack()
+        triggerSave()
     }
 
     open fun popBackStack() {
@@ -173,14 +189,9 @@ open class PlayerButtonViewModel(
 
     fun resetPlayerPref() {
         setPlayer(
-            state.value.player.copy(
-                name = "P${state.value.player.playerNum}",
-                textColor = Color.White,
-                imageString = null
+            playerCustomizationManager.resetPlayerPreferences(
+                resetPlayerColor(state.value.player)
             )
-        )
-        setPlayer(
-            resetPlayerColor(state.value.player)
         )
         resetCustomizationMenuViewModel()
     }
@@ -202,7 +213,8 @@ open class PlayerButtonViewModel(
     }
 
     private fun onCustomizationApply() {
-        val player = customizationViewmodel?.state?.value?.player ?: throw IllegalStateException("CustomizationViewModel is null")
+        val customizationViewmodel = requireNotNull(customizationViewmodel)
+        val player = customizationViewmodel.state.value.player
         viewModelScope.launch {
             copyPrefs(player.copy(imageString = null))
             delay(50)
@@ -225,12 +237,6 @@ open class PlayerButtonViewModel(
     }
 
 
-    fun toggleMonarch(value: Boolean) {
-        setPlayerButtonState(PBState.NORMAL)
-        setPlayer(state.value.player.copy(monarch = value))
-        triggerSave()
-    }
-
     fun onFirstPlayerPrompt() {
         pushBackStack { setPlayerButtonState(PBState.NORMAL) }
         setPlayerButtonState(PBState.SELECT_FIRST_PLAYER)
@@ -246,83 +252,47 @@ open class PlayerButtonViewModel(
         pushBackStack { setPlayerButtonState(PBState.COUNTERS_VIEW) }
     }
 
-
     fun togglePartnerMode(value: Boolean) {
-        setPlayer(state.value.player.copy(partnerMode = value))
-        updateCurrentDealerMode(state.value.player.partnerMode)
-        triggerSave()
-    }
-
-    private fun toggleSetDead(value: Boolean? = null) {
-        setPlayer(state.value.player.copy(setDead = value ?: !state.value.player.setDead))
+        setPlayer(commanderManager.togglePartnerMode(state.value.player, value))
         triggerSave()
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
-        setPlayer(state.value.player.copy(counters = state.value.player.counters.toMutableList().apply {
-            this[counterType.ordinal] += value
-        }))
+        setPlayer(counterManager.incrementCounter(state.value.player, counterType, value))
         triggerSave()
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
-        setPlayer(state.value.player.copy(activeCounters = state.value.player.activeCounters.toMutableList().apply {
-            if (active) {
-                this.add(counterType)
-            } else {
-                this.remove(counterType)
-            }
-        }))
+        setPlayer(counterManager.setActiveCounters(state.value.player, counterType, active))
         triggerSave()
         return state.value.player.activeCounters.contains(counterType)
     }
 
     fun getCommanderDamage(partner: Boolean): Int {
-        val currentDealer: PlayerButtonViewModel = getCurrentDealer() ?: return 0
-        val index = (currentDealer.state.value.player.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
+        val currentDealer = commanderManager.currentDealer.value ?: return 0
+        val index = (currentDealer.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
         return state.value.player.commanderDamage[index]
     }
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
-        val currentDealer: PlayerButtonViewModel = getCurrentDealer() ?: return
-        val index = (currentDealer.state.value.player.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
-        this.receiveCommanderDamage(index, value)
+        val currentDealer = commanderManager.currentDealer.value ?: return
+        val index = (currentDealer.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
+        receiveCommanderDamage(index, value)
     }
 
     protected open fun receiveCommanderDamage(index: Int, value: Int) {
-        if (state.value.player.commanderDamage[index] + value < 0) {
-            notificationManager.showNotification("Commander damage cannot be negative", 1000)
-        } else {
-            setPlayer(state.value.player.copy(commanderDamage = state.value.player.commanderDamage.toMutableList().apply {
-                this[index] += value
-            }.toList()))
-            triggerSave()
-        }
+        setPlayer(state.value.player.copy(commanderDamage = state.value.player.commanderDamage.toMutableList().apply {
+            this[index] += value
+        }.toList()))
+        triggerSave()
     }
 
     open fun copyPrefs(other: Player) {
-        setPlayer(
-            state.value.player.copy(
-                imageString = other.imageString,
-                color = other.color,
-                textColor = other.textColor,
-                name = other.name
-            )
-        )
+        setPlayer(playerCustomizationManager.copyPlayerPreferences(state.value.player, other))
     }
 
     fun resetState(startingLife: Int) {
-        setPlayer(
-            state.value.player.copy(
-                life = startingLife,
-                recentChange = 0,
-                monarch = false,
-                setDead = false,
-                commanderDamage = List(MAX_PLAYERS * 2) { 0 },
-                counters = List(CounterType.entries.size) { 0 },
-                activeCounters = listOf()
-            )
-        )
+        setPlayer(playerManager.resetPlayerState(state.value.player, startingLife))
         triggerSave()
     }
 }

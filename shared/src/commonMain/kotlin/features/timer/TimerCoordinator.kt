@@ -1,5 +1,5 @@
-import data.timer.GameTimer
-import data.timer.TurnTimer
+import features.timer.GameTimer
+import features.timer.TurnTimer
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 

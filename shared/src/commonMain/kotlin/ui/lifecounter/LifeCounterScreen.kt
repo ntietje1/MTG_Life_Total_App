@@ -115,9 +115,11 @@ fun LifeCounterScreen(
     BoxWithConstraints(
         modifier.background(MaterialTheme.colorScheme.background)
     ) {
-        val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) { LifeCounterMeasurements(
-            maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
-        ) }
+        val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) {
+            LifeCounterMeasurements(
+                maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
+            )
+        }
         val buttonPadding = remember(maxHeight) { maxWidth / 750f + maxHeight / 750f }
         val blurRadius = remember(Unit) { maxHeight / 50f }
         val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }
@@ -147,7 +149,8 @@ fun LifeCounterScreen(
                                 width = placement.width - buttonPadding * 4,
                                 height = placement.height - buttonPadding * 4,
                                 playerButton = {
-                                    PlayerButton(modifier = Modifier.size(width, height),
+                                    PlayerButton(
+                                        modifier = Modifier.size(width, height),
                                         turnTimerModifier = Modifier.align(turnTimerAlignment).pointerInput(Unit) {
                                             routePointerChangesTo(onDown = {
                                                 playerButtonViewModel.onMoveTimer()
@@ -172,7 +175,6 @@ fun LifeCounterScreen(
                                         setFirstPlayer = {
                                             viewModel.setFirstPlayer(placement.index)
                                         },
-                                        currentDealerIsPartnered = state.currentDealerIsPartnered,
                                     )
                                 })
                         }
@@ -184,18 +186,27 @@ fun LifeCounterScreen(
             Box(
                 modifier = Modifier.offset(middleButtonOffset.first, middleButtonOffset.second).size(middleButtonSize)
             ) {
-                AnimatedMiddleButton(modifier = Modifier.fillMaxSize(), visible = state.showButtons && state.currentDealer == null, onMiddleButtonClick = {
-                    viewModel.setMiddleButtonDialogState(MiddleButtonDialogState.Default)
-                })
-
-                val settingsButtonVisible = state.showButtons && state.currentDealer != null
-                AnimatedExitButton(
-                    modifier = Modifier.fillMaxSize(),
-                    visible = settingsButtonVisible,
-                    onPress = {
-                        viewModel.onCommanderDealerButtonClicked(state.currentDealer!!)
+                when (state.middleButtonState) {
+                    MiddleButtonState.DEFAULT -> {
+                        AnimatedMiddleButton(
+                            modifier = Modifier.fillMaxSize(),
+                            onMiddleButtonClick = {
+                                viewModel.setMiddleButtonDialogState(MiddleButtonDialogState.Default)
+                            },
+                            visible = state.showButtons
+                        )
                     }
-                )
+
+                    MiddleButtonState.COMMANDER_EXIT -> {
+                        AnimatedExitButton(
+                            modifier = Modifier.fillMaxSize(),
+                            visible = state.showButtons,
+                            onPress = {
+                                viewModel.onCommanderDealerButtonClicked()
+                            }
+                        )
+                    }
+                }
             }
 
             if (!state.showButtons || state.showLoadingScreen) {
@@ -214,48 +225,6 @@ fun LifeCounterScreen(
         }
     }
 }
-
-@Composable
-fun AnimatedExitButton(
-    modifier: Modifier = Modifier,
-    visible: Boolean,
-    onPress: () -> Unit
-) {
-    val settingsButtonScale = remember { Animatable(0f) }
-    val duration = (300 / getAnimationCorrectionFactor()).toInt()
-
-    LaunchedEffect(visible) {
-        if (visible) {
-            settingsButtonScale.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = duration, easing = LinearOutSlowInEasing)
-            )
-        } else {
-            settingsButtonScale.snapTo(0f)
-        }
-    }
-
-    SettingsButton(
-        modifier = modifier.graphicsLayer {
-            scaleX = settingsButtonScale.value
-            scaleY = settingsButtonScale.value
-        },
-        shape = CircleShape,
-        backgroundColor = MaterialTheme.colorScheme.primary,
-        imageVector = vectorResource(Res.drawable.x_icon),
-        text = "",
-        textSizeMultiplier = 1f,
-        mainColor = MaterialTheme.colorScheme.onPrimary,
-        visible = visible,
-        enabled = true,
-        shadowEnabled = true,
-        hapticEnabled = true,
-        onPress = {
-            onPress()
-        },
-    )
-}
-
 
 @Composable
 fun AnimatedPlayerButton(
@@ -326,10 +295,7 @@ fun AnimatedMiddleButton(
     modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit, visible: Boolean
 ) {
     var animationFinished by remember { mutableStateOf(false) }
-
     val popInDuration = (900 / getAnimationCorrectionFactor()).toInt()
-//    var angle by remember { mutableFloatStateOf(0f) }
-//    var scale by remember { mutableFloatStateOf(0f) }
 
     fun targetAngle(visible: Boolean): Float {
         return if (visible) 360f else 0f
@@ -378,6 +344,51 @@ fun AnimatedMiddleButton(
     }) {
         Image(
             modifier = Modifier.fillMaxSize().align(Alignment.Center), imageVector = vectorResource(Res.drawable.middle_icon), contentScale = ContentScale.Crop, contentDescription = null
+        )
+    }
+}
+
+@Composable
+fun AnimatedExitButton(
+    modifier: Modifier = Modifier,
+    visible: Boolean,
+    onPress: () -> Unit
+) {
+    val settingsButtonScale = remember { Animatable(0f) }
+    val duration = (300 / getAnimationCorrectionFactor()).toInt()
+
+    LaunchedEffect(visible) {
+        if (visible) {
+            settingsButtonScale.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = duration, easing = LinearOutSlowInEasing)
+            )
+        } else {
+            settingsButtonScale.snapTo(0f)
+        }
+    }
+
+    Box(modifier = modifier.background(
+        color = MaterialTheme.colorScheme.background, shape = CircleShape
+    ).graphicsLayer {
+        scaleX = settingsButtonScale.value
+        scaleY = settingsButtonScale.value
+    }) {
+        SettingsButton(
+            modifier = Modifier.fillMaxSize(),
+            shape = CircleShape,
+            backgroundColor = MaterialTheme.colorScheme.primary,
+            imageVector = vectorResource(Res.drawable.x_icon),
+            text = "",
+            textSizeMultiplier = 1f,
+            mainColor = MaterialTheme.colorScheme.onPrimary,
+            visible = visible,
+            enabled = true,
+            shadowEnabled = true,
+            hapticEnabled = true,
+            onPress = {
+                onPress()
+            },
         )
     }
 }

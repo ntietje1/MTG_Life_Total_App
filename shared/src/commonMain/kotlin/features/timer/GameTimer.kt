@@ -1,4 +1,4 @@
-package data.timer
+package features.timer
 
 import data.ISettingsManager
 import kotlinx.coroutines.CoroutineScope

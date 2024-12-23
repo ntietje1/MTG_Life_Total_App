@@ -50,7 +50,7 @@ import ui.lifecounter.playerbutton.PBState
 import ui.modifier.routePointerChangesTo
 
 @Composable
-fun ColorPickerDialogContent(
+fun ColorPickerDialogContent( //TODO: make it only change preferences if change was actually made
     modifier: Modifier = Modifier,
     title: String,
     initialColor: Color,

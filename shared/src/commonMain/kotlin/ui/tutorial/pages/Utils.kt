@@ -28,8 +28,13 @@ import data.ISettingsManager
 import data.Player
 import data.SettingsManager
 import data.serializable.Card
-import data.timer.GameTimerState
+import features.timer.GameTimerState
 import di.NotificationManager
+import domain.player.CommanderDamageManager
+import domain.player.CounterManager
+import domain.game.GameStateManager
+import domain.player.PlayerCustomizationManager
+import domain.player.PlayerManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -202,10 +207,7 @@ open class MockPlayerButtonViewModel(
     settingsManager: ISettingsManager,
     imageManager: IImageManager,
     notificationManager: NotificationManager,
-    onCommanderButtonClickedCallback: (PlayerButtonViewModel) -> Unit,
-    setAllMonarchy: (Boolean) -> Unit,
-    getCurrentDealer: () -> PlayerButtonViewModel?,
-    updateCurrentDealerMode: (Boolean) -> Unit,
+    setMonarchy: (Boolean) -> Unit,
     triggerSave: () -> Unit,
     resetPlayerColor: (Player) -> Player,
     moveTimerCallback: () -> Unit
@@ -214,10 +216,11 @@ open class MockPlayerButtonViewModel(
     settingsManager = settingsManager,
     imageManager = imageManager,
     notificationManager = notificationManager,
-    onCommanderButtonClickedCallback = onCommanderButtonClickedCallback,
-    setAllMonarchy = setAllMonarchy,
-    getCurrentDealer = getCurrentDealer,
-    updateCurrentDealerMode = updateCurrentDealerMode,
+    playerManager = PlayerManager(settingsManager, imageManager),
+    playerCustomizationManager = PlayerCustomizationManager(),
+    commanderManager = CommanderDamageManager(notificationManager),
+    counterManager = CounterManager(),
+    setMonarchy = setMonarchy,
     triggerSave = triggerSave,
     resetPlayerColor = resetPlayerColor,
     moveTimerCallback = moveTimerCallback
@@ -231,12 +234,14 @@ abstract class MockLifeCounterViewModel(
 ) : LifeCounterViewModel(
     initialState = lifeCounterState,
     settingsManager = settingsManager,
+    playerManager = PlayerManager(settingsManager, imageManager),
+    commanderManager = CommanderDamageManager(notificationManager),
+    counterManager = CounterManager(),
+    gameStateManager = GameStateManager(),
     imageManager = imageManager,
     notificationManager = notificationManager,
-    planeChaseViewModel = PlaneChaseViewModel(settingsManager),
-) {
-
-}
+    planeChaseViewModel = PlaneChaseViewModel(settingsManager)
+)
 
 @Composable
 fun TutorialScreenWrapper(
