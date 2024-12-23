@@ -1,6 +1,5 @@
 package ui.lifecounter
 
-import data.TurnTimer
 import ui.dialog.COUNTER_DIALOG_ENTRIES
 import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
@@ -15,7 +14,6 @@ data class LifeCounterState(
     val counters: List<Int> = List(COUNTER_DIALOG_ENTRIES) { 0 },
     val firstPlayer: Int? = null,
     val activeTimerIndex: Int? = null,
-    val turnTimer: TurnTimer? = null,
     val middleButtonDialogState: MiddleButtonDialogState? = null,
     val firstPlayerSelectionActive: Boolean = false,
     val currentDealerIsPartnered: Boolean = false,

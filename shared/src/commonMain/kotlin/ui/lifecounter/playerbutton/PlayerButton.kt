@@ -66,7 +66,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import data.TurnTimer
+import data.timer.TurnTimer
 import di.getAnimationCorrectionFactor
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource

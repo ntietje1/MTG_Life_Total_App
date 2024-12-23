@@ -1,12 +1,8 @@
-package data
+package data.timer
 
 data class TurnTimer(val seconds: Int, val turn: Int) {
     fun tick(): TurnTimer {
         return TurnTimer(seconds + 1, turn)
-    }
-
-    fun nextTurn(): TurnTimer {
-        return TurnTimer(seconds, turn + 1)
     }
 
     fun resetTime(): TurnTimer {

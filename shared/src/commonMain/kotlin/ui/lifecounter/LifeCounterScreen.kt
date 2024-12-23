@@ -70,13 +70,7 @@ fun LifeCounterScreen(
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
     val timerEnabled by viewModel.turnTimerEnabled.collectAsState()
 
-    if (timerEnabled) { // Features that require first player
-        if (state.firstPlayer == null && !state.firstPlayerSelectionActive) {
-            viewModel.promptFirstPlayer()
-        }
-    } else {
-        viewModel.killTimer()
-    }
+    viewModel.onTimerEnabledChange(timerEnabled)
 
     if (state.middleButtonDialogState != null) {
         MiddleButtonDialog(

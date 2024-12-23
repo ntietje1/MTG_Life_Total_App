@@ -7,7 +7,7 @@ import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
-import data.TurnTimer
+import data.timer.TurnTimer
 import di.NotificationManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
