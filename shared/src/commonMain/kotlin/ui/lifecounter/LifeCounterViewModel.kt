@@ -127,6 +127,7 @@ open class LifeCounterViewModel(
     }
 
     fun killTimer() {
+        setFirstPlayerSelectionActive(false)
         timerJob?.cancel()
         timerJob = null
         updatePlayerButtonTimers(-1, null)
