@@ -12,10 +12,7 @@ data class LifeCounterState(
     val dayNight: DayNightState = DayNightState.NONE,
     val coinFlipHistory: List<String> = emptyList(),
     val counters: List<Int> = List(COUNTER_DIALOG_ENTRIES) { 0 },
-    val firstPlayer: Int? = null,
-    val activeTimerIndex: Int? = null,
     val middleButtonDialogState: MiddleButtonDialogState? = null,
-    val firstPlayerSelectionActive: Boolean = false,
     val currentDealerIsPartnered: Boolean = false,
 )
 

@@ -28,6 +28,7 @@ import data.ISettingsManager
 import data.Player
 import data.SettingsManager
 import data.serializable.Card
+import data.timer.GameTimerState
 import di.NotificationManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -148,6 +149,12 @@ class MockSettingsManager(
     override val patchNotes: StateFlow<String> = _patchNotes.asStateFlow()
     override fun setPatchNotes(value: String) {
         _patchNotes.value = value
+    }
+
+    private val _savedTimerState: MutableStateFlow<GameTimerState?> = MutableStateFlow(null)
+    override val savedTimerState: StateFlow<GameTimerState?> = _savedTimerState.asStateFlow()
+    override fun setSavedTimerState(value: GameTimerState?) {
+        _savedTimerState.value = value
     }
 
     override fun loadPlayerStates(): List<Player> {

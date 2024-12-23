@@ -3,6 +3,7 @@ package data
 
 import com.russhwolf.settings.Settings
 import data.serializable.Card
+import data.timer.GameTimerState
 import di.VersionNumber
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,6 +64,9 @@ interface ISettingsManager {
 
     val patchNotes: StateFlow<String>
     fun setPatchNotes(value: String)
+
+    val savedTimerState: StateFlow<GameTimerState?>
+    fun setSavedTimerState(value: GameTimerState?)
 }
 
 class SettingsManager private constructor() : ISettingsManager {
@@ -169,6 +173,23 @@ class SettingsManager private constructor() : ISettingsManager {
     override fun setPatchNotes(value: String) {
         settings.putString("patchNotes", value)
         _patchNotes.value = value
+    }
+
+    private val _savedTimerState = MutableStateFlow(loadSavedTimerState())
+    override val savedTimerState: StateFlow<GameTimerState?> = _savedTimerState.asStateFlow()
+    
+    override fun setSavedTimerState(value: GameTimerState?) {
+        if (value == null) {
+            settings.remove("savedTimerState")
+        } else {
+            settings.putString("savedTimerState", Json.encodeToString(value))
+        }
+        _savedTimerState.value = value
+    }
+    
+    private fun loadSavedTimerState(): GameTimerState? {
+        val savedState = settings.getStringOrNull("savedTimerState")
+        return savedState?.let { Json.decodeFromString<GameTimerState>(it) }
     }
 
     override fun loadPlayerStates(): List<Player> {

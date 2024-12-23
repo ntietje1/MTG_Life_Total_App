@@ -1,5 +1,6 @@
 package ui.lifecounter
 
+import TimerCoordinator
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +10,6 @@ import data.Player
 import data.Player.Companion.MAX_PLAYERS
 import data.Player.Companion.allPlayerColors
 import data.timer.GameTimer
-import data.timer.TurnTimer
 import di.NotificationManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,31 +39,22 @@ open class LifeCounterViewModel(
     val playerButtonViewModels: List<PlayerButtonViewModel>
         get() = _playerButtonViewModels
 
-    private val gameTimer = GameTimer(
+    internal val gameTimer = GameTimer(
         scope = viewModelScope,
         numPlayersFlow = settingsManager.numPlayers,
-        isDead = { index -> playerButtonViewModels[index].isDead.value }
+        isDead = { index -> playerButtonViewModels[index].isDead.value },
+        settingsManager = settingsManager
     )
+
+    private var timerCoordinator: TimerCoordinator
 
     init {
         _playerButtonViewModels = generatePlayers()
-        gameTimer.registerTimerCallbacks(
-            playerButtonViewModels.mapIndexed { index, viewModel ->
-                { targetIndex, timer -> 
-                    if (index == targetIndex) viewModel.setTimer(timer) 
-                    else viewModel.setTimer(null)
-                }
-            }
+
+        timerCoordinator = TimerCoordinator(
+            gameTimer = gameTimer,
+            playerViewModels = playerButtonViewModels,
         )
-        
-        viewModelScope.launch {
-            gameTimer.timerState.collect { timerState ->
-                _state.value = _state.value.copy(
-                    firstPlayer = timerState.firstPlayer,
-                    activeTimerIndex = timerState.activePlayerIndex,
-                )
-            }
-        }
     }
 
     constructor(
@@ -90,66 +81,16 @@ open class LifeCounterViewModel(
         return viewModels
     }
 
-    private fun promptFirstPlayer() {
-        if (settingsManager.numPlayers.value == 1) {
-            setFirstPlayer(0)
-            setTimerEnabled(settingsManager.turnTimer.value)
-        } else if (state.value.firstPlayer == null) {
-            for (playerButtonViewModel in playerButtonViewModels) {
-                playerButtonViewModel.onFirstPlayerPrompt()
-            }
-            setFirstPlayerSelectionActive(true)
-        } else {
-            setTimerEnabled(settingsManager.turnTimer.value)
-        }
-    }
-
     fun onTimerEnabledChange(timerEnabled: Boolean) {
-        if (timerEnabled) { // Features that require first player
-            if (state.value.firstPlayer == null && !state.value.firstPlayerSelectionActive) {
-                promptFirstPlayer()
-            }
-        } else {
-            state.value.activeTimerIndex?.let {
-                updatePlayerButtonTimers(it, null)
-            }
-            gameTimer.setTimerEnabled(false)
-        }
+        timerCoordinator.onTimerEnabledChange(timerEnabled)
     }
 
     fun setFirstPlayer(index: Int?) {
-        gameTimer.setFirstPlayer(index)
-        if (index != null) {
-            for (i in playerButtonViewModels.indices) {
-                if (playerButtonViewModels[i].state.value.buttonState == PBState.SELECT_FIRST_PLAYER) {
-                    playerButtonViewModels[i].popBackStack()
-                }
-            }
-            setTimerEnabled(settingsManager.turnTimer.value)
-            setFirstPlayerSelectionActive(false)
-        }
+        timerCoordinator.handleFirstPlayerSelection(index)
     }
 
     fun setTimerEnabled(value: Boolean) {
-        gameTimer.setTimerEnabled(value)
-    }
-
-    protected fun moveTimer() {
-        gameTimer.moveTimer()
-    }
-
-    private fun resetTimer() {
-        gameTimer.reset()
-    }
-
-    private fun updatePlayerButtonTimers(targetIndex: Int, newTimer: TurnTimer?) {
-        for (i in playerButtonViewModels.indices) {
-            if (i == targetIndex) {
-                playerButtonViewModels[i].setTimer(newTimer)
-            } else {
-                playerButtonViewModels[i].setTimer(null)
-            }
-        }
+        timerCoordinator.onTimerEnabledChange(value)
     }
 
     fun onNavigate(firstNavigation: Boolean) {
@@ -216,24 +157,9 @@ open class LifeCounterViewModel(
             updateCurrentDealerMode = { setCurrentDealerIsPartnered(it) },
             triggerSave = { savePlayerStates() },
             resetPlayerColor = { resetPlayerColor(it) },
-            moveTimerCallback = { moveTimer() },
+            moveTimerCallback = { gameTimer.moveTimer() },
         )
     }
-
-//    private fun generatePlayerButtonViewModel(playerButtonState: PlayerButtonState): PlayerButtonViewModel {
-//        return PlayerButtonViewModel(
-//            initialState = playerButtonState,
-//            settingsManager = settingsManager,
-//            imageManager = imageManager,
-//            onCommanderButtonClickedCallback = { onCommanderButtonClicked(it) },
-//            setAllMonarchy = { setAllMonarchy(it) },
-//            getCurrentDealer = { state.value.currentDealer },
-//            updateCurrentDealerMode = { setCurrentDealerIsPartnered(it) },
-//            triggerSave = { savePlayerStates() },
-//            resetPlayerColor = { resetPlayerColor(it) },
-//            moveTimerCallback = { moveTimer() },
-//        )
-//    }
 
     fun savePlayerPrefs() {
         playerButtonViewModels.forEach {
@@ -254,10 +180,6 @@ open class LifeCounterViewModel(
             it.resetPlayerPref()
             it.copyPrefs(it.state.value.player)
         }
-    }
-
-    private fun setFirstPlayerSelectionActive(value: Boolean) {
-        _state.value = _state.value.copy(firstPlayerSelectionActive = value)
     }
 
     open fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
@@ -308,8 +230,8 @@ open class LifeCounterViewModel(
         setAllButtonStates(PBState.NORMAL)
         resetAllPlayerStates()
         savePlayerStates()
-        setFirstPlayer(null)
-        resetTimer()
+        timerCoordinator.reset()
+        timerCoordinator.promptForFirstPlayer()
         restartButtons()
     }
 

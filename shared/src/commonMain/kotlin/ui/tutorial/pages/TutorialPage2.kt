@@ -138,7 +138,7 @@ fun TutorialPage2(
                 updateCurrentDealerMode = { this.setCurrentDealerIsPartnered(it) },
                 triggerSave = { this.savePlayerStates() },
                 resetPlayerColor = { this.resetPlayerColor(it) },
-                moveTimerCallback = { this.moveTimer() }
+                moveTimerCallback = { this.gameTimer.moveTimer() }
             )
         }
     }

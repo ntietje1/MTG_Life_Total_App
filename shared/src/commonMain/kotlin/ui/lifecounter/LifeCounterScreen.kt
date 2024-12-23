@@ -70,7 +70,9 @@ fun LifeCounterScreen(
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
     val timerEnabled by viewModel.turnTimerEnabled.collectAsState()
 
-    viewModel.onTimerEnabledChange(timerEnabled)
+    LaunchedEffect(timerEnabled) {
+        viewModel.onTimerEnabledChange(timerEnabled)
+    }
 
     if (state.middleButtonDialogState != null) {
         MiddleButtonDialog(
