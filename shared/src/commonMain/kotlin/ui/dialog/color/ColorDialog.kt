@@ -127,7 +127,7 @@ fun ColorPickerDialogContent(
 
             HueBar(
                 modifier = Modifier.width(barWidth).height(barHeight),
-                color = state.newColor
+                initialHue = state.hue
             ) { value ->
                 viewModel.setHue(value)
                 updateColor(state.newColor)
@@ -137,7 +137,8 @@ fun ColorPickerDialogContent(
 
             SatBar(
                 modifier = Modifier.width(barWidth).height(barHeight),
-                color = state.newColor
+                initialSaturation = state.saturation,
+                hue = state.hue
             ) { value ->
                 viewModel.setSaturation(value)
                 updateColor(state.newColor)
@@ -147,7 +148,8 @@ fun ColorPickerDialogContent(
 
             ValBar(
                 modifier = Modifier.width(barWidth).height(barHeight),
-                color = state.newColor
+                initialValue = state.value,
+                hue = state.hue
             ) { value ->
                 viewModel.setValue(value)
                 updateColor(state.newColor)
@@ -218,7 +220,7 @@ fun FloatBar(
 @Composable
 fun HueBar(
     modifier: Modifier = Modifier,
-    color: Color,
+    initialHue: Float,
     setHue: (Float) -> Unit
 ) {
     val colors = remember {
@@ -233,11 +235,10 @@ fun HueBar(
         )
     }
 
-    val (hue, _, _) = color.toHsv()
     FloatBar(
         modifier = modifier,
         colors = colors,
-        initialValue = hue / 360f,
+        initialValue = initialHue / 360f,
         setValue = {
             setHue(it * 360f)
         }
@@ -247,11 +248,11 @@ fun HueBar(
 @Composable
 fun SatBar(
     modifier: Modifier = Modifier,
-    color: Color,
+    initialSaturation: Float,
+    hue: Float,
     setSaturation: (Float) -> Unit
 ) {
-    val (hue, saturation, value) = color.toHsv()
-    val colors = remember(hue, value) {
+    val colors = remember(hue) {
         listOf(
             Color.hsv(hue, 0f, 1f),
             Color.hsv(hue, 1f, 1f)
@@ -261,7 +262,7 @@ fun SatBar(
     FloatBar(
         modifier = modifier,
         colors = colors,
-        initialValue = saturation,
+        initialValue = initialSaturation,
         setValue = setSaturation
     )
 }
@@ -269,11 +270,11 @@ fun SatBar(
 @Composable
 fun ValBar(
     modifier: Modifier = Modifier,
-    color: Color,
+    initialValue: Float,
+    hue: Float,
     setValue: (Float) -> Unit
 ) {
-    val (hue, saturation, value) = color.toHsv()
-    val colors = remember(hue, saturation) {
+    val colors = remember(hue) {
         listOf(
             Color.hsv(hue, 1f, 0f),
             Color.hsv(hue, 1f, 1f)
@@ -283,7 +284,7 @@ fun ValBar(
     FloatBar(
         modifier = modifier,
         colors = colors,
-        initialValue = value,
+        initialValue = initialValue,
         setValue = setValue
     )
 }
