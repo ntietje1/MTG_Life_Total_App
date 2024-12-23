@@ -2,12 +2,22 @@
   "in-progress": [
     "Improved 1 player features",
     "Bounties, city's blessing, the ring, and dungeon progress tracking",
-    "Improved tutorial",
     "Game statistics tracking",
     "Fix known crash on some Android devices",
     "Make sure to request new features you want to see in the app!"
   ],
   "patch-notes": [
+    {
+      "version": "1.10.0",
+      "date": "2024-12-22",
+      "title": "Tutorial Update",
+      "notes": [
+        "Added interactive tutorial",
+        "Revamped color picker menu",
+        "Improved IOS performance",
+        "Improved UI for tablet users"
+      ]
+    },
     {
       "version": "1.9.0",
       "date": "2024-10-25",
