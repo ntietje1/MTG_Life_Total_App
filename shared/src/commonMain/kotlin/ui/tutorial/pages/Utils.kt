@@ -28,7 +28,7 @@ import data.ISettingsManager
 import data.Player
 import data.SettingsManager
 import data.serializable.Card
-import features.timer.GameTimerState
+import domain.timer.GameTimerState
 import di.NotificationManager
 import domain.player.CommanderDamageManager
 import domain.player.CounterManager

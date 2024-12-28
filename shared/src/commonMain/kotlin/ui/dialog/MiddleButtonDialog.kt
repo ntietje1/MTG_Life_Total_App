@@ -179,7 +179,7 @@ fun MiddleButtonDialog(
                     Modifier.fillMaxSize(),
                     selectButtonEnabled = false,
                     rulingsButtonEnabled = true,
-                    addToBackStack = { label, block -> backHandler.push(label, block) },
+                    addToBackStack = { _, block -> backHandler.push(block) },
                     onImageSelected = {},
                     viewModel = koinInject()
                 )

@@ -75,6 +75,7 @@ fun SettingsButton(
 
     BoxWithConstraints(modifier = modifier
         .alpha(if (visible) 1f else 0f)
+        .aspectRatio(1.0f)
         .clip(shape)
         .background(backgroundColor)
         .then(if (enabled && visible) {

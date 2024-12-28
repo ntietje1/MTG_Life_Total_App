@@ -2,7 +2,6 @@ package domain.player
 
 import androidx.compose.ui.graphics.Color
 import data.Player
-import data.Player.Companion.allPlayerColors
 
 class PlayerCustomizationManager {
     fun resetPlayerPreferences(player: Player): Player {
@@ -20,9 +19,5 @@ class PlayerCustomizationManager {
             textColor = source.textColor,
             name = source.name
         )
-    }
-
-    fun resetPlayerColor(player: Player, usedColors: List<Color>): Player {
-        return player.copy(color = allPlayerColors.filter { it !in usedColors }.random())
     }
 } 

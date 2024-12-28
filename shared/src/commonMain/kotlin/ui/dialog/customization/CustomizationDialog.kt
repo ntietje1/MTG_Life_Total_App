@@ -265,7 +265,8 @@ fun PlayerCustomizationDialog(
                                 viewModel.setCustomizeMenuState(CustomizationMenuState.BACKGROUND_COLOR_PICKER)
                                 backHandler.push {
                                     viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
-                                    notificationManager.showNotification("Changes saved successfully", 3000)
+                                    if (state.colorChangeWasMade) notificationManager.showNotification("Changes saved successfully")
+                                    viewModel.setColorChangeWasMade(false)
                                 }
                             }
                         }
@@ -276,7 +277,8 @@ fun PlayerCustomizationDialog(
                                 viewModel.setCustomizeMenuState(CustomizationMenuState.ACCENT_COLOR_PICKER)
                                 backHandler.push {
                                     viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
-                                    notificationManager.showNotification("Changes saved successfully", 3000)
+                                    if (state.colorChangeWasMade) notificationManager.showNotification("Changes saved successfully")
+                                    viewModel.setColorChangeWasMade(false)
                                 }
                             }
                         }
@@ -330,7 +332,7 @@ fun PlayerCustomizationDialog(
     }, Pair(state.customizationMenuState == CustomizationMenuState.SCRYFALL_SEARCH) {
         val scryfallBackStack = remember { mutableListOf("Main") }
         ScryfallDialogContent(modifier = Modifier.fillMaxSize(), addToBackStack = { label, block ->
-            backHandler.push(label, block)
+            backHandler.push(block)
             scryfallBackStack.add(label)
         }, selectButtonEnabled = true, printingsButtonEnabled = true, rulingsButtonEnabled = false, onImageSelected = {
             notificationManager.showNotification("Selected Image Successfully", 3000)
@@ -345,6 +347,7 @@ fun PlayerCustomizationDialog(
         val initialColor by remember(Unit) { mutableStateOf(state.player.color) }
         ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Background Color", initialColor = initialColor, initialPlayer = state.player, updateColor = {
             viewModel.onChangeBackgroundColor(it)
+            viewModel.setColorChangeWasMade(it != initialColor)
             state.player.copy(color = it)
         }, viewModel = colorViewModel
         )
@@ -353,6 +356,7 @@ fun PlayerCustomizationDialog(
         val initialColor by remember(Unit) { mutableStateOf(state.player.textColor) }
         ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Accent Color", initialColor = initialColor, initialPlayer = state.player, updateColor = {
             viewModel.onChangeTextColor(it)
+            viewModel.setColorChangeWasMade(it != initialColor)
             state.player.copy(textColor = it)
         }, viewModel = colorViewModel
         )

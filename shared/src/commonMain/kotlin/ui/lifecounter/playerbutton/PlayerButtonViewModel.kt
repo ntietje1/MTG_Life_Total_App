@@ -5,13 +5,14 @@ import androidx.lifecycle.viewModelScope
 import data.IImageManager
 import data.ISettingsManager
 import data.Player
-import data.Player.Companion.MAX_PLAYERS
 import di.NotificationManager
+import domain.common.Backstack
 import domain.player.CommanderDamageManager
 import domain.player.CounterManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerManager
-import features.timer.TurnTimer
+import domain.player.PlayerManager.Companion.RECENT_CHANGE_DELAY
+import domain.timer.TurnTimer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,14 +20,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ui.dialog.customization.CustomizationViewModel
 import ui.lifecounter.CounterType
 
 open class PlayerButtonViewModel(
-    initialPlayer: Player,
+    initialState: PlayerButtonState,
     private val settingsManager: ISettingsManager,
     private val imageManager: IImageManager,
     private val counterManager: CounterManager,
@@ -39,7 +39,7 @@ open class PlayerButtonViewModel(
     private val playerManager: PlayerManager,
     private val playerCustomizationManager: PlayerCustomizationManager,
 ) : ViewModel() {
-    private var _state = MutableStateFlow(PlayerButtonState(initialPlayer))
+    private var _state = MutableStateFlow(initialState)
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
 
     val isDead: StateFlow<Boolean> = combine(
@@ -53,6 +53,19 @@ open class PlayerButtonViewModel(
 
     private var recentChangeJob: Job? = null
 
+    private val backstack = Backstack()
+
+    val showBackButton: StateFlow<Boolean> = combine(
+        backstack.isEmpty,
+        state
+    ) { isEmpty, state ->
+        state.buttonState !in listOf(
+            PBState.SELECT_FIRST_PLAYER,
+            PBState.COMMANDER_RECEIVER,
+            PBState.COMMANDER_DEALER
+        ) && !isEmpty
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
     init {
         updateRecentChange()
     }
@@ -63,7 +76,7 @@ open class PlayerButtonViewModel(
     }
 
     constructor(
-        initialState: PlayerButtonState,
+        initialPlayer: Player,
         settingsManager: ISettingsManager,
         imageManager: IImageManager,
         counterManager: CounterManager,
@@ -76,7 +89,7 @@ open class PlayerButtonViewModel(
         playerManager: PlayerManager,
         playerCustomizationManager: PlayerCustomizationManager,
     ) : this(
-        initialState.player,
+        PlayerButtonState(initialPlayer),
         settingsManager,
         imageManager,
         counterManager,
@@ -87,10 +100,8 @@ open class PlayerButtonViewModel(
         moveTimerCallback,
         notificationManager,
         playerManager,
-        playerCustomizationManager
-    ) {
-        _state.value = initialState
-    }
+        playerCustomizationManager,
+    )
 
     internal fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
@@ -99,12 +110,8 @@ open class PlayerButtonViewModel(
     private fun updateRecentChange() {
         recentChangeJob?.cancel()
         recentChangeJob = viewModelScope.launch {
-            delay(1500)
-            setPlayer(
-                state.value.player.copy(
-                    recentChange = 0
-                )
-            )
+            delay(RECENT_CHANGE_DELAY)
+            setPlayer(playerManager.clearRecentChange(state.value.player))
         }
     }
 
@@ -124,7 +131,7 @@ open class PlayerButtonViewModel(
 
     fun setPlayerButtonState(buttonState: PBState) {
         if (buttonState == PBState.COMMANDER_RECEIVER) {
-            clearBackStack()
+            backstack.clear()
         }
 
         _state.value = state.value.copy(buttonState = buttonState)
@@ -135,7 +142,6 @@ open class PlayerButtonViewModel(
     }
 
     open fun onMonarchyButtonClicked(value: Boolean) {
-        setPlayerButtonState(PBState.NORMAL)
         setMonarchy(value)
     }
 
@@ -144,9 +150,11 @@ open class PlayerButtonViewModel(
             PBState.NORMAL -> {
                 commanderManager.setCurrentDealer(state.value.player)
             }
+
             PBState.COMMANDER_DEALER -> {
                 commanderManager.setCurrentDealer(null)
             }
+
             else -> {} // do nothing
         }
     }
@@ -154,7 +162,7 @@ open class PlayerButtonViewModel(
     open fun onSettingsButtonClicked() {
         if (state.value.buttonState == PBState.NORMAL) {
             setPlayerButtonState(PBState.SETTINGS)
-            pushBackStack { setPlayerButtonState(PBState.NORMAL) }
+            backstack.push { setPlayerButtonState(PBState.NORMAL) }
         } else {
             closeSettingsMenu()
         }
@@ -163,28 +171,18 @@ open class PlayerButtonViewModel(
     open fun onKOButtonClicked() {
         setPlayer(playerManager.toggleSetDead(state.value.player))
         closeSettingsMenu()
-        clearBackStack()
+        backstack.clear()
         triggerSave()
     }
 
     open fun popBackStack() {
-        if (state.value.backStack.isEmpty()) return
-        val back = state.value.backStack.last()
-        _state.value = state.value.copy(backStack = state.value.backStack.dropLast(1))
-        back.invoke()
-    }
-
-    private fun pushBackStack(back: () -> Unit) {
-        _state.value = state.value.copy(backStack = state.value.backStack + back)
-    }
-
-    private fun clearBackStack() {
-        _state.value = state.value.copy(backStack = listOf())
+        if (backstack.isEmpty.value) return
+        backstack.pop().invoke()
     }
 
     private fun closeSettingsMenu() {
         setPlayerButtonState(PBState.NORMAL)
-        clearBackStack()
+        backstack.clear()
     }
 
     fun resetPlayerPref() {
@@ -231,25 +229,25 @@ open class PlayerButtonViewModel(
         if (!value) {
             onCustomizationApply()
             setPlayerButtonState(PBState.NORMAL)
-            clearBackStack()
+            backstack.clear()
         }
         _state.value = state.value.copy(showCustomizeMenu = value)
     }
 
 
     fun onFirstPlayerPrompt() {
-        pushBackStack { setPlayerButtonState(PBState.NORMAL) }
+        backstack.push { setPlayerButtonState(PBState.NORMAL) }
         setPlayerButtonState(PBState.SELECT_FIRST_PLAYER)
     }
 
     open fun onCountersButtonClicked() {
         setPlayerButtonState(PBState.COUNTERS_VIEW)
-        pushBackStack { setPlayerButtonState(PBState.SETTINGS) }
+        backstack.push { setPlayerButtonState(PBState.SETTINGS) }
     }
 
     open fun onAddCounterButtonClicked() {
         setPlayerButtonState(PBState.COUNTERS_SELECT)
-        pushBackStack { setPlayerButtonState(PBState.COUNTERS_VIEW) }
+        backstack.push { setPlayerButtonState(PBState.COUNTERS_VIEW) }
     }
 
     fun togglePartnerMode(value: Boolean) {
@@ -269,21 +267,11 @@ open class PlayerButtonViewModel(
     }
 
     fun getCommanderDamage(partner: Boolean): Int {
-        val currentDealer = commanderManager.currentDealer.value ?: return 0
-        val index = (currentDealer.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
-        return state.value.player.commanderDamage[index]
+        return commanderManager.getCommanderDamage(state.value.player, partner)
     }
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
-        val currentDealer = commanderManager.currentDealer.value ?: return
-        val index = (currentDealer.playerNum - 1) + (if (partner) MAX_PLAYERS else 0)
-        receiveCommanderDamage(index, value)
-    }
-
-    protected open fun receiveCommanderDamage(index: Int, value: Int) {
-        setPlayer(state.value.player.copy(commanderDamage = state.value.player.commanderDamage.toMutableList().apply {
-            this[index] += value
-        }.toList()))
+        setPlayer(commanderManager.incrementCommanderDamage(state.value.player, value, partner))
         triggerSave()
     }
 

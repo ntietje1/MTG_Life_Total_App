@@ -88,6 +88,10 @@ open class CustomizationViewModel(
         _state.value = state.value.copy(changeWasMade = value)
     }
 
+    fun setColorChangeWasMade(value: Boolean) {
+        _state.value = state.value.copy(colorChangeWasMade = value)
+    }
+
     //TODO: show an error if an illegal name (i.e. empty) is entered
     fun setChangeNameField(value: TextFieldValue) {
         setChangeWasMade(true)

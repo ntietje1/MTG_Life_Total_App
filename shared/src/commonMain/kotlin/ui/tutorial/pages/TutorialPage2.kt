@@ -109,8 +109,8 @@ fun TutorialPage2(
                 checkStepOneComplete()
             }
 
-            override fun receiveCommanderDamage(index: Int, value: Int) {
-                super.receiveCommanderDamage(index, value)
+            override fun incrementCommanderDamage(value: Int, partner: Boolean) {
+                super.incrementCommanderDamage(value, partner)
                 checkComplete()
             }
 

@@ -21,4 +21,26 @@ class CommanderDamageManager(
         }
         return player.copy(partnerMode = value)
     }
+
+    fun getCommanderDamage(player: Player, partner: Boolean): Int {
+        val currentDealer = _currentDealer.value ?: return 0
+        val index = (currentDealer.playerNum - 1) + (if (partner) Player.MAX_PLAYERS else 0)
+        return player.commanderDamage[index]
+    }
+
+    fun incrementCommanderDamage(player: Player, value: Int, partner: Boolean): Player {
+        val currentDealer = _currentDealer.value ?: return player
+        val index = (currentDealer.playerNum - 1) + (if (partner) Player.MAX_PLAYERS else 0)
+        return receiveCommanderDamage(player, index, value)
+    }
+
+    private fun receiveCommanderDamage(player: Player, index: Int, value: Int): Player {
+        if (player.commanderDamage[index] + value < 0) {
+            notificationManager.showNotification("Commander damage cannot be negative")
+            return player
+        }
+        return player.copy(commanderDamage = player.commanderDamage.toMutableList().apply {
+            this[index] += value
+        }.toList())
+    }
 } 

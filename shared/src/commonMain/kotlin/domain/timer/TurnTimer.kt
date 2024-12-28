@@ -1,4 +1,4 @@
-package features.timer
+package domain.timer
 
 import kotlinx.serialization.Serializable
 

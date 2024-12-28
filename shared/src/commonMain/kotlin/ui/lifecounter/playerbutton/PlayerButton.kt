@@ -66,7 +66,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import features.timer.TurnTimer
+import domain.timer.TurnTimer
 import di.getAnimationCorrectionFactor
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -129,11 +129,13 @@ fun PlayerButton(
         }
     }
 
-    val backButtonVisible by remember {
-        derivedStateOf {
-            state.backStack.isNotEmpty() && state.buttonState !in listOf(PBState.SELECT_FIRST_PLAYER)
-        }
-    }
+    val backButtonVisible by viewModel.showBackButton.collectAsState()
+
+//    val backButtonVisible by remember {
+//        derivedStateOf {
+//            viewModel.showBackButton && state.buttonState !in listOf(PBState.SELECT_FIRST_PLAYER)
+//        }
+//    }
 
     fun generateSizes(maxWidth: Dp, maxHeight: Dp): Triple<Dp, Dp, Float> {
         val settingsButtonSize = if (maxHeight / 2 * 3 < maxWidth) {
@@ -565,7 +567,7 @@ fun PlayerButton(
                         ),
                         backgroundColor = Color.Transparent,
                         mainColor = state.player.textColor,
-                        visible = state.backStack.isNotEmpty(),
+                        visible = backButtonVisible,
                         imageVector = vectorResource(Res.drawable.back_icon),
                         onPress = viewModel::popBackStack
                     )

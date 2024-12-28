@@ -1,6 +1,6 @@
 package ui.lifecounter
 
-import TimerCoordinator
+import domain.timer.TimerCoordinator
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,7 +15,7 @@ import domain.player.CommanderDamageManager
 import domain.player.CounterManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerManager
-import features.timer.GameTimer
+import domain.timer.GameTimer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -78,13 +78,12 @@ open class LifeCounterViewModel(
                 } else {
                     setAllButtonStates(PBState.COMMANDER_RECEIVER)
                     setMiddleButtonState(MiddleButtonState.COMMANDER_EXIT)
-                    requireNotNull(
+                    val dealerPlayerButtonViewModel = requireNotNull(
                         playerButtonViewModels.find {
                             it.state.value.player.playerNum == dealer.playerNum
                         }
-                    ).apply {
-                        setPlayerButtonState(PBState.COMMANDER_DEALER)
-                    }
+                    )
+                    dealerPlayerButtonViewModel.setPlayerButtonState(PBState.COMMANDER_DEALER)
                 }
             }
         }
@@ -97,7 +96,7 @@ open class LifeCounterViewModel(
         while (savedPlayers.size < MAX_PLAYERS) {
             val playerNum = savedPlayers.size + 1
             val newColor = allPlayerColors.filter { it !in getUsedColors(viewModels) }.random()
-            savedPlayers += generatePlayer(startingLife, playerNum, newColor)
+            savedPlayers += playerManager.generatePlayer(startingLife, playerNum, newColor)
             viewModels += generatePlayerButtonViewModel(savedPlayers.last())
         }
         return viewModels
@@ -205,11 +204,6 @@ open class LifeCounterViewModel(
         updatedPlayers.forEachIndexed { index, player ->
             playerButtonViewModels[index].setPlayer(player)
         }
-    }
-
-    private fun generatePlayer(startingLife: Int, playerNum: Int, color: Color): Player {
-        val name = "P$playerNum"
-        return Player(color = color, life = startingLife, name = name, playerNum = playerNum)
     }
 
     private fun showLoadingScreen(value: Boolean) {

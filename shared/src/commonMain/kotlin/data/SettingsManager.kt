@@ -3,7 +3,7 @@ package data
 
 import com.russhwolf.settings.Settings
 import data.serializable.Card
-import features.timer.GameTimerState
+import domain.timer.GameTimerState
 import di.VersionNumber
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

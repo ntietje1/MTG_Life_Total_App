@@ -5,15 +5,16 @@ import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
-import data.Player.Companion.allPlayerColors
-import features.timer.TurnTimer
 import ui.lifecounter.CounterType
-import ui.lifecounter.playerbutton.PBState
 
 class PlayerManager(
     private val settingsManager: ISettingsManager,
     private val imageManager: IImageManager,
 ) {
+    companion object {
+        const val RECENT_CHANGE_DELAY = 1500L
+    }
+
     fun generatePlayer(startingLife: Int, playerNum: Int, color: Color): Player {
         val name = "P$playerNum"
         return Player(color = color, life = startingLife, name = name, playerNum = playerNum)
@@ -29,6 +30,10 @@ class PlayerManager(
             counters = List(CounterType.entries.size) { 0 },
             activeCounters = listOf()
         )
+    }
+
+    fun clearRecentChange(player: Player): Player {
+        return player.copy(recentChange = 0)
     }
 
     fun incrementLife(player: Player, value: Int): Player {

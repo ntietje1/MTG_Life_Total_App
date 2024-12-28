@@ -1,13 +1,12 @@
 package ui.lifecounter.playerbutton
 
 import data.Player
-import features.timer.TurnTimer
+import domain.timer.TurnTimer
 
 data class PlayerButtonState(
     val player: Player,
     val buttonState: PBState = PBState.NORMAL,
     val showCustomizeMenu: Boolean = false,
-    val backStack: List<() -> Unit> = listOf(),
     val timer: TurnTimer? = null
 )
 
