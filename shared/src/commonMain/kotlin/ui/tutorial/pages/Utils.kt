@@ -237,7 +237,6 @@ abstract class MockLifeCounterViewModel(
     playerManager = PlayerManager(settingsManager, imageManager),
     commanderManager = CommanderDamageManager(notificationManager),
     counterManager = CounterManager(),
-    gameStateManager = GameStateManager(),
     imageManager = imageManager,
     notificationManager = notificationManager,
     planeChaseViewModel = PlaneChaseViewModel(settingsManager)

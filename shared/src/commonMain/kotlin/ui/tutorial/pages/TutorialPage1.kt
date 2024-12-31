@@ -112,7 +112,7 @@ fun TutorialPage1(
                 setMonarchy = { this.setMonarchy(player.playerNum, it) },
                 triggerSave = { this.savePlayerStates() },
                 resetPlayerColor = { this.resetPlayerColor(it) },
-                moveTimerCallback = { this.gameTimer.moveTimer() }
+                moveTimerCallback = { this.gameStateManager.moveTimer() }
             )
         }
     }

@@ -29,7 +29,6 @@ actual val platformModule = module {
     single<IImageManager> { ImageManager(get()) }
     single { PlayerManager(get(), get()) }
     single { PlayerCustomizationManager() }
-    single { GameStateManager() }
     single { CommanderDamageManager(get()) }
     single { CounterManager() }
     single { ImageManager(get()) }
@@ -37,7 +36,7 @@ actual val platformModule = module {
     single { CoinFlipViewModel(get()) }
     viewModel { TutorialViewModel(get()) }
     viewModel { PlayerSelectViewModel(get()) }
-    viewModel { LifeCounterViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { LifeCounterViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { PatchNotesViewModel(get()) }
     viewModel { StartingLifeViewModel(get()) }
     single { ScryfallSearchViewModel() }

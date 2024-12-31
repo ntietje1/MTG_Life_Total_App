@@ -1,88 +1,57 @@
 package domain.timer
 
 import data.ISettingsManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
+/**
+ * A Timer that interacts with game state such as dead players and the active player
+ */
 class GameTimer(
-    private val scope: CoroutineScope,
-    private val numPlayersFlow: StateFlow<Int>,
-    private val isDead: (Int) -> Boolean,
-    private val settingsManager: ISettingsManager
+    initialState: GameTimerState = GameTimerState()
 ) {
-    private val _timerState = MutableStateFlow(settingsManager.savedTimerState.value ?: GameTimerState())
+    private val _timerState = MutableStateFlow(initialState)
     val timerState = _timerState.asStateFlow()
 
-    private var timerJob: Job? = null
-    private var updateTimerCallbacks: List<(Int, TurnTimer?) -> Unit>? = null
+    private var numPlayers: Int = 0
+    private var isPlayerDead: ((Int) -> Boolean)? = null
 
-    private fun initTimer() {
-        if (_timerState.value.turnTimer == null) {
-            _timerState.value = _timerState.value.copy(turnTimer = TurnTimer(seconds = -1, turn = 1))
+    fun initialize(playerCount: Int, deadCheck: (Int) -> Boolean) {
+        numPlayers = playerCount
+        isPlayerDead = deadCheck
+    }
+
+    fun tick() {
+        val currentState = _timerState.value
+        if (currentState.activePlayerIndex != null && currentState.turnTimer != null) {
+            _timerState.value = currentState.copy(
+                turnTimer = currentState.turnTimer.tick()
+            )
         }
-        
-        killTimer()
-        startTimerLoop()
-    }
-
-    private fun startTimerLoop() {
-        timerJob = scope.launch {
-            while (true) {
-                val currentState = _timerState.value
-                val activePlayer = currentState.activePlayerIndex
-                val currentTimer = currentState.turnTimer
-
-                if (activePlayer != null && currentTimer != null) {
-                    val newTimer = currentTimer.tick()
-                    _timerState.value = currentState.copy(turnTimer = newTimer)
-                    updateTimerCallbacks?.forEach { callback ->
-                        callback(activePlayer, newTimer)
-                    }
-                }
-                
-                saveTimerState()
-                delay(1000L)
-            }
-        }
-    }
-
-    private fun killTimer() {
-        timerJob?.cancel()
-        timerJob = null
-    }
-
-    fun registerTimerCallbacks(callbacks: List<(Int, TurnTimer?) -> Unit>) {
-        updateTimerCallbacks = callbacks
     }
 
     fun setFirstPlayer(index: Int?) {
-        _timerState.value = _timerState.value.copy(
-            firstPlayer = index
-        )
-
-        if (index != null && settingsManager.turnTimer.value) {
-            setTimerEnabled(true)
-        }
-        saveTimerState()
+        _timerState.value = _timerState.value.copy(firstPlayer = index)
     }
 
     fun setTimerEnabled(enabled: Boolean) {
-        settingsManager.setTurnTimer(enabled)
         if (enabled) {
-            if (_timerState.value.activePlayerIndex == null) {
-                setActiveTimerIndex(_timerState.value.firstPlayer)
-            }
             initTimer()
         } else {
             reset()
         }
-        saveTimerState()
+    }
+
+    private fun initTimer() {
+        if (_timerState.value.activePlayerIndex == null) {
+            setActiveTimerIndex(_timerState.value.firstPlayer)
+        }
+        if (_timerState.value.turnTimer == null) {
+            _timerState.value = _timerState.value.copy(
+                turnTimer = TurnTimer(seconds = -1, turn = 1)
+            )
+        }
     }
 
     fun moveTimer() {
@@ -93,7 +62,7 @@ class GameTimer(
 
         val nextPlayer = getNextPlayerIndex(currentState.activePlayerIndex)
         val firstActivePlayer = getNextPlayerIndex(
-            (currentState.firstPlayer - 1 + numPlayersFlow.value) % numPlayersFlow.value
+            (currentState.firstPlayer - 1 + numPlayers) % numPlayers
         )
 
         val currentTurn = currentState.turnTimer.turn
@@ -103,21 +72,18 @@ class GameTimer(
             activePlayerIndex = nextPlayer,
             turnTimer = currentState.turnTimer.copy(seconds = 0, turn = newTurn)
         )
-        
-        updateTimerCallbacks?.forEach { it(nextPlayer, _timerState.value.turnTimer) }
-        saveTimerState()
     }
 
     private fun getNextPlayerIndex(currentIndex: Int): Int {
         var nextPlayerIndex = currentIndex
         do {
-            nextPlayerIndex = (nextPlayerIndex + 1) % numPlayersFlow.value
-        } while (isDead(nextPlayerIndex) && !allPlayersDead())
+            nextPlayerIndex = (nextPlayerIndex + 1) % numPlayers
+        } while (isPlayerDead?.invoke(nextPlayerIndex) == true && !allPlayersDead())
         return nextPlayerIndex
     }
 
     private fun allPlayersDead(): Boolean {
-        return (0 until numPlayersFlow.value).all { isDead(it) }
+        return (0 until numPlayers).all { isPlayerDead?.invoke(it) == true }
     }
 
     private fun setActiveTimerIndex(index: Int?) {
@@ -126,20 +92,6 @@ class GameTimer(
 
     fun reset() {
         _timerState.value = GameTimerState()
-        killTimer()
-        updateTimerCallbacks?.forEach { it(-1, null) }
-        saveTimerState()
-    }
-
-    private fun saveTimerState() {
-        settingsManager.setSavedTimerState(_timerState.value)
-    }
-
-    fun promptFirstPlayer() {
-        if (numPlayersFlow.value == 1) {
-            setFirstPlayer(0)
-        }
-        setTimerEnabled(true)
     }
 }
 

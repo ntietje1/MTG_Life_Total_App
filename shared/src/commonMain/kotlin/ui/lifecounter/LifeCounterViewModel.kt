@@ -32,7 +32,6 @@ open class LifeCounterViewModel(
     private val playerManager: PlayerManager,
     private val commanderManager: CommanderDamageManager,
     private val counterManager: CounterManager,
-    private val gameStateManager: GameStateManager,
     private val imageManager: IImageManager,
     protected val notificationManager: NotificationManager,
     private val planeChaseViewModel: PlaneChaseViewModel,
@@ -45,26 +44,25 @@ open class LifeCounterViewModel(
     val alt4PlayerLayout: StateFlow<Boolean> = settingsManager.alt4PlayerLayout
     val turnTimerEnabled: StateFlow<Boolean> = settingsManager.turnTimer
 
-    private var _playerButtonViewModels: List<PlayerButtonViewModel>
+    private var _playerButtonViewModels: List<PlayerButtonViewModel> = generatePlayers()
     val playerButtonViewModels: List<PlayerButtonViewModel>
         get() = _playerButtonViewModels
 
-    internal val gameTimer = GameTimer(
+    internal val gameStateManager = GameStateManager(
         scope = viewModelScope,
-        numPlayersFlow = settingsManager.numPlayers,
-        isDead = { index -> playerButtonViewModels[index].isDead.value },
         settingsManager = settingsManager
     )
 
-    private var timerCoordinator: TimerCoordinator
+    private var timerCoordinator = TimerCoordinator(
+        gameStateManager = gameStateManager,
+        playerViewModels = playerButtonViewModels,
+        numPlayersFlow = settingsManager.numPlayers
+    )
 
     init {
-        _playerButtonViewModels = generatePlayers()
-
-        timerCoordinator = TimerCoordinator(
-            gameTimer = gameTimer,
-            playerViewModels = playerButtonViewModels,
-        )
+        viewModelScope.launch {
+            timerCoordinator.setupTimerStateObserver()
+        }
 
         registerCommanderListener()
     }
@@ -162,7 +160,7 @@ open class LifeCounterViewModel(
             setMonarchy = { setMonarchy(player.playerNum, it) },
             triggerSave = { savePlayerStates() },
             resetPlayerColor = { resetPlayerColor(it) },
-            moveTimerCallback = { gameTimer.moveTimer() },
+            moveTimerCallback = { gameStateManager.moveTimer() },
         )
     }
 

@@ -1,29 +1,47 @@
 package domain.timer
 
+import domain.game.GameStateManager
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Contains all LifeCounterViewModel timer related logic
+ */
 class TimerCoordinator(
-    private val gameTimer: GameTimer,
+    private val gameStateManager: GameStateManager,
     private val playerViewModels: List<PlayerButtonViewModel>,
+    private val numPlayersFlow: StateFlow<Int>
 ) {
     init {
-        registerTimerCallbacks()
+        initializeGameTimer()
     }
 
-    private fun registerTimerCallbacks() {
-        val callbacks = playerViewModels.mapIndexed { index, viewModel ->
-            { targetIndex: Int, timer: TurnTimer? ->
-                val shouldShowTimer = (index == targetIndex)
-                viewModel.setTimer(if (shouldShowTimer) timer else null)
-            }
+    private fun initializeGameTimer() {
+        gameStateManager.initializeTimer(
+            playerCount = numPlayersFlow.value,
+            deadCheck = { index -> playerViewModels[index].isDead.value }
+        )
+    }
+
+    suspend fun setupTimerStateObserver() {
+        // Observe timer state changes and update ViewModels accordingly
+        gameStateManager.timerState.collect { timerState ->
+            updateViewModelsWithTimer(timerState)
         }
-        gameTimer.registerTimerCallbacks(callbacks)
+    }
+
+    private fun updateViewModelsWithTimer(timerState: GameTimerState) {
+        playerViewModels.forEachIndexed { index, viewModel ->
+            val shouldShowTimer = (index == timerState.activePlayerIndex)
+            viewModel.setTimer(if (shouldShowTimer) timerState.turnTimer else null)
+        }
     }
 
     fun handleFirstPlayerSelection(index: Int?) {
         clearFirstPlayerSelectionState()
-        gameTimer.setFirstPlayer(index)
+        gameStateManager.setFirstPlayer(index)
+        gameStateManager.setTimerEnabled(true)
     }
 
     private fun clearFirstPlayerSelectionState() {
@@ -36,13 +54,16 @@ class TimerCoordinator(
 
     fun promptForFirstPlayer() {
         playerViewModels.forEach { it.onFirstPlayerPrompt() }
-        gameTimer.promptFirstPlayer()
+        if (numPlayersFlow.value == 1) {
+            handleFirstPlayerSelection(0)
+        }
+        initializeGameTimer()
     }
 
     fun onTimerEnabledChange(timerEnabled: Boolean) {
-        gameTimer.setTimerEnabled(timerEnabled)
+        gameStateManager.setTimerEnabled(timerEnabled)
         
-        if (timerEnabled && gameTimer.timerState.value.firstPlayer == null) {
+        if (timerEnabled && gameStateManager.timerState.value.firstPlayer == null) {
             promptForFirstPlayer()
             return
         }
@@ -54,6 +75,7 @@ class TimerCoordinator(
 
     fun reset() {
         clearFirstPlayerSelectionState()
-        gameTimer.reset()
+        gameStateManager.resetTimer()
+        initializeGameTimer()
     }
 } 
