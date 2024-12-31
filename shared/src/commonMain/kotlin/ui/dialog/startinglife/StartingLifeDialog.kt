@@ -115,12 +115,19 @@ fun TextFieldWithButton(
     ) {
         val textSize = remember(Unit) { (maxHeight / 3.75f).value }
         TextField(
-            modifier = Modifier.fillMaxSize().padding(textSize.dp / 4f),
-            value = value, onValueChange = onValueChange, label = {
+            modifier = Modifier.fillMaxWidth(0.85f).fillMaxHeight(),
+            value = value,
+            onValueChange = onValueChange,
+            label = {
                 Text(
-                    modifier = Modifier.wrapContentSize(), text = label, color = MaterialTheme.colorScheme.onPrimary, fontSize = (textSize * 0.9f).scaledSp
+                    modifier = Modifier.wrapContentSize(),
+                    text = label,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = (textSize * 0.9f).scaledSp
                 )
-            }, textStyle = TextStyle(fontSize = (textSize * 1.3f).scaledSp), singleLine = true, colors = TextFieldDefaults.colors(
+            },
+            textStyle = TextStyle(fontSize = (textSize * 1.2f).scaledSp),
+            singleLine = true, colors = TextFieldDefaults.colors(
                 focusedTextColor = MaterialTheme.colorScheme.onPrimary,
                 unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
                 disabledTextColor = MaterialTheme.colorScheme.onPrimary,
@@ -141,7 +148,10 @@ fun TextFieldWithButton(
             ), keyboardOptions = keyboardOptions, keyboardActions = keyboardActions
         )
         Box(
-            Modifier.align(Alignment.CenterEnd).fillMaxHeight().aspectRatio(1.0f)
+            Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+                .aspectRatio(1.0f)
         ) {
             button()
         }
