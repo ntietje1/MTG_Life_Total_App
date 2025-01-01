@@ -11,7 +11,7 @@ import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerStateManager
-import domain.timer.TimerCoordinator
+import domain.timer.TimerManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,21 +47,18 @@ open class LifeCounterViewModel(
         settingsManager = settingsManager
     )
 
-    private var timerCoordinator = TimerCoordinator(
-        gameStateManager = gameStateManager,
-        playerViewModels = playerButtonViewModels.value,
-        numPlayersFlow = settingsManager.numPlayers
+    internal var timerManager = TimerManager(
+        settingsManager = settingsManager,
     )
 
     init {
         _playerButtonViewModels.value = generatePlayerButtonViewModels()
-        viewModelScope.launch {
-            timerCoordinator.setupTimerStateObserver()
-        }
 
         playerCustomizationManager.attach(playerButtonViewModels)
         gameStateManager.attach(playerButtonViewModels)
         commanderManager.attach(playerButtonViewModels)
+        timerManager.attach(playerButtonViewModels)
+        timerManager.setupTimerStateObserver(viewModelScope)
 
         registerCommanderListener()
     }
@@ -72,6 +69,7 @@ open class LifeCounterViewModel(
         playerCustomizationManager.detach()
         gameStateManager.detach()
         commanderManager.detach()
+        timerManager.detach()
     }
 
     private fun registerCommanderListener() {
@@ -108,22 +106,14 @@ open class LifeCounterViewModel(
         return viewModels
     }
 
-    fun onTimerEnabledChange(timerEnabled: Boolean) {
-        viewModelScope.launch {
-            timerCoordinator.onTimerEnabledChange(timerEnabled)
-        }
-    }
-
     fun setTimerEnabled(value: Boolean) {
         viewModelScope.launch {
-            timerCoordinator.onTimerEnabledChange(value)
+            timerManager.onTimerEnabledChange(value)
         }
     }
 
     fun setFirstPlayer(index: Int?) {
-        viewModelScope.launch {
-            timerCoordinator.handleFirstPlayerSelection(index)
-        }
+        timerManager.handleFirstPlayerSelection(index)
     }
 
     fun onNavigate(firstNavigation: Boolean) {
@@ -162,8 +152,8 @@ open class LifeCounterViewModel(
             playerStateManager = playerStateManager,
             commanderManager = commanderManager,
             playerCustomizationManager = playerCustomizationManager,
-            moveTimerCallback = { gameStateManager.moveTimer() },
             gameStateManager = gameStateManager,
+            timerManager = timerManager
         )
     }
 
@@ -221,9 +211,8 @@ open class LifeCounterViewModel(
             )
         }
         savePlayerStates()
-        timerCoordinator.reset()
         viewModelScope.launch {
-            timerCoordinator.promptForFirstPlayer()
+            timerManager.reset()
         }
         restartButtons()
     }

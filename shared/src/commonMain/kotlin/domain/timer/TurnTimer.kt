@@ -12,7 +12,7 @@ data class TurnTimer(val seconds: Int, val turn: Int) {
         val minutes = seconds / 60
         val remainingSeconds = seconds % 60
         val paddedSeconds = remainingSeconds.toString().padStart(2, '0')
-        
+
         return "$minutes:$paddedSeconds"
     }
 }

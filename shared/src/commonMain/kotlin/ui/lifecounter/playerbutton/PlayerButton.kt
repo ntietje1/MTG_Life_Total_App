@@ -111,7 +111,6 @@ fun PlayerButton(
     borderWidth: Dp,
     turnTimerModifier: Modifier,
     setBlurBackground: (Boolean) -> Unit,
-    setFirstPlayer: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     val isDead by viewModel.isDead.collectAsState()
@@ -357,7 +356,7 @@ fun PlayerButton(
                             PBState.SELECT_FIRST_PLAYER -> {
                                 Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
                                     detectTapGestures(onPress = {
-                                        setFirstPlayer()
+                                        viewModel.setFirstPlayer()
                                     })
                                 }) {
                                     Column(

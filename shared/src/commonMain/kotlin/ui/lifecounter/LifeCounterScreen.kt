@@ -68,11 +68,6 @@ fun LifeCounterScreen(
     val scope = rememberCoroutineScope()
     val numPlayers by viewModel.numPlayers.collectAsState()
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
-    val timerEnabled by viewModel.turnTimerEnabled.collectAsState()
-
-    LaunchedEffect(timerEnabled) {
-        viewModel.onTimerEnabledChange(timerEnabled)
-    }
 
     if (state.middleButtonDialogState != null) {
         MiddleButtonDialog(
@@ -172,9 +167,6 @@ fun LifeCounterScreen(
                                         rotation = rotation,
                                         borderWidth = buttonPadding,
                                         setBlurBackground = { viewModel.setBlurBackground(it) },
-                                        setFirstPlayer = {
-                                            viewModel.setFirstPlayer(placement.index)
-                                        },
                                     )
                                 })
                         }

@@ -12,6 +12,7 @@ import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerStateManager
 import domain.player.PlayerStateManager.Companion.RECENT_CHANGE_DELAY
+import domain.timer.TimerManager
 import domain.timer.TurnTimer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -30,11 +31,11 @@ open class PlayerButtonViewModel(
     private val settingsManager: ISettingsManager,
     private val imageManager: IImageManager,
     private val commanderManager: CommanderDamageManager,
-    private val moveTimerCallback: () -> Unit,
     protected val notificationManager: NotificationManager,
     private val playerStateManager: PlayerStateManager,
     private val playerCustomizationManager: PlayerCustomizationManager,
-    private val gameStateManager: GameStateManager
+    private val gameStateManager: GameStateManager,
+    private val timerManager: TimerManager
 ) : ViewModel() {
     private var _state = MutableStateFlow(initialState)
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
@@ -82,21 +83,21 @@ open class PlayerButtonViewModel(
         settingsManager: ISettingsManager,
         imageManager: IImageManager,
         commanderManager: CommanderDamageManager,
-        moveTimerCallback: () -> Unit,
         notificationManager: NotificationManager,
         playerStateManager: PlayerStateManager,
         playerCustomizationManager: PlayerCustomizationManager,
-        gameStateManager: GameStateManager
+        gameStateManager: GameStateManager,
+        timerManager: TimerManager
     ) : this(
         PlayerButtonState(initialPlayer),
         settingsManager,
         imageManager,
         commanderManager,
-        moveTimerCallback,
         notificationManager,
         playerStateManager,
         playerCustomizationManager,
-        gameStateManager
+        gameStateManager,
+        timerManager
     )
 
     internal fun setPlayer(player: Player) {
@@ -121,6 +122,10 @@ open class PlayerButtonViewModel(
         _state.value = state.value.copy(timer = timer)
     }
 
+    fun setFirstPlayer() {
+        timerManager.handleFirstPlayerSelection(index = state.value.player.playerNum - 1)
+    }
+
     fun setPlayerButtonState(buttonState: PBState) {
         if (buttonState == PBState.COMMANDER_RECEIVER) {
             backstack.clear()
@@ -130,7 +135,7 @@ open class PlayerButtonViewModel(
     }
 
     fun onMoveTimer() {
-        moveTimerCallback()
+        timerManager.moveTimer()
     }
 
     open fun onMonarchyButtonClicked(value: Boolean) {

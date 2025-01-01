@@ -1,6 +1,5 @@
 package domain.timer
 
-import data.ISettingsManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
@@ -49,7 +48,7 @@ class GameTimer(
         }
         if (_timerState.value.turnTimer == null) {
             _timerState.value = _timerState.value.copy(
-                turnTimer = TurnTimer(seconds = -1, turn = 1)
+                turnTimer = TurnTimer(seconds = 0, turn = 1)
             )
         }
     }

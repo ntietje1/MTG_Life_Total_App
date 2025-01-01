@@ -30,6 +30,7 @@ import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerStateManager
+import domain.timer.TimerManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.commander_solid_icon
 import lifelinked.shared.generated.resources.down_arrow_icon
@@ -81,21 +82,21 @@ fun TutorialPage2(
             settingsManager: ISettingsManager,
             imageManager: IImageManager,
             notificationManager: NotificationManager,
-            moveTimerCallback: () -> Unit,
             customizationManager: PlayerCustomizationManager,
             playerStateManager: PlayerStateManager,
             commanderDamageManager: CommanderDamageManager,
-            gameStateManager: GameStateManager
+            gameStateManager: GameStateManager,
+            timerManager: TimerManager
         ) : MockPlayerButtonViewModel(
             state = state,
             settingsManager = settingsManager,
             imageManager = imageManager,
             notificationManager = notificationManager,
-            moveTimerCallback = moveTimerCallback,
             customizationManager = customizationManager,
             playerStateManager = playerStateManager,
             commanderDamageManager = commanderDamageManager,
-            gameStateManager = gameStateManager
+            gameStateManager = gameStateManager,
+            timerManager = timerManager
         ) {
 
             private fun checkComplete() {
@@ -132,11 +133,11 @@ fun TutorialPage2(
                 settingsManager = gameState.mockSettingsManager,
                 imageManager = gameState.mockImageManager,
                 notificationManager = this.notificationManager,
-                moveTimerCallback = { this.gameStateManager.moveTimer() },
                 customizationManager = this.playerCustomizationManager,
                 playerStateManager = this.playerStateManager,
                 commanderDamageManager = this.commanderManager,
-                gameStateManager = this.gameStateManager
+                gameStateManager = this.gameStateManager,
+                timerManager = this.timerManager
             )
         }
     }

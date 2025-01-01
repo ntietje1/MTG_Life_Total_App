@@ -8,8 +8,10 @@ import domain.timer.GameTimerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ui.lifecounter.DayNightState
+import ui.lifecounter.playerbutton.PlayerButtonViewModel
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -18,12 +20,6 @@ import kotlin.coroutines.coroutineContext
 class GameStateManager(
     private val settingsManager: ISettingsManager
 ) : AttachableManager() {
-    private val gameTimer: GameTimer = GameTimer(settingsManager.savedTimerState.value ?: GameTimerState())
-    private var timerJob: Job? = null
-
-    val timerState
-        get() = gameTimer.timerState
-
     fun toggleDayNight(currentState: DayNightState): DayNightState {
         return when (currentState) {
             DayNightState.NONE -> DayNightState.DAY
@@ -48,56 +44,6 @@ class GameStateManager(
 
     private fun updateMonarchy(player: Player, targetPlayerNum: Int, value: Boolean): Player {
         return player.copy(monarch = value && player.playerNum == targetPlayerNum)
-    }
-
-    fun initializeTimer(playerCount: Int, deadCheck: (Int) -> Boolean) {
-        gameTimer.initialize(playerCount, deadCheck)
-    }
-
-    suspend fun setTimerEnabled(enabled: Boolean) {
-        gameTimer.setTimerEnabled(enabled)
-        if (enabled) {
-            startTimerLoop()
-        } else {
-            stopTimerLoop()
-        }
-        saveTimerState()
-    }
-
-    private suspend fun startTimerLoop() {
-        stopTimerLoop()
-        timerJob = CoroutineScope(coroutineContext).launch {
-            while (true) {
-                gameTimer.tick()
-                delay(1000L)
-                saveTimerState()
-            }
-        }
-    }
-
-    private fun stopTimerLoop() {
-        timerJob?.cancel()
-        timerJob = null
-    }
-
-    fun setFirstPlayer(index: Int?) {
-        gameTimer.setFirstPlayer(index)
-        saveTimerState()
-    }
-
-    fun moveTimer() {
-        gameTimer.moveTimer()
-        saveTimerState()
-    }
-
-    fun resetTimer() {
-        stopTimerLoop()
-        gameTimer.reset()
-        saveTimerState()
-    }
-
-    private fun saveTimerState() {
-        settingsManager.setSavedTimerState(gameTimer.timerState.value)
     }
 
     fun savePlayerState(player: Player) {
