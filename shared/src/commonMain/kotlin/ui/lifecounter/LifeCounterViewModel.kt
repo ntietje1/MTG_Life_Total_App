@@ -49,7 +49,6 @@ open class LifeCounterViewModel(
         get() = _playerButtonViewModels
 
     internal val gameStateManager = GameStateManager(
-        scope = viewModelScope,
         settingsManager = settingsManager
     )
 
@@ -88,28 +87,37 @@ open class LifeCounterViewModel(
     }
 
     private fun generatePlayers(): List<PlayerButtonViewModel> {
-        val startingLife = settingsManager.startingLife.value
         val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
         val viewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
         while (savedPlayers.size < MAX_PLAYERS) {
-            val playerNum = savedPlayers.size + 1
-            val newColor = allPlayerColors.filter { it !in getUsedColors(viewModels) }.random()
-            savedPlayers += playerManager.generatePlayer(startingLife, playerNum, newColor)
-            viewModels += generatePlayerButtonViewModel(savedPlayers.last())
+            playerManager.generatePlayer(
+                startingLife = settingsManager.startingLife.value,
+                playerNum = savedPlayers.size + 1,
+                color = allPlayerColors.filter { it !in getUsedColors(viewModels) }.random()
+            ).also { newPlayer ->
+                savedPlayers += newPlayer
+                viewModels += generatePlayerButtonViewModel(newPlayer)
+            }
         }
         return viewModels
     }
 
     fun onTimerEnabledChange(timerEnabled: Boolean) {
-        timerCoordinator.onTimerEnabledChange(timerEnabled)
-    }
-
-    fun setFirstPlayer(index: Int?) {
-        timerCoordinator.handleFirstPlayerSelection(index)
+        viewModelScope.launch {
+            timerCoordinator.onTimerEnabledChange(timerEnabled)
+        }
     }
 
     fun setTimerEnabled(value: Boolean) {
-        timerCoordinator.onTimerEnabledChange(value)
+        viewModelScope.launch {
+            timerCoordinator.onTimerEnabledChange(value)
+        }
+    }
+
+    fun setFirstPlayer(index: Int?) {
+        viewModelScope.launch {
+            timerCoordinator.handleFirstPlayerSelection(index)
+        }
     }
 
     fun onNavigate(firstNavigation: Boolean) {
@@ -231,7 +239,9 @@ open class LifeCounterViewModel(
         }
         savePlayerStates()
         timerCoordinator.reset()
-        timerCoordinator.promptForFirstPlayer()
+        viewModelScope.launch {
+            timerCoordinator.promptForFirstPlayer()
+        }
         restartButtons()
     }
 

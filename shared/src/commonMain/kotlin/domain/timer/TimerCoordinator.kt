@@ -38,7 +38,7 @@ class TimerCoordinator(
         }
     }
 
-    fun handleFirstPlayerSelection(index: Int?) {
+    suspend fun handleFirstPlayerSelection(index: Int?) {
         clearFirstPlayerSelectionState()
         gameStateManager.setFirstPlayer(index)
         gameStateManager.setTimerEnabled(true)
@@ -52,7 +52,7 @@ class TimerCoordinator(
         }
     }
 
-    fun promptForFirstPlayer() {
+    suspend fun promptForFirstPlayer() {
         playerViewModels.forEach { it.onFirstPlayerPrompt() }
         if (numPlayersFlow.value == 1) {
             handleFirstPlayerSelection(0)
@@ -60,7 +60,7 @@ class TimerCoordinator(
         initializeGameTimer()
     }
 
-    fun onTimerEnabledChange(timerEnabled: Boolean) {
+    suspend fun onTimerEnabledChange(timerEnabled: Boolean) {
         gameStateManager.setTimerEnabled(timerEnabled)
         
         if (timerEnabled && gameStateManager.timerState.value.firstPlayer == null) {

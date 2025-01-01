@@ -9,12 +9,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ui.lifecounter.DayNightState
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 /**
  * Manages a game state that is shared among all players
  */
 class GameStateManager(
-    private val scope: CoroutineScope,
     private val settingsManager: ISettingsManager
 ) {
     private val gameTimer: GameTimer = GameTimer(settingsManager.savedTimerState.value ?: GameTimerState())
@@ -41,7 +42,7 @@ class GameStateManager(
         gameTimer.initialize(playerCount, deadCheck)
     }
 
-    fun setTimerEnabled(enabled: Boolean) {
+    suspend fun setTimerEnabled(enabled: Boolean) {
         gameTimer.setTimerEnabled(enabled)
         if (enabled) {
             startTimerLoop()
@@ -51,9 +52,9 @@ class GameStateManager(
         saveTimerState()
     }
 
-    private fun startTimerLoop() {
+    private suspend fun startTimerLoop() {
         stopTimerLoop()
-        timerJob = scope.launch {
+        timerJob = CoroutineScope(coroutineContext).launch {
             while (true) {
                 gameTimer.tick()
                 delay(1000L)
