@@ -265,7 +265,7 @@ fun PlayerCustomizationDialog(
                                 viewModel.setCustomizeMenuState(CustomizationMenuState.BACKGROUND_COLOR_PICKER)
                                 backHandler.push {
                                     viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
-                                    if (state.colorChangeWasMade) notificationManager.showNotification("Changes saved successfully")
+                                    if (state.colorChangeWasMade) notificationManager.showNotification("Background color modified")
                                     viewModel.setColorChangeWasMade(false)
                                 }
                             }
@@ -277,7 +277,7 @@ fun PlayerCustomizationDialog(
                                 viewModel.setCustomizeMenuState(CustomizationMenuState.ACCENT_COLOR_PICKER)
                                 backHandler.push {
                                     viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
-                                    if (state.colorChangeWasMade) notificationManager.showNotification("Changes saved successfully")
+                                    if (state.colorChangeWasMade) notificationManager.showNotification("Text color modified")
                                     viewModel.setColorChangeWasMade(false)
                                 }
                             }
