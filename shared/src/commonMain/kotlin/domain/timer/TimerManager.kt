@@ -16,7 +16,7 @@ import kotlin.coroutines.coroutineContext
  */
 class TimerManager(
     private val settingsManager: ISettingsManager
-) : AttachableManager() {
+) : AttachableManager<List<PlayerButtonViewModel>>() {
 
     private var observerJob: Job? = null
     private val observerAttached: Boolean
@@ -25,8 +25,8 @@ class TimerManager(
     private val gameTimer: GameTimer = GameTimer(settingsManager.savedTimerState.value ?: GameTimerState())
     private var timerJob: Job? = null
 
-    override fun attach(viewModelsFlow: StateFlow<List<PlayerButtonViewModel>>) {
-        super.attach(viewModelsFlow)
+    override fun attach(flow: StateFlow<List<PlayerButtonViewModel>>) {
+        super.attach(flow)
         initializeGameTimer()
     }
 
@@ -70,7 +70,7 @@ class TimerManager(
     }
 
     private fun clearFirstPlayerSelectionState() {
-        playerViewModelsFlow!!.value.forEach { viewModel ->
+        attachedFlow!!.value.forEach { viewModel ->
             if (viewModel.state.value.buttonState == PBState.SELECT_FIRST_PLAYER) {
                 viewModel.popBackStack()
             }
@@ -106,7 +106,7 @@ class TimerManager(
             println("WARNING: First player already selected")
             return
         }
-        playerViewModelsFlow!!.value.forEach { it.onFirstPlayerPrompt() }
+        attachedFlow!!.value.forEach { it.onFirstPlayerPrompt() }
         if (settingsManager.numPlayers.value == 1) {
             handleFirstPlayerSelection(0)
         }
@@ -116,13 +116,13 @@ class TimerManager(
     private fun initializeGameTimer() {
         gameTimer.initialize(
             playerCount = settingsManager.numPlayers.value,
-            deadCheck = { index -> playerViewModelsFlow!!.value[index].isDead.value }
+            deadCheck = { index -> attachedFlow!!.value[index].isDead.value }
         )
     }
 
     private fun updateViewModelsWithTimer() {
         val timerState = gameTimer.timerState.value
-        playerViewModelsFlow!!.value.forEachIndexed { index, viewModel ->
+        attachedFlow!!.value.forEachIndexed { index, viewModel ->
             val shouldShowTimer = (index == timerState.activePlayerIndex)
             viewModel.setTimer(if (shouldShowTimer) timerState.turnTimer else null)
         }

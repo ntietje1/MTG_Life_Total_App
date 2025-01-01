@@ -3,23 +3,23 @@ package domain.base
 import kotlinx.coroutines.flow.StateFlow
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
-abstract class AttachableManager {
-    protected var playerViewModelsFlow: StateFlow<List<PlayerButtonViewModel>>? = null
+abstract class AttachableManager<T> {
+    protected var attachedFlow: StateFlow<T>? = null
 
-    open fun attach(viewModelsFlow: StateFlow<List<PlayerButtonViewModel>>) {
-        if (playerViewModelsFlow != null) {
+    open fun attach(flow: StateFlow<T>) {
+        if (attachedFlow != null) {
             println("WARNING: ${this::class.simpleName} is already attached, detaching previous")
             detach()
         }
-        playerViewModelsFlow = viewModelsFlow
+        attachedFlow = flow
     }
 
     open fun detach() {
-        playerViewModelsFlow = null
+        attachedFlow = null
     }
 
     protected open fun checkAttached() {
-        if (playerViewModelsFlow == null) {
+        if (attachedFlow == null) {
             throw IllegalStateException("${this::class.simpleName} must be attached before use")
         }
     }

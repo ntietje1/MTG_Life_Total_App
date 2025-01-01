@@ -5,6 +5,7 @@ import data.ISettingsManager
 import data.Player
 import data.Player.Companion.allPlayerColors
 import domain.base.AttachableManager
+import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 /**
  * Manages player customization operations
@@ -12,11 +13,11 @@ import domain.base.AttachableManager
  */
 class PlayerCustomizationManager(
     private val settingsManager: ISettingsManager
-) : AttachableManager() {
+) : AttachableManager<List<PlayerButtonViewModel>>() {
 
     fun resetPlayerPrefs(player: Player): Player {
         checkAttached()
-        val usedColors = playerViewModelsFlow!!.value.map { it.state.value.player.color }
+        val usedColors = attachedFlow!!.value.map { it.state.value.player.color }
         val newColor = allPlayerColors.filter { it !in usedColors }.random()
 
         return player.copy(
@@ -37,7 +38,7 @@ class PlayerCustomizationManager(
     }
 
     fun saveAllPlayerPrefs() {
-        playerViewModelsFlow!!.value.forEach {
+        attachedFlow!!.value.forEach {
             savePlayerPrefs(it.state.value.player)
         }
     }
@@ -47,7 +48,7 @@ class PlayerCustomizationManager(
     }
 
     fun resetAllPlayerPrefs() {
-        playerViewModelsFlow!!.value.forEach {
+        attachedFlow!!.value.forEach {
             it.resetPlayerPref()
             it.copyPrefs(it.state.value.player)
         }

@@ -19,7 +19,7 @@ import kotlin.coroutines.coroutineContext
  */
 class GameStateManager(
     private val settingsManager: ISettingsManager
-) : AttachableManager() {
+) : AttachableManager<List<PlayerButtonViewModel>>() {
     fun toggleDayNight(currentState: DayNightState): DayNightState {
         return when (currentState) {
             DayNightState.NONE -> DayNightState.DAY
@@ -30,7 +30,7 @@ class GameStateManager(
 
     fun setMonarchy(targetPlayerNum: Int, value: Boolean) {
         checkAttached()
-        playerViewModelsFlow!!.value.forEach { playerButtonViewModel ->
+        attachedFlow!!.value.forEach { playerButtonViewModel ->
             playerButtonViewModel.setPlayer(
                 updateMonarchy(
                     player = playerButtonViewModel.state.value.player,
@@ -52,6 +52,6 @@ class GameStateManager(
 
     fun saveGameState() {
         checkAttached()
-        settingsManager.savePlayerStates(playerViewModelsFlow!!.value.map { it.state.value.player })
+        settingsManager.savePlayerStates(attachedFlow!!.value.map { it.state.value.player })
     }
 } 

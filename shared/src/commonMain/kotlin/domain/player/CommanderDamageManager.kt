@@ -5,6 +5,7 @@ import di.NotificationManager
 import domain.base.AttachableManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 /**
  * Manages commander damage and commander mode for players
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class CommanderDamageManager(
     private val notificationManager: NotificationManager
-) : AttachableManager() {
+) : AttachableManager<List<PlayerButtonViewModel>>() {
     private val _currentDealer = MutableStateFlow<Player?>(null)
     val currentDealer = _currentDealer.asStateFlow()
 
