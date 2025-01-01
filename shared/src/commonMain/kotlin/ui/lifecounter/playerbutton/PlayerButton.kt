@@ -902,7 +902,7 @@ fun CommanderDamageNumber(
     textColor: Color,
     firstValue: String,
     secondValue: String?,
-) {
+) { //TODO: the sizing is off
     BoxWithConstraints(modifier = modifier) {
         val dividerOffset = remember { maxHeight / 12f }
 
