@@ -5,6 +5,10 @@ import di.NotificationManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Manages commander damage and commander mode for players
+ * 1 instance per game
+ */
 class CommanderDamageManager(
     private val notificationManager: NotificationManager
 ) {

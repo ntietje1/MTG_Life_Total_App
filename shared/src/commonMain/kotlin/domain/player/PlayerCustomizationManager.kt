@@ -6,6 +6,10 @@ import data.Player.Companion.allPlayerColors
 import kotlinx.coroutines.flow.StateFlow
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
+/**
+ * Manages player customization operations
+ * Attaches to PlayerButtonViewModels flow to get player color information
+ */
 class PlayerCustomizationManager {
 
     private lateinit var playerViewModelsFlow: StateFlow<List<PlayerButtonViewModel>>

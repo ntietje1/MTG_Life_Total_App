@@ -6,6 +6,9 @@ import data.Player
 import data.Player.Companion.MAX_PLAYERS
 import ui.lifecounter.CounterType
 
+/**
+ * Manages player state operations
+ */
 class PlayerStateManager(
     private val settingsManager: ISettingsManager,
     private val imageManager: IImageManager,
