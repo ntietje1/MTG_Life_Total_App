@@ -78,28 +78,6 @@ open class PlayerButtonViewModel(
         recentChangeJob = null
     }
 
-    constructor(
-        initialPlayer: Player,
-        settingsManager: ISettingsManager,
-        imageManager: IImageManager,
-        commanderManager: CommanderDamageManager,
-        notificationManager: NotificationManager,
-        playerStateManager: PlayerStateManager,
-        playerCustomizationManager: PlayerCustomizationManager,
-        gameStateManager: GameStateManager,
-        timerManager: TimerManager
-    ) : this(
-        PlayerButtonState(initialPlayer),
-        settingsManager,
-        imageManager,
-        commanderManager,
-        notificationManager,
-        playerStateManager,
-        playerCustomizationManager,
-        gameStateManager,
-        timerManager
-    )
-
     internal fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
     }

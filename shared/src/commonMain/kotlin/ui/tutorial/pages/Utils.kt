@@ -237,7 +237,9 @@ abstract class MockLifeCounterViewModel(
     imageManager = imageManager,
     notificationManager = notificationManager,
     planeChaseViewModel = PlaneChaseViewModel(settingsManager),
-    playerCustomizationManager = PlayerCustomizationManager(settingsManager)
+    playerCustomizationManager = PlayerCustomizationManager(settingsManager),
+    gameStateManager = GameStateManager(settingsManager),
+    timerManager = TimerManager(settingsManager)
 )
 
 @Composable

@@ -21,6 +21,7 @@ import ui.dialog.COUNTER_DIALOG_ENTRIES
 import ui.dialog.MiddleButtonDialogState
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.playerbutton.PBState
+import ui.lifecounter.playerbutton.PlayerButtonState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 open class LifeCounterViewModel(
@@ -31,6 +32,8 @@ open class LifeCounterViewModel(
     protected val notificationManager: NotificationManager,
     internal val playerCustomizationManager: PlayerCustomizationManager,
     private val planeChaseViewModel: PlaneChaseViewModel,
+    internal val gameStateManager: GameStateManager,
+    internal val timerManager: TimerManager,
     initialState: LifeCounterState = LifeCounterState(),
 ) : ViewModel() {
     private val _state = MutableStateFlow(initialState)
@@ -42,14 +45,6 @@ open class LifeCounterViewModel(
 
     private val _playerButtonViewModels = MutableStateFlow<List<PlayerButtonViewModel>>(emptyList())
     val playerButtonViewModels: StateFlow<List<PlayerButtonViewModel>> = _playerButtonViewModels.asStateFlow()
-
-    internal val gameStateManager = GameStateManager(
-        settingsManager = settingsManager
-    )
-
-    internal var timerManager = TimerManager(
-        settingsManager = settingsManager,
-    )
 
     init {
         _playerButtonViewModels.value = generatePlayerButtonViewModels()
@@ -145,7 +140,7 @@ open class LifeCounterViewModel(
 
     open fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
         return PlayerButtonViewModel(
-            initialPlayer = player,
+            initialState = PlayerButtonState(player),
             settingsManager = settingsManager,
             imageManager = imageManager,
             notificationManager = notificationManager,

@@ -3,9 +3,11 @@ import data.IImageManager
 import data.ISettingsManager
 import data.ImageManager
 import data.SettingsManager
+import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerStateManager
+import domain.timer.TimerManager
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
 import ui.dialog.color.ColorDialogViewModel
@@ -20,17 +22,29 @@ import ui.tutorial.TutorialViewModel
 
 actual val platformModule = module {
     single { platform }
+    single { NotificationManager() }
     single<ISettingsManager> { SettingsManager.instance }
     single<IImageManager> { ImageManager() }
     single { PlayerStateManager(get(), get()) }
     single { PlayerCustomizationManager(get()) }
     single { CommanderDamageManager(get()) }
-    single { NotificationManager() }
+    single { GameStateManager(get()) }
+    single { TimerManager(get()) }
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
     single { TutorialViewModel(get()) }
     single { PlayerSelectViewModel(get()) }
-    single { LifeCounterViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    single { LifeCounterViewModel(
+        settingsManager = get(),
+        playerStateManager = get(),
+        commanderManager = get(),
+        imageManager = get(),
+        notificationManager = get(),
+        playerCustomizationManager = get(),
+        planeChaseViewModel = get(),
+        gameStateManager = get(),
+        timerManager = get()
+    )  }
     single { PatchNotesViewModel(get()) }
     single { StartingLifeViewModel(get()) }
     single { ScryfallSearchViewModel() }
