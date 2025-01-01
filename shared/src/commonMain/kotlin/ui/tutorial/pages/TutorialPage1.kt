@@ -22,6 +22,7 @@ import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import di.NotificationManager
+import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerStateManager
@@ -68,23 +69,21 @@ fun TutorialPage1(
             settingsManager: ISettingsManager,
             imageManager: IImageManager,
             notificationManager: NotificationManager,
-            setMonarchy: (Boolean) -> Unit,
-            triggerSave: () -> Unit,
             moveTimerCallback: () -> Unit,
             customizationManager: PlayerCustomizationManager,
             playerStateManager: PlayerStateManager,
-            commanderDamageManager: CommanderDamageManager
+            commanderDamageManager: CommanderDamageManager,
+            gameStateManager: GameStateManager
         ) : MockPlayerButtonViewModel(
             state = state,
             settingsManager = settingsManager,
             imageManager = imageManager,
             notificationManager = notificationManager,
-            setMonarchy = setMonarchy,
-            triggerSave = triggerSave,
             moveTimerCallback = moveTimerCallback,
             customizationManager = customizationManager,
             playerStateManager = playerStateManager,
-            commanderDamageManager = commanderDamageManager
+            commanderDamageManager = commanderDamageManager,
+            gameStateManager = gameStateManager
         ) {
 
             private fun checkComplete() {
@@ -116,14 +115,11 @@ fun TutorialPage1(
                 settingsManager = gameState.mockSettingsManager,
                 imageManager = gameState.mockImageManager,
                 notificationManager = this.notificationManager,
-                setMonarchy = { this.setMonarchy(player.playerNum, it) },
-                triggerSave = { this.savePlayerStates() },
                 moveTimerCallback = { this.gameStateManager.moveTimer() },
-                customizationManager = PlayerCustomizationManager().also {
-                    it.init(playerButtonViewModels)
-                },
+                customizationManager = this.playerCustomizationManager,
                 playerStateManager = this.playerStateManager,
-                commanderDamageManager = this.commanderManager
+                commanderDamageManager = this.commanderManager,
+                gameStateManager = this.gameStateManager
             )
         }
     }

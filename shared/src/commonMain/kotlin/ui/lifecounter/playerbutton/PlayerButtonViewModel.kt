@@ -7,6 +7,7 @@ import data.ISettingsManager
 import data.Player
 import di.NotificationManager
 import domain.common.Backstack
+import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerStateManager
@@ -29,12 +30,11 @@ open class PlayerButtonViewModel(
     private val settingsManager: ISettingsManager,
     private val imageManager: IImageManager,
     private val commanderManager: CommanderDamageManager,
-    private val setMonarchy: (Boolean) -> Unit,
-    private val triggerSave: () -> Unit,
     private val moveTimerCallback: () -> Unit,
     protected val notificationManager: NotificationManager,
     private val playerStateManager: PlayerStateManager,
     private val playerCustomizationManager: PlayerCustomizationManager,
+    private val gameStateManager: GameStateManager
 ) : ViewModel() {
     private var _state = MutableStateFlow(initialState)
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
@@ -82,23 +82,21 @@ open class PlayerButtonViewModel(
         settingsManager: ISettingsManager,
         imageManager: IImageManager,
         commanderManager: CommanderDamageManager,
-        setMonarchy: (Boolean) -> Unit,
-        triggerSave: () -> Unit,
         moveTimerCallback: () -> Unit,
         notificationManager: NotificationManager,
         playerStateManager: PlayerStateManager,
         playerCustomizationManager: PlayerCustomizationManager,
+        gameStateManager: GameStateManager
     ) : this(
         PlayerButtonState(initialPlayer),
         settingsManager,
         imageManager,
         commanderManager,
-        setMonarchy,
-        triggerSave,
         moveTimerCallback,
         notificationManager,
         playerStateManager,
         playerCustomizationManager,
+        gameStateManager
     )
 
     internal fun setPlayer(player: Player) {
@@ -116,7 +114,7 @@ open class PlayerButtonViewModel(
     open fun incrementLife(value: Int) {
         setPlayer(playerStateManager.incrementLife(state.value.player, value))
         updateRecentChange()
-        triggerSave()
+        gameStateManager.saveGameState()
     }
 
     fun setTimer(timer: TurnTimer?) {
@@ -136,7 +134,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun onMonarchyButtonClicked(value: Boolean) {
-        setMonarchy(value)
+        gameStateManager.setMonarchy(state.value.player.playerNum, value)
     }
 
     open fun onCommanderButtonClicked() {
@@ -166,7 +164,7 @@ open class PlayerButtonViewModel(
         setPlayer(playerStateManager.toggleSetDead(state.value.player))
         closeSettingsMenu()
         backstack.clear()
-        triggerSave()
+        gameStateManager.saveGameState()
     }
 
     open fun popBackStack() {
@@ -180,12 +178,12 @@ open class PlayerButtonViewModel(
     }
 
     fun resetPlayerPref() {
-        setPlayer(playerCustomizationManager.resetPlayerPreferences(state.value.player))
+        setPlayer(playerCustomizationManager.resetPlayerPrefs(state.value.player))
         resetCustomizationMenuViewModel()
     }
 
     fun savePlayerPref() {
-        settingsManager.savePlayerPref(state.value.player)
+        playerCustomizationManager.savePlayerPrefs(state.value.player)
     }
 
     fun getCounterValue(counterType: CounterType): Int {
@@ -208,7 +206,7 @@ open class PlayerButtonViewModel(
             delay(50)
             copyPrefs(player)
             resetCustomizationMenuViewModel()
-            settingsManager.savePlayerPref(state.value.player)
+            playerCustomizationManager.savePlayerPrefs(state.value.player)
         }
     }
 
@@ -242,17 +240,17 @@ open class PlayerButtonViewModel(
 
     fun togglePartnerMode(value: Boolean) {
         setPlayer(commanderManager.togglePartnerMode(state.value.player, value))
-        triggerSave()
+        gameStateManager.savePlayerState(state.value.player)
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
         setPlayer(playerStateManager.incrementCounter(state.value.player, counterType, value))
-        triggerSave()
+        gameStateManager.savePlayerState(state.value.player)
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
         setPlayer(playerStateManager.setActiveCounters(state.value.player, counterType, active))
-        triggerSave()
+        gameStateManager.savePlayerState(state.value.player)
         return state.value.player.activeCounters.contains(counterType)
     }
 
@@ -262,15 +260,15 @@ open class PlayerButtonViewModel(
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
         setPlayer(commanderManager.incrementCommanderDamage(state.value.player, value, partner))
-        triggerSave()
+        gameStateManager.savePlayerState(state.value.player)
     }
 
     open fun copyPrefs(other: Player) {
-        setPlayer(playerCustomizationManager.copyPlayerPreferences(state.value.player, other))
+        setPlayer(playerCustomizationManager.copyPlayerPrefs(state.value.player, other))
     }
 
     fun resetState(startingLife: Int) {
         setPlayer(playerStateManager.resetPlayerState(state.value.player, startingLife))
-        triggerSave()
+        gameStateManager.savePlayerState(state.value.player)
     }
 }

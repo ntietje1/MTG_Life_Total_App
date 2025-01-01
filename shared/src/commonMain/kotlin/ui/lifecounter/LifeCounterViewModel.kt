@@ -59,15 +59,24 @@ open class LifeCounterViewModel(
             timerCoordinator.setupTimerStateObserver()
         }
 
-        playerCustomizationManager.init(playerButtonViewModels)
+        playerCustomizationManager.attach(playerButtonViewModels)
+        gameStateManager.attach(playerButtonViewModels)
+        commanderManager.attach(playerButtonViewModels)
 
         registerCommanderListener()
+    }
+
+    override fun onCleared() {
+        savePlayerPrefs()
+        savePlayerStates()
+        playerCustomizationManager.detach()
+        gameStateManager.detach()
+        commanderManager.detach()
     }
 
     private fun registerCommanderListener() {
         viewModelScope.launch {
             commanderManager.currentDealer.collect { dealer ->
-                println("Got dealer: $dealer")
                 if (dealer == null) {
                     setAllButtonStates(PBState.NORMAL)
                     setMiddleButtonState(MiddleButtonState.DEFAULT)
@@ -86,7 +95,7 @@ open class LifeCounterViewModel(
         val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
         val viewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
         while (savedPlayers.size < MAX_PLAYERS) {
-            playerCustomizationManager.resetPlayerPreferences(
+            playerCustomizationManager.resetPlayerPrefs(
                 playerStateManager.generatePlayer(
                     startingLife = settingsManager.startingLife.value,
                     playerNum = savedPlayers.size + 1,
@@ -153,31 +162,21 @@ open class LifeCounterViewModel(
             playerStateManager = playerStateManager,
             commanderManager = commanderManager,
             playerCustomizationManager = playerCustomizationManager,
-            setMonarchy = { setMonarchy(player.playerNum, it) },
-            triggerSave = { savePlayerStates() },
             moveTimerCallback = { gameStateManager.moveTimer() },
+            gameStateManager = gameStateManager,
         )
     }
 
     fun savePlayerPrefs() {
-        playerButtonViewModels.value.forEach {
-            it.savePlayerPref()
-        }
+        playerCustomizationManager.saveAllPlayerPrefs()
     }
 
     fun savePlayerStates() {
-        settingsManager.savePlayerStates(playerButtonViewModels.value.map { it.state.value.player })
-    }
-
-    private fun resetAllPlayerStates() {
-        playerButtonViewModels.value.forEach { it.resetState(settingsManager.startingLife.value) }
+        gameStateManager.saveGameState()
     }
 
     fun resetAllPrefs() {
-        playerButtonViewModels.value.forEach {
-            it.resetPlayerPref()
-            it.copyPrefs(it.state.value.player)
-        }
+        playerCustomizationManager.resetAllPlayerPrefs()
     }
 
     open fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
@@ -189,14 +188,7 @@ open class LifeCounterViewModel(
     }
 
     protected fun setMonarchy(targetPlayerNum: Int, value: Boolean) {
-        val updatedPlayers = gameStateManager.setMonarch(
-            players = playerButtonViewModels.value.map { it.state.value.player },
-            targetPlayerNum = targetPlayerNum,
-            value = value
-        )
-        updatedPlayers.forEachIndexed { index, player ->
-            playerButtonViewModels.value[index].setPlayer(player)
-        }
+        gameStateManager.setMonarchy(targetPlayerNum, value)
     }
 
     private fun showLoadingScreen(value: Boolean) {
@@ -217,12 +209,16 @@ open class LifeCounterViewModel(
     }
 
     fun resetGameState() {
-        //TODO: reset counters?
+        resetCounters()
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
         playerButtonViewModels.value.forEach {
-            val resetPlayer = playerStateManager.resetPlayerState(it.state.value.player, settingsManager.startingLife.value)
-            it.setPlayer(resetPlayer)
+            it.setPlayer(
+                playerStateManager.resetPlayerState(
+                    player = it.state.value.player,
+                    startingLife = settingsManager.startingLife.value
+                )
+            )
         }
         savePlayerStates()
         timerCoordinator.reset()
@@ -257,7 +253,9 @@ open class LifeCounterViewModel(
     }
 
     fun incrementCounter(index: Int, value: Int) {
-        _state.value = _state.value.copy(counters = _state.value.counters.toMutableList().apply { set(index, _state.value.counters[index] + value) }.toList())
+        _state.value = _state.value.copy(counters = _state.value.counters.toMutableList().apply {
+            set(index, _state.value.counters[index] + value)
+        }.toList())
     }
 
     fun resetCounters() {

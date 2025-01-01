@@ -2,6 +2,7 @@ package domain.game
 
 import data.ISettingsManager
 import data.Player
+import domain.base.AttachableManager
 import domain.timer.GameTimer
 import domain.timer.GameTimerState
 import kotlinx.coroutines.CoroutineScope
@@ -9,7 +10,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ui.lifecounter.DayNightState
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -17,7 +17,7 @@ import kotlin.coroutines.coroutineContext
  */
 class GameStateManager(
     private val settingsManager: ISettingsManager
-) {
+) : AttachableManager() {
     private val gameTimer: GameTimer = GameTimer(settingsManager.savedTimerState.value ?: GameTimerState())
     private var timerJob: Job? = null
 
@@ -32,10 +32,22 @@ class GameStateManager(
         }
     }
 
-    fun setMonarch(players: List<Player>, targetPlayerNum: Int, value: Boolean): List<Player> {
-        return players.map { player ->
-            player.copy(monarch = value && player.playerNum == targetPlayerNum)
+    fun setMonarchy(targetPlayerNum: Int, value: Boolean) {
+        checkAttached()
+        playerViewModelsFlow!!.value.forEach { playerButtonViewModel ->
+            playerButtonViewModel.setPlayer(
+                updateMonarchy(
+                    player = playerButtonViewModel.state.value.player,
+                    targetPlayerNum = targetPlayerNum,
+                    value = value
+                )
+            )
         }
+        saveGameState()
+    }
+
+    private fun updateMonarchy(player: Player, targetPlayerNum: Int, value: Boolean): Player {
+        return player.copy(monarch = value && player.playerNum == targetPlayerNum)
     }
 
     fun initializeTimer(playerCount: Int, deadCheck: (Int) -> Boolean) {
@@ -86,5 +98,14 @@ class GameStateManager(
 
     private fun saveTimerState() {
         settingsManager.setSavedTimerState(gameTimer.timerState.value)
+    }
+
+    fun savePlayerState(player: Player) {
+        saveGameState() // eventually will be replaced with a more efficient method
+    }
+
+    fun saveGameState() {
+        checkAttached()
+        settingsManager.savePlayerStates(playerViewModelsFlow!!.value.map { it.state.value.player })
     }
 } 

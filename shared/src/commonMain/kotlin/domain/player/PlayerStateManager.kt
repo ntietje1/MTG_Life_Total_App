@@ -40,16 +40,12 @@ class PlayerStateManager(
 
     fun incrementLife(player: Player, value: Int): Player {
         return player.copy(
-            life = player.life + value,
-            recentChange = player.recentChange + value
+            life = player.life + value, recentChange = player.recentChange + value
         )
     }
 
     fun isPlayerDead(player: Player, autoKo: Boolean): Boolean {
-        return (autoKo && (
-            player.life <= 0 || 
-            player.commanderDamage.any { it >= 21 }
-        )) || player.setDead
+        return player.setDead || (autoKo && (player.life <= 0 || player.commanderDamage.any { it >= 21 }))
     }
 
     fun toggleSetDead(player: Player, value: Boolean? = null): Player {
@@ -57,11 +53,9 @@ class PlayerStateManager(
     }
 
     fun incrementCounter(player: Player, counterType: CounterType, value: Int): Player {
-        return player.copy(
-            counters = player.counters.toMutableList().apply {
-                this[counterType.ordinal] += value
-            }
-        )
+        return player.copy(counters = player.counters.toMutableList().apply {
+            this[counterType.ordinal] += value
+        })
     }
 
     fun setActiveCounters(player: Player, counterType: CounterType, active: Boolean): Player {

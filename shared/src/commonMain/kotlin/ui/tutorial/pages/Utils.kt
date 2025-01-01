@@ -30,6 +30,7 @@ import data.SettingsManager
 import data.serializable.Card
 import domain.timer.GameTimerState
 import di.NotificationManager
+import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerStateManager
@@ -205,12 +206,11 @@ open class MockPlayerButtonViewModel(
     settingsManager: ISettingsManager,
     imageManager: IImageManager,
     notificationManager: NotificationManager,
-    setMonarchy: (Boolean) -> Unit,
-    triggerSave: () -> Unit,
     moveTimerCallback: () -> Unit,
     customizationManager: PlayerCustomizationManager,
     playerStateManager: PlayerStateManager,
-    commanderDamageManager: CommanderDamageManager
+    commanderDamageManager: CommanderDamageManager,
+    gameStateManager: GameStateManager
 ) : PlayerButtonViewModel(
     initialState = state,
     settingsManager = settingsManager,
@@ -219,9 +219,8 @@ open class MockPlayerButtonViewModel(
     playerStateManager = playerStateManager,
     playerCustomizationManager = customizationManager,
     commanderManager = commanderDamageManager,
-    setMonarchy = setMonarchy,
-    triggerSave = triggerSave,
-    moveTimerCallback = moveTimerCallback
+    moveTimerCallback = moveTimerCallback,
+    gameStateManager = gameStateManager
 )
 
 abstract class MockLifeCounterViewModel(
@@ -237,7 +236,7 @@ abstract class MockLifeCounterViewModel(
     imageManager = imageManager,
     notificationManager = notificationManager,
     planeChaseViewModel = PlaneChaseViewModel(settingsManager),
-    playerCustomizationManager = PlayerCustomizationManager()
+    playerCustomizationManager = PlayerCustomizationManager(settingsManager)
 )
 
 @Composable

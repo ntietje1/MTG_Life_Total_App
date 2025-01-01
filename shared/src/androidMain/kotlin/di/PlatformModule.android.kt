@@ -26,7 +26,7 @@ actual val platformModule = module {
     single<ISettingsManager> { SettingsManager.instance }
     single<IImageManager> { ImageManager(get()) }
     single { PlayerStateManager(get(), get()) }
-    single { PlayerCustomizationManager() }
+    single { PlayerCustomizationManager(get()) }
     single { CommanderDamageManager(get()) }
     single { ImageManager(get()) }
     single { PlaneChaseViewModel(get()) }
