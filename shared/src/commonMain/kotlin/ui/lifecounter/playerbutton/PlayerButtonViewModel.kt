@@ -8,7 +8,6 @@ import data.Player
 import di.NotificationManager
 import domain.common.Backstack
 import domain.player.CommanderDamageManager
-import domain.player.CounterManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerManager
 import domain.player.PlayerManager.Companion.RECENT_CHANGE_DELAY
@@ -29,7 +28,6 @@ open class PlayerButtonViewModel(
     initialState: PlayerButtonState,
     private val settingsManager: ISettingsManager,
     private val imageManager: IImageManager,
-    private val counterManager: CounterManager,
     private val commanderManager: CommanderDamageManager,
     private val setMonarchy: (Boolean) -> Unit,
     private val triggerSave: () -> Unit,
@@ -65,6 +63,10 @@ open class PlayerButtonViewModel(
         ) && !isEmpty
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    private var _customizationViewmodel: CustomizationViewModel? = null
+    open val customizationViewmodel: CustomizationViewModel?
+        get() = _customizationViewmodel
+
     init {
         updateRecentChange()
     }
@@ -72,13 +74,13 @@ open class PlayerButtonViewModel(
     override fun onCleared() {
         super.onCleared()
         recentChangeJob?.cancel()
+        recentChangeJob = null
     }
 
     constructor(
         initialPlayer: Player,
         settingsManager: ISettingsManager,
         imageManager: IImageManager,
-        counterManager: CounterManager,
         commanderManager: CommanderDamageManager,
         setMonarchy: (Boolean) -> Unit,
         triggerSave: () -> Unit,
@@ -90,7 +92,6 @@ open class PlayerButtonViewModel(
         PlayerButtonState(initialPlayer),
         settingsManager,
         imageManager,
-        counterManager,
         commanderManager,
         setMonarchy,
         triggerSave,
@@ -117,10 +118,6 @@ open class PlayerButtonViewModel(
         updateRecentChange()
         triggerSave()
     }
-
-    private var _customizationViewmodel: CustomizationViewModel? = null
-    open val customizationViewmodel: CustomizationViewModel?
-        get() = _customizationViewmodel
 
     fun setTimer(timer: TurnTimer?) {
         _state.value = state.value.copy(timer = timer)
@@ -249,12 +246,12 @@ open class PlayerButtonViewModel(
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
-        setPlayer(counterManager.incrementCounter(state.value.player, counterType, value))
+        setPlayer(playerManager.incrementCounter(state.value.player, counterType, value))
         triggerSave()
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
-        setPlayer(counterManager.setActiveCounters(state.value.player, counterType, active))
+        setPlayer(playerManager.setActiveCounters(state.value.player, counterType, active))
         triggerSave()
         return state.value.player.activeCounters.contains(counterType)
     }

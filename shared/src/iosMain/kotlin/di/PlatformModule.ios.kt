@@ -4,8 +4,6 @@ import data.ISettingsManager
 import data.ImageManager
 import data.SettingsManager
 import domain.player.CommanderDamageManager
-import domain.player.CounterManager
-import domain.game.GameStateManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerManager
 import org.koin.dsl.module
@@ -27,13 +25,12 @@ actual val platformModule = module {
     single { PlayerManager(get(), get()) }
     single { PlayerCustomizationManager() }
     single { CommanderDamageManager(get()) }
-    single { CounterManager() }
     single { NotificationManager() }
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
     single { TutorialViewModel(get()) }
     single { PlayerSelectViewModel(get()) }
-    single { LifeCounterViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { LifeCounterViewModel(get(), get(), get(), get(), get(), get(), get()) }
     single { PatchNotesViewModel(get()) }
     single { StartingLifeViewModel(get()) }
     single { ScryfallSearchViewModel() }

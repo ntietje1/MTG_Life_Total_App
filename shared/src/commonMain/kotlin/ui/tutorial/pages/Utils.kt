@@ -31,8 +31,6 @@ import data.serializable.Card
 import domain.timer.GameTimerState
 import di.NotificationManager
 import domain.player.CommanderDamageManager
-import domain.player.CounterManager
-import domain.game.GameStateManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -219,7 +217,6 @@ open class MockPlayerButtonViewModel(
     playerManager = PlayerManager(settingsManager, imageManager),
     playerCustomizationManager = customizationManager,
     commanderManager = CommanderDamageManager(notificationManager),
-    counterManager = CounterManager(),
     setMonarchy = setMonarchy,
     triggerSave = triggerSave,
     moveTimerCallback = moveTimerCallback
@@ -235,7 +232,6 @@ abstract class MockLifeCounterViewModel(
     settingsManager = settingsManager,
     playerManager = PlayerManager(settingsManager, imageManager),
     commanderManager = CommanderDamageManager(notificationManager),
-    counterManager = CounterManager(),
     imageManager = imageManager,
     notificationManager = notificationManager,
     planeChaseViewModel = PlaneChaseViewModel(settingsManager),

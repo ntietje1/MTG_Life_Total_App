@@ -1,6 +1,5 @@
 package ui.lifecounter
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import data.IImageManager
@@ -10,7 +9,6 @@ import data.Player.Companion.MAX_PLAYERS
 import di.NotificationManager
 import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
-import domain.player.CounterManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerManager
 import domain.timer.TimerCoordinator
@@ -29,7 +27,6 @@ open class LifeCounterViewModel(
     private val settingsManager: ISettingsManager,
     private val playerManager: PlayerManager,
     private val commanderManager: CommanderDamageManager,
-    private val counterManager: CounterManager,
     private val imageManager: IImageManager,
     protected val notificationManager: NotificationManager,
     private val playerCustomizationManager: PlayerCustomizationManager,
@@ -154,7 +151,6 @@ open class LifeCounterViewModel(
             notificationManager = notificationManager,
             playerManager = playerManager,
             commanderManager = commanderManager,
-            counterManager = counterManager,
             playerCustomizationManager = playerCustomizationManager,
             setMonarchy = { setMonarchy(player.playerNum, it) },
             triggerSave = { savePlayerStates() },
