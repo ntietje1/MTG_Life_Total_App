@@ -5,7 +5,7 @@ import data.ImageManager
 import data.SettingsManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
-import domain.player.PlayerManager
+import domain.player.PlayerStateManager
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
 import ui.dialog.color.ColorDialogViewModel
@@ -22,7 +22,7 @@ actual val platformModule = module {
     single { platform }
     single<ISettingsManager> { SettingsManager.instance }
     single<IImageManager> { ImageManager() }
-    single { PlayerManager(get(), get()) }
+    single { PlayerStateManager(get(), get()) }
     single { PlayerCustomizationManager() }
     single { CommanderDamageManager(get()) }
     single { NotificationManager() }

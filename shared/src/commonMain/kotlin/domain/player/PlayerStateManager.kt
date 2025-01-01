@@ -1,13 +1,12 @@
 package domain.player
 
-import androidx.compose.ui.graphics.Color
 import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
 import ui.lifecounter.CounterType
 
-class PlayerManager(
+class PlayerStateManager(
     private val settingsManager: ISettingsManager,
     private val imageManager: IImageManager,
 ) {

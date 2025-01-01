@@ -10,7 +10,7 @@ import di.NotificationManager
 import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
-import domain.player.PlayerManager
+import domain.player.PlayerStateManager
 import domain.timer.TimerCoordinator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,7 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 open class LifeCounterViewModel(
     private val settingsManager: ISettingsManager,
-    private val playerManager: PlayerManager,
+    private val playerStateManager: PlayerStateManager,
     private val commanderManager: CommanderDamageManager,
     private val imageManager: IImageManager,
     protected val notificationManager: NotificationManager,
@@ -86,7 +86,7 @@ open class LifeCounterViewModel(
         val viewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
         while (savedPlayers.size < MAX_PLAYERS) {
             playerCustomizationManager.resetPlayerPreferences(
-                playerManager.generatePlayer(
+                playerStateManager.generatePlayer(
                     startingLife = settingsManager.startingLife.value,
                     playerNum = savedPlayers.size + 1,
                 )
@@ -149,7 +149,7 @@ open class LifeCounterViewModel(
             settingsManager = settingsManager,
             imageManager = imageManager,
             notificationManager = notificationManager,
-            playerManager = playerManager,
+            playerStateManager = playerStateManager,
             commanderManager = commanderManager,
             playerCustomizationManager = playerCustomizationManager,
             setMonarchy = { setMonarchy(player.playerNum, it) },
@@ -220,7 +220,7 @@ open class LifeCounterViewModel(
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
         playerButtonViewModels.value.forEach {
-            val resetPlayer = playerManager.resetPlayerState(it.state.value.player, settingsManager.startingLife.value)
+            val resetPlayer = playerStateManager.resetPlayerState(it.state.value.player, settingsManager.startingLife.value)
             it.setPlayer(resetPlayer)
         }
         savePlayerStates()

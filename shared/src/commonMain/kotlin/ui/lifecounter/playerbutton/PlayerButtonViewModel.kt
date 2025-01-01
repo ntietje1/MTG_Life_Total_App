@@ -9,8 +9,8 @@ import di.NotificationManager
 import domain.common.Backstack
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
-import domain.player.PlayerManager
-import domain.player.PlayerManager.Companion.RECENT_CHANGE_DELAY
+import domain.player.PlayerStateManager
+import domain.player.PlayerStateManager.Companion.RECENT_CHANGE_DELAY
 import domain.timer.TurnTimer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,7 +33,7 @@ open class PlayerButtonViewModel(
     private val triggerSave: () -> Unit,
     private val moveTimerCallback: () -> Unit,
     protected val notificationManager: NotificationManager,
-    private val playerManager: PlayerManager,
+    private val playerStateManager: PlayerStateManager,
     private val playerCustomizationManager: PlayerCustomizationManager,
 ) : ViewModel() {
     private var _state = MutableStateFlow(initialState)
@@ -43,7 +43,7 @@ open class PlayerButtonViewModel(
         settingsManager.autoKo,
         state
     ) { autoKo, playerState ->
-        playerManager.isPlayerDead(playerState.player, autoKo)
+        playerStateManager.isPlayerDead(playerState.player, autoKo)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val currentDealer: StateFlow<Player?> = commanderManager.currentDealer
@@ -86,7 +86,7 @@ open class PlayerButtonViewModel(
         triggerSave: () -> Unit,
         moveTimerCallback: () -> Unit,
         notificationManager: NotificationManager,
-        playerManager: PlayerManager,
+        playerStateManager: PlayerStateManager,
         playerCustomizationManager: PlayerCustomizationManager,
     ) : this(
         PlayerButtonState(initialPlayer),
@@ -97,7 +97,7 @@ open class PlayerButtonViewModel(
         triggerSave,
         moveTimerCallback,
         notificationManager,
-        playerManager,
+        playerStateManager,
         playerCustomizationManager,
     )
 
@@ -109,12 +109,12 @@ open class PlayerButtonViewModel(
         recentChangeJob?.cancel()
         recentChangeJob = viewModelScope.launch {
             delay(RECENT_CHANGE_DELAY)
-            setPlayer(playerManager.clearRecentChange(state.value.player))
+            setPlayer(playerStateManager.clearRecentChange(state.value.player))
         }
     }
 
     open fun incrementLife(value: Int) {
-        setPlayer(playerManager.incrementLife(state.value.player, value))
+        setPlayer(playerStateManager.incrementLife(state.value.player, value))
         updateRecentChange()
         triggerSave()
     }
@@ -163,7 +163,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun onKOButtonClicked() {
-        setPlayer(playerManager.toggleSetDead(state.value.player))
+        setPlayer(playerStateManager.toggleSetDead(state.value.player))
         closeSettingsMenu()
         backstack.clear()
         triggerSave()
@@ -246,12 +246,12 @@ open class PlayerButtonViewModel(
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
-        setPlayer(playerManager.incrementCounter(state.value.player, counterType, value))
+        setPlayer(playerStateManager.incrementCounter(state.value.player, counterType, value))
         triggerSave()
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
-        setPlayer(playerManager.setActiveCounters(state.value.player, counterType, active))
+        setPlayer(playerStateManager.setActiveCounters(state.value.player, counterType, active))
         triggerSave()
         return state.value.player.activeCounters.contains(counterType)
     }
@@ -270,7 +270,7 @@ open class PlayerButtonViewModel(
     }
 
     fun resetState(startingLife: Int) {
-        setPlayer(playerManager.resetPlayerState(state.value.player, startingLife))
+        setPlayer(playerStateManager.resetPlayerState(state.value.player, startingLife))
         triggerSave()
     }
 }

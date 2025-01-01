@@ -32,7 +32,7 @@ import domain.timer.GameTimerState
 import di.NotificationManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
-import domain.player.PlayerManager
+import domain.player.PlayerStateManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -214,7 +214,7 @@ open class MockPlayerButtonViewModel(
     settingsManager = settingsManager,
     imageManager = imageManager,
     notificationManager = notificationManager,
-    playerManager = PlayerManager(settingsManager, imageManager),
+    playerStateManager = PlayerStateManager(settingsManager, imageManager),
     playerCustomizationManager = customizationManager,
     commanderManager = CommanderDamageManager(notificationManager),
     setMonarchy = setMonarchy,
@@ -230,7 +230,7 @@ abstract class MockLifeCounterViewModel(
 ) : LifeCounterViewModel(
     initialState = lifeCounterState,
     settingsManager = settingsManager,
-    playerManager = PlayerManager(settingsManager, imageManager),
+    playerStateManager = PlayerStateManager(settingsManager, imageManager),
     commanderManager = CommanderDamageManager(notificationManager),
     imageManager = imageManager,
     notificationManager = notificationManager,
