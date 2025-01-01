@@ -1,6 +1,5 @@
 package ui.lifecounter
 
-import domain.timer.TimerCoordinator
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,14 +7,13 @@ import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import data.Player.Companion.MAX_PLAYERS
-import data.Player.Companion.allPlayerColors
 import di.NotificationManager
 import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.CounterManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerManager
-import domain.timer.GameTimer
+import domain.timer.TimerCoordinator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +32,7 @@ open class LifeCounterViewModel(
     private val counterManager: CounterManager,
     private val imageManager: IImageManager,
     protected val notificationManager: NotificationManager,
+    private val playerCustomizationManager: PlayerCustomizationManager,
     private val planeChaseViewModel: PlaneChaseViewModel,
     initialState: LifeCounterState = LifeCounterState(),
 ) : ViewModel() {
@@ -44,9 +43,8 @@ open class LifeCounterViewModel(
     val alt4PlayerLayout: StateFlow<Boolean> = settingsManager.alt4PlayerLayout
     val turnTimerEnabled: StateFlow<Boolean> = settingsManager.turnTimer
 
-    private var _playerButtonViewModels: List<PlayerButtonViewModel> = generatePlayers()
-    val playerButtonViewModels: List<PlayerButtonViewModel>
-        get() = _playerButtonViewModels
+    private val _playerButtonViewModels = MutableStateFlow<List<PlayerButtonViewModel>>(emptyList())
+    val playerButtonViewModels: StateFlow<List<PlayerButtonViewModel>> = _playerButtonViewModels.asStateFlow()
 
     internal val gameStateManager = GameStateManager(
         settingsManager = settingsManager
@@ -54,14 +52,17 @@ open class LifeCounterViewModel(
 
     private var timerCoordinator = TimerCoordinator(
         gameStateManager = gameStateManager,
-        playerViewModels = playerButtonViewModels,
+        playerViewModels = playerButtonViewModels.value,
         numPlayersFlow = settingsManager.numPlayers
     )
 
     init {
+        _playerButtonViewModels.value = generatePlayerButtonViewModels()
         viewModelScope.launch {
             timerCoordinator.setupTimerStateObserver()
         }
+
+        playerCustomizationManager.init(playerButtonViewModels)
 
         registerCommanderListener()
     }
@@ -75,25 +76,23 @@ open class LifeCounterViewModel(
                 } else {
                     setAllButtonStates(PBState.COMMANDER_RECEIVER)
                     setMiddleButtonState(MiddleButtonState.COMMANDER_EXIT)
-                    val dealerPlayerButtonViewModel = requireNotNull(
-                        playerButtonViewModels.find {
-                            it.state.value.player.playerNum == dealer.playerNum
-                        }
-                    )
-                    dealerPlayerButtonViewModel.setPlayerButtonState(PBState.COMMANDER_DEALER)
+                    playerButtonViewModels.value.find {
+                        it.state.value.player.playerNum == dealer.playerNum
+                    }?.setPlayerButtonState(PBState.COMMANDER_DEALER)
                 }
             }
         }
     }
 
-    private fun generatePlayers(): List<PlayerButtonViewModel> {
+    private fun generatePlayerButtonViewModels(): List<PlayerButtonViewModel> {
         val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
         val viewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
         while (savedPlayers.size < MAX_PLAYERS) {
-            playerManager.generatePlayer(
-                startingLife = settingsManager.startingLife.value,
-                playerNum = savedPlayers.size + 1,
-                color = allPlayerColors.filter { it !in getUsedColors(viewModels) }.random()
+            playerCustomizationManager.resetPlayerPreferences(
+                playerManager.generatePlayer(
+                    startingLife = settingsManager.startingLife.value,
+                    playerNum = savedPlayers.size + 1,
+                )
             ).also { newPlayer ->
                 savedPlayers += newPlayer
                 viewModels += generatePlayerButtonViewModel(newPlayer)
@@ -121,7 +120,7 @@ open class LifeCounterViewModel(
     }
 
     fun onNavigate(firstNavigation: Boolean) {
-        if (settingsManager.loadPlayerStates().isEmpty()) generatePlayers()
+        if (settingsManager.loadPlayerStates().isEmpty()) generatePlayerButtonViewModels()
         if (firstNavigation) {
             viewModelScope.launch {
                 showLoadingScreen(true)
@@ -142,14 +141,6 @@ open class LifeCounterViewModel(
         _state.value = _state.value.copy(middleButtonState = value)
     }
 
-    private fun getUsedColors(viewModels: List<PlayerButtonViewModel> = playerButtonViewModels): List<Color> {
-        return viewModels.map { it.state.value.player.color }
-    }
-
-    protected fun resetPlayerColor(player: Player): Player {
-        return player.copy(color = allPlayerColors.filter { it !in getUsedColors() }.random())
-    }
-
     fun onCommanderDealerButtonClicked() {
         commanderManager.setCurrentDealer(null)
         setAllButtonStates(PBState.NORMAL)
@@ -164,30 +155,29 @@ open class LifeCounterViewModel(
             playerManager = playerManager,
             commanderManager = commanderManager,
             counterManager = counterManager,
-            playerCustomizationManager = PlayerCustomizationManager(),
+            playerCustomizationManager = playerCustomizationManager,
             setMonarchy = { setMonarchy(player.playerNum, it) },
             triggerSave = { savePlayerStates() },
-            resetPlayerColor = { resetPlayerColor(it) },
             moveTimerCallback = { gameStateManager.moveTimer() },
         )
     }
 
     fun savePlayerPrefs() {
-        playerButtonViewModels.forEach {
+        playerButtonViewModels.value.forEach {
             it.savePlayerPref()
         }
     }
 
     fun savePlayerStates() {
-        settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
+        settingsManager.savePlayerStates(playerButtonViewModels.value.map { it.state.value.player })
     }
 
     private fun resetAllPlayerStates() {
-        playerButtonViewModels.forEach { it.resetState(settingsManager.startingLife.value) }
+        playerButtonViewModels.value.forEach { it.resetState(settingsManager.startingLife.value) }
     }
 
     fun resetAllPrefs() {
-        playerButtonViewModels.forEach {
+        playerButtonViewModels.value.forEach {
             it.resetPlayerPref()
             it.copyPrefs(it.state.value.player)
         }
@@ -198,17 +188,17 @@ open class LifeCounterViewModel(
     }
 
     private fun setAllButtonStates(pbState: PBState) {
-        playerButtonViewModels.forEach { it.setPlayerButtonState(pbState) }
+        playerButtonViewModels.value.forEach { it.setPlayerButtonState(pbState) }
     }
 
     protected fun setMonarchy(targetPlayerNum: Int, value: Boolean) {
         val updatedPlayers = gameStateManager.setMonarch(
-            players = playerButtonViewModels.map { it.state.value.player },
+            players = playerButtonViewModels.value.map { it.state.value.player },
             targetPlayerNum = targetPlayerNum,
             value = value
         )
         updatedPlayers.forEachIndexed { index, player ->
-            playerButtonViewModels[index].setPlayer(player)
+            playerButtonViewModels.value[index].setPlayer(player)
         }
     }
 
@@ -233,7 +223,7 @@ open class LifeCounterViewModel(
         //TODO: reset counters?
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
-        playerButtonViewModels.forEach {
+        playerButtonViewModels.value.forEach {
             val resetPlayer = playerManager.resetPlayerState(it.state.value.player, settingsManager.startingLife.value)
             it.setPlayer(resetPlayer)
         }

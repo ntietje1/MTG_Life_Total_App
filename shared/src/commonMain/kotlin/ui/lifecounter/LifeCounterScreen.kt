@@ -141,7 +141,7 @@ fun LifeCounterScreen(
                             val rotation = remember(Unit) { placement.angle }
                             val turnTimerAlignment = remember(Unit) { placement.timerAlignment }
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
-                            val playerButtonViewModel = viewModel.playerButtonViewModels[placement.index]
+                            val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
                             val timerColor = playerButtonViewModel.state.value.player.textColor
                             AnimatedPlayerButton(modifier = Modifier.padding(buttonPadding),
                                 visible = state.showButtons,

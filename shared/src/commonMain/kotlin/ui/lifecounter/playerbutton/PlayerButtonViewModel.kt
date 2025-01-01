@@ -33,7 +33,6 @@ open class PlayerButtonViewModel(
     private val commanderManager: CommanderDamageManager,
     private val setMonarchy: (Boolean) -> Unit,
     private val triggerSave: () -> Unit,
-    private val resetPlayerColor: (Player) -> Player,
     private val moveTimerCallback: () -> Unit,
     protected val notificationManager: NotificationManager,
     private val playerManager: PlayerManager,
@@ -83,7 +82,6 @@ open class PlayerButtonViewModel(
         commanderManager: CommanderDamageManager,
         setMonarchy: (Boolean) -> Unit,
         triggerSave: () -> Unit,
-        resetPlayerColor: (Player) -> Player,
         moveTimerCallback: () -> Unit,
         notificationManager: NotificationManager,
         playerManager: PlayerManager,
@@ -96,7 +94,6 @@ open class PlayerButtonViewModel(
         commanderManager,
         setMonarchy,
         triggerSave,
-        resetPlayerColor,
         moveTimerCallback,
         notificationManager,
         playerManager,
@@ -186,11 +183,7 @@ open class PlayerButtonViewModel(
     }
 
     fun resetPlayerPref() {
-        setPlayer(
-            playerCustomizationManager.resetPlayerPreferences(
-                resetPlayerColor(state.value.player)
-            )
-        )
+        setPlayer(playerCustomizationManager.resetPlayerPreferences(state.value.player))
         resetCustomizationMenuViewModel()
     }
 

@@ -26,6 +26,7 @@ import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import di.NotificationManager
+import domain.player.PlayerCustomizationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.commander_solid_icon
 import lifelinked.shared.generated.resources.down_arrow_icon
@@ -69,7 +70,7 @@ fun TutorialPage2(
         }
 
         private fun checkStepOneComplete() {
-            stepOneComplete = playerButtonViewModels.any { it.state.value.buttonState == PBState.COMMANDER_DEALER }
+            stepOneComplete = playerButtonViewModels.value.any { it.state.value.buttonState == PBState.COMMANDER_DEALER }
         }
 
         inner class MockPlayerButtonViewModelPage2(
@@ -79,8 +80,8 @@ fun TutorialPage2(
             notificationManager: NotificationManager,
             setMonarchy: (Boolean) -> Unit,
             triggerSave: () -> Unit,
-            resetPlayerColor: (Player) -> Player,
-            moveTimerCallback: () -> Unit
+            moveTimerCallback: () -> Unit,
+            customizationManager: PlayerCustomizationManager
         ) : MockPlayerButtonViewModel(
             state = state,
             settingsManager = settingsManager,
@@ -88,8 +89,8 @@ fun TutorialPage2(
             notificationManager = notificationManager,
             setMonarchy = setMonarchy,
             triggerSave = triggerSave,
-            resetPlayerColor = resetPlayerColor,
-            moveTimerCallback = moveTimerCallback
+            moveTimerCallback = moveTimerCallback,
+            customizationManager = customizationManager
         ) {
 
             private fun checkComplete() {
@@ -128,8 +129,10 @@ fun TutorialPage2(
                 notificationManager = this.notificationManager,
                 setMonarchy = { this.setMonarchy(player.playerNum, it) },
                 triggerSave = { this.savePlayerStates() },
-                resetPlayerColor = { this.resetPlayerColor(it) },
-                moveTimerCallback = { this.gameStateManager.moveTimer() }
+                moveTimerCallback = { this.gameStateManager.moveTimer() },
+                customizationManager = PlayerCustomizationManager().also {
+                    it.init(playerButtonViewModels)
+                }
             )
         }
     }

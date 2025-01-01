@@ -209,20 +209,19 @@ open class MockPlayerButtonViewModel(
     notificationManager: NotificationManager,
     setMonarchy: (Boolean) -> Unit,
     triggerSave: () -> Unit,
-    resetPlayerColor: (Player) -> Player,
-    moveTimerCallback: () -> Unit
+    moveTimerCallback: () -> Unit,
+    customizationManager: PlayerCustomizationManager
 ) : PlayerButtonViewModel(
     initialState = state,
     settingsManager = settingsManager,
     imageManager = imageManager,
     notificationManager = notificationManager,
     playerManager = PlayerManager(settingsManager, imageManager),
-    playerCustomizationManager = PlayerCustomizationManager(),
+    playerCustomizationManager = customizationManager,
     commanderManager = CommanderDamageManager(notificationManager),
     counterManager = CounterManager(),
     setMonarchy = setMonarchy,
     triggerSave = triggerSave,
-    resetPlayerColor = resetPlayerColor,
     moveTimerCallback = moveTimerCallback
 )
 
@@ -239,7 +238,8 @@ abstract class MockLifeCounterViewModel(
     counterManager = CounterManager(),
     imageManager = imageManager,
     notificationManager = notificationManager,
-    planeChaseViewModel = PlaneChaseViewModel(settingsManager)
+    planeChaseViewModel = PlaneChaseViewModel(settingsManager),
+    playerCustomizationManager = PlayerCustomizationManager()
 )
 
 @Composable

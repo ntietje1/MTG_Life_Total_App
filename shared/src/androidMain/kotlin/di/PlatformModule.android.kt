@@ -32,11 +32,11 @@ actual val platformModule = module {
     single { CommanderDamageManager(get()) }
     single { CounterManager() }
     single { ImageManager(get()) }
-    single { PlaneChaseViewModel(get()) } //TODO: workaround for odd lifecycle behavior?
+    single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
     viewModel { TutorialViewModel(get()) }
     viewModel { PlayerSelectViewModel(get()) }
-    viewModel { LifeCounterViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { LifeCounterViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { PatchNotesViewModel(get()) }
     viewModel { StartingLifeViewModel(get()) }
     single { ScryfallSearchViewModel() }

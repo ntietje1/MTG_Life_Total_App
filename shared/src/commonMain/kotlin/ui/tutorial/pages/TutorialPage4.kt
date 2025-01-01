@@ -26,6 +26,7 @@ import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import di.NotificationManager
+import domain.player.PlayerCustomizationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.down_arrow_icon
 import lifelinked.shared.generated.resources.pencil_icon
@@ -72,11 +73,11 @@ fun TutorialPage4(
         }
 
         private fun checkStepOneComplete() {
-            stepOneComplete = playerButtonViewModels.any { it.state.value.buttonState == PBState.SETTINGS }
+            stepOneComplete = playerButtonViewModels.value.any { it.state.value.buttonState == PBState.SETTINGS }
         }
 
         private fun checkStepTwoComplete() {
-            stepTwoComplete = playerButtonViewModels.any { it.state.value.showCustomizeMenu }
+            stepTwoComplete = playerButtonViewModels.value.any { it.state.value.showCustomizeMenu }
             setBlurUI(stepTwoComplete)
             if (stepTwoComplete) {
                 notificationManager.showNotification("Next: Change the appearance of the player", 3000)
@@ -90,8 +91,8 @@ fun TutorialPage4(
             notificationManager: NotificationManager,
             setMonarchy: (Boolean) -> Unit,
             triggerSave: () -> Unit,
-            resetPlayerColor: (Player) -> Player,
-            moveTimerCallback: () -> Unit
+            moveTimerCallback: () -> Unit,
+            customizationManager: PlayerCustomizationManager
         ) : MockPlayerButtonViewModel(
             state = state,
             settingsManager = settingsManager,
@@ -99,8 +100,8 @@ fun TutorialPage4(
             notificationManager = notificationManager,
             setMonarchy = setMonarchy,
             triggerSave = triggerSave,
-            resetPlayerColor = resetPlayerColor,
-            moveTimerCallback = moveTimerCallback
+            moveTimerCallback = moveTimerCallback,
+            customizationManager = customizationManager
         ) {
             inner class MockCustomizationViewModelPage4(
                 settingsManager: ISettingsManager,
@@ -157,8 +158,10 @@ fun TutorialPage4(
                 notificationManager = this.notificationManager,
                 setMonarchy = { this.setMonarchy(player.playerNum, it) },
                 triggerSave = { this.savePlayerStates() },
-                resetPlayerColor = { this.resetPlayerColor(it) },
-                moveTimerCallback = { this.gameStateManager.moveTimer() }
+                moveTimerCallback = { this.gameStateManager.moveTimer() },
+                customizationManager = PlayerCustomizationManager().also {
+                    it.init(playerButtonViewModels)
+                }
             )
         }
     }

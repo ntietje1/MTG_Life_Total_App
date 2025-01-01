@@ -15,9 +15,9 @@ class PlayerManager(
         const val RECENT_CHANGE_DELAY = 1500L
     }
 
-    fun generatePlayer(startingLife: Int, playerNum: Int, color: Color): Player {
+    fun generatePlayer(startingLife: Int, playerNum: Int): Player {
         val name = "P$playerNum"
-        return Player(color = color, life = startingLife, name = name, playerNum = playerNum)
+        return Player(life = startingLife, name = name, playerNum = playerNum)
     }
 
     fun resetPlayerState(player: Player, startingLife: Int): Player {

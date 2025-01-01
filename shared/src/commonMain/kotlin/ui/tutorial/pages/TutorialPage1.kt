@@ -22,6 +22,7 @@ import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import di.NotificationManager
+import domain.player.PlayerCustomizationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.sword_icon
 import org.jetbrains.compose.resources.vectorResource
@@ -67,8 +68,8 @@ fun TutorialPage1(
             notificationManager: NotificationManager,
             setMonarchy: (Boolean) -> Unit,
             triggerSave: () -> Unit,
-            resetPlayerColor: (Player) -> Player,
-            moveTimerCallback: () -> Unit
+            moveTimerCallback: () -> Unit,
+            customizationManager: PlayerCustomizationManager
         ) : MockPlayerButtonViewModel(
             state = state,
             settingsManager = settingsManager,
@@ -76,8 +77,8 @@ fun TutorialPage1(
             notificationManager = notificationManager,
             setMonarchy = setMonarchy,
             triggerSave = triggerSave,
-            resetPlayerColor = resetPlayerColor,
-            moveTimerCallback = moveTimerCallback
+            moveTimerCallback = moveTimerCallback,
+            customizationManager = customizationManager
         ) {
 
             private fun checkComplete() {
@@ -111,8 +112,10 @@ fun TutorialPage1(
                 notificationManager = this.notificationManager,
                 setMonarchy = { this.setMonarchy(player.playerNum, it) },
                 triggerSave = { this.savePlayerStates() },
-                resetPlayerColor = { this.resetPlayerColor(it) },
-                moveTimerCallback = { this.gameStateManager.moveTimer() }
+                moveTimerCallback = { this.gameStateManager.moveTimer() },
+                customizationManager = PlayerCustomizationManager().also {
+                    it.init(playerButtonViewModels)
+                }
             )
         }
     }
