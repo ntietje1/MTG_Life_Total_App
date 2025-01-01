@@ -26,7 +26,9 @@ import data.IImageManager
 import data.ISettingsManager
 import data.Player
 import di.NotificationManager
+import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
+import domain.player.PlayerStateManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.down_arrow_icon
 import lifelinked.shared.generated.resources.monarchy_icon
@@ -81,7 +83,9 @@ fun TutorialPage3(
             setMonarchy: (Boolean) -> Unit,
             triggerSave: () -> Unit,
             moveTimerCallback: () -> Unit,
-            customizationManager: PlayerCustomizationManager
+            customizationManager: PlayerCustomizationManager,
+            playerStateManager: PlayerStateManager,
+            commanderDamageManager: CommanderDamageManager
         ) : MockPlayerButtonViewModel(
             state = state,
             settingsManager = settingsManager,
@@ -90,7 +94,9 @@ fun TutorialPage3(
             setMonarchy = setMonarchy,
             triggerSave = triggerSave,
             moveTimerCallback = moveTimerCallback,
-            customizationManager = customizationManager
+            customizationManager = customizationManager,
+            playerStateManager = playerStateManager,
+            commanderDamageManager = commanderDamageManager
         ) {
 
             private fun checkComplete() {
@@ -138,7 +144,9 @@ fun TutorialPage3(
                 moveTimerCallback = { this.gameStateManager.moveTimer() },
                 customizationManager = PlayerCustomizationManager().also {
                     it.init(playerButtonViewModels)
-                }
+                },
+                playerStateManager = this.playerStateManager,
+                commanderDamageManager = this.commanderManager
             )
         }
     }

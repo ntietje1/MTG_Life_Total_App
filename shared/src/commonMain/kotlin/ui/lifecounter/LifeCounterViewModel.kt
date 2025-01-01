@@ -25,11 +25,11 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 open class LifeCounterViewModel(
     private val settingsManager: ISettingsManager,
-    private val playerStateManager: PlayerStateManager,
-    private val commanderManager: CommanderDamageManager,
+    internal val playerStateManager: PlayerStateManager,
+    internal val commanderManager: CommanderDamageManager,
     private val imageManager: IImageManager,
     protected val notificationManager: NotificationManager,
-    private val playerCustomizationManager: PlayerCustomizationManager,
+    internal val playerCustomizationManager: PlayerCustomizationManager,
     private val planeChaseViewModel: PlaneChaseViewModel,
     initialState: LifeCounterState = LifeCounterState(),
 ) : ViewModel() {
@@ -67,6 +67,7 @@ open class LifeCounterViewModel(
     private fun registerCommanderListener() {
         viewModelScope.launch {
             commanderManager.currentDealer.collect { dealer ->
+                println("Got dealer: $dealer")
                 if (dealer == null) {
                     setAllButtonStates(PBState.NORMAL)
                     setMiddleButtonState(MiddleButtonState.DEFAULT)

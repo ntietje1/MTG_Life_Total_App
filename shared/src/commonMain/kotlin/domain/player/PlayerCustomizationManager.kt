@@ -11,9 +11,6 @@ class PlayerCustomizationManager {
     private lateinit var playerViewModelsFlow: StateFlow<List<PlayerButtonViewModel>>
 
     fun init(playerViewModelsFlow: StateFlow<List<PlayerButtonViewModel>>) {
-        if (::playerViewModelsFlow.isInitialized) {
-            throw IllegalStateException("PlayerCustomizationManager already initialized")
-        }
         this.playerViewModelsFlow = playerViewModelsFlow
     }
 

@@ -208,15 +208,17 @@ open class MockPlayerButtonViewModel(
     setMonarchy: (Boolean) -> Unit,
     triggerSave: () -> Unit,
     moveTimerCallback: () -> Unit,
-    customizationManager: PlayerCustomizationManager
+    customizationManager: PlayerCustomizationManager,
+    playerStateManager: PlayerStateManager,
+    commanderDamageManager: CommanderDamageManager
 ) : PlayerButtonViewModel(
     initialState = state,
     settingsManager = settingsManager,
     imageManager = imageManager,
     notificationManager = notificationManager,
-    playerStateManager = PlayerStateManager(settingsManager, imageManager),
+    playerStateManager = playerStateManager,
     playerCustomizationManager = customizationManager,
-    commanderManager = CommanderDamageManager(notificationManager),
+    commanderManager = commanderDamageManager,
     setMonarchy = setMonarchy,
     triggerSave = triggerSave,
     moveTimerCallback = moveTimerCallback
