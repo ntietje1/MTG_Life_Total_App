@@ -3,14 +3,14 @@ package ui.dialog.gif
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import data.api.GifApiRetriever
-import data.api.MediaFormat
+import domain.api.TenorApi
+import domain.api.MediaFormat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class GifDialogViewModel(private val gifApiRetriever: GifApiRetriever = GifApiRetriever()) : ViewModel() {
+class GifDialogViewModel(private val tenorApi: TenorApi = TenorApi()) : ViewModel() {
     private val _state = MutableStateFlow(GifDialogState())
     val state: StateFlow<GifDialogState> = _state.asStateFlow()
 
@@ -20,7 +20,7 @@ class GifDialogViewModel(private val gifApiRetriever: GifApiRetriever = GifApiRe
             setIsSearchInProgress(true)
             setLastSearchWasError(false)
 //            println("searchGifs: $qry")
-            val result = gifApiRetriever.searchGifs(qry, amount)
+            val result = tenorApi.searchGifs(qry, amount)
             if (result.error != null) {
                 setLastSearchWasError(true)
             } else {
@@ -35,11 +35,11 @@ class GifDialogViewModel(private val gifApiRetriever: GifApiRetriever = GifApiRe
         viewModelScope.launch {
 //            println("getNextGifs")
             setAdditionalSearchInProgress(true)
-//            val result = gifApiRetriever.getNextGifs(amount)
+//            val result = tenorApi.getNextGifs(amount)
 //            setAdditionalSearchInProgress(false)
 //            println("getNextGifs result: $result")
 //            setGifResults(state.value.gifResults + result)
-            val result = gifApiRetriever.getNextGifs(amount)
+            val result = tenorApi.getNextGifs(amount)
             if (result.error != null) {
                 setLastSearchWasError(true)
             } else {

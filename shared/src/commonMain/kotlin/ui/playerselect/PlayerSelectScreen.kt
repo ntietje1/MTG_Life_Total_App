@@ -52,14 +52,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import data.Player.Companion.allPlayerColors
-import di.getAnimationCorrectionFactor
+import domain.system.SystemManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.one_finger_hold
 import lifelinked.shared.generated.resources.skip_icon
+import model.Player.Companion.allPlayerColors
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
 import ui.SettingsButton
@@ -88,7 +88,7 @@ fun PlayerSelectScreen(
     val state by viewModel.state.collectAsState()
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        PlayerSelectScreenValues.animScale = getAnimationCorrectionFactor()
+        PlayerSelectScreenValues.animScale = SystemManager.getAnimationCorrectionFactor()
 
         val textSize = remember(Unit) { (maxWidth / 30f + maxHeight / 30f).value }
         val buttonSize = remember(Unit) { (maxWidth / 10f + maxHeight / 10f) }

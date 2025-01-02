@@ -1,8 +1,8 @@
 package ui.dialog.scryfall
 
 import androidx.compose.ui.text.input.TextFieldValue
-import data.serializable.Card
-import data.serializable.Ruling
+import model.card.Card
+import model.card.Ruling
 
 data class ScryfallSearchState(
     val textFieldValue: TextFieldValue = TextFieldValue(""),

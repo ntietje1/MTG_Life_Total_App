@@ -35,9 +35,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import data.SettingsManager
 import di.Platform
-import di.VersionNumber
+import domain.storage.SettingsManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.change_name_icon
 import lifelinked.shared.generated.resources.coffee_icon
@@ -53,6 +52,7 @@ import lifelinked.shared.generated.resources.sun_icon
 import lifelinked.shared.generated.resources.thumbsup_icon
 import lifelinked.shared.generated.resources.timer_icon
 import lifelinked.shared.generated.resources.visible_icon
+import model.VersionNumber
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.MainColorLight
@@ -230,7 +230,7 @@ fun SettingsDialogContent(
                             .wrapContentSize()
                             .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
                     ) {
-                       //TODO:
+                        //TODO:
                         // dvd logo bouncing
 
                     }

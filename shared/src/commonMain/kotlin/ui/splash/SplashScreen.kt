@@ -25,9 +25,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import di.VersionNumber
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
+import model.VersionNumber
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.MainColor
@@ -47,7 +47,7 @@ fun SplashScreen(
         val buttonModifier = Modifier.width(buttonSize).aspectRatio(3f).padding(buttonSize / 20f)
         val textSize = remember(Unit) { buttonSize.value * 0.08f }
         val iconSize = remember(Unit) { maxWidth * 0.4f }
-        val haptic  = LocalHapticFeedback.current
+        val haptic = LocalHapticFeedback.current
 
         Column(
             modifier = Modifier.fillMaxSize().align(Alignment.Center).background(MaterialTheme.colorScheme.background),
@@ -60,7 +60,7 @@ fun SplashScreen(
             )
             Text(
                 text = "LifeLinked",
-                fontSize = textSize.scaledSp*1.5f,
+                fontSize = textSize.scaledSp * 1.5f,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onPrimary,
                 style = defaultTextStyle(),

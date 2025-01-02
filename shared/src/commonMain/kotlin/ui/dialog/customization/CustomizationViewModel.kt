@@ -5,9 +5,9 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import data.IImageManager
-import data.ISettingsManager
-import data.Player
+import domain.storage.IImageManager
+import domain.storage.ISettingsManager
+import model.Player
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

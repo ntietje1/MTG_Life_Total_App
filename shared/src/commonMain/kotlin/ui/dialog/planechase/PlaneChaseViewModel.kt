@@ -5,9 +5,9 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import data.ISettingsManager
-import data.api.ScryfallApiRetriever
-import data.serializable.Card
+import domain.storage.ISettingsManager
+import domain.api.ScryfallApi
+import model.card.Card
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +20,7 @@ class PlaneChaseViewModel(
     private val _state = MutableStateFlow(PlaneChaseState())
     val state: StateFlow<PlaneChaseState> = _state.asStateFlow()
 
-    private val scryfallApiRetriever = ScryfallApiRetriever()
+    private val scryfallApi = ScryfallApi()
 
     init {
         loadPlanechaseState()
@@ -150,7 +150,7 @@ class PlaneChaseViewModel(
 
 
     private suspend fun search(qry: String = state.value.query.text): List<Card> {
-        return scryfallApiRetriever.searchCards("t:plane $qry")
+        return scryfallApi.searchCards("t:plane $qry")
     }
 
     fun searchPlanes(qry: String = state.value.query.text, onSearchResult: (List<Card>) -> Unit) {

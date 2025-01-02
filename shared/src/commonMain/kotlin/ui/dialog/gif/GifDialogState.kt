@@ -1,7 +1,7 @@
 package ui.dialog.gif
 
 import androidx.compose.ui.text.input.TextFieldValue
-import data.api.MediaFormat
+import domain.api.MediaFormat
 
 data class GifDialogState(
     val textFieldValue: TextFieldValue = TextFieldValue(""),

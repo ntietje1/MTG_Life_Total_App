@@ -3,7 +3,7 @@ package ui.dialog.planechase
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.text.input.TextFieldValue
-import data.serializable.Card
+import model.card.Card
 
 data class PlaneChaseState(
     val planarDeck: SnapshotStateList<Card> = mutableStateListOf(),

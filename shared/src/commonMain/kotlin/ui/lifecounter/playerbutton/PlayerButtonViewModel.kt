@@ -2,19 +2,18 @@ package ui.lifecounter.playerbutton
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import data.IImageManager
-import data.ISettingsManager
-import data.Player
-import di.NotificationManager
 import domain.common.Backstack
 import domain.common.NumberWithRecentChange
 import domain.common.RecentChangeValue
+import domain.game.CommanderDamageManager
 import domain.game.GameStateManager
-import domain.player.CommanderDamageManager
-import domain.player.PlayerCustomizationManager
-import domain.player.PlayerStateManager
-import domain.timer.TimerManager
-import domain.timer.TurnTimer
+import domain.game.PlayerCustomizationManager
+import domain.game.PlayerStateManager
+import domain.game.timer.TimerManager
+import domain.game.timer.TurnTimer
+import domain.storage.IImageManager
+import domain.storage.ISettingsManager
+import domain.system.NotificationManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import model.Player
 import ui.dialog.customization.CustomizationViewModel
 import ui.lifecounter.CounterType
 

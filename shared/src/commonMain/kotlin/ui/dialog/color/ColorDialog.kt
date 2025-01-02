@@ -40,8 +40,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
-import data.Player
-import data.Player.Companion.allPlayerColors
+import model.Player
+import model.Player.Companion.allPlayerColors
 import org.koin.compose.koinInject
 import theme.scaledSp
 import theme.toHsv

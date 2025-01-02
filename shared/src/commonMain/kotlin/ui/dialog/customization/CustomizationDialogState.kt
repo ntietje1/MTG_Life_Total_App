@@ -2,7 +2,7 @@ package ui.dialog.customization
 
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import data.Player
+import model.Player
 
 data class CustomizationDialogState(
     val player: Player,

@@ -66,8 +66,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import domain.timer.TurnTimer
-import di.getAnimationCorrectionFactor
+import domain.game.timer.TurnTimer
+import domain.system.SystemManager
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import lifelinked.shared.generated.resources.Res
@@ -649,7 +649,7 @@ fun PlayerButton(
 fun MonarchyIndicator(
     modifier: Modifier = Modifier, monarch: Boolean = false, borderWidth: Dp, content: @Composable () -> Unit = {}
 ) {
-    val duration = (7500 / getAnimationCorrectionFactor()).toInt()
+    val duration = (7500 / SystemManager.getAnimationCorrectionFactor()).toInt()
 //    val colors = if (viewModel.getAnimationScale(context) != 0.0f) {
 //        listOf(
 //            Color.Transparent,
@@ -855,7 +855,12 @@ fun PlayerButtonBackground(
                         modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
                     ) {
                         SettingsButton(
-                            modifier = Modifier.fillMaxHeight(0.4f), backgroundColor = Color.Transparent, mainColor = MaterialTheme.colorScheme.onPrimary, imageVector = vectorResource(Res.drawable.image_error_icon), visible = true, onPress = {}
+                            modifier = Modifier.fillMaxHeight(0.4f),
+                            backgroundColor = Color.Transparent,
+                            mainColor = MaterialTheme.colorScheme.onPrimary,
+                            imageVector = vectorResource(Res.drawable.image_error_icon),
+                            visible = true,
+                            onPress = {}
                         )
                     }
                 }

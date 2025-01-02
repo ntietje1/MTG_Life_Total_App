@@ -22,19 +22,19 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import data.IImageManager
-import data.ISettingsManager
-import data.Player
-import di.NotificationManager
+import domain.game.CommanderDamageManager
 import domain.game.GameStateManager
-import domain.player.CommanderDamageManager
-import domain.player.PlayerCustomizationManager
-import domain.player.PlayerStateManager
-import domain.timer.TimerManager
+import domain.game.PlayerCustomizationManager
+import domain.game.PlayerStateManager
+import domain.game.timer.TimerManager
+import domain.storage.IImageManager
+import domain.storage.ISettingsManager
+import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.down_arrow_icon
 import lifelinked.shared.generated.resources.monarchy_icon
 import lifelinked.shared.generated.resources.settings_icon
+import model.Player
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
@@ -161,7 +161,7 @@ fun TutorialPage3(
         modifier = modifier,
         blur = showHint,
         step = Pair(if (complete) 2 else if (stepOneComplete) 1 else 0, 2),
-        instructions =if (complete) "Complete" else if (stepOneComplete) "Make a player the monarch" else "Open a player's settings menu",
+        instructions = if (complete) "Complete" else if (stepOneComplete) "Make a player the monarch" else "Open a player's settings menu",
     ) {
         LifeCounterScreen(
             modifier = modifier,

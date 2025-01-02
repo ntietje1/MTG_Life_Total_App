@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
-import di.NotificationManager
+import domain.system.NotificationManager
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import theme.scaledSp
@@ -62,7 +62,7 @@ fun PatchNotesDialogContent(
                 )
             }
             if (inProgressItems.isNotEmpty()) {
-                item{
+                item {
                     InProgressItems(
                         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
                         items = inProgressItems

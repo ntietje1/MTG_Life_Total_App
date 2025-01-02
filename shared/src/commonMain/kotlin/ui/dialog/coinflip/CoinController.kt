@@ -1,6 +1,6 @@
 package ui.dialog.coinflip
 
-import data.SettingsManager
+import domain.storage.SettingsManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import ui.flippable.FlipAnimationType

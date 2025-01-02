@@ -1,7 +1,7 @@
 package ui.dialog.startinglife
 
 import androidx.compose.ui.text.input.TextFieldValue
-import data.SettingsManager
+import domain.storage.SettingsManager
 
 data class StartingLifeState(
     val textFieldValue: TextFieldValue = TextFieldValue(SettingsManager.instance.startingLife.value.toString()),

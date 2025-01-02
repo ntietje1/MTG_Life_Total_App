@@ -1,7 +1,7 @@
 package ui.dialog.settings.patchnotes
 
 import androidx.lifecycle.ViewModel
-import data.SettingsManager
+import domain.storage.SettingsManager
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse

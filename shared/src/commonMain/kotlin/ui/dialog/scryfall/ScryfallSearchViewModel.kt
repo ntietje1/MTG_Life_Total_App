@@ -3,9 +3,9 @@ package ui.dialog.scryfall
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import data.api.ScryfallApiRetriever
-import data.serializable.Card
-import data.serializable.Ruling
+import domain.api.ScryfallApi
+import model.card.Card
+import model.card.Ruling
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ScryfallSearchViewModel(
-    private val scryfallApiRetriever: ScryfallApiRetriever = ScryfallApiRetriever()
+    private val scryfallApi: ScryfallApi = ScryfallApi()
 ): ViewModel() {
     private val _state = MutableStateFlow(ScryfallSearchState())
     val state: StateFlow<ScryfallSearchState> = _state.asStateFlow()
@@ -22,7 +22,7 @@ class ScryfallSearchViewModel(
         viewModelScope.launch {
             clearResults()
             setIsSearchInProgress(true)
-            val parsedResult = scryfallApiRetriever.searchCards(qry)
+            val parsedResult = scryfallApi.searchCards(qry)
             setCardResults(parsedResult)
             setLastSearchWasError(state.value.cardResults.isEmpty())
             setPrintingsButtonEnabled(!disablePrintingsButton)
@@ -40,7 +40,7 @@ class ScryfallSearchViewModel(
         viewModelScope.launch {
             clearResults()
             setIsSearchInProgress(true)
-            setRulingsResults(scryfallApiRetriever.searchRulings(qry))
+            setRulingsResults(scryfallApi.searchRulings(qry))
 //            viewModel.setLastSearchWasError(state.rulingsResults.isEmpty())
             setLastSearchWasError(false)
             setIsSearchInProgress(false)

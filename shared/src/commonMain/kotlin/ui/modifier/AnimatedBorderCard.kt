@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import di.legacyMonarchyIndicator
+import domain.system.SystemManager
 import kotlin.math.max
 
 fun Modifier.animatedBorderCard(
@@ -34,7 +34,7 @@ fun Modifier.animatedBorderCard(
     animationDuration: Int = 10000
 ): Modifier = composed {
     val infiniteTransition = rememberInfiniteTransition(label = "Infinite Color Animation")
-    if (!legacyMonarchyIndicator()) {
+    if (!SystemManager.legacyMonarchyIndicator()) {
         val degrees by infiniteTransition.animateFloat(
             initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
                 animation = tween(durationMillis = animationDuration, easing = LinearEasing),

@@ -11,11 +11,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import data.ISettingsManager
+import domain.storage.ISettingsManager
 import di.BackHandler
-import di.VersionNumber
-import di.keepScreenOn
-import di.updateSystemBarsColors
+import domain.system.SystemManager
+import model.VersionNumber
 import org.koin.compose.KoinContext
 import org.koin.compose.currentKoinScope
 import org.koin.compose.koinInject
@@ -42,9 +41,9 @@ fun LifeLinkedApp() {
         val settingsManager: ISettingsManager by currentKoinScope().inject()
         val keepScreenOn by settingsManager.keepScreenOn.collectAsState()
         val darkTheme by settingsManager.darkTheme.collectAsState()
-        keepScreenOn(keepScreenOn)
+        SystemManager.keepScreenOn(keepScreenOn)
         LifeLinkedTheme(darkTheme = darkTheme) {
-            updateSystemBarsColors(true)
+            SystemManager.updateSystemBarsColors(true)
 
             val navController = rememberNavController()
             val currentVersionNumber = koinInject<VersionNumber>()

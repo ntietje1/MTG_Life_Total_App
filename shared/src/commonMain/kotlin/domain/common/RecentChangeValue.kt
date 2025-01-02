@@ -1,6 +1,6 @@
 package domain.common
 
-import domain.player.PlayerStateManager.Companion.RECENT_CHANGE_DELAY
+import domain.game.PlayerStateManager.Companion.RECENT_CHANGE_DELAY
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -28,6 +28,7 @@ class RecentChangeValue(
 
     fun attach(scope: CoroutineScope): RecentChangeValue {
         this.scope = scope
+        updateRecentChange()
         return this
     }
 

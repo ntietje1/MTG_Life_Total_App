@@ -1,6 +1,5 @@
 package ui.dialog.coinflip
 
-import di.Platform
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,12 +56,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
-import ui.SettingsButton
-import ui.dialog.scryfall.ExpandableCard
-import ui.flippable.Flippable
-import ui.flippable.FlippableState
-import ui.flippable.rememberFlipController
-import di.getAnimationCorrectionFactor
+import di.Platform
+import di.platform
+import domain.system.SystemManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
@@ -72,8 +68,12 @@ import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.thumbsup_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
-import di.platform
 import theme.scaledSp
+import ui.SettingsButton
+import ui.dialog.scryfall.ExpandableCard
+import ui.flippable.Flippable
+import ui.flippable.FlippableState
+import ui.flippable.rememberFlipController
 
 @Composable
 fun CoinFlipDialogContent(
@@ -88,7 +88,7 @@ fun CoinFlipDialogContent(
     val historyString = remember(state.history) { viewModel.buildHistoryString() } //TODO: make this update less if possible
     var allowHaptic by remember { mutableStateOf(false) }
 
-    CoinController.setAnimationCorrectionFactor(getAnimationCorrectionFactor())
+    CoinController.setAnimationCorrectionFactor(SystemManager.getAnimationCorrectionFactor())
     LaunchedEffect(Unit) {
         viewModel.viewModelScope.launch {
             allowHaptic = false
@@ -101,7 +101,7 @@ fun CoinFlipDialogContent(
         }
     }
 
-    viewModel.setOnFlip{
+    viewModel.setOnFlip {
         if (allowHaptic) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 

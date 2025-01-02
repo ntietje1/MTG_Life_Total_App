@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import di.BackHandler
-import di.getAnimationCorrectionFactor
+import domain.system.SystemManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
 import lifelinked.shared.generated.resources.coin_icon
@@ -379,7 +379,7 @@ fun AnimatedGridDialog(
         backHandler.push { onDismiss() }
     }
 
-    val duration = (450 / getAnimationCorrectionFactor()).toInt()
+    val duration = (450 / SystemManager.getAnimationCorrectionFactor()).toInt()
 
     val enterAnimation = slideInHorizontally(
         TweenSpec(

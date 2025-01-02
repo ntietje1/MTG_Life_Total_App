@@ -46,9 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
-import data.Player
 import di.BackHandler
-import di.NotificationManager
+import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.camera_icon
 import lifelinked.shared.generated.resources.color_picker_icon
@@ -58,6 +57,7 @@ import lifelinked.shared.generated.resources.pencil_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
 import lifelinked.shared.generated.resources.text_icon
+import model.Player
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
@@ -345,20 +345,22 @@ fun PlayerCustomizationDialog(
     }, Pair(state.customizationMenuState == CustomizationMenuState.BACKGROUND_COLOR_PICKER) {
         val colorViewModel = remember { ColorDialogViewModel() }
         val initialColor by remember(Unit) { mutableStateOf(state.player.color) }
-        ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Background Color", initialColor = initialColor, initialPlayer = state.player, updateColor = {
-            viewModel.onChangeBackgroundColor(it)
-            viewModel.setColorChangeWasMade(it != initialColor)
-            state.player.copy(color = it)
-        }, viewModel = colorViewModel
+        ColorPickerDialogContent(
+            modifier = Modifier.fillMaxSize(), title = "Background Color", initialColor = initialColor, initialPlayer = state.player, updateColor = {
+                viewModel.onChangeBackgroundColor(it)
+                viewModel.setColorChangeWasMade(it != initialColor)
+                state.player.copy(color = it)
+            }, viewModel = colorViewModel
         )
     }, Pair(state.customizationMenuState == CustomizationMenuState.ACCENT_COLOR_PICKER) {
         val colorViewModel = remember { ColorDialogViewModel() }
         val initialColor by remember(Unit) { mutableStateOf(state.player.textColor) }
-        ColorPickerDialogContent(modifier = Modifier.fillMaxSize(), title = "Accent Color", initialColor = initialColor, initialPlayer = state.player, updateColor = {
-            viewModel.onChangeTextColor(it)
-            viewModel.setColorChangeWasMade(it != initialColor)
-            state.player.copy(textColor = it)
-        }, viewModel = colorViewModel
+        ColorPickerDialogContent(
+            modifier = Modifier.fillMaxSize(), title = "Accent Color", initialColor = initialColor, initialPlayer = state.player, updateColor = {
+                viewModel.onChangeTextColor(it)
+                viewModel.setColorChangeWasMade(it != initialColor)
+                state.player.copy(textColor = it)
+            }, viewModel = colorViewModel
         )
     }, Pair(state.customizationMenuState == CustomizationMenuState.GIF_SEARCH) {
         GifDialogContent(modifier = Modifier.fillMaxSize(), onGifSelected = {

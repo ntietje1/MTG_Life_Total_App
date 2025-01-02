@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
-import di.getAnimationCorrectionFactor
+import domain.system.SystemManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
@@ -62,7 +62,7 @@ fun LifeCounterScreen(
     viewModel: LifeCounterViewModel,
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
-    firstNavigation: Boolean
+    firstNavigation: Boolean,
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
@@ -228,7 +228,7 @@ fun AnimatedPlayerButton(
     playerButton: @Composable (Modifier) -> Unit,
 ) {
     val multiplesAway = 3f
-    val duration = (1250 / getAnimationCorrectionFactor()).toInt()
+    val duration = (1250 / SystemManager.getAnimationCorrectionFactor()).toInt()
     val targetOffsetY = remember(visible, rotation) {
         if (visible) 0f else {
             when (rotation) {
@@ -287,7 +287,7 @@ fun AnimatedMiddleButton(
     modifier: Modifier = Modifier, onMiddleButtonClick: () -> Unit, visible: Boolean
 ) {
     var animationFinished by remember { mutableStateOf(false) }
-    val popInDuration = (900 / getAnimationCorrectionFactor()).toInt()
+    val popInDuration = (900 / SystemManager.getAnimationCorrectionFactor()).toInt()
 
     fun targetAngle(visible: Boolean): Float {
         return if (visible) 360f else 0f
@@ -347,7 +347,7 @@ fun AnimatedExitButton(
     onPress: () -> Unit
 ) {
     val settingsButtonScale = remember { Animatable(0f) }
-    val duration = (300 / getAnimationCorrectionFactor()).toInt()
+    val duration = (300 / SystemManager.getAnimationCorrectionFactor()).toInt()
 
     LaunchedEffect(visible) {
         if (visible) {

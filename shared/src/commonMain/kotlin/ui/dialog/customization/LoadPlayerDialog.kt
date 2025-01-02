@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import data.Player
+import model.Player
 import kotlinx.coroutines.delay
 import theme.scaledSp
 import theme.textShadowStyle

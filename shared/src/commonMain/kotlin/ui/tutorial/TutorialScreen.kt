@@ -49,8 +49,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.times
-import di.NotificationManager
-import di.getAnimationCorrectionFactor
+import domain.system.NotificationManager
+import domain.system.SystemManager
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.question_icon
@@ -79,7 +79,7 @@ fun TutorialScreen(
     val state by viewModel.state.collectAsState()
     val pagerState = rememberPagerState(initialPage = state.currentPage, initialPageOffsetFraction = 0f, pageCount = { state.totalPages })
     val scope = rememberCoroutineScope()
-    val animScale = getAnimationCorrectionFactor()
+    val animScale = SystemManager.getAnimationCorrectionFactor()
     val animationSpec = remember { tween<Float>(durationMillis = (375 / animScale).toInt(), easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)) }
     val fastAnimationSpec = remember { tween<Float>(durationMillis = (200 / animScale).toInt(), easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)) }
 

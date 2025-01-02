@@ -1,18 +1,9 @@
 package domain.game
 
-import data.ISettingsManager
-import data.Player
-import domain.base.AttachableManager
-import domain.timer.GameTimer
-import domain.timer.GameTimerState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import domain.storage.ISettingsManager
+import model.Player
 import ui.lifecounter.DayNightState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
-import kotlin.coroutines.coroutineContext
 
 /**
  * Manages a game state that is shared among all players
