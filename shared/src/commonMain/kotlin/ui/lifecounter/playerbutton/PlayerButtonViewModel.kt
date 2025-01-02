@@ -7,6 +7,8 @@ import data.ISettingsManager
 import data.Player
 import di.NotificationManager
 import domain.common.Backstack
+import domain.common.NumberWithRecentChange
+import domain.common.RecentChangeValue
 import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
@@ -14,7 +16,6 @@ import domain.player.PlayerStateManager
 import domain.player.PlayerStateManager.Companion.RECENT_CHANGE_DELAY
 import domain.timer.TimerManager
 import domain.timer.TurnTimer
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,26 +42,20 @@ open class PlayerButtonViewModel(
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
 
     val isDead: StateFlow<Boolean> = combine(
-        settingsManager.autoKo,
-        state
+        settingsManager.autoKo, state
     ) { autoKo, playerState ->
         playerStateManager.isPlayerDead(playerState.player, autoKo)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val currentDealer: StateFlow<Player?> = commanderManager.currentDealer
 
-    private var recentChangeJob: Job? = null
-
     private val backstack = Backstack()
 
     val showBackButton: StateFlow<Boolean> = combine(
-        backstack.isEmpty,
-        state
+        backstack.isEmpty, state
     ) { isEmpty, state ->
         state.buttonState !in listOf(
-            PBState.SELECT_FIRST_PLAYER,
-            PBState.COMMANDER_RECEIVER,
-            PBState.COMMANDER_DEALER
+            PBState.SELECT_FIRST_PLAYER, PBState.COMMANDER_RECEIVER, PBState.COMMANDER_DEALER
         ) && !isEmpty
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
@@ -68,31 +63,31 @@ open class PlayerButtonViewModel(
     open val customizationViewmodel: CustomizationViewModel?
         get() = _customizationViewmodel
 
-    init {
-        updateRecentChange()
+    private val lifeTotal = RecentChangeValue(
+        scope = viewModelScope, initialValue = NumberWithRecentChange(
+            initialState.player.life,
+            initialState.player.recentChange
+        ), recentChangeDelay = RECENT_CHANGE_DELAY
+    ) {
+        setPlayer(
+            state.value.player.copy(
+                life = it.number,
+                recentChange = it.recentChange
+            )
+        )
     }
 
     override fun onCleared() {
         super.onCleared()
-        recentChangeJob?.cancel()
-        recentChangeJob = null
+        lifeTotal.cancel()
     }
 
     internal fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
     }
 
-    private fun updateRecentChange() {
-        recentChangeJob?.cancel()
-        recentChangeJob = viewModelScope.launch {
-            delay(RECENT_CHANGE_DELAY)
-            setPlayer(playerStateManager.clearRecentChange(state.value.player))
-        }
-    }
-
     open fun incrementLife(value: Int) {
-        setPlayer(playerStateManager.incrementLife(state.value.player, value))
-        updateRecentChange()
+        lifeTotal.increment(value)
         gameStateManager.saveGameState()
     }
 
