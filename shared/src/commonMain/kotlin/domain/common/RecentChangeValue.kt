@@ -15,7 +15,6 @@ data class NumberWithRecentChange(
 )
 
 class RecentChangeValue(
-    private val scope: CoroutineScope,
     initialValue: NumberWithRecentChange = NumberWithRecentChange(0, 0),
     private val recentChangeDelay: Long = RECENT_CHANGE_DELAY,
     private val updateCallback: (NumberWithRecentChange) -> Unit,
@@ -23,7 +22,14 @@ class RecentChangeValue(
     private val _value = MutableStateFlow(initialValue)
     val value: StateFlow<NumberWithRecentChange> = _value.asStateFlow()
 
+    private lateinit var scope: CoroutineScope
+
     private var recentChangeJob: Job? = null
+
+    fun attach(scope: CoroutineScope): RecentChangeValue {
+        this.scope = scope
+        return this
+    }
 
     fun increment(change: Int) {
         updateValue(

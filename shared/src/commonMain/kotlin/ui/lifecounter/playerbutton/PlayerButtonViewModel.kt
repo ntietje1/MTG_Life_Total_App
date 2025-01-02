@@ -13,7 +13,6 @@ import domain.game.GameStateManager
 import domain.player.CommanderDamageManager
 import domain.player.PlayerCustomizationManager
 import domain.player.PlayerStateManager
-import domain.player.PlayerStateManager.Companion.RECENT_CHANGE_DELAY
 import domain.timer.TimerManager
 import domain.timer.TurnTimer
 import kotlinx.coroutines.delay
@@ -64,18 +63,12 @@ open class PlayerButtonViewModel(
         get() = _customizationViewmodel
 
     private val lifeTotal = RecentChangeValue(
-        scope = viewModelScope, initialValue = NumberWithRecentChange(
-            initialState.player.life,
-            initialState.player.recentChange
-        ), recentChangeDelay = RECENT_CHANGE_DELAY
+        initialValue = NumberWithRecentChange(initialState.player.life, initialState.player.recentChange)
     ) {
         setPlayer(
-            state.value.player.copy(
-                life = it.number,
-                recentChange = it.recentChange
-            )
+            state.value.player.copy(life = it.number, recentChange = it.recentChange)
         )
-    }
+    }.attach(viewModelScope)
 
     override fun onCleared() {
         super.onCleared()
@@ -88,7 +81,7 @@ open class PlayerButtonViewModel(
 
     open fun incrementLife(value: Int) {
         lifeTotal.increment(value)
-        gameStateManager.saveGameState()
+        gameStateManager.savePlayerState(state.value.player)
     }
 
     fun setTimer(timer: TurnTimer?) {
@@ -142,7 +135,7 @@ open class PlayerButtonViewModel(
         setPlayer(playerStateManager.toggleSetDead(state.value.player))
         closeSettingsMenu()
         backstack.clear()
-        gameStateManager.saveGameState()
+        gameStateManager.savePlayerState(state.value.player)
     }
 
     open fun popBackStack() {
