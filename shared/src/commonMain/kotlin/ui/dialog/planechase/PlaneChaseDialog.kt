@@ -62,6 +62,7 @@ import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import theme.LocalDimensions
 import theme.scaledSp
 import ui.SettingsButton
 import ui.dialog.scryfall.CardImage
@@ -211,6 +212,7 @@ fun ChoosePlanesDialogContent(
 
     val haptic = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
+    val dimensions = LocalDimensions.current
 
     val filteredPlanes by derivedStateOf {
         state.searchedPlanes.filter { card -> state.planarDeck.map{ it.name }.contains(card.name) || !state.hideUnselected }
@@ -237,7 +239,7 @@ fun ChoosePlanesDialogContent(
                     .padding(top = padding)
                     .clip(RoundedCornerShape(15))
                     .border(
-                        1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
+                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
                     )
                 ,
                 query = state.query,
@@ -264,7 +266,7 @@ fun ChoosePlanesDialogContent(
                 textAlign = TextAlign.Center
             )
             LazyVerticalGrid(
-                modifier = Modifier.fillMaxSize().padding(bottom = maxWidth / 15f).weight(0.5f).border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
+                modifier = Modifier.fillMaxSize().padding(bottom = maxWidth / 15f).weight(0.5f).border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
                 columns = GridCells.Fixed(columnCount),
             ) {
                 items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
@@ -338,6 +340,7 @@ fun PlaneChaseCardPreview(
 ) {
     var showLargeImage by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
+    val dimensions = LocalDimensions.current
 
     if (showLargeImage && allowEnlarge) {
         Dialog(onDismissRequest = { showLargeImage = false }, properties = DialogProperties(
@@ -349,9 +352,6 @@ fun PlaneChaseCardPreview(
                 })
             }) {
                 CardImage(modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), imageUri = card!!.getUris().large)
-//                AsyncImage(
-//                    model = card!!.getUris().large, modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = ""
-//                )
             }
 
         })
@@ -384,26 +384,15 @@ fun PlaneChaseCardPreview(
                     if (selected) {
                         Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
                     } else {
-                        Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
+                        Modifier.padding(dimensions.borderThin).clip(CutCornerShape(clipSize + 0.5f.dp))
                     }
                 ), imageUri = card.getUris().normal)
-//                AsyncImage(
-//                    modifier = Modifier.fillMaxSize().then(
-//                        if (selected) {
-//                            Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
-//                        } else {
-//                            Modifier.padding(1.dp).clip(CutCornerShape(clipSize + 0.5f.dp))
-//                        }
-//                    ), model = card.getUris().normal, contentDescription = "",
-//                    alignment = Alignment.TopCenter
-//
-//                )
             }
 
         }
     } else {
         BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f), CutCornerShape(10.dp))
-            .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f), CutCornerShape(10.dp)).pointerInput(Unit) {}) {
+            .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f), CutCornerShape(10.dp)).pointerInput(Unit) {}) {
             val iconPadding = maxWidth / 4f
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                 SettingsButton(

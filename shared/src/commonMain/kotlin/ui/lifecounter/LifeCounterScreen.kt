@@ -49,6 +49,7 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
+import theme.LocalDimensions
 import theme.blendWith
 import ui.SettingsButton
 import ui.dialog.MiddleButtonDialog
@@ -115,13 +116,12 @@ fun LifeCounterScreen(
                 maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
             )
         }
-        val buttonPadding = remember(maxHeight) { maxWidth / 750f + maxHeight / 750f }
-        val blurRadius = remember(Unit) { maxHeight / 50f }
+        val dimensions = LocalDimensions.current
         val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }
         Box(
             Modifier.fillMaxSize().then(
                 if (state.blurBackground) {
-                    Modifier.blur(radius = blurRadius)
+                    Modifier.blur(radius = dimensions.blurRadius)
                 } else {
                     Modifier
                 }
@@ -131,41 +131,39 @@ fun LifeCounterScreen(
                 items(m.buttonPlacements(), key = { it.hashCode() }) { buttonPlacements ->
                     LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
                         items(buttonPlacements, key = { it.index }) { placement ->
-                            val width = remember(Unit) { placement.width - buttonPadding * 4 }
-                            val height = remember(Unit) { placement.height - buttonPadding * 4 }
+                            val width = remember(Unit) { placement.width - dimensions.paddingSmall * 4 }
+                            val height = remember(Unit) { placement.height - dimensions.paddingSmall * 4 }
                             val rotation = remember(Unit) { placement.angle }
-                            val turnTimerAlignment = remember(Unit) { placement.timerAlignment }
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
                             val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
                             val timerColor = playerButtonViewModel.state.value.player.textColor
-                            AnimatedPlayerButton(modifier = Modifier.padding(buttonPadding),
+                            AnimatedPlayerButton(modifier = Modifier.padding(dimensions.paddingSmall),
                                 visible = state.showButtons,
                                 rotation = placement.angle,
-                                width = placement.width - buttonPadding * 4,
-                                height = placement.height - buttonPadding * 4,
+                                width = width,
+                                height = height,
                                 playerButton = {
                                     PlayerButton(
                                         modifier = Modifier.size(width, height),
-                                        turnTimerModifier = Modifier.align(turnTimerAlignment).pointerInput(Unit) {
+                                        turnTimerModifier = Modifier.align(placement.timerAlignment).pointerInput(Unit) {
                                             routePointerChangesTo(onDown = {
                                                 playerButtonViewModel.onMoveTimer()
                                             })
                                         }.then(
-                                            when (turnTimerAlignment) {
+                                            when (placement.timerAlignment) {
                                                 Alignment.TopStart -> Modifier.align(Alignment.TopStart)
                                                     .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
-                                                    .border(buttonPadding, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
+                                                    .border(dimensions.paddingSmall, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
 
                                                 Alignment.TopEnd -> Modifier.align(Alignment.TopEnd)
                                                     .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
-                                                    .border(buttonPadding, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
+                                                    .border(dimensions.paddingSmall, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
 
                                                 else -> Modifier
                                             }
                                         ),
                                         viewModel = playerButtonViewModel,
                                         rotation = rotation,
-                                        borderWidth = buttonPadding,
                                         setBlurBackground = { viewModel.setBlurBackground(it) },
                                     )
                                 })

@@ -61,6 +61,7 @@ import model.Player
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import theme.LocalDimensions
 import ui.SettingsButton
 import ui.dialog.AnimatedGridDialog
 import ui.dialog.WarningDialog
@@ -83,6 +84,7 @@ fun PlayerCustomizationDialog(
 ) {
     val state by viewModel.state.collectAsState()
     val haptic = LocalHapticFeedback.current
+    val dimensions = LocalDimensions.current
 
     LaunchedEffect(Unit) {
         viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
@@ -180,7 +182,7 @@ fun PlayerCustomizationDialog(
                     modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding / 2f), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically
                 ) { //TODO: check if the  name is currently taken or invalid
                     TextFieldWithButton(modifier = Modifier.fillMaxWidth(0.75f).height(textFieldHeight).clip(RoundedCornerShape(8))
-                        .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(8)), value = state.changeNameTextField, onValueChange = {
+                        .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(8)), value = state.changeNameTextField, onValueChange = {
                         viewModel.setChangeNameField(it)
                     }, label = "Name", keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
@@ -194,7 +196,7 @@ fun PlayerCustomizationDialog(
                     Spacer(modifier = Modifier.width(padding / 4f))
                     Box(
                         modifier = Modifier.fillMaxWidth().height(textFieldHeight).clip(RoundedCornerShape(8))
-                            .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(8)).pointerInput(Unit) {
+                            .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(8)).pointerInput(Unit) {
                                 detectTapGestures(onPress = {
                                     viewModel.setCustomizeMenuState(CustomizationMenuState.LOAD_PLAYER)
                                     backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }

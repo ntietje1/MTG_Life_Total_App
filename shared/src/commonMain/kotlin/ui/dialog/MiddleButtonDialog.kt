@@ -60,10 +60,12 @@ import lifelinked.shared.generated.resources.sun_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import theme.LocalDimensions
 import theme.scaledSp
 import ui.SettingsButton
 import ui.dialog.coinflip.CoinFlipDialogContent
 import ui.dialog.coinflip.CoinFlipTutorialContent
+import ui.dialog.dice.DiceRollDialogContent
 import ui.dialog.planechase.ChoosePlanesDialogContent
 import ui.dialog.planechase.PlaneChaseDialogContent
 import ui.dialog.scryfall.ScryfallDialogContent
@@ -375,6 +377,8 @@ fun MiddleButtonDialog(
 fun AnimatedGridDialog(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, backHandler: BackHandler = koinInject(), pages: List<Pair<Boolean, @Composable () -> Unit>>
 ) {
+    val dimensions = LocalDimensions.current
+
     LaunchedEffect(Unit) {
         backHandler.push { onDismiss() }
     }
@@ -401,7 +405,7 @@ fun AnimatedGridDialog(
         ) {
             BoxWithConstraints(
                 modifier = modifier.background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f)).border(
-                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+                    dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
                 ),
             ) {
                 content()

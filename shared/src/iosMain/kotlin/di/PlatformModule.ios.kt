@@ -13,6 +13,7 @@ import domain.system.SystemManager
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
 import ui.dialog.color.ColorDialogViewModel
+import ui.dialog.dice.DiceRollViewModel
 import ui.dialog.gif.GifDialogViewModel
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.dialog.scryfall.ScryfallSearchViewModel
@@ -52,6 +53,7 @@ actual val platformModule = module {
     single { ScryfallSearchViewModel() }
     single { ColorDialogViewModel() }
     single { GifDialogViewModel() }
+    single { DiceRollViewModel() }
 }
 
 actual val platform: Platform

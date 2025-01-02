@@ -67,6 +67,7 @@ import lifelinked.shared.generated.resources.search_icon
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import theme.LocalDimensions
 import theme.scaledSp
 import ui.dialog.SettingsDialog
 import ui.dialog.startinglife.TextFieldWithButton
@@ -103,6 +104,7 @@ fun ScryfallDialogContent(
     val listState = rememberLazyListState(state.scrollPosition)
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
+    val dimensions = LocalDimensions.current
 
     LaunchedEffect(listState.firstVisibleItemIndex) {
         viewModel.setScrollPosition(listState.firstVisibleItemIndex)
@@ -127,7 +129,7 @@ fun ScryfallDialogContent(
                     .padding(top = padding)
                     .clip(RoundedCornerShape(15))
                     .border(
-                        1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
+                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
                     ),
                 query = state.textFieldValue,
                 onQueryChange = viewModel::setTextFieldValue,
@@ -340,9 +342,11 @@ private fun TextPreview(
     largeText: String,
     bodyText: String,
 ) {
+    val dimensions = LocalDimensions.current
+
     BoxWithConstraints(
         modifier = Modifier.fillMaxWidth(0.9f).border(
-            1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10)
+            dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10)
         ).clip(RoundedCornerShape(10)), contentAlignment = Alignment.Center
     ) {
         val textSize = remember(Unit) { (maxWidth / 30f).value }
@@ -407,10 +411,6 @@ fun ExpandableCard(
                 })
             }) {
                 CardImage(modifier = Modifier.fillMaxSize(), imageUri = card.getUris().large, placeholderPainter = placeholderPainter)
-//                AsyncImage(
-//                    model = card.getUris().large, modifier = Modifier.clip(CutCornerShape(32)).fillMaxSize(0.85f).align(Alignment.Center), contentDescription = "",
-//                    placeholder = placeholderPainter
-//                )
             }
         })
     }
@@ -422,10 +422,6 @@ fun ExpandableCard(
         })
     }) {
         CardImage(modifier = Modifier.fillMaxSize(), imageUri = card.getUris().small, placeholderPainter = placeholderPainter)
-//        AsyncImage(
-//            model = card.getUris().normal, modifier = Modifier.fillMaxSize(), contentDescription = "",
-//            placeholder = placeholderPainter
-//        )
     }
 }
 
@@ -434,6 +430,7 @@ fun CardInfoPreview(
     card: Card, onRulings: () -> Unit = {}, onSelect: () -> Unit = {}, onPrintings: () -> Unit = {}, selectButtonEnabled: Boolean, printingsButtonEnabled: Boolean, rulingsButtonEnabled: Boolean
 ) {
     val haptic = LocalHapticFeedback.current
+    val dimensions = LocalDimensions.current
 
     BoxWithConstraints(
         modifier = Modifier.wrapContentSize()
@@ -445,7 +442,7 @@ fun CardInfoPreview(
         Box(Modifier.padding(horizontal = padding, vertical = padding / 2f)) {
             Surface(
                 modifier = Modifier.fillMaxSize().border(
-                    1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
+                    dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
                 ).clip(RoundedCornerShape(15)), color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f)
             ) {
                 Row(

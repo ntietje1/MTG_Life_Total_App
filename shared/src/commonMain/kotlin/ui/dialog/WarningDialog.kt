@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import theme.LocalDimensions
 import theme.scaledSp
 
 @Composable
@@ -40,6 +41,8 @@ fun WarningDialog(
     onOptionTwo: () -> Unit = {},
     onDismiss: () -> Unit = {}
 ) {
+    val dimensions = LocalDimensions.current
+
         Dialog(
             properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = true, usePlatformDefaultWidth = false),
             onDismissRequest = {
@@ -50,7 +53,7 @@ fun WarningDialog(
                 .wrapContentSize()
                 .clip(RoundedCornerShape(15))
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.9f), RoundedCornerShape(15))
-                .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f), RoundedCornerShape(15))
+                .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f), RoundedCornerShape(15))
             ) {
                 val textSize = remember(Unit) { (maxWidth / 25f).value }
                 val padding = remember(Unit) { maxWidth / 45f }

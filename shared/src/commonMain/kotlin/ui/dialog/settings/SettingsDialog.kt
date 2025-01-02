@@ -55,6 +55,7 @@ import lifelinked.shared.generated.resources.visible_icon
 import model.VersionNumber
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import theme.LocalDimensions
 import theme.MainColorLight
 import theme.defaultTextStyle
 import theme.scaledSp
@@ -74,6 +75,7 @@ fun SettingsDialogContent(
     version: VersionNumber = koinInject()
 ) {
     val uriHandler = LocalUriHandler.current
+    val dimensions = LocalDimensions.current
 
     BoxWithConstraints(modifier) {
         val buttonHeight = remember(Unit) { 10.dp + maxWidth / 10f }
@@ -92,7 +94,7 @@ fun SettingsDialogContent(
                 Column(
                     Modifier
                         .wrapContentSize()
-                        .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
+                        .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
                 ) {
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
@@ -168,7 +170,7 @@ fun SettingsDialogContent(
                 Column(
                     Modifier
                         .wrapContentSize()
-                        .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
+                        .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
                 ) {
                     SettingsDialogButton(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
@@ -228,7 +230,7 @@ fun SettingsDialogContent(
                     Column(
                         Modifier
                             .wrapContentSize()
-                            .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
+                            .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
                     ) {
                         //TODO:
                         // dvd logo bouncing

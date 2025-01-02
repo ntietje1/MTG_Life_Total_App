@@ -88,6 +88,7 @@ import lifelinked.shared.generated.resources.sword_icon_double
 import lifelinked.shared.generated.resources.transparent
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
+import theme.LocalDimensions
 import theme.brightenColor
 import theme.defaultTextStyle
 import theme.ghostify
@@ -108,7 +109,6 @@ fun PlayerButton(
     modifier: Modifier = Modifier,
     viewModel: PlayerButtonViewModel,
     rotation: Float = 0f,
-    borderWidth: Dp,
     turnTimerModifier: Modifier,
     setBlurBackground: (Boolean) -> Unit,
 ) {
@@ -116,6 +116,7 @@ fun PlayerButton(
     val isDead by viewModel.isDead.collectAsState()
     val currentDealer by viewModel.currentDealer.collectAsState()
     val haptic = LocalHapticFeedback.current
+    val dimensions = LocalDimensions.current
 
     val commanderButtonVisible by remember {
         derivedStateOf {
@@ -129,12 +130,6 @@ fun PlayerButton(
     }
 
     val backButtonVisible by viewModel.showBackButton.collectAsState()
-
-//    val backButtonVisible by remember {
-//        derivedStateOf {
-//            viewModel.showBackButton && state.buttonState !in listOf(PBState.SELECT_FIRST_PLAYER)
-//        }
-//    }
 
     fun generateSizes(maxWidth: Dp, maxHeight: Dp): Triple<Dp, Dp, Float> {
         val settingsButtonSize = if (maxHeight / 2 * 3 < maxWidth) {
@@ -219,7 +214,7 @@ fun PlayerButton(
         MonarchyIndicator(
             modifier = Modifier.wrapContentSize(),
             monarch = state.player.monarch,
-            borderWidth = borderWidth,
+            borderWidth = dimensions.paddingSmall,
         ) {
             BoxWithConstraints(
                 modifier = modifier.background(Color.Transparent).then(
@@ -809,6 +804,8 @@ fun Counter(
 fun PlayerButtonBackground(
     modifier: Modifier = Modifier, state: PBState, imageUri: String?, color: Color, isDead: Boolean, showError: Boolean = false
 ) {
+    val dimensions = LocalDimensions.current
+
     var errored = false
     val c = remember(color, isDead, state) {
         val ghostify = isDead && state != PBState.SELECT_FIRST_PLAYER
@@ -822,12 +819,9 @@ fun PlayerButtonBackground(
         }
     }
     Surface(
-        modifier = modifier.fillMaxSize().then(
-            if (imageUri != null) Modifier.padding(1.dp) else Modifier
-        ), color = c
+        modifier = modifier.fillMaxSize().then(if (imageUri != null) Modifier.padding(1.dp) else Modifier), color = c
     ) {}
     if (imageUri != null) {
-        println("Image uri: $imageUri")
         KamelImage(
             modifier = modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
@@ -837,20 +831,19 @@ fun PlayerButtonBackground(
                 if (progress == 0.0f) {
                     CircularProgressIndicator(
                         color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp,
+                        strokeWidth = dimensions.borderSmall,
                     )
                 } else {
                     CircularProgressIndicator(
                         progress = { progress },
                         color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp,
+                        strokeWidth = dimensions.borderSmall,
                     )
                 }
             },
             onFailure = { error ->
                 errored = true
                 if (showError) {
-                    println("Error loading image: $error")
                     Box(
                         modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
                     ) {

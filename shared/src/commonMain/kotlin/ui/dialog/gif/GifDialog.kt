@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
+import theme.LocalDimensions
 import theme.scaledSp
 import ui.dialog.scryfall.ScryfallSearchBar
 import ui.lifecounter.playerbutton.PBState
@@ -48,6 +49,7 @@ fun GifDialogContent(
     val listState = rememberLazyGridState(state.scrollPosition)
     val focusManager = LocalFocusManager.current
     val haptic = LocalHapticFeedback.current
+    val dimensions = LocalDimensions.current
 
     LaunchedEffect(listState.firstVisibleItemIndex) {
         viewModel.setScrollPosition(listState.firstVisibleItemIndex)
@@ -79,7 +81,7 @@ fun GifDialogContent(
                     .height(searchBarHeight)
                     .padding(top = padding)
                     .clip(RoundedCornerShape(15))
-                    .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)),
+                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)),
                 query = state.textFieldValue,
                 label = "Search Tenor",
                 onQueryChange = viewModel::setTextFieldValue,

@@ -1,6 +1,6 @@
 package ui.dialog.startinglife
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,8 +9,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
@@ -38,6 +39,7 @@ import lifelinked.shared.generated.resources.thirty_icon
 import lifelinked.shared.generated.resources.twenty_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import theme.LocalDimensions
 import theme.scaledSp
 import ui.SettingsButton
 import ui.dialog.GridDialogContent
@@ -47,6 +49,7 @@ fun StartingLifeDialogContent(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, resetGameState: (Int) -> Unit, viewModel: StartingLifeViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
+    val dimensions = LocalDimensions.current
 
     BoxWithConstraints(modifier) {
         val textFieldHeight = remember(Unit) { maxWidth / 9f + 30.dp }
@@ -73,7 +76,10 @@ fun StartingLifeDialogContent(
             }))
 
             TextFieldWithButton(
-                modifier = Modifier.fillMaxWidth(0.8f).height(textFieldHeight), value = state.textFieldValue, onValueChange = {
+                modifier = Modifier.fillMaxWidth(0.8f).height(textFieldHeight)
+                    .border(
+                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
+                    ), value = state.textFieldValue, onValueChange = {
                     viewModel.setTextFieldValue(it)
                 }, label = "Custom Starting Life", keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
@@ -115,7 +121,7 @@ fun TextFieldWithButton(
     ) {
         val textSize = remember(Unit) { (maxHeight / 3.75f).value }
         TextField(
-            modifier = Modifier.fillMaxWidth(0.85f).fillMaxHeight(),
+            modifier = Modifier.fillMaxHeight().width(maxWidth - maxHeight).align(Alignment.CenterStart),
             value = value,
             onValueChange = onValueChange,
             label = {
@@ -139,15 +145,15 @@ fun TextFieldWithButton(
                     handleColor = MaterialTheme.colorScheme.onPrimary,
                     backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                 ),
-                focusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                unfocusedContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
-                disabledContainerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
             ), keyboardOptions = keyboardOptions, keyboardActions = keyboardActions
         )
-        Box(
+        BoxWithConstraints(
             Modifier
                 .align(Alignment.CenterEnd)
                 .fillMaxHeight()
