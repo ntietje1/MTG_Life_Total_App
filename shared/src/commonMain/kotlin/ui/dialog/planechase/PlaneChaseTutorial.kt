@@ -1,0 +1,98 @@
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import model.card.Card
+import model.card.ImageUris
+import theme.LocalDimensions
+import theme.scaledSp
+import ui.dialog.planechase.PlaneChaseCardPreview
+
+@Composable
+fun PlanechaseTutorialContent(
+    modifier: Modifier = Modifier,
+) {
+    val dimensions = LocalDimensions.current
+    BoxWithConstraints(
+        modifier = Modifier.wrapContentSize(),
+    ) {
+        val padding = remember(Unit) { maxWidth / 50f + maxHeight / 75f }
+        val textSize = remember(Unit) { (maxWidth / 50f + maxHeight / 150f).value }
+        LazyColumn(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(padding / 6f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                PlaneChaseCardPreview(
+                    modifier = Modifier
+                        .height(dimensions.screenWidth / 1.5f)
+                        .padding(horizontal = dimensions.screenWidth / 10f)
+                        .rotate(90f),
+                    card = Card(
+                        name = "Sample Plane",
+                        artist = "",
+                        setName = "",
+                        printsSearchUri = "",
+                        imageUris = ImageUris(
+                            artCrop = "",
+                            small = "",
+                            normal = "https://cards.scryfall.io/large/front/d/8/d8da872d-55e0-4596-ba8e-f9ff7b2c0a86.jpg?1680815480",
+                            large = "https://cards.scryfall.io/large/front/d/8/d8da872d-55e0-4596-ba8e-f9ff7b2c0a86.jpg?1680815480"
+                        )
+                    ),
+                    showSelectedBackground = false
+                )
+            }
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(padding),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = """
+                            Planechase is a casual Magic: The Gathering variant where players travel between different planes, each with unique effects that modify the game.
+                            
+                            To begin, select your planar deck using the "Planar Deck" button. You can search for specific planes and toggle their selection.
+                            
+                            It is recommended to use a separate device to display the Planechase screen side by side with your game, making it easily visible to all players.
+                            
+                            During the game:
+                            • Long press a plane card to view it in full size
+                            • Use "Previous" to return to the last plane
+                            • "Flip Image" rotates the current plane card
+                            • "Planeswalk" moves to the next plane
+                            • Roll the "Planar Die" which can trigger:
+                              - Planeswalk (1/6): Move to next plane
+                              - Chaos (1/6): Trigger plane's chaos ability
+                              - Blank (4/6): No effect (most common)
+                            
+                            On your turn, you may roll the planar die by paying mana. The first roll is free, and each additional roll costs one more mana (e.g., second roll costs {1}, third roll costs {2}, etc.). This cost resets at the beginning of your next turn.
+                        """.trimIndent(),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = textSize.scaledSp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(padding / 2f)
+                    )
+                }
+            }
+        }
+    }
+}
