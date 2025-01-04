@@ -35,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -46,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import domain.system.NotificationManager
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import lifelinked.shared.generated.resources.Res
@@ -85,6 +85,7 @@ private enum class PlanarDieResult(
 fun PlaneChaseDialogContent( //TODO: add animations, also notifications
     modifier: Modifier = Modifier,
     goToChoosePlanes: () -> Unit,
+    notificationManager: NotificationManager = koinInject(),
     viewModel: PlaneChaseViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
@@ -206,32 +207,58 @@ fun PlaneChaseDialogContent( //TODO: add animations, also notifications
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.back_icon_alt),
                     onPress = {
-                        viewModel.backPlane()
-                    })
+                        if (state.planarDeck.size == 0) {
+                            notificationManager.showNotification("Select your planar deck first")
+                        } else if (state.planarBackStack.size == 0) {
+                            notificationManager.showNotification("Can't go back")
+                        } else {
+                            viewModel.backPlane()
+                        }
+                    },
+                    mainColor = if (state.planarBackStack.size > 0 && state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
                     text = "Flip Image",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.reset_icon),
                     onPress = {
-                        rotated = !rotated
-                    })
+                        if (state.planarDeck.size > 0) {
+                            rotated = !rotated
+                        } else {
+                            notificationManager.showNotification("Select your planar deck first")
+                        }
+                    },
+                    mainColor = if (state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
                     text = "Planeswalk",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.planeswalker_icon),
                     onPress = {
-                        viewModel.planeswalk()
-                    })
+                        if (state.planarDeck.size > 0) {
+                            viewModel.planeswalk()
+                        } else {
+                            notificationManager.showNotification("Select your planar deck first")
+                        }
+                    },
+                    mainColor = if (state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
                     text = "Planar Die",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.die_icon),
                     onPress = {
-                        rollPlanarDie()
-                    })
+                        if (state.planarDeck.size > 0) {
+                            rollPlanarDie()
+                        } else {
+                            notificationManager.showNotification("Select your planar deck first")
+                        }
+                    },
+                    mainColor = if (state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
                     text = "Planar Deck",
@@ -416,9 +443,9 @@ fun PlaneChaseCardPreview(
                 BoxWithConstraints(
                     modifier = Modifier.fillMaxSize().padding(dimensions.paddingLarge)
                 ) {
-                    val cardAspectRatio = 5f/7f // Standard card ratio
-                    val screenAspectRatio = maxWidth/maxHeight
-                    
+                    val cardAspectRatio = 5f / 7f // Standard card ratio
+                    val screenAspectRatio = maxWidth / maxHeight
+
                     val largeImageModifier = if (screenAspectRatio > cardAspectRatio) {
                         // Screen is wider than card - constrain by height
                         Modifier.fillMaxHeight().aspectRatio(cardAspectRatio)
@@ -431,8 +458,7 @@ fun PlaneChaseCardPreview(
                         modifier = largeImageModifier
                             .clip(RoundedCornerShape(CARD_CORNER_PERCENT))
                             .align(Alignment.Center)
-                            .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
-                        ,
+                            .graphicsLayer { rotationZ = if (rotated) 180f else 0f },
                         painter = asyncPainterResource(card!!.getUris().large),
                         placeholderPainter = painterResource(Res.drawable.card_back)
                     )
