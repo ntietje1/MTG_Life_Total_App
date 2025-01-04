@@ -1,5 +1,6 @@
 package ui.dialog
 
+import PlanechaseTutorialContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.TweenSpec
@@ -77,7 +78,7 @@ import ui.lifecounter.DayNightState
 import ui.lifecounter.LifeCounterViewModel
 
 enum class MiddleButtonDialogState {
-    Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, PatchNotes, AboutMe, PlaneChase, PlanarDeck
+    Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, PatchNotes, AboutMe, PlaneChase, PlanarDeck, PlanarTutorial
 }
 
 @Composable
@@ -217,6 +218,10 @@ fun MiddleButtonDialog(
             ) {
                 PlaneChaseDialogContent(
                     modifier = Modifier.fillMaxSize(),
+                    goToPlanechaseTutorial = {
+                        backHandler.push { setDialogState(MiddleButtonDialogState.PlaneChase) }
+                        setDialogState(MiddleButtonDialogState.PlanarTutorial)
+                    },
                     goToChoosePlanes = {
                         setDialogState(MiddleButtonDialogState.PlanarDeck)
                         backHandler.push { setDialogState(MiddleButtonDialogState.PlaneChase) }
@@ -227,6 +232,12 @@ fun MiddleButtonDialog(
             ) {
                 ChoosePlanesDialogContent(
                     modifier = Modifier.fillMaxSize(), addToBackStack = backHandler::push, popBackStack = backHandler::pop
+                )
+            }, Pair(
+                dialogState == MiddleButtonDialogState.PlanarTutorial
+            ) {
+                PlanechaseTutorialContent(
+                    modifier = Modifier.fillMaxSize()
                 )
             }, Pair(
                 dialogState == MiddleButtonDialogState.Default

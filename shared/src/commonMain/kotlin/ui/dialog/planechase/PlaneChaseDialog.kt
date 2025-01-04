@@ -70,6 +70,7 @@ import theme.LocalDimensions
 import theme.scaledSp
 import ui.components.CARD_CORNER_PERCENT
 import ui.components.CardImage
+import ui.components.InfoButton
 import ui.components.SearchTextField
 import ui.components.SettingsButton
 import ui.modifier.routePointerChangesTo
@@ -82,9 +83,10 @@ private enum class PlanarDieResult(
 }
 
 @Composable
-fun PlaneChaseDialogContent( //TODO: add animations, also notifications
+fun PlaneChaseDialogContent( //TODO: add animations
     modifier: Modifier = Modifier,
     goToChoosePlanes: () -> Unit,
+    goToPlanechaseTutorial: () -> Unit,
     notificationManager: NotificationManager = koinInject(),
     viewModel: PlaneChaseViewModel = koinInject()
 ) {
@@ -170,6 +172,10 @@ fun PlaneChaseDialogContent( //TODO: add animations, also notifications
     BoxWithConstraints(modifier = modifier.padding(bottom = 20.dp)) {
         val buttonSize = remember(Unit) { maxWidth / 6f }
         val textSize = remember(Unit) { (maxWidth / 35f).value }
+        InfoButton(
+            modifier = Modifier.size(dimensions.infoButtonSize).align(Alignment.TopEnd).padding(end = dimensions.paddingLarge, top = dimensions.paddingLarge),
+            onPress = goToPlanechaseTutorial
+        )
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.height(dimensions.paddingTiny).weight(0.05f))
             Text(

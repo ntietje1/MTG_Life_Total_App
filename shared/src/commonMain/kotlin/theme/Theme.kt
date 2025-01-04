@@ -39,6 +39,7 @@ class Dimensions(val screenWidth: Dp, val screenHeight: Dp) {
     val borderThin = screenWidth / 1000f + screenHeight / 1500f
     val borderSmall = screenWidth / 500f + screenHeight / 750f
     val borderMedium = screenWidth / 250f + screenHeight / 375f
+    val infoButtonSize = screenWidth / 32f + screenHeight / 40f
 }
 
 @Composable
