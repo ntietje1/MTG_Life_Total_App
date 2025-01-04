@@ -42,12 +42,12 @@ fun TextFieldWithButton(
     ) {
         val textSize = remember(Unit) { (maxHeight / 3.75f).value }
         TextField(
-            modifier = Modifier.fillMaxHeight().width(maxWidth - maxHeight).padding(top = textSize.dp / 8f, start = textSize.dp / 8f, bottom = textSize.dp / 16f).align(Alignment.CenterStart),
+            modifier = Modifier.fillMaxHeight().width(maxWidth - maxHeight).padding(top = textSize.dp / 32f, bottom = textSize.dp / 64f).align(Alignment.CenterStart),
             value = value,
             onValueChange = onValueChange,
             label = {
                 Text(
-                    modifier = Modifier.wrapContentSize().padding(top = textSize.dp / 16f, start = textSize.dp / 16f, bottom = textSize.dp / 8f),
+                    modifier = Modifier.wrapContentSize().padding(bottom = textSize.dp / 8f),
                     text = label,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                     fontSize = (textSize * 0.8f).scaledSp

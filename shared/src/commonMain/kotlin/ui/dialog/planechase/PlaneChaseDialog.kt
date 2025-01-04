@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -46,8 +46,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.delay
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
+import lifelinked.shared.generated.resources.card_back
 import lifelinked.shared.generated.resources.chaos_icon
 import lifelinked.shared.generated.resources.checkmark
 import lifelinked.shared.generated.resources.deck_icon
@@ -60,13 +63,16 @@ import lifelinked.shared.generated.resources.visible_icon
 import lifelinked.shared.generated.resources.x_icon
 import model.card.Card
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.scaledSp
+import ui.components.CARD_CORNER_PERCENT
 import ui.components.CardImage
 import ui.components.SearchTextField
 import ui.components.SettingsButton
+import ui.modifier.routePointerChangesTo
 
 private enum class PlanarDieResult(
     val toString: String,
@@ -76,7 +82,7 @@ private enum class PlanarDieResult(
 }
 
 @Composable
-fun PlaneChaseDialogContent(
+fun PlaneChaseDialogContent( //TODO: add animations, also notifications
     modifier: Modifier = Modifier,
     goToChoosePlanes: () -> Unit,
     viewModel: PlaneChaseViewModel = koinInject()
@@ -85,6 +91,8 @@ fun PlaneChaseDialogContent(
     var rotated by remember { mutableStateOf(false) }
     var planarDieResultVisible by remember { mutableStateOf(false) }
     var planarDieResult by remember { mutableStateOf(PlanarDieResult.NO_EFFECT) }
+    val dimensions = LocalDimensions.current
+    val haptic = LocalHapticFeedback.current
 
     if (planarDieResultVisible) {
         Dialog(onDismissRequest = { planarDieResultVisible = false }, properties = DialogProperties(
@@ -160,23 +168,35 @@ fun PlaneChaseDialogContent(
 
     BoxWithConstraints(modifier = modifier.padding(bottom = 20.dp)) {
         val buttonSize = remember(Unit) { maxWidth / 6f }
-        val previewPadding = remember(Unit) { buttonSize / 2f }
         val textSize = remember(Unit) { (maxWidth / 35f).value }
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(Modifier.height(dimensions.paddingTiny).weight(0.05f))
             Text(
-                modifier = Modifier.fillMaxWidth().padding(top = 5.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = dimensions.paddingSmall),
                 text = "Planar deck size: ${state.planarDeck.size}",
                 fontSize = textSize.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )
-            Spacer(Modifier.height(previewPadding / 4))
+            Spacer(Modifier.height(dimensions.paddingTiny).weight(0.01f))
             PlaneChaseCardPreview(
-                modifier = Modifier.graphicsLayer { rotationZ = if (rotated) 180f else 0f }.fillMaxHeight().weight(0.99f),
+                modifier = Modifier
+                    .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
+                    .fillMaxHeight()
+                    .weight(0.99f)
+                    .padding(dimensions.paddingLarge)
+                    .pointerInput(Unit) {
+                        routePointerChangesTo(onLongPress = {
+                            delay(500)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            rotated = !rotated
+                        })
+                    },
                 card = state.planarDeck.lastOrNull(),
-                allowEnlarge = false
+                allowEnlarge = false,
+                showSelectedBackground = false
             )
-            Spacer(Modifier.height(previewPadding))
+            Spacer(Modifier.height(buttonSize / 2f))
             Row(
                 Modifier.fillMaxWidth().height(buttonSize * 0.6f), horizontalArrangement = Arrangement.SpaceAround, verticalAlignment = Alignment.CenterVertically
             ) {
@@ -283,15 +303,20 @@ fun ChoosePlanesDialogContent(
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
             Text(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(vertical = dimensions.paddingTiny),
                 text = "${state.planarDeck.intersect(filteredPlanes.toSet()).size}/${filteredPlanes.size} Planes Selected, ${state.allPlanes.size - filteredPlanes.size}/${state.allPlanes.size} Hidden",
                 fontSize = textSize.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )
             LazyVerticalGrid(
-                modifier = Modifier.fillMaxSize().padding(bottom = maxWidth / 15f).weight(0.5f).border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = maxWidth / 15f)
+                    .weight(0.5f)
+                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
                 columns = GridCells.Fixed(columnCount),
+                verticalArrangement = Arrangement.SpaceAround,
             ) {
                 items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
                     PlaneChaseCardPreview(
@@ -299,11 +324,9 @@ fun ChoosePlanesDialogContent(
                         card = card,
                         onTap = {
                             if (!state.planarDeck.contains(card)) {
-                                println("Adding ${card.name} to planar deck")
                                 viewModel.selectPlane(card)
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             } else {
-                                println("Removing ${card.name} from planar deck")
                                 viewModel.deselectPlane(card)
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
@@ -360,32 +383,71 @@ fun PlaneChaseCardPreview(
     onPress: () -> Unit = {},
     onTap: () -> Unit = {},
     allowEnlarge: Boolean = true,
-    selected: Boolean = false
+    selected: Boolean = false,
+    showSelectedBackground: Boolean = true
 ) {
     var showLargeImage by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
+
+    var longPressed by remember { mutableStateOf(false) }
+    var rotated by remember { mutableStateOf(false) }
 
     if (showLargeImage && allowEnlarge) {
         Dialog(onDismissRequest = { showLargeImage = false }, properties = DialogProperties(
             usePlatformDefaultWidth = false
         ), content = {
             Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    showLargeImage = false
-                })
+                routePointerChangesTo(
+                    onUp = {
+                        if (!longPressed) {
+                            showLargeImage = false
+                        }
+                        longPressed = false
+                    },
+                    onLongPress = {
+                        delay(500)
+                        longPressed = true
+                        rotated = !rotated
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    },
+                )
             }) {
-                CardImage(modifier = Modifier.clip(CutCornerShape(125.dp)).fillMaxSize(0.85f).align(Alignment.Center), imageUri = card!!.getUris().large)
-            }
+                BoxWithConstraints(
+                    modifier = Modifier.fillMaxSize().padding(dimensions.paddingLarge)
+                ) {
+                    val cardAspectRatio = 5f/7f // Standard card ratio
+                    val screenAspectRatio = maxWidth/maxHeight
+                    
+                    val largeImageModifier = if (screenAspectRatio > cardAspectRatio) {
+                        // Screen is wider than card - constrain by height
+                        Modifier.fillMaxHeight().aspectRatio(cardAspectRatio)
+                    } else {
+                        // Screen is taller than card - constrain by width
+                        Modifier.fillMaxWidth().aspectRatio(cardAspectRatio)
+                    }
 
+                    CardImage(
+                        modifier = largeImageModifier
+                            .clip(RoundedCornerShape(CARD_CORNER_PERCENT))
+                            .align(Alignment.Center)
+                            .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
+                        ,
+                        painter = asyncPainterResource(card!!.getUris().large),
+                        placeholderPainter = painterResource(Res.drawable.card_back)
+                    )
+                }
+            }
         })
     }
 
     if (card != null) {
         BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).pointerInput(Unit) {
             detectTapGestures(onLongPress = {
-                showLargeImage = true
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                if (allowEnlarge) {
+                    showLargeImage = true
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
             }, onPress = {
                 onPress()
             }, onTap = {
@@ -394,22 +456,23 @@ fun PlaneChaseCardPreview(
                 }
             })
         }) {
-            val clipSize = maxWidth / 20f
             Box(
                 Modifier.fillMaxSize().then(
-                    if (selected) {
+                    if (!showSelectedBackground) {
+                        Modifier
+                    } else if (selected) {
                         Modifier.background(Color.Green.copy(alpha = 0.2f))
                     } else {
-                        Modifier
+                        Modifier.background(Color.Red.copy(alpha = 0.1f))
                     }
                 )
             ) {
                 CardImage(
                     modifier = Modifier.fillMaxSize().then(
                         if (selected) {
-                            Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
+                            Modifier.padding(dimensions.paddingLarge).clip(RoundedCornerShape(CARD_CORNER_PERCENT))
                         } else {
-                            Modifier.padding(dimensions.borderThin).clip(CutCornerShape(clipSize + 0.5f.dp))
+                            Modifier.padding(dimensions.paddingSmall).clip(RoundedCornerShape(CARD_CORNER_PERCENT))
                         }
                     ), imageUri = card.getUris().normal
                 )
@@ -417,8 +480,8 @@ fun PlaneChaseCardPreview(
 
         }
     } else {
-        BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f), CutCornerShape(10.dp))
-            .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f), CutCornerShape(10.dp)).pointerInput(Unit) {}) {
+        BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f), RoundedCornerShape(CARD_CORNER_PERCENT))
+            .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f), RoundedCornerShape(CARD_CORNER_PERCENT)).pointerInput(Unit) {}) {
             val iconPadding = maxWidth / 4f
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                 SettingsButton(

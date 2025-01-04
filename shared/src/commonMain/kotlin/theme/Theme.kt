@@ -31,10 +31,11 @@ val LocalDimensions = staticCompositionLocalOf<Dimensions> {
 }
 
 class Dimensions(val screenWidth: Dp, val screenHeight: Dp) {
-    // Base size - using shorter screen dimension to ensure consistent proportions
-
     val blurRadius = screenHeight / 50f
-    val paddingSmall = screenWidth / 500f + screenHeight / 750f
+    val paddingTiny = screenWidth / 1500f + screenHeight / 2000f
+    val paddingSmall = screenWidth / 750f + screenHeight / 1000f
+    val paddingMedium = screenWidth / 375f + screenHeight / 500f
+    val paddingLarge = screenWidth / 200f + screenHeight / 300f
     val borderThin = screenWidth / 1000f + screenHeight / 1500f
     val borderSmall = screenWidth / 500f + screenHeight / 750f
     val borderMedium = screenWidth / 250f + screenHeight / 375f
