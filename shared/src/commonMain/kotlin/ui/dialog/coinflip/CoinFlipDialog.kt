@@ -69,7 +69,7 @@ import lifelinked.shared.generated.resources.thumbsup_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.scaledSp
-import ui.SettingsButton
+import ui.components.SettingsButton
 import ui.dialog.scryfall.ExpandableCard
 import ui.flippable.Flippable
 import ui.flippable.FlippableState

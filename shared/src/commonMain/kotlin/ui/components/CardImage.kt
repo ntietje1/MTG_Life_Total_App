@@ -1,4 +1,4 @@
-package ui.dialog.scryfall
+package ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +14,7 @@ import io.kamel.image.asyncPainterResource
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.card_back
 import org.jetbrains.compose.resources.painterResource
+import theme.LocalDimensions
 
 @Composable
 fun CardImage(
@@ -22,6 +23,7 @@ fun CardImage(
     placeholderPainter: Painter = painterResource(Res.drawable.card_back),
     progressIndicatorEnabled: Boolean = false
 ) {
+    val dimensions = LocalDimensions.current
     val painter = asyncPainterResource(imageUri)
     KamelImage(
         modifier = modifier.fillMaxSize(),
@@ -39,13 +41,13 @@ fun CardImage(
                 if (progress == 0.0f) {
                     CircularProgressIndicator(
                         color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp,
+                        strokeWidth = dimensions.borderSmall,
                     )
                 } else {
                     CircularProgressIndicator(
                         progress = { progress },
                         color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp,
+                        strokeWidth = dimensions.borderSmall,
                     )
                 }
             }

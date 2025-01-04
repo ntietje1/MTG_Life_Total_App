@@ -56,21 +56,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import model.card.Card
-import model.card.ImageUris
-import model.card.Ruling
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.card_back
 import lifelinked.shared.generated.resources.search_icon
+import model.card.Card
+import model.card.ImageUris
+import model.card.Ruling
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.scaledSp
+import ui.components.CardImage
+import ui.components.SearchTextField
+import ui.components.TextFieldWithButton
 import ui.dialog.SettingsDialog
-import ui.dialog.startinglife.TextFieldWithButton
 
 @Composable
 fun ScryfallSearchDialog(
@@ -122,7 +124,7 @@ fun ScryfallDialogContent(
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ScryfallSearchBar(
+            SearchTextField(
                 Modifier
                     .fillMaxWidth(0.9f)
                     .height(searchBarHeight)
@@ -221,56 +223,6 @@ fun ScryfallDialogContent(
 //                    Text("No rulings found :(", color = Color.Red, fontSize = 15.scaledSp)
 //                }
 //            }
-            }
-        }
-    }
-}
-
-@Composable
-fun ScryfallSearchBar(
-    modifier: Modifier = Modifier,
-    label: String = "Search Scryfall",
-    query: TextFieldValue,
-    onQueryChange: (TextFieldValue) -> Unit,
-    searchInProgress: Boolean = false,
-    onSearch: () -> Unit
-) {
-    BoxWithConstraints(Modifier.wrapContentSize()) {
-        val padding = remember(Unit) { maxHeight / 100f }
-        TextFieldWithButton(
-            modifier = modifier,
-            value = query,
-            onValueChange = onQueryChange,
-            label = label,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Text, imeAction = ImeAction.Search
-            ), keyboardActions = KeyboardActions(onSearch = {
-                onSearch()
-            })
-        ) {
-            IconButton(
-                onClick = {
-                    onSearch()
-                },
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (searchInProgress) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(padding * 1.5f),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                    )
-                } else {
-                    Icon(
-                        imageVector = vectorResource(Res.drawable.search_icon),
-                        contentDescription = "Search",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(padding)
-                    )
-                }
             }
         }
     }

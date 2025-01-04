@@ -46,7 +46,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import model.card.Card
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
 import lifelinked.shared.generated.resources.chaos_icon
@@ -59,14 +58,15 @@ import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.visible_icon
 import lifelinked.shared.generated.resources.x_icon
+import model.card.Card
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.scaledSp
-import ui.SettingsButton
-import ui.dialog.scryfall.CardImage
-import ui.dialog.scryfall.ScryfallSearchBar
+import ui.components.CardImage
+import ui.components.SearchTextField
+import ui.components.SettingsButton
 
 private enum class PlanarDieResult(
     val toString: String,
@@ -160,8 +160,8 @@ fun PlaneChaseDialogContent(
 
     BoxWithConstraints(modifier = modifier.padding(bottom = 20.dp)) {
         val buttonSize = remember(Unit) { maxWidth / 6f }
-        val previewPadding = remember(Unit) {  buttonSize / 2f }
-        val textSize = remember(Unit) {  (maxWidth / 35f).value }
+        val previewPadding = remember(Unit) { buttonSize / 2f }
+        val textSize = remember(Unit) { (maxWidth / 35f).value }
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 modifier = Modifier.fillMaxWidth().padding(top = 5.dp),
@@ -180,21 +180,46 @@ fun PlaneChaseDialogContent(
             Row(
                 Modifier.fillMaxWidth().height(buttonSize * 0.6f), horizontalArrangement = Arrangement.SpaceAround, verticalAlignment = Alignment.CenterVertically
             ) {
-                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f), text = "Previous", shadowEnabled = false, imageVector = vectorResource(Res.drawable.back_icon_alt), onPress = {
-                    viewModel.backPlane()
-                })
-                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f), text = "Flip Image", shadowEnabled = false, imageVector = vectorResource(Res.drawable.reset_icon), onPress = {
-                    rotated = !rotated
-                })
-                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f), text = "Planeswalk", shadowEnabled = false, imageVector = vectorResource(Res.drawable.planeswalker_icon), onPress = {
-                    viewModel.planeswalk()
-                })
-                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f), text = "Planar Die", shadowEnabled = false, imageVector = vectorResource(Res.drawable.die_icon), onPress = {
-                    rollPlanarDie()
-                })
-                SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f), text = "Planar Deck", shadowEnabled = false, imageVector = vectorResource(Res.drawable.deck_icon), onPress = {
-                    goToChoosePlanes()
-                })
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
+                    text = "Previous",
+                    shadowEnabled = false,
+                    imageVector = vectorResource(Res.drawable.back_icon_alt),
+                    onPress = {
+                        viewModel.backPlane()
+                    })
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
+                    text = "Flip Image",
+                    shadowEnabled = false,
+                    imageVector = vectorResource(Res.drawable.reset_icon),
+                    onPress = {
+                        rotated = !rotated
+                    })
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
+                    text = "Planeswalk",
+                    shadowEnabled = false,
+                    imageVector = vectorResource(Res.drawable.planeswalker_icon),
+                    onPress = {
+                        viewModel.planeswalk()
+                    })
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
+                    text = "Planar Die",
+                    shadowEnabled = false,
+                    imageVector = vectorResource(Res.drawable.die_icon),
+                    onPress = {
+                        rollPlanarDie()
+                    })
+                SettingsButton(
+                    modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
+                    text = "Planar Deck",
+                    shadowEnabled = false,
+                    imageVector = vectorResource(Res.drawable.deck_icon),
+                    onPress = {
+                        goToChoosePlanes()
+                    })
             }
             Spacer(Modifier.height(buttonSize / 5f))
         }
@@ -215,24 +240,24 @@ fun ChoosePlanesDialogContent(
     val dimensions = LocalDimensions.current
 
     val filteredPlanes by derivedStateOf {
-        state.searchedPlanes.filter { card -> state.planarDeck.map{ it.name }.contains(card.name) || !state.hideUnselected }
+        state.searchedPlanes.filter { card -> state.planarDeck.map { it.name }.contains(card.name) || !state.hideUnselected }
     }
     var backStackDiff by remember { mutableStateOf(0) }
 
     BoxWithConstraints(modifier = modifier) {
-        val maxWidth = remember(Unit) {  maxWidth }
-        val maxHeight = remember(Unit) {  maxHeight }
-        val buttonSize = remember(Unit) {  maxWidth / 6f }
+        val maxWidth = remember(Unit) { maxWidth }
+        val maxHeight = remember(Unit) { maxHeight }
+        val buttonSize = remember(Unit) { maxWidth / 6f }
 
-        val searchBarHeight = remember(Unit) {  maxWidth / 9f + 30.dp }
-        val padding = remember(Unit) {  searchBarHeight / 10f }
-        val columnCount = remember(Unit) {  if (maxWidth  / 3 > maxHeight / 4) 3 else 2 }
-        val textSize = remember(Unit) {  (maxHeight / 50f).value }
+        val searchBarHeight = remember(Unit) { maxWidth / 9f + 30.dp }
+        val padding = remember(Unit) { searchBarHeight / 10f }
+        val columnCount = remember(Unit) { if (maxWidth / 3 > maxHeight / 4) 3 else 2 }
+        val textSize = remember(Unit) { (maxHeight / 50f).value }
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ScryfallSearchBar(
+            SearchTextField(
                 Modifier
                     .fillMaxWidth(0.9f)
                     .height(searchBarHeight)
@@ -240,8 +265,7 @@ fun ChoosePlanesDialogContent(
                     .clip(RoundedCornerShape(15))
                     .border(
                         dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
-                    )
-                ,
+                    ),
                 query = state.query,
                 onQueryChange = { viewModel.setQuery(it) },
                 searchInProgress = state.searchInProgress
@@ -298,12 +322,12 @@ fun ChoosePlanesDialogContent(
             ) {
                 SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
                     text = "Select All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.deck_icon), onPress = {
-                    viewModel.addAllPlanarDeck(filteredPlanes)
-                })
+                        viewModel.addAllPlanarDeck(filteredPlanes)
+                    })
                 SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
                     text = "Unselect All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.x_icon), onPress = {
-                    viewModel.removeAllPlanarDeck(filteredPlanes)
-                })
+                        viewModel.removeAllPlanarDeck(filteredPlanes)
+                    })
                 SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
                     text = if (!state.hideUnselected) "Hide Unselected" else "Show Unselected",
                     shadowEnabled = false,
@@ -380,13 +404,15 @@ fun PlaneChaseCardPreview(
                     }
                 )
             ) {
-                CardImage(modifier = Modifier.fillMaxSize().then(
-                    if (selected) {
-                        Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
-                    } else {
-                        Modifier.padding(dimensions.borderThin).clip(CutCornerShape(clipSize + 0.5f.dp))
-                    }
-                ), imageUri = card.getUris().normal)
+                CardImage(
+                    modifier = Modifier.fillMaxSize().then(
+                        if (selected) {
+                            Modifier.padding(10.dp).clip(CutCornerShape(clipSize + 5.dp))
+                        } else {
+                            Modifier.padding(dimensions.borderThin).clip(CutCornerShape(clipSize + 0.5f.dp))
+                        }
+                    ), imageUri = card.getUris().normal
+                )
             }
 
         }

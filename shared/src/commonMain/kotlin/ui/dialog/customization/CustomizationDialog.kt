@@ -62,14 +62,14 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
-import ui.SettingsButton
+import ui.components.SettingsButton
+import ui.components.TextFieldWithButton
 import ui.dialog.AnimatedGridDialog
 import ui.dialog.WarningDialog
 import ui.dialog.color.ColorDialogViewModel
 import ui.dialog.color.ColorPickerDialogContent
 import ui.dialog.gif.GifDialogContent
 import ui.dialog.scryfall.ScryfallDialogContent
-import ui.dialog.startinglife.TextFieldWithButton
 import ui.lifecounter.playerbutton.LifeNumber
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonBackground

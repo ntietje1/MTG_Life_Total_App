@@ -95,7 +95,7 @@ import theme.ghostify
 import theme.saturateColor
 import theme.scaledSp
 import theme.textShadowStyle
-import ui.SettingsButton
+import ui.components.SettingsButton
 import ui.dialog.customization.PlayerCustomizationDialog
 import ui.lifecounter.CounterType
 import ui.modifier.VerticalRotation

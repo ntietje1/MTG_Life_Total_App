@@ -28,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,9 +62,9 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.scaledSp
-import ui.SettingsButton
+import ui.components.SettingsButton
+import ui.components.TextFieldWithButton
 import ui.dialog.GridDialogContent
-import ui.dialog.startinglife.TextFieldWithButton
 import ui.modifier.ShakeConfig
 import ui.modifier.bounceClick
 import ui.modifier.rememberShakeController
@@ -119,41 +118,41 @@ fun DiceRollDialogContent(
                     GridDialogContent(modifier = Modifier.wrapContentSize(), title = "Tap to roll", items = listOf({
                         DiceRollButton(modifier = diceRollButtonModifier, value = 4u, imageVector = vectorResource(Res.drawable.d4_icon),
                             resultCallBack = {
-                            setLastResult(it, 4u)
-                        })
+                                setLastResult(it, 4u)
+                            })
                     }, {
                         DiceRollButton(modifier = diceRollButtonModifier, value = 6u, imageVector = vectorResource(Res.drawable.d6_icon),
                             resultCallBack = {
-                            setLastResult(it, 6u)
-                        })
+                                setLastResult(it, 6u)
+                            })
                     }, {
                         DiceRollButton(modifier = diceRollButtonModifier, value = 8u, imageVector = vectorResource(Res.drawable.d8_icon),
                             resultCallBack = {
-                            setLastResult(it, 8u)
-                        })
+                                setLastResult(it, 8u)
+                            })
                     }, {
                         DiceRollButton(modifier = diceRollButtonModifier, value = 10u, imageVector = vectorResource(Res.drawable.d10_icon),
                             resultCallBack = {
-                            setLastResult(it, 10u)
-                        })
+                                setLastResult(it, 10u)
+                            })
                     }, {
                         DiceRollButton(modifier = diceRollButtonModifier, value = 12u, imageVector = vectorResource(Res.drawable.d12_icon),
                             resultCallBack = {
-                            setLastResult(it, 12u)
-                        })
+                                setLastResult(it, 12u)
+                            })
                     }, {
                         DiceRollButton(modifier = diceRollButtonModifier, value = 20u, imageVector = vectorResource(Res.drawable.d20_icon),
                             resultCallBack = {
-                            setLastResult(it, 20u)
-                        })
+                                setLastResult(it, 20u)
+                            })
                     }, {
 
                     }, {
                         DiceRollButton(modifier = diceRollButtonModifier, value = state.customDieValue, imageVector = vectorResource(Res.drawable.d20_icon),
                             enabled = state.textFieldValue.text != "" && state.textFieldValue.text.toUIntOrNull() != null && state.textFieldValue.text.toUInt() > 0u,
                             resultCallBack = {
-                            setLastResult(it, 20u)
-                        })
+                                setLastResult(it, 20u)
+                            })
                     }))
                 }
             }

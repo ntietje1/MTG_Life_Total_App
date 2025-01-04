@@ -39,7 +39,7 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
-import ui.SettingsButton
+import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState

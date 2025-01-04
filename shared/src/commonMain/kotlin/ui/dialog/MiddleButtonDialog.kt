@@ -62,7 +62,7 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.scaledSp
-import ui.SettingsButton
+import ui.components.SettingsButton
 import ui.dialog.coinflip.CoinFlipDialogContent
 import ui.dialog.coinflip.CoinFlipTutorialContent
 import ui.dialog.dice.DiceRollDialogContent

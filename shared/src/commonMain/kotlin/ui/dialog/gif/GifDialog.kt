@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.scaledSp
-import ui.dialog.scryfall.ScryfallSearchBar
+import ui.components.SearchTextField
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonBackground
 
@@ -59,9 +59,9 @@ fun GifDialogContent(
         val searchBarHeight = remember(Unit) { maxWidth / 9f + 30.dp }
         val padding = remember(Unit) { searchBarHeight / 10f }
         val textSize = remember(Unit) { (maxHeight / 50f).value }
-        val buttonWidth = remember(Unit)  { (maxWidth / 2f) - 16.dp }
-        val buttonHeight = remember(Unit)  { buttonWidth / 1.75f }
-        val numberToQuery = remember(Unit)  { (maxHeight / buttonHeight).toInt() * 2 }
+        val buttonWidth = remember(Unit) { (maxWidth / 2f) - 16.dp }
+        val buttonHeight = remember(Unit) { buttonWidth / 1.75f }
+        val numberToQuery = remember(Unit) { (maxHeight / buttonHeight).toInt() * 2 }
 
         LaunchedEffect(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
             val endReached = listState.firstVisibleItemIndex + listState.firstVisibleItemScrollOffset >= state.gifResults.size - numberToQuery
@@ -75,7 +75,7 @@ fun GifDialogContent(
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ScryfallSearchBar(
+            SearchTextField(
                 Modifier
                     .fillMaxWidth(0.9f)
                     .height(searchBarHeight)

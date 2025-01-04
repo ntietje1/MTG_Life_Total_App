@@ -17,7 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ui.SettingsButton
+import ui.components.SettingsButton
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.alternate4player_icon
 import lifelinked.shared.generated.resources.default4player_icon

@@ -41,7 +41,8 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.scaledSp
-import ui.SettingsButton
+import ui.components.SettingsButton
+import ui.components.TextFieldWithButton
 import ui.dialog.GridDialogContent
 
 @Composable
@@ -100,66 +101,6 @@ fun StartingLifeDialogContent(
                 })
             }
             Spacer(Modifier.weight(0.5f))
-        }
-    }
-}
-
-@Composable
-fun TextFieldWithButton(
-    modifier: Modifier = Modifier,
-    value: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-    label: String,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(
-        capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
-    ),
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    button: @Composable () -> Unit,
-) {
-    BoxWithConstraints(
-        modifier = modifier
-    ) {
-        val textSize = remember(Unit) { (maxHeight / 3.75f).value }
-        TextField(
-            modifier = Modifier.fillMaxHeight().width(maxWidth - maxHeight).align(Alignment.CenterStart),
-            value = value,
-            onValueChange = onValueChange,
-            label = {
-                Text(
-                    modifier = Modifier.wrapContentSize(),
-                    text = label,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = (textSize * 0.9f).scaledSp
-                )
-            },
-            textStyle = TextStyle(fontSize = (textSize * 1.2f).scaledSp),
-            singleLine = true, colors = TextFieldDefaults.colors(
-                focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                disabledTextColor = MaterialTheme.colorScheme.onPrimary,
-                focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                disabledLabelColor = MaterialTheme.colorScheme.onPrimary,
-                cursorColor = MaterialTheme.colorScheme.onPrimary,
-                selectionColors = TextSelectionColors(
-                    handleColor = MaterialTheme.colorScheme.onPrimary,
-                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                ),
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            ), keyboardOptions = keyboardOptions, keyboardActions = keyboardActions
-        )
-        BoxWithConstraints(
-            Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .aspectRatio(1.0f)
-        ) {
-            button()
         }
     }
 }

@@ -57,7 +57,7 @@ import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
-import ui.SettingsButton
+import ui.components.SettingsButton
 import ui.dialog.WarningDialog
 import ui.tutorial.pages.TutorialPage1
 import ui.tutorial.pages.TutorialPage2

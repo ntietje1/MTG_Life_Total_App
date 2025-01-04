@@ -62,7 +62,7 @@ import lifelinked.shared.generated.resources.skip_icon
 import model.Player.Companion.allPlayerColors
 import org.jetbrains.compose.resources.vectorResource
 import theme.scaledSp
-import ui.SettingsButton
+import ui.components.SettingsButton
 import ui.modifier.routePointerChangesTo
 import ui.playerselect.PlayerSelectScreenValues.deselectDuration
 import ui.playerselect.PlayerSelectScreenValues.finalDeselectDuration

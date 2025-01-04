@@ -51,7 +51,7 @@ import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
 import theme.LocalDimensions
 import theme.blendWith
-import ui.SettingsButton
+import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialog
 import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.playerbutton.PlayerButton
@@ -69,6 +69,7 @@ fun LifeCounterScreen(
     val scope = rememberCoroutineScope()
     val numPlayers by viewModel.numPlayers.collectAsState()
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
+    val dimensions = LocalDimensions.current
 
     if (state.middleButtonDialogState != null) {
         MiddleButtonDialog(
@@ -113,13 +114,12 @@ fun LifeCounterScreen(
     ) {
         val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) {
             LifeCounterMeasurements(
-                maxWidth = maxWidth, maxHeight = maxHeight, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
+                maxWidth = maxWidth - dimensions.paddingSmall * 2, maxHeight = maxHeight - dimensions.paddingSmall * 2, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
             )
         }
-        val dimensions = LocalDimensions.current
         val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }
         Box(
-            Modifier.fillMaxSize().then(
+            Modifier.fillMaxSize().padding(dimensions.paddingSmall).then(
                 if (state.blurBackground) {
                     Modifier.blur(radius = dimensions.blurRadius)
                 } else {

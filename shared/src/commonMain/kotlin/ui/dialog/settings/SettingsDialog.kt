@@ -59,7 +59,7 @@ import theme.LocalDimensions
 import theme.MainColorLight
 import theme.defaultTextStyle
 import theme.scaledSp
-import ui.SettingsButton
+import ui.components.SettingsButton
 
 @Composable
 fun SettingsDialogContent(
