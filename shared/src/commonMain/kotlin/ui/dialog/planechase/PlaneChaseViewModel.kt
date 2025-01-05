@@ -150,7 +150,7 @@ class PlaneChaseViewModel(
 
 
     private suspend fun search(qry: String = state.value.query.text): List<Card> {
-        return scryfallApi.searchCards("t:plane $qry")
+        return scryfallApi.searchCards("(t:plane or t:phenomenon) $qry")
     }
 
     fun searchPlanes(qry: String = state.value.query.text, onSearchResult: (List<Card>) -> Unit) {

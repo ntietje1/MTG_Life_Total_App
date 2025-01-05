@@ -28,18 +28,39 @@ fun PlanechaseTutorialContent(
     BoxWithConstraints(
         modifier = Modifier.wrapContentSize(),
     ) {
-        val padding = remember(Unit) { maxWidth / 50f + maxHeight / 75f }
         val textSize = remember(Unit) { (maxWidth / 50f + maxHeight / 150f).value }
         LazyColumn(
-            modifier = modifier,
-            verticalArrangement = Arrangement.spacedBy(padding / 6f),
+            modifier = modifier.padding(dimensions.paddingLarge * 3),
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = dimensions.paddingMedium)
+                        .padding(top = dimensions.paddingMedium),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = """
+                            Planechase is a casual Magic: The Gathering variant where players travel between different planes, each with unique effects that modify the game.
+                        """.trimIndent(),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = textSize.scaledSp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensions.paddingMedium)
+                    )
+                }
+            }
             item {
                 PlaneChaseCardPreview(
                     modifier = Modifier
                         .height(dimensions.screenWidth / 1.5f)
-                        .padding(horizontal = dimensions.screenWidth / 10f)
+                        .padding(horizontal = dimensions.screenWidth / 20f)
                         .rotate(90f),
                     card = Card(
                         name = "Sample Plane",
@@ -61,18 +82,60 @@ fun PlanechaseTutorialContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .padding(padding),
+                        .padding(horizontal = dimensions.paddingMedium),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = """
-                            Planechase is a casual Magic: The Gathering variant where players travel between different planes, each with unique effects that modify the game.
-                            
                             To begin, select your planar deck using the "Planar Deck" button. You can search for specific planes and toggle their selection.
                             
-                            It is recommended to use a separate device to display the Planechase screen side by side with your game, making it easily visible to all players.
+                            Deck Building Rules:
+                            • A planar deck must contain at least 40 cards, or at least 10x the number of players, whichever is smaller
+                            • The deck cannot contain more phenomenon cards than 2x the number of players
                             
+                            It is recommended to use a separate device to display the Planechase screen side by side with your game, making it easily visible to all players.
+                        """.trimIndent(),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = textSize.scaledSp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensions.paddingMedium)
+                    )
+                }
+            }
+            item {
+                PlaneChaseCardPreview(
+                    modifier = Modifier
+                        .height(dimensions.screenWidth / 1.5f)
+                        .padding(horizontal = dimensions.screenWidth / 20f)
+                        .rotate(90f),
+                    card = Card(
+                        name = "Sample Plane",
+                        artist = "",
+                        setName = "",
+                        printsSearchUri = "",
+                        imageUris = ImageUris(
+                            artCrop = "",
+                            small = "",
+                            normal = "https://cards.scryfall.io/large/front/b/e/be4da23c-bc51-4601-8f86-4e6f4eb27e6a.jpg?1680815547",
+                            large = "https://cards.scryfall.io/large/front/b/e/be4da23c-bc51-4601-8f86-4e6f4eb27e6a.jpg?1680815547"
+                        )
+                    ),
+                    showSelectedBackground = false
+                )
+            }
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = dimensions.paddingMedium),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = """
                             During the game:
                             • Long press a plane card to view it in full size
                             • Use "Previous" to return to the last plane
@@ -89,7 +152,8 @@ fun PlanechaseTutorialContent(
                         fontSize = textSize.scaledSp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(padding / 2f)
+                            .padding(horizontal = dimensions.paddingMedium)
+                            .padding(bottom = dimensions.paddingLarge)
                     )
                 }
             }
