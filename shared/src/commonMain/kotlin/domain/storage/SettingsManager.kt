@@ -56,8 +56,8 @@ interface ISettingsManager {
     fun loadPlayerStates(): List<Player>
     fun savePlayerStates(players: List<Player>)
 
-    fun savePlanechaseState(planarDeck: List<Card>, planarBackStack: List<Card>)
-    fun loadPlanechaseState(): Pair<List<Card>, List<Card>>
+    fun savePlanechaseState(allPlanes: List<Card>, planarDeck: List<Card>, planarBackStack: List<Card>)
+    fun loadPlanechaseState(): Triple<List<Card>, List<Card>, List<Card>>
 
     fun savePlayerPref(player: Player)
     fun deletePlayerPref(player: Player)
@@ -203,17 +203,20 @@ class SettingsManager private constructor() : ISettingsManager {
         settings.putString("playerStates", allPrefString)
     }
 
-    override fun savePlanechaseState(planarDeck: List<Card>, planarBackStack: List<Card>) {
-        val allPrefString = Json.encodeToString(planarDeck)
-        settings.putString("planarDeck", allPrefString)
-        val backPrefString = Json.encodeToString(planarBackStack)
-        settings.putString("planarBackStack", backPrefString)
+    override fun savePlanechaseState(allPlanes: List<Card>, planarDeck: List<Card>, planarBackStack: List<Card>) {
+        val allPlanesJson = Json.encodeToString(allPlanes)
+        settings.putString("allPlanes", allPlanesJson)
+        val planarDeckJson = Json.encodeToString(planarDeck)
+        settings.putString("planarDeck", planarDeckJson)
+        val backStackJson = Json.encodeToString(planarBackStack)
+        settings.putString("planarBackStack", backStackJson)
     }
 
-    override fun loadPlanechaseState(): Pair<List<Card>, List<Card>> {
-        val deckPrefString = settings.getString("planarDeck", "[]")
-        val backPrefString = settings.getString("planarBackStack", "[]")
-        return Pair(Json.decodeFromString(deckPrefString), Json.decodeFromString(backPrefString))
+    override fun loadPlanechaseState(): Triple<List<Card>, List<Card>, List<Card>> {
+        val allPlanesJson = settings.getString("allPlanes", "[]")
+        val planarDeckJson = settings.getString("planarDeck", "[]")
+        val backStackJson = settings.getString("planarBackStack", "[]")
+        return Triple(Json.decodeFromString(allPlanesJson), Json.decodeFromString(planarDeckJson), Json.decodeFromString(backStackJson))
     }
 
     override fun savePlayerPref(player: Player) {

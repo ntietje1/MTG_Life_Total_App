@@ -24,15 +24,12 @@ class PlaneChaseViewModel(
 
     init {
         loadPlanechaseState()
-        searchPlanes {
-            _state.value = _state.value.copy(allPlanes = it)
+        searchPlanes { result ->
+            if (result.isNotEmpty()) {
+                _state.value = _state.value.copy(allPlanes = result)
+                savePlanechaseState()
+            }
         }
-//        val currentPlanes = loadAllPlanes()
-//        searchPlanes { cards ->
-//            val newPlanes = cards.filter { card -> card.name !in currentPlanes.map { it.name } }
-//            _state.value = _state.value.copy(allPlanes = newPlanes + cards)
-//            settingsManager.saveAllPlanes(newPlanes + cards)
-//        }
     }
 
     private fun shuffleDeck() {
@@ -46,12 +43,20 @@ class PlaneChaseViewModel(
     }
 
     private fun savePlanechaseState() {
-        settingsManager.savePlanechaseState(state.value.planarDeck, state.value.planarBackStack)
+        settingsManager.savePlanechaseState(
+            allPlanes = state.value.allPlanes,
+            planarDeck = state.value.planarDeck,
+            planarBackStack = state.value.planarBackStack
+        )
     }
 
     private fun loadPlanechaseState() {
-        val (deck, back) = settingsManager.loadPlanechaseState()
-        _state.value = _state.value.copy(planarDeck = deck.toMutableStateList(), planarBackStack = back.toMutableStateList())
+        val (all, deck, back) = settingsManager.loadPlanechaseState()
+        _state.value = _state.value.copy(
+            allPlanes = all.toMutableStateList(),
+            planarDeck = deck.toMutableStateList(),
+            planarBackStack = back.toMutableStateList()
+        )
     }
 
     private fun removeFromDeck(card: Card) {
@@ -141,13 +146,6 @@ class PlaneChaseViewModel(
         }
         return null
     }
-
-//    private fun loadAllPlanes(): List<Card> {
-//        val allPlanes = settingsManager.loadAllPlanes()
-//        _state.value = _state.value.copy(allPlanes = allPlanes)
-//        return allPlanes
-//    }
-
 
     private suspend fun search(qry: String = state.value.query.text): List<Card> {
         return scryfallApi.searchCards("(t:plane or t:phenomenon) $qry")

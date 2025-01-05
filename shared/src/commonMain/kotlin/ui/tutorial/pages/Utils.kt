@@ -68,6 +68,7 @@ class MockSettingsManager(
     devMode: Boolean = SettingsManager.instance.devMode.value,
     patchNotes: String = SettingsManager.instance.patchNotes.value,
     private var playerStates: List<Player> = emptyList(),
+    private var allPlanes: List<Card> = emptyList(),
     private var planarDeck: List<Card> = emptyList(),
     private var planarBackStack: List<Card> = emptyList(),
     private val playerPrefs: ArrayList<Player> = arrayListOf()
@@ -170,13 +171,14 @@ class MockSettingsManager(
         playerStates = players
     }
 
-    override fun savePlanechaseState(planarDeck: List<Card>, planarBackStack: List<Card>) {
+    override fun savePlanechaseState(allPlanes: List<Card>, planarDeck: List<Card>, planarBackStack: List<Card>) {
+        this.allPlanes = allPlanes
         this.planarDeck = planarDeck
         this.planarBackStack = planarBackStack
     }
 
-    override fun loadPlanechaseState(): Pair<List<Card>, List<Card>> {
-        return Pair(planarDeck, planarBackStack)
+    override fun loadPlanechaseState(): Triple<List<Card>, List<Card>, List<Card>> {
+        return Triple(allPlanes, planarDeck, planarBackStack)
     }
 
     override fun savePlayerPref(player: Player) {
