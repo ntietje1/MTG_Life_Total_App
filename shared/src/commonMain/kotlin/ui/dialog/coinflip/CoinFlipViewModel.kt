@@ -31,6 +31,10 @@ class CoinFlipViewModel(
         generateCoinController()
     }
 
+    init {
+        resetLastResults()
+    }
+
     fun setOnFlip(onFlip: () -> Unit) {
         this.onFlip = onFlip
     }
@@ -63,12 +67,25 @@ class CoinFlipViewModel(
         }
     }
 
-    fun buildLastResultString(): AnnotatedString {
+    private fun addLastResultPadding(resultString: AnnotatedString): AnnotatedString {
         return buildAnnotatedString {
             if (state.value.lastResults.isEmpty() || (state.value.flipInProgress && flippingUntil == null)) {
-                append(" ".repeat((coinControllers.size * 2.5f + 1).roundToInt()))
-            } else if (state.value.lastResults.count { it == CoinHistoryItem.HEADS || it == CoinHistoryItem.TAILS } == 1) {
+                if (coinControllers.size > 1) {
+                    append(" ".repeat((coinControllers.size * 2.85f + 2).roundToInt()))
+                } else {
+                    append(" ".repeat(12))
+                }
+            } else {
                 append(" ")
+                append(resultString)
+                append(" ")
+            }
+        }
+    }
+
+    private fun buildLastResultString(): AnnotatedString {
+        return buildAnnotatedString {
+            if (state.value.lastResults.count { it == CoinHistoryItem.HEADS || it == CoinHistoryItem.TAILS } == 1) {
                 state.value.lastResults.forEach { result ->
                     when (result) {
                         CoinHistoryItem.HEADS -> {
@@ -84,13 +101,11 @@ class CoinFlipViewModel(
                         }
 
                         else -> {
-//                            append(result.letter)
+                            // nothing
                         }
                     }
                 }
-                append(" ")
             } else {
-                append(" ")
                 state.value.lastResults.forEach { result ->
                     withStyle(style = SpanStyle(color = result.color)) {
                         when (result) {
@@ -110,24 +125,16 @@ class CoinFlipViewModel(
                         }
                     }
                 }
-                append(" ")
             }
+        }.also { result ->
+            _state.value = state.value.copy(
+                lastResultString = addLastResultPadding(result),
+                lastResults = listOf()
+            )
         }
     }
 
-//    fun repairHistoryString() {
-//        while (state.value.history.count { it == CoinHistoryItem.L_DIVIDER_SINGLE } > state.value.history.count { it == CoinHistoryItem.R_DIVIDER_SINGLE }) {
-//            _state.value = state.value.copy(history = state.value.history.subList(0, state.value.history.size - 1))
-//        }
-//
-//        val leftDividerIndex = state.value.history.indexOfLast { it == CoinHistoryItem.L_DIVIDER_LIST }
-//        val rightDividerIndex = state.value.history.indexOfLast { it == CoinHistoryItem.R_DIVIDER_LIST }
-//        if (leftDividerIndex > rightDividerIndex) {
-//            addToHistory(CoinHistoryItem.R_DIVIDER_LIST)
-//        }
-//    }
-
-    fun buildHistoryString(): AnnotatedString {
+    private fun buildHistoryString(): AnnotatedString {
         var index = 0
         val historySize = state.value.history.size
         return buildAnnotatedString {
@@ -163,7 +170,7 @@ class CoinFlipViewModel(
                             }
 
                             else -> {
-                                append(" Error :(")
+                                // nothing
                             }
                         }
 
@@ -226,6 +233,11 @@ class CoinFlipViewModel(
                     }
                 }
             }
+        }.also { result ->
+            _state.value = state.value.copy(
+                historyString = state.value.historyString + result,
+                history = listOf()
+            )
         }
     }
 
@@ -328,6 +340,8 @@ class CoinFlipViewModel(
                     if (state.value.baseCoins > 1) {
                         addToLastResults(CoinHistoryItem.R_DIVIDER_SINGLE)
                     }
+                    println("history: " + buildHistoryString())
+                    println("lastResult: " + buildLastResultString())
                 } else {
                     addToLastResults(CoinHistoryItem.R_DIVIDER_SINGLE)
                     addToLastResults(CoinHistoryItem.COMMA)
@@ -380,12 +394,14 @@ class CoinFlipViewModel(
                 addToLastResults(res)
                 addToHistory(res)
                 val resultCount = state.value.lastResults.count { it == CoinHistoryItem.TAILS || it == CoinHistoryItem.HEADS }
-                if (resultCount == coinControllers.size) {
+                if (resultCount == coinControllers.size) { // done
                     onFlip()
                     addToHistory(CoinHistoryItem.R_DIVIDER_SINGLE)
                     setUserInteractionEnabled(true)
                     setFlipInProgress(false)
-                } else if (resultCount % calculateCoinCount(baseCoins = 1) == 0) {
+                    println("history: " + buildHistoryString())
+                    println("lastResult: " + buildLastResultString())
+                } else if (resultCount % calculateCoinCount(baseCoins = 1) == 0) { // continue
                     addToLastResults(CoinHistoryItem.COMMA)
                 }
             }
@@ -418,7 +434,10 @@ class CoinFlipViewModel(
     }
 
     private fun resetLastResults() {
-        _state.value = state.value.copy(lastResults = listOf())
+        _state.value = state.value.copy(
+            lastResultString = addLastResultPadding(AnnotatedString("")),
+            lastResults = listOf()
+        )
     }
 
     private fun addToLastResults(value: CoinHistoryItem) {

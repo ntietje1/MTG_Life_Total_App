@@ -86,9 +86,6 @@ fun CoinFlipDialogContent(
     val state by viewModel.state.collectAsState()
     val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
-
-    val lastResultString = remember(state.lastResults) { viewModel.buildLastResultString() }
-    val historyString = remember(state.history) { viewModel.buildHistoryString() }
     var allowHaptic by remember { mutableStateOf(false) }
 
     CoinController.setAnimationCorrectionFactor(SystemManager.getAnimationCorrectionFactor())
@@ -107,13 +104,6 @@ fun CoinFlipDialogContent(
     viewModel.setOnFlip {
         if (allowHaptic) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
-
-//    LaunchedEffect(state.history.size, state.lastResults.size) {
-//        if ( // hacky way to trigger haptic feedback on a flip
-//            state.history.lastOrNull() == CoinHistoryItem.R_DIVIDER_LIST || state.history.lastOrNull() == CoinHistoryItem.R_DIVIDER_SINGLE) {
-//            if (allowHaptic) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-//        }
-//    }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val buttonSize = remember(Unit) { maxWidth / 12f + maxHeight / 15f }
@@ -316,7 +306,7 @@ fun CoinFlipDialogContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 8f, bottom = padding / 24f)
             )
             LastResult(
-                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), lastResult = lastResultString
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), lastResult = state.lastResultString
             )
             Spacer(Modifier.weight(0.1f))
             Text(
@@ -327,7 +317,7 @@ fun CoinFlipDialogContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 8f, bottom = padding / 24f)
             )
             FlipHistory(
-                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), coinFlipHistory = historyString
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), coinFlipHistory = state.historyString
             )
             Spacer(Modifier.height(padding / 2f))
             Spacer(Modifier.weight(0.7f))

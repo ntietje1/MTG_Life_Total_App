@@ -1,6 +1,7 @@
 package ui.dialog.coinflip
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.heads
 import lifelinked.shared.generated.resources.tails
@@ -14,7 +15,9 @@ data class CoinFlipState(
     val krarksThumbs: Int = 0,
     val flipInProgress: Boolean = false,
     val userInteractionEnabled: Boolean = true,
+    val lastResultString: AnnotatedString = AnnotatedString(""),
     val lastResults: List<CoinHistoryItem> = listOf(),
+    val historyString: AnnotatedString = AnnotatedString(""),
     val history: List<CoinHistoryItem> = listOf(),
 )
 
