@@ -43,11 +43,13 @@ class CommanderDamageManager(
     }
 
     private fun receiveCommanderDamage(player: Player, index: Int, value: Int): Player {
-        if (player.commanderDamage[index] + value < 0) {
+        if (value < 0 && player.commanderDamage[index] + value < 0) {
             notificationManager.showNotification("Commander damage cannot be negative")
             return player
-        }
-        return player.copy(commanderDamage = player.commanderDamage.toMutableList().apply {
+        } else if (value > 0 && player.commanderDamage[index] + value >= 99) {
+            notificationManager.showNotification("Commander damage limit reached")
+            return player
+        } else return player.copy(commanderDamage = player.commanderDamage.toMutableList().apply {
             this[index] += value
         }.toList())
     }

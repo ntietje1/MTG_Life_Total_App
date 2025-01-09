@@ -19,6 +19,13 @@ class RecentChangeValue(
     private val recentChangeDelay: Long = RECENT_CHANGE_DELAY,
     private val updateCallback: (NumberWithRecentChange) -> Unit,
 ) {
+
+    constructor(
+        initialValue: Int = 0,
+        recentChangeDelay: Long = RECENT_CHANGE_DELAY,
+        updateCallback: (NumberWithRecentChange) -> Unit
+    ) : this(NumberWithRecentChange(initialValue, 0), recentChangeDelay, updateCallback)
+
     private val _value = MutableStateFlow(initialValue)
     val value: StateFlow<NumberWithRecentChange> = _value.asStateFlow()
 

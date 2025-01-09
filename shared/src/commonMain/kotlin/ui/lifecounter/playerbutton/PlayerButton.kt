@@ -22,23 +22,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -53,18 +46,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -77,7 +64,6 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.add_icon
 import lifelinked.shared.generated.resources.back_icon
 import lifelinked.shared.generated.resources.commander_solid_icon
-import lifelinked.shared.generated.resources.enter_icon
 import lifelinked.shared.generated.resources.heart_solid_icon
 import lifelinked.shared.generated.resources.image_error_icon
 import lifelinked.shared.generated.resources.mana_icon
@@ -494,14 +480,14 @@ fun PlayerButton(
                                                         .aspectRatio(0.70f)
                                                         .then(if (index == 0) Modifier.padding(start = padding) else Modifier),
                                                     textColor = state.player.textColor, iconResource = counterType.resource, value = viewModel.getCounterValue(counterType), onIncrement = {
-                                                    viewModel.incrementCounterValue(
-                                                        counterType, 1
-                                                    )
-                                                }, onDecrement = {
-                                                    viewModel.incrementCounterValue(
-                                                        counterType, -1
-                                                    )
-                                                })
+                                                        viewModel.incrementCounterValue(
+                                                            counterType, 1
+                                                        )
+                                                    }, onDecrement = {
+                                                        viewModel.incrementCounterValue(
+                                                            counterType, -1
+                                                        )
+                                                    })
                                             }
                                             item {
                                                 AddCounter(
@@ -907,24 +893,56 @@ fun CommanderDamageNumber(
 ) {
     BoxWithConstraints(modifier = modifier) {
         val dividerOffset = remember { maxHeight / 12f }
+        val dimensions = LocalDimensions.current
+        val numberWidth = remember { maxWidth * 0.3f }
+        val padding = remember { maxWidth * 0.1f }
+
+        if (secondValue != null) {
+            VerticalDivider(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxHeight(0.6f)
+                    .width(dimensions.borderThin)
+                    .offset(y = dividerOffset),
+                color = textColor
+            )
+        }
 
         Row(
-            modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            SingleCommanderDamageNumber(
-                modifier = Modifier.padding(horizontal = 10.dp).then(if (secondValue != null) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()),
-                name = name,
-                textColor = textColor,
-                value = firstValue,
-                recentChange = 0 //TODO: add this
-            )
-            if (secondValue != null) {
-                VerticalDivider(
-                    modifier = Modifier.fillMaxHeight(0.6f).width(2.dp).offset(y = dividerOffset), color = textColor
-                )
-
+            Box(
+                modifier = Modifier.fillMaxHeight().width(numberWidth),
+                contentAlignment = Alignment.Center
+            ) {
                 SingleCommanderDamageNumber(
-                    modifier = Modifier.padding(horizontal = 10.dp).fillMaxWidth(), name = name, textColor = textColor, value = secondValue, recentChange = 0
+                    modifier = Modifier.then(
+                        if (secondValue != null) {
+                            Modifier.fillMaxSize().padding(horizontal = padding)
+                        } else {
+                            Modifier.fillMaxSize()
+                        }
+                    ),
+                    name = name,
+                    textColor = textColor,
+                    value = firstValue,
+                    recentChange = 0
+                )
+            }
+            if (secondValue == null) return@BoxWithConstraints
+            Spacer(modifier = Modifier.width(padding*4))
+            Box(
+                modifier = Modifier.fillMaxHeight().width(numberWidth).padding(horizontal = padding),
+                contentAlignment = Alignment.Center
+            ) {
+                SingleCommanderDamageNumber(
+                    modifier = Modifier.fillMaxSize(),
+                    name = name,
+                    textColor = textColor,
+                    value = secondValue,
+                    recentChange = 0
                 )
             }
         }
@@ -933,7 +951,11 @@ fun CommanderDamageNumber(
 
 @Composable
 fun SingleCommanderDamageNumber(
-    modifier: Modifier = Modifier, name: String, textColor: Color, value: String, recentChange: Int
+    modifier: Modifier = Modifier,
+    name: String,
+    textColor: Color,
+    value: String,
+    recentChange: Int
 ) {
     val iconResource = remember { Res.drawable.commander_solid_icon }
 
@@ -954,12 +976,16 @@ fun LifeNumber(
     name: String,
     largeText: String,
     recentChangeText: String,
-
     ) {
     val iconResource = remember { Res.drawable.heart_solid_icon }
 
     NumericValue(
-        modifier = modifier, textColor = textColor, name = name, largeText = largeText, recentChangeText = recentChangeText, iconResource = iconResource
+        modifier = modifier,
+        textColor = textColor,
+        name = name,
+        largeText = largeText,
+        recentChangeText = recentChangeText,
+        iconResource = iconResource,
     )
 }
 
@@ -1035,57 +1061,6 @@ fun NumericValue(
                 enabled = false
             )
         }
-    }
-}
-
-
-@Composable
-fun ChangeNameField(
-    modifier: Modifier = Modifier,
-    name: TextFieldValue,
-    showChangeNameField: Boolean,
-    onChangeName: (TextFieldValue) -> Unit,
-    backgroundColor: Color,
-    playerTextColor: Color,
-    onDone: () -> Unit,
-) {
-    val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(focusRequester) {
-        if (showChangeNameField) {
-            focusRequester.requestFocus()
-        }
-    }
-
-    BoxWithConstraints(
-        modifier = modifier.focusRequester(focusRequester), contentAlignment = Alignment.Center
-    ) {
-        val textSize = (maxHeight / 3.5f).value.scaledSp
-        TextField(
-            value = name, onValueChange = onChangeName, label = {
-                Text(
-                    "New Name", color = backgroundColor, fontSize = textSize * 0.8f, style = defaultTextStyle()
-                )
-            }, textStyle = TextStyle(fontSize = textSize), singleLine = true, colors = TextFieldDefaults.colors(
-                focusedTextColor = backgroundColor,
-                unfocusedTextColor = backgroundColor,
-                focusedContainerColor = playerTextColor,
-                unfocusedContainerColor = playerTextColor,
-                cursorColor = backgroundColor,
-                errorCursorColor = backgroundColor,
-                unfocusedIndicatorColor = backgroundColor,
-                focusedIndicatorColor = backgroundColor,
-                disabledIndicatorColor = backgroundColor,
-                errorIndicatorColor = backgroundColor,
-            ), keyboardOptions = KeyboardOptions.Default.copy(
-                capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
-            ), keyboardActions = KeyboardActions(onDone = { onDone() }), modifier = Modifier.fillMaxSize()
-        )
-        SettingsButton(Modifier.align(Alignment.CenterEnd).fillMaxHeight().aspectRatio(1.0f),
-            imageVector = vectorResource(Res.drawable.enter_icon),
-            shadowEnabled = false,
-            mainColor = backgroundColor,
-            onPress = { onDone() })
     }
 }
 
