@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.about_me
 import org.jetbrains.compose.resources.imageResource
+import theme.LocalDimensions
+import theme.halfAlpha
 import theme.scaledSp
 
 @Composable
@@ -38,6 +40,7 @@ fun AboutMeDialogContent(
         val iconSize = remember(Unit) { maxWidth / 5f }
         val padding = remember(Unit) {  maxWidth / 25f }
         val textSize = remember(Unit) {  (maxWidth / 24f).value }
+        val dimensions = LocalDimensions.current
 
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -52,7 +55,7 @@ fun AboutMeDialogContent(
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .background(Color.White.copy(alpha = 0.2f))
-                    .border(0.5.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
+                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {

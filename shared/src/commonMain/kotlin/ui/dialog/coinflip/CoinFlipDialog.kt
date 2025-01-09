@@ -2,7 +2,6 @@ package ui.dialog.coinflip
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -64,18 +62,16 @@ import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.minus_icon
 import lifelinked.shared.generated.resources.plus_icon
-import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.thumbsup_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
+import theme.halfAlpha
 import theme.scaledSp
 import ui.components.InfoButton
 import ui.components.SettingsButton
-import ui.dialog.scryfall.ExpandableCard
 import ui.flippable.Flippable
 import ui.flippable.FlippableState
-import ui.flippable.rememberFlipController
 
 @Composable
 fun CoinFlipDialogContent(
@@ -124,9 +120,10 @@ fun CoinFlipDialogContent(
                     ),
                     onPress = { if (state.userInteractionEnabled) viewModel.incrementKrarksThumbs(-1) },
                     hapticEnabled = true,
+                    shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.thumbsup_icon),
                     shape = RoundedCornerShape(30),
-                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+                    backgroundColor = MaterialTheme.colorScheme.onSurface.halfAlpha(),
                 )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize * 0.7f).padding(buttonSize * 0.025f).then(
@@ -134,9 +131,10 @@ fun CoinFlipDialogContent(
                     ),
                     onPress = { if (state.userInteractionEnabled) viewModel.incrementKrarksThumbs(1) },
                     hapticEnabled = true,
+                    shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.thumbsup_icon),
                     shape = RoundedCornerShape(30),
-                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+                    backgroundColor = MaterialTheme.colorScheme.onSurface.halfAlpha(),
                 )
             }
             Text(
@@ -164,9 +162,10 @@ fun CoinFlipDialogContent(
                     enabled = state.userInteractionEnabled,
                     onPress = { viewModel.incrementBaseCoins(-1) },
                     hapticEnabled = true,
+                    shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.minus_icon),
                     shape = RoundedCornerShape(30),
-                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+                    backgroundColor = MaterialTheme.colorScheme.onSurface.halfAlpha(),
                 )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize * 0.7f).padding(buttonSize * 0.025f).then(
@@ -175,9 +174,10 @@ fun CoinFlipDialogContent(
                     enabled = state.userInteractionEnabled,
                     onPress = { viewModel.incrementBaseCoins(1) },
                     hapticEnabled = true,
+                    shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.plus_icon),
                     shape = RoundedCornerShape(30),
-                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
+                    backgroundColor = MaterialTheme.colorScheme.onSurface.halfAlpha(),
                 )
             }
             Text(
@@ -245,13 +245,9 @@ fun CoinFlipDialogContent(
             )
             Spacer(Modifier.weight(0.1f))
             Box(Modifier.wrapContentSize().align(Alignment.CenterHorizontally)) {
-                InfoButton(
-                    modifier = Modifier.size(dimensions.infoButtonSize).align(Alignment.TopEnd).padding(end = dimensions.infoButtonSize / 4, top = dimensions.infoButtonSize / 8),
-                    onPress = goToCoinFlipTutorial
-                )
                 Column(
                     modifier = Modifier.wrapContentHeight().fillMaxWidth(0.8f)
-                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), RoundedCornerShape(30)),
+                        .background(MaterialTheme.colorScheme.onSurface.halfAlpha(), RoundedCornerShape(30)),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -273,6 +269,8 @@ fun CoinFlipDialogContent(
                             enabled = state.userInteractionEnabled,
                             onPress = { viewModel.flipUntil(CoinHistoryItem.TAILS) },
                             hapticEnabled = false,
+                            shadowEnabled = false,
+                            mainColor = null,
                             text = "Call Heads",
                             imageVector = vectorResource(CoinHistoryItem.HEADS.drawable)
                         )
@@ -282,12 +280,18 @@ fun CoinFlipDialogContent(
                             enabled = state.userInteractionEnabled,
                             onPress = { viewModel.flipUntil(CoinHistoryItem.HEADS) },
                             hapticEnabled = false,
+                            shadowEnabled = false,
+                            mainColor = null,
                             text = "Call Tails",
                             imageVector = vectorResource(CoinHistoryItem.TAILS.drawable)
                         )
                     }
                     Spacer(Modifier.height(padding / 10f))
                 }
+                InfoButton(
+                    modifier = Modifier.size(dimensions.infoButtonSize).align(Alignment.TopEnd).padding(end = dimensions.infoButtonSize / 4, top = dimensions.infoButtonSize / 8),
+                    onPress = goToCoinFlipTutorial
+                )
             }
             Spacer(Modifier.height(padding / 4f))
             Spacer(Modifier.weight(0.5f))
@@ -379,7 +383,7 @@ fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
         val textSize = remember(Unit) { (maxWidth / 4f).value }
         val textPadding = remember(Unit) { maxHeight / 9f }
         Surface(
-            modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
+            modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.onSurface.halfAlpha()
         ) {
             Text(
                 text = "Reset",
@@ -442,41 +446,63 @@ fun FlipCounter(
 
 @Composable
 fun FlipHistory(modifier: Modifier = Modifier, coinFlipHistory: AnnotatedString) {
-    historyBase(modifier, coinFlipHistory, wrapContentSize = false)
+    HistoryBase(modifier, coinFlipHistory, wrapContentSize = false)
 }
 
 @Composable
 fun LastResult(modifier: Modifier = Modifier, lastResult: AnnotatedString) {
-    historyBase(modifier, lastResult, wrapContentSize = true)
+    HistoryBase(modifier, lastResult, wrapContentSize = true)
 }
 
 @Composable
-private fun historyBase(modifier: Modifier = Modifier, lastResult: AnnotatedString, wrapContentSize: Boolean) {
+private fun HistoryBase(modifier: Modifier = Modifier, historyString: AnnotatedString, wrapContentSize: Boolean) {
     val scrollState = rememberScrollState()
-    LaunchedEffect(lastResult) {
+    LaunchedEffect(historyString) {
         if (platform == Platform.IOS) {
             scrollState.scrollTo(scrollState.maxValue)
         } else {
             scrollState.animateScrollTo(scrollState.maxValue)
         }
     }
-    BoxWithConstraints(
-        modifier
-    ) {
+    val textColor = MaterialTheme.colorScheme.onPrimary
+    
+    // Process the AnnotatedString to replace unspecified colors
+    val processedText = remember(historyString, textColor) {
+        buildAnnotatedString {
+            historyString.spanStyles.forEach { span ->
+                val spanStyle = if (span.item.color == Color.Unspecified) {
+                    span.item.copy(color = textColor)
+                } else {
+                    span.item
+                }
+                addStyle(spanStyle, span.start, span.end)
+            }
+            append(historyString.text)
+        }.plus(if (platform == Platform.IOS) AnnotatedString("   ") else AnnotatedString(""))
+    }
+
+    BoxWithConstraints(modifier) {
         val textSize = remember(Unit) { (maxHeight / 2f).value }
         val padding = remember(Unit) { maxHeight / 8f }
         Box(
-            Modifier.align(Alignment.Center).clip(RoundedCornerShape(30)).background(color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), shape = RoundedCornerShape(30))
+            Modifier
+                .align(Alignment.Center)
+                .clip(RoundedCornerShape(30))
+                .background(color = MaterialTheme.colorScheme.onSurface.halfAlpha(), shape = RoundedCornerShape(30))
                 .then(if (wrapContentSize) Modifier.wrapContentSize() else Modifier.fillMaxWidth())
         ) {
             Text(
-                text = lastResult.plus(if (platform == Platform.IOS) AnnotatedString("   ") else AnnotatedString("")),
+                text = processedText,
                 maxLines = 1,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = textSize.scaledSp,
-                modifier = Modifier.align(Alignment.Center).wrapContentSize().padding(vertical = padding / 2f, horizontal = padding).horizontalScroll(scrollState)
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .wrapContentSize()
+                    .padding(vertical = padding / 2f, horizontal = padding)
+                    .horizontalScroll(scrollState)
             )
         }
     }

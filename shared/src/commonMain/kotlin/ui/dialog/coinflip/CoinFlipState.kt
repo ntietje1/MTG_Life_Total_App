@@ -1,5 +1,6 @@
 package ui.dialog.coinflip
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import lifelinked.shared.generated.resources.Res
@@ -21,16 +22,16 @@ data class CoinFlipState(
     val history: List<CoinHistoryItem> = listOf(),
 )
 
-enum class CoinHistoryItem(val letter: String, val drawable: DrawableResource, val color: Color) {
+enum class CoinHistoryItem(val letter: String = "", val drawable: DrawableResource = Res.drawable.transparent, val color: Color = Color.Unspecified) {
     HEADS("H", Res.drawable.heads, Color.Green),
     TAILS("T", Res.drawable.tails, Color.Red),
-    HEADS_TARGET_MARKER("", Res.drawable.transparent, Color.White),
-    TAILS_TARGET_MARKER("", Res.drawable.transparent, Color.White),
-    MULTI_MODE_MARKER("", Res.drawable.transparent, Color.White),
-    SINGLE_MODE_MARKER("", Res.drawable.transparent, Color.White),
-    COMMA(",", Res.drawable.transparent, Color.White),
-    L_DIVIDER_SINGLE("(", Res.drawable.transparent, Color.White),
-    R_DIVIDER_SINGLE(")", Res.drawable.transparent, Color.White),
-    L_DIVIDER_LIST("(", Res.drawable.transparent, Color.White),
-    R_DIVIDER_LIST(")", Res.drawable.transparent, Color.White),
+    HEADS_TARGET_MARKER,
+    TAILS_TARGET_MARKER,
+    MULTI_MODE_MARKER,
+    SINGLE_MODE_MARKER,
+    COMMA(","),
+    L_DIVIDER_SINGLE("("),
+    R_DIVIDER_SINGLE(")"),
+    L_DIVIDER_LIST("("),
+    R_DIVIDER_LIST(")"),
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import theme.halfAlpha
 import theme.scaledSp
 
 @Composable
@@ -64,7 +65,7 @@ fun TextFieldWithButton(
                 cursorColor = MaterialTheme.colorScheme.onPrimary,
                 selectionColors = TextSelectionColors(
                     handleColor = MaterialTheme.colorScheme.onPrimary,
-                    backgroundColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                    backgroundColor = MaterialTheme.colorScheme.onSurface.halfAlpha(),
                 ),
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,

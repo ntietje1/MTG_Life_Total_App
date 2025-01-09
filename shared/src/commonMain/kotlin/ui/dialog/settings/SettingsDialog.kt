@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -28,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -58,6 +60,7 @@ import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.MainColorLight
 import theme.defaultTextStyle
+import theme.halfAlpha
 import theme.scaledSp
 import ui.components.SettingsButton
 
@@ -92,10 +95,13 @@ fun SettingsDialogContent(
             }
             item {
                 Column(
-                    Modifier
-                        .wrapContentSize()
-                        .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
+                    Modifier.wrapContentSize()
                 ) {
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = dimensions.borderThin,
+                        color = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
+                    )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Fast Coin Flip",
@@ -158,6 +164,11 @@ fun SettingsDialogContent(
                     ) {
                         goToTutorialScreen()
                     }
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = dimensions.borderThin,
+                        color = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
+                    )
                 }
             }
             item {
@@ -168,10 +179,13 @@ fun SettingsDialogContent(
             }
             item {
                 Column(
-                    Modifier
-                        .wrapContentSize()
-                        .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
+                    Modifier.wrapContentSize()
                 ) {
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = dimensions.borderThin,
+                        color = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
+                    )
                     SettingsDialogButton(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Submit Feedback", icon = vectorResource(Res.drawable.thumbsup_icon)
@@ -216,6 +230,11 @@ fun SettingsDialogContent(
                         val url = "https://sites.google.com/view/lifelinked/privacy-policy"
                         uriHandler.openUri(url)
                     }
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = dimensions.borderThin,
+                        color = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
+                    )
                 }
             }
 
@@ -230,7 +249,7 @@ fun SettingsDialogContent(
                     Column(
                         Modifier
                             .wrapContentSize()
-                            .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
+                            .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha())
                     ) {
                         //TODO:
                         // dvd logo bouncing
@@ -325,15 +344,14 @@ fun SettingsDialogButtonWithToggle(
     val isChecked = remember { mutableStateOf(initialState) }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
-        val iconSize = remember(Unit) { 10.dp + maxHeight / 3f }
-        val padding = remember(Unit) { 5.dp + maxWidth / 35f }
+        val iconSize = remember(Unit) { 10.dp + maxHeight / 2.25f }
+        val padding = remember(Unit) { 2.dp + maxWidth / 50f }
         val textSize = remember(Unit) { 7 + (maxWidth / 32f).value }
         val toggleScale = remember(Unit) { (maxWidth.value + 5) / 500.dp.value }
         Row(
             modifier = modifier
                 .fillMaxWidth()
-                .background(Color.White.copy(alpha = 0.2f))
-                .border(0.5.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f))
+                .background(MaterialTheme.colorScheme.onSurface.halfAlpha())
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         onTap()
@@ -343,7 +361,10 @@ fun SettingsDialogButtonWithToggle(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Box(Modifier.wrapContentSize().padding(horizontal = padding / 2f, vertical = padding / 4f)) {
+            Box(Modifier.wrapContentSize().padding(
+                start = padding * 3/4f, end = padding / 2f,
+                top = padding, bottom = padding
+            )) {
                 SettingsButton(
                     modifier = Modifier
                         .size(iconSize)
@@ -371,12 +392,12 @@ fun SettingsDialogButtonWithToggle(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = MainColorLight.copy(alpha = 0.5f),
-                        checkedTrackColor = MaterialTheme.colorScheme.background.copy(alpha = 0.3f),
-                        uncheckedThumbColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
-                        uncheckedTrackColor = MaterialTheme.colorScheme.background.copy(alpha = 0.3f),
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                        checkedThumbColor = MainColorLight.halfAlpha(),
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
+                        checkedTrackColor = MaterialTheme.colorScheme.surface,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surface,
+                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
                     )
                 )
             }

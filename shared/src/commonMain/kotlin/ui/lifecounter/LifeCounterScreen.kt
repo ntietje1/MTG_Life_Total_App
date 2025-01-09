@@ -114,12 +114,12 @@ fun LifeCounterScreen(
     ) {
         val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) {
             LifeCounterMeasurements(
-                maxWidth = maxWidth - dimensions.paddingSmall * 2, maxHeight = maxHeight - dimensions.paddingSmall * 2, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
+                maxWidth = maxWidth - dimensions.paddingTiny * 2, maxHeight = maxHeight - dimensions.paddingTiny * 2, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
             )
         }
         val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }
         Box(
-            Modifier.fillMaxSize().padding(dimensions.paddingSmall).then(
+            Modifier.fillMaxSize().padding(dimensions.paddingTiny).then(
                 if (state.blurBackground) {
                     Modifier.blur(radius = dimensions.blurRadius)
                 } else {
@@ -131,13 +131,13 @@ fun LifeCounterScreen(
                 items(m.buttonPlacements(), key = { it.hashCode() }) { buttonPlacements ->
                     LazyRow(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, horizontalArrangement = Arrangement.Center, content = {
                         items(buttonPlacements, key = { it.index }) { placement ->
-                            val width = remember(Unit) { placement.width - dimensions.paddingSmall * 4 }
-                            val height = remember(Unit) { placement.height - dimensions.paddingSmall * 4 }
+                            val width = remember(Unit) { placement.width - dimensions.paddingTiny * 4 }
+                            val height = remember(Unit) { placement.height - dimensions.paddingTiny * 4 }
                             val rotation = remember(Unit) { placement.angle }
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
                             val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
                             val timerColor = playerButtonViewModel.state.value.player.textColor
-                            AnimatedPlayerButton(modifier = Modifier.padding(dimensions.paddingSmall),
+                            AnimatedPlayerButton(modifier = Modifier.padding(dimensions.paddingTiny),
                                 visible = state.showButtons,
                                 rotation = placement.angle,
                                 width = width,
@@ -153,11 +153,11 @@ fun LifeCounterScreen(
                                             when (placement.timerAlignment) {
                                                 Alignment.TopStart -> Modifier.align(Alignment.TopStart)
                                                     .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
-                                                    .border(dimensions.paddingSmall, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
+                                                    .border(dimensions.paddingTiny, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
 
                                                 Alignment.TopEnd -> Modifier.align(Alignment.TopEnd)
                                                     .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
-                                                    .border(dimensions.paddingSmall, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
+                                                    .border(dimensions.paddingTiny, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
 
                                                 else -> Modifier
                                             }

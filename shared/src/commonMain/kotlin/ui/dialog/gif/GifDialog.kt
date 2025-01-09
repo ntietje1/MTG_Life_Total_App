@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import theme.LocalDimensions
+import theme.halfAlpha
 import theme.scaledSp
 import ui.components.SearchTextField
 import ui.lifecounter.playerbutton.PBState
@@ -81,7 +82,7 @@ fun GifDialogContent(
                     .height(searchBarHeight)
                     .padding(top = padding)
                     .clip(RoundedCornerShape(15))
-                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)),
+                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)),
                 query = state.textFieldValue,
                 label = "Search Tenor",
                 onQueryChange = viewModel::setTextFieldValue,

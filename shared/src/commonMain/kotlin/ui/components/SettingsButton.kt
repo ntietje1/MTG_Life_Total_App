@@ -53,7 +53,7 @@ fun SettingsButton(
     imageVector: ImageVector = vectorResource(Res.drawable.placeholder_icon),
     text: String = "",
     textSizeMultiplier: Float = 1f,
-    mainColor: Color = MaterialTheme.colorScheme.onPrimary,
+    mainColor: Color? = MaterialTheme.colorScheme.onPrimary,
     enabled: Boolean = true,
     visible: Boolean = true,
     shadowEnabled: Boolean = true,
@@ -62,13 +62,15 @@ fun SettingsButton(
     onTap: () -> Unit = {},
     onLongPress: () -> Unit = {},
     onDoubleTap: () -> Unit = {},
-    overlay: @Composable () -> Unit = {}
+    overlay: @Composable () -> Unit = {},
 ) {
-    val matrix = remember(mainColor) {
-        ColorMatrix().apply {
-            setToScale(
-                mainColor.red, mainColor.green, mainColor.blue, mainColor.alpha
-            )
+    val matrix: ColorMatrix? = remember(mainColor) {
+        mainColor?.let {
+            ColorMatrix().apply {
+                setToScale(
+                    mainColor.red, mainColor.green, mainColor.blue, mainColor.alpha
+                )
+            }
         }
     }
     val haptic = LocalHapticFeedback.current
@@ -111,7 +113,7 @@ fun SettingsButton(
                     modifier = Modifier.fillMaxSize(),
                     imageVector = imageVector,
                     contentDescription = "settings button image",
-                    colorFilter = ColorFilter.colorMatrix(matrix),
+                    colorFilter = matrix?.let { ColorFilter.colorMatrix(matrix) },
                     shadowColor = generateShadow(),
                     shadowEnabled = shadowEnabled
                 )
@@ -123,7 +125,7 @@ fun SettingsButton(
                         .wrapContentHeight()
                         .wrapContentWidth(),
                     text = text,
-                    color = mainColor,
+                    color = mainColor ?: MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize.scaledSp * textSizeMultiplier,
                     maxLines = 1,
                     fontWeight = FontWeight.Bold,
@@ -142,7 +144,7 @@ fun ImageWithShadow(
     modifier: Modifier = Modifier,
     alignment: Alignment = Alignment.Center,
     contentScale: ContentScale = ContentScale.Fit,
-    alpha: Float = DefaultAlpha,
+    alpha: Float = 1.0f,
     colorFilter: ColorFilter? = null,
     shadowEnabled: Boolean = false,
     shadowColor: Color = Color.Black,

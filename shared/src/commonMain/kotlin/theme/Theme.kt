@@ -15,15 +15,17 @@ import androidx.compose.runtime.staticCompositionLocalOf
 private val DarkColorScheme = darkColorScheme(
     primary = Black,
     background = Black,
-    onPrimary = White, // Set the text color on the primary background
-    onSurface = White     // Set the text color on the surface/background
+    onPrimary = White,
+    surface = Black.copy(alpha = 0.1f),
+    onSurface = White.copy(alpha = 0.2f),
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = White,
     background = White,
-    onPrimary = Black, // Set the text color on the primary background
-    onSurface = Black     // Set the text color on the surface/background
+    onPrimary = Black,
+    surface = White.copy(alpha = 0.3f),
+    onSurface = White.copy(alpha = 0.5f),
 )
 
 val LocalDimensions = staticCompositionLocalOf<Dimensions> {
@@ -32,10 +34,9 @@ val LocalDimensions = staticCompositionLocalOf<Dimensions> {
 
 class Dimensions(val screenWidth: Dp, val screenHeight: Dp) {
     val blurRadius = screenHeight / 50f
-    val paddingTiny = screenWidth / 1500f + screenHeight / 2000f
-    val paddingSmall = screenWidth / 750f + screenHeight / 1000f
-    val paddingMedium = screenWidth / 375f + screenHeight / 500f
-    val paddingLarge = screenWidth / 200f + screenHeight / 300f
+    val paddingTiny = screenWidth / 750f + screenHeight / 1000f
+    val paddingSmall = screenWidth / 200f + screenHeight / 300f
+    val paddingMedium = screenWidth / 100f + screenHeight / 150f
     val borderThin = screenWidth / 1000f + screenHeight / 1500f
     val borderSmall = screenWidth / 500f + screenHeight / 750f
     val borderMedium = screenWidth / 250f + screenHeight / 375f

@@ -62,6 +62,7 @@ import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
+import theme.halfAlpha
 import theme.scaledSp
 import ui.components.SettingsButton
 import ui.dialog.coinflip.CoinFlipDialogContent
@@ -415,8 +416,12 @@ fun AnimatedGridDialog(
             visible = visible, enter = enterAnimation, exit = exitAnimation
         ) {
             BoxWithConstraints(
-                modifier = modifier.background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f)).border(
-                    dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+                modifier = modifier
+                    .background(
+                        MaterialTheme.colorScheme.surface.halfAlpha().halfAlpha()
+                    )
+                    .border(
+                    dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()
                 ),
             ) {
                 content()
@@ -436,7 +441,9 @@ fun AnimatedGridDialog(
         }
     }
 
-    SettingsDialog(onDismiss = {
+    SettingsDialog(
+        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+        onDismiss = {
         onDismiss()
     }, content = dialogContent, onBack = {
         backHandler.pop()

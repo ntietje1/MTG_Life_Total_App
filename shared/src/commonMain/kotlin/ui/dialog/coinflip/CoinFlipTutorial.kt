@@ -21,7 +21,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import theme.scaledSp
-import ui.dialog.scryfall.ExpandableCard
+import ui.components.EnlargeableCardImage
 import ui.flippable.Flippable
 import ui.flippable.rememberFlipController
 
@@ -39,21 +39,25 @@ fun CoinFlipTutorialContent(
             modifier = modifier, verticalArrangement = Arrangement.spacedBy(padding / 6f), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
+                val flipController = rememberFlipController()
                 Row(
                     modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val flipController = rememberFlipController()
                     Flippable(
                         modifier = Modifier.fillMaxWidth(0.33f),
                         flipController = flipController,
                         frontSide = {
-                            ExpandableCard(
-                                modifier = Modifier.fillMaxSize(), imageUri = "https://cards.scryfall.io/large/front/9/f/9f63277b-e139-46c8-b9e3-0cfb647f44cc.jpg?1670031752"
+                            EnlargeableCardImage(
+                                modifier = Modifier.fillMaxSize(),
+                                smallImageUri = "https://cards.scryfall.io/normal/front/9/f/9f63277b-e139-46c8-b9e3-0cfb647f44cc.jpg?1670031752",
+                                largeImageUri = "https://cards.scryfall.io/large/front/9/f/9f63277b-e139-46c8-b9e3-0cfb647f44cc.jpg?1670031752"
                             )
                         },
                         backSide = {
-                            ExpandableCard(
-                                modifier = Modifier.fillMaxSize(), imageUri = "https://cards.scryfall.io/large/back/9/f/9f63277b-e139-46c8-b9e3-0cfb647f44cc.jpg?1670031752"
+                            EnlargeableCardImage(
+                                modifier = Modifier.fillMaxSize(),
+                                smallImageUri = "https://cards.scryfall.io/normal/back/9/f/9f63277b-e139-46c8-b9e3-0cfb647f44cc.jpg?1670031752",
+                                largeImageUri = "https://cards.scryfall.io/large/back/9/f/9f63277b-e139-46c8-b9e3-0cfb647f44cc.jpg?1670031752"
                             )
                         },
                     )
@@ -89,13 +93,17 @@ fun CoinFlipTutorialContent(
                         modifier = Modifier.fillMaxWidth(),
                         flipController = flipController,
                         frontSide = {
-                            ExpandableCard(
-                                modifier = Modifier.fillMaxSize(), imageUri = "https://cards.scryfall.io/large/front/d/5/d5dfd236-b1da-4552-b94f-ebf6bb9dafdf.jpg?1670031689"
+                            EnlargeableCardImage(
+                                modifier = Modifier.fillMaxSize(),
+                                smallImageUri = "https://cards.scryfall.io/normal/front/d/5/d5dfd236-b1da-4552-b94f-ebf6bb9dafdf.jpg?1670031689",
+                                largeImageUri = "https://cards.scryfall.io/large/front/d/5/d5dfd236-b1da-4552-b94f-ebf6bb9dafdf.jpg?1670031689"
                             )
                         },
                         backSide = {
-                            ExpandableCard(
-                                modifier = Modifier.fillMaxSize(), imageUri = "https://cards.scryfall.io/large/back/d/5/d5dfd236-b1da-4552-b94f-ebf6bb9dafdf.jpg?1670031689"
+                            EnlargeableCardImage(
+                                modifier = Modifier.fillMaxSize(),
+                                smallImageUri = "https://cards.scryfall.io/normal/back/d/5/d5dfd236-b1da-4552-b94f-ebf6bb9dafdf.jpg?1670031689",
+                                largeImageUri = "https://cards.scryfall.io/large/back/d/5/d5dfd236-b1da-4552-b94f-ebf6bb9dafdf.jpg?1670031689"
                             )
                         },
                     )
@@ -103,21 +111,25 @@ fun CoinFlipTutorialContent(
             }
 
             item {
+                val flipController = rememberFlipController()
                 Row(
                     modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val flipController = rememberFlipController()
                     Flippable(
                         modifier = Modifier.fillMaxWidth(0.33f),
                         flipController = flipController,
                         frontSide = {
-                            ExpandableCard(
-                                modifier = Modifier.fillMaxSize(), imageUri = "https://cards.scryfall.io/large/front/7/f/7f2c332e-a5c9-40fb-a2fa-b4888aecc9c7.jpg?1694286113"
+                            EnlargeableCardImage(
+                                modifier = Modifier.fillMaxSize(),
+                                smallImageUri = "https://cards.scryfall.io/normal/front/7/f/7f2c332e-a5c9-40fb-a2fa-b4888aecc9c7.jpg?1694286113",
+                                largeImageUri = "https://cards.scryfall.io/large/front/7/f/7f2c332e-a5c9-40fb-a2fa-b4888aecc9c7.jpg?1694286113"
                             )
                         },
                         backSide = {
-                            ExpandableCard(
-                                modifier = Modifier.fillMaxSize(), imageUri = "https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389"
+                            EnlargeableCardImage(
+                                modifier = Modifier.fillMaxSize(),
+                                smallImageUri = "https://backs.scryfall.io/normal/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389",
+                                largeImageUri = "https://backs.scryfall.io/large/2/2/222b7a3b-2321-4d4c-af19-19338b134971.jpg?1677416389",
                             )
                         },
                     )

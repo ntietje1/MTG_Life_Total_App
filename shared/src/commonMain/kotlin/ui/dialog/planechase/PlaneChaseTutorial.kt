@@ -14,11 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import model.card.Card
-import model.card.ImageUris
 import theme.LocalDimensions
 import theme.scaledSp
-import ui.dialog.planechase.PlaneChaseCardPreview
+import ui.components.SelectableEnlargeableCardImage
 
 @Composable
 fun PlanechaseTutorialContent(
@@ -30,7 +28,7 @@ fun PlanechaseTutorialContent(
     ) {
         val textSize = remember(Unit) { (maxWidth / 50f + maxHeight / 150f).value }
         LazyColumn(
-            modifier = modifier.padding(dimensions.paddingLarge * 3),
+            modifier = modifier.padding(dimensions.paddingMedium),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -39,8 +37,8 @@ fun PlanechaseTutorialContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .padding(horizontal = dimensions.paddingMedium)
-                        .padding(top = dimensions.paddingMedium),
+                        .padding(horizontal = dimensions.paddingSmall)
+                        .padding(top = dimensions.paddingSmall),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -52,28 +50,18 @@ fun PlanechaseTutorialContent(
                         fontSize = textSize.scaledSp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = dimensions.paddingMedium)
+                            .padding(horizontal = dimensions.paddingSmall)
                     )
                 }
             }
             item {
-                PlaneChaseCardPreview(
+                SelectableEnlargeableCardImage(
                     modifier = Modifier
                         .height(dimensions.screenWidth / 1.5f)
                         .padding(horizontal = dimensions.screenWidth / 20f)
                         .rotate(90f),
-                    card = Card(
-                        name = "Sample Plane",
-                        artist = "",
-                        setName = "",
-                        printsSearchUri = "",
-                        imageUris = ImageUris(
-                            artCrop = "",
-                            small = "",
-                            normal = "https://cards.scryfall.io/large/front/d/8/d8da872d-55e0-4596-ba8e-f9ff7b2c0a86.jpg?1680815480",
-                            large = "https://cards.scryfall.io/large/front/d/8/d8da872d-55e0-4596-ba8e-f9ff7b2c0a86.jpg?1680815480"
-                        )
-                    ),
+                    normalImageUri = "https://cards.scryfall.io/large/front/d/8/d8da872d-55e0-4596-ba8e-f9ff7b2c0a86.jpg?1680815480",
+                    largeImageUri = "https://cards.scryfall.io/large/front/d/8/d8da872d-55e0-4596-ba8e-f9ff7b2c0a86.jpg?1680815480",
                     showSelectedBackground = false
                 )
             }
@@ -82,7 +70,7 @@ fun PlanechaseTutorialContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .padding(horizontal = dimensions.paddingMedium),
+                        .padding(horizontal = dimensions.paddingSmall),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -100,28 +88,18 @@ fun PlanechaseTutorialContent(
                         fontSize = textSize.scaledSp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = dimensions.paddingMedium)
+                            .padding(horizontal = dimensions.paddingSmall)
                     )
                 }
             }
             item {
-                PlaneChaseCardPreview(
+                SelectableEnlargeableCardImage(
                     modifier = Modifier
                         .height(dimensions.screenWidth / 1.5f)
                         .padding(horizontal = dimensions.screenWidth / 20f)
                         .rotate(90f),
-                    card = Card(
-                        name = "Sample Plane",
-                        artist = "",
-                        setName = "",
-                        printsSearchUri = "",
-                        imageUris = ImageUris(
-                            artCrop = "",
-                            small = "",
-                            normal = "https://cards.scryfall.io/large/front/b/e/be4da23c-bc51-4601-8f86-4e6f4eb27e6a.jpg?1680815547",
-                            large = "https://cards.scryfall.io/large/front/b/e/be4da23c-bc51-4601-8f86-4e6f4eb27e6a.jpg?1680815547"
-                        )
-                    ),
+                    normalImageUri = "https://cards.scryfall.io/large/front/b/e/be4da23c-bc51-4601-8f86-4e6f4eb27e6a.jpg?1680815547",
+                    largeImageUri = "https://cards.scryfall.io/large/front/b/e/be4da23c-bc51-4601-8f86-4e6f4eb27e6a.jpg?1680815547",
                     showSelectedBackground = false
                 )
             }
@@ -130,7 +108,7 @@ fun PlanechaseTutorialContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .padding(horizontal = dimensions.paddingMedium),
+                        .padding(horizontal = dimensions.paddingSmall),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -152,8 +130,8 @@ fun PlanechaseTutorialContent(
                         fontSize = textSize.scaledSp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = dimensions.paddingMedium)
-                            .padding(bottom = dimensions.paddingLarge)
+                            .padding(horizontal = dimensions.paddingSmall)
+                            .padding(bottom = dimensions.paddingSmall)
                     )
                 }
             }

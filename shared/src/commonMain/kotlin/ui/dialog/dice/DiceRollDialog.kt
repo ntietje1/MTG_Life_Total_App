@@ -2,7 +2,6 @@ package ui.dialog.dice
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,6 +60,7 @@ import lifelinked.shared.generated.resources.enter_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
+import theme.halfAlpha
 import theme.scaledSp
 import ui.components.SettingsButton
 import ui.components.TextFieldWithButton
@@ -161,7 +161,7 @@ fun DiceRollDialogContent(
             TextFieldWithButton(
                 modifier = Modifier.width(diceRollButtonSize * 3).height(textFieldHeight)
                     .border(
-                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
+                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)
                     ), value = state.textFieldValue, onValueChange = viewModel::setTextFieldValue, label = "Custom Die Value", keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
                 ), keyboardActions = KeyboardActions(onDone = {
@@ -184,10 +184,10 @@ fun DiceRollDialogContent(
             Text(
                 text = "Last result", color = MaterialTheme.colorScheme.onPrimary, fontSize = resultTextSize.scaledSp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().weight(0.1f)
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+            Spacer(modifier = Modifier.height(dimensions.paddingTiny))
             Box(
-                modifier = Modifier.weight(0.35f).aspectRatio(1.0f).align(Alignment.CenterHorizontally).background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f), RoundedCornerShape(15))
-                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(15))
+                modifier = Modifier.weight(0.35f).aspectRatio(1.0f).align(Alignment.CenterHorizontally)
+                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15))
             ) {
                 SettingsButton(modifier = Modifier.fillMaxSize().bounceClick(bounceAmount = 0.02f).graphicsLayer(scaleX = animatedSize, scaleY = animatedSize).then(
                     if (state.lastResult == null) {

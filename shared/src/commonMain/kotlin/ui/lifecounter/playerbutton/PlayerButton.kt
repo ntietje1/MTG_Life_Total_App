@@ -209,15 +209,17 @@ fun PlayerButton(
     }
 
     Box(
-        modifier = Modifier.wrapContentSize().then(rotationModifier)
+        modifier = Modifier
+            .wrapContentSize()
+            .then(rotationModifier)
     ) {
         MonarchyIndicator(
             modifier = Modifier.wrapContentSize(),
             monarch = state.player.monarch,
-            borderWidth = dimensions.paddingSmall,
+            borderWidth = dimensions.paddingTiny,
         ) {
             BoxWithConstraints(
-                modifier = modifier.background(Color.Transparent).then(
+                modifier = modifier.then(
                     if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked && !isDead) {
                         Modifier.bounceClick(
                             initialBounceFactor = 3.5f, bounceAmount = 0.005f, bounceDuration = 60L, repeatEnabled = true
@@ -645,22 +647,8 @@ fun MonarchyIndicator(
     modifier: Modifier = Modifier, monarch: Boolean = false, borderWidth: Dp, content: @Composable () -> Unit = {}
 ) {
     val duration = (7500 / SystemManager.getAnimationCorrectionFactor()).toInt()
-//    val colors = if (viewModel.getAnimationScale(context) != 0.0f) {
-//        listOf(
-//            Color.Transparent,
-//            Color(255, 191, 8),
-//            Color(255, 191, 8),
-//            Color(255, 191, 8),
-//        )
-//    } else {
-//        listOf(
-//            Color(255, 191, 8),
-//            Color(255, 191, 8),
-//        )
-//    }
-//    val duration = 7500
     val colors = listOf(
-        Color.Transparent,
+        Color.Unspecified,
         Color(
             255, 191, 8
         ),
@@ -671,20 +659,18 @@ fun MonarchyIndicator(
             255, 191, 8
         ),
     )
-    BoxWithConstraints(Modifier.wrapContentSize()) {
-        Box(
-            modifier = modifier.then(
-                if (monarch) {
-                    Modifier.animatedBorderCard(
-                        shape = RoundedCornerShape(12), borderWidth = borderWidth, colors = colors, animationDuration = duration
-                    )
-                } else {
-                    Modifier.padding(borderWidth)
-                }
-            )
-        ) {
-            content()
-        }
+    Box(
+        modifier = modifier.then(
+            if (monarch) {
+                Modifier.animatedBorderCard(
+                    shape = RoundedCornerShape(12), borderWidth = borderWidth, colors = colors, animationDuration = duration
+                )
+            } else {
+                Modifier.padding(borderWidth)
+            }
+        )
+    ) {
+        content()
     }
 }
 

@@ -24,6 +24,10 @@ fun Color.ghostify(): Color {
     return this.copy().blendWith(Color.Gray)
 }
 
+fun Color.halfAlpha(): Color {
+    return this.copy(alpha = this.alpha / 2f)
+}
+
 fun generateShadow(): Color {
     return Color.Black.copy(alpha = 0.5f)
 }

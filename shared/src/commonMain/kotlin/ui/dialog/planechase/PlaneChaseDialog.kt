@@ -35,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -46,11 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import domain.system.NotificationManager
-import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.delay
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
-import lifelinked.shared.generated.resources.card_back
 import lifelinked.shared.generated.resources.chaos_icon
 import lifelinked.shared.generated.resources.checkmark
 import lifelinked.shared.generated.resources.deck_icon
@@ -61,17 +58,17 @@ import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.visible_icon
 import lifelinked.shared.generated.resources.x_icon
-import model.card.Card
 import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
+import theme.halfAlpha
 import theme.scaledSp
 import ui.components.CARD_CORNER_PERCENT
-import ui.components.CardImage
+import ui.components.EnlargeableCardImage
 import ui.components.InfoButton
 import ui.components.SearchTextField
+import ui.components.SelectableEnlargeableCardImage
 import ui.components.SettingsButton
 import ui.modifier.routePointerChangesTo
 
@@ -173,36 +170,47 @@ fun PlaneChaseDialogContent( //TODO: add animations
         val buttonSize = remember(Unit) { maxWidth / 6f }
         val textSize = remember(Unit) { (maxWidth / 35f).value }
         InfoButton(
-            modifier = Modifier.size(dimensions.infoButtonSize).align(Alignment.TopEnd).padding(end = dimensions.paddingLarge, top = dimensions.paddingLarge),
+            modifier = Modifier.size(dimensions.infoButtonSize).align(Alignment.TopEnd).padding(end = dimensions.paddingSmall, top = dimensions.paddingSmall),
             onPress = goToPlanechaseTutorial
         )
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.height(dimensions.paddingTiny).weight(0.05f))
             Text(
-                modifier = Modifier.fillMaxWidth().padding(top = dimensions.paddingSmall),
+                modifier = Modifier.fillMaxWidth().padding(top = dimensions.paddingTiny),
                 text = "Planar deck size: ${state.planarDeck.size}",
                 fontSize = textSize.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.height(dimensions.paddingTiny).weight(0.01f))
-            PlaneChaseCardPreview(
-                modifier = Modifier
-                    .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
-                    .fillMaxHeight()
-                    .weight(0.99f)
-                    .padding(dimensions.paddingLarge)
-                    .pointerInput(Unit) {
-                        routePointerChangesTo(onLongPress = {
-                            delay(500)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            rotated = !rotated
-                        })
-                    },
-                card = state.planarDeck.lastOrNull(),
-                allowEnlarge = false,
-                showSelectedBackground = false
-            )
+            val card = state.planarDeck.lastOrNull()
+            if (card == null) {
+                EmptyDeckPlaceholder(
+                    Modifier
+                        .fillMaxHeight()
+                        .weight(0.99f)
+                        .padding(dimensions.paddingSmall)
+                )
+            } else {
+                EnlargeableCardImage(
+                    modifier = Modifier
+                        .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
+                        .fillMaxHeight()
+                        .weight(0.99f)
+                        .padding(dimensions.paddingSmall)
+                        .pointerInput(Unit) {
+                            routePointerChangesTo(onLongPress = {
+                                delay(500)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                rotated = !rotated
+                            })
+                        },
+                    smallImageUri = card.getUris().normal,
+                    largeImageUri = card.getUris().large,
+                    allowEnlarge = false,
+                    allowRotate = true,
+                )
+            }
             Spacer(Modifier.height(buttonSize / 2f))
             Row(
                 Modifier.fillMaxWidth().height(buttonSize * 0.6f), horizontalArrangement = Arrangement.SpaceAround, verticalAlignment = Alignment.CenterVertically
@@ -221,7 +229,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                             viewModel.backPlane()
                         }
                     },
-                    mainColor = if (state.planarBackStack.size > 0 && state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                    mainColor = if (state.planarBackStack.size > 0 && state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.halfAlpha()
                 )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
@@ -235,7 +243,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                             notificationManager.showNotification("Select your planar deck first")
                         }
                     },
-                    mainColor = if (state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                    mainColor = if (state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.halfAlpha()
                 )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
@@ -249,7 +257,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                             notificationManager.showNotification("Select your planar deck first")
                         }
                     },
-                    mainColor = if (state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                    mainColor = if (state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.halfAlpha()
                 )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
@@ -263,7 +271,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                             notificationManager.showNotification("Select your planar deck first")
                         }
                     },
-                    mainColor = if (state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                    mainColor = if (state.planarDeck.size > 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimary.halfAlpha()
                 )
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
@@ -317,7 +325,7 @@ fun ChoosePlanesDialogContent(
                     .padding(top = padding)
                     .clip(RoundedCornerShape(15))
                     .border(
-                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
+                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)
                     ),
                 query = state.query,
                 onQueryChange = { viewModel.setQuery(it) },
@@ -347,14 +355,16 @@ fun ChoosePlanesDialogContent(
                     .fillMaxSize()
                     .padding(bottom = maxWidth / 15f)
                     .weight(0.5f)
-                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
+                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()),
                 columns = GridCells.Fixed(columnCount),
                 verticalArrangement = Arrangement.SpaceAround,
             ) {
                 items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
-                    PlaneChaseCardPreview(
+                    val uris = card.getUris()
+                    SelectableEnlargeableCardImage(
                         modifier = Modifier.width(maxWidth / 2),
-                        card = card,
+                        largeImageUri = uris.large,
+                        normalImageUri = uris.normal,
                         onTap = {
                             if (!state.planarDeck.contains(card)) {
                                 viewModel.selectPlane(card)
@@ -366,6 +376,7 @@ fun ChoosePlanesDialogContent(
                         },
                         onPress = focusManager::clearFocus,
                         allowSelection = true,
+                        allowRotate = true,
                         selected = card in state.planarDeck
                     )
                 }
@@ -409,122 +420,23 @@ fun ChoosePlanesDialogContent(
 }
 
 @Composable
-fun PlaneChaseCardPreview(
-    modifier: Modifier = Modifier,
-    card: Card?,
-    allowSelection: Boolean = false,
-    onPress: () -> Unit = {},
-    onTap: () -> Unit = {},
-    allowEnlarge: Boolean = true,
-    selected: Boolean = false,
-    showSelectedBackground: Boolean = true
+fun EmptyDeckPlaceholder(
+    modifier: Modifier = Modifier
 ) {
-    var showLargeImage by remember { mutableStateOf(false) }
-    val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
 
-    var longPressed by remember { mutableStateOf(false) }
-    var rotated by remember { mutableStateOf(false) }
-
-    if (showLargeImage && allowEnlarge) {
-        Dialog(onDismissRequest = { showLargeImage = false }, properties = DialogProperties(
-            usePlatformDefaultWidth = false
-        ), content = {
-            Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                routePointerChangesTo(
-                    onUp = {
-                        if (!longPressed) {
-                            showLargeImage = false
-                        }
-                        longPressed = false
-                    },
-                    onLongPress = {
-                        delay(500)
-                        longPressed = true
-                        rotated = !rotated
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    },
-                )
-            }) {
-                BoxWithConstraints(
-                    modifier = Modifier.fillMaxSize().padding(dimensions.paddingLarge)
-                ) {
-                    val cardAspectRatio = 5f / 7f // Standard card ratio
-                    val screenAspectRatio = maxWidth / maxHeight
-
-                    val largeImageModifier = if (screenAspectRatio > cardAspectRatio) {
-                        // Screen is wider than card - constrain by height
-                        Modifier.fillMaxHeight().aspectRatio(cardAspectRatio)
-                    } else {
-                        // Screen is taller than card - constrain by width
-                        Modifier.fillMaxWidth().aspectRatio(cardAspectRatio)
-                    }
-
-                    CardImage(
-                        modifier = largeImageModifier
-                            .clip(RoundedCornerShape(CARD_CORNER_PERCENT))
-                            .align(Alignment.Center)
-                            .graphicsLayer { rotationZ = if (rotated) 180f else 0f },
-                        painter = asyncPainterResource(card!!.getUris().large),
-                        placeholderPainter = painterResource(Res.drawable.card_back)
-                    )
-                }
-            }
-        })
-    }
-
-    if (card != null) {
-        BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).pointerInput(Unit) {
-            detectTapGestures(onLongPress = {
-                if (allowEnlarge) {
-                    showLargeImage = true
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                }
-            }, onPress = {
-                onPress()
-            }, onTap = {
-                if (allowSelection) {
-                    onTap()
-                }
-            })
-        }) {
-            Box(
-                Modifier.fillMaxSize().then(
-                    if (!showSelectedBackground) {
-                        Modifier
-                    } else if (selected) {
-                        Modifier.background(Color.Green.copy(alpha = 0.2f))
-                    } else {
-                        Modifier.background(Color.Red.copy(alpha = 0.1f))
-                    }
-                )
-            ) {
-                CardImage(
-                    modifier = Modifier.fillMaxSize().then(
-                        if (selected) {
-                            Modifier.padding(dimensions.paddingLarge).clip(RoundedCornerShape(CARD_CORNER_PERCENT))
-                        } else {
-                            Modifier.padding(dimensions.paddingSmall).clip(RoundedCornerShape(CARD_CORNER_PERCENT))
-                        }
-                    ), imageUri = card.getUris().normal
-                )
-            }
-
-        }
-    } else {
-        BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f), RoundedCornerShape(CARD_CORNER_PERCENT))
-            .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f), RoundedCornerShape(CARD_CORNER_PERCENT)).pointerInput(Unit) {}) {
-            val iconPadding = maxWidth / 4f
-            Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                SettingsButton(
-                    modifier = Modifier.fillMaxSize().padding(iconPadding),
-                    text = "No Planes Selected",
-                    textSizeMultiplier = 0.8f,
-                    imageVector = vectorResource(Res.drawable.question_icon),
-                    shadowEnabled = false,
-                    enabled = false
-                )
-            }
+    BoxWithConstraints(modifier = modifier.aspectRatio(5 / 7f).background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f), RoundedCornerShape(CARD_CORNER_PERCENT))
+        .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(CARD_CORNER_PERCENT)).pointerInput(Unit) {}) {
+        val iconPadding = maxWidth / 4f
+        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            SettingsButton(
+                modifier = Modifier.fillMaxSize().padding(iconPadding),
+                text = "No Planes Selected",
+                textSizeMultiplier = 0.8f,
+                imageVector = vectorResource(Res.drawable.question_icon),
+                shadowEnabled = false,
+                enabled = false
+            )
         }
     }
 }

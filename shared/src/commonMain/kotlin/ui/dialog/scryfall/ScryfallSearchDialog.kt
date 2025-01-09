@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
@@ -46,20 +45,15 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import lifelinked.shared.generated.resources.Res
-import lifelinked.shared.generated.resources.card_back
 import model.card.Card
-import model.card.ImageUris
 import model.card.Ruling
-import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
+import theme.halfAlpha
 import theme.scaledSp
-import ui.components.CardImage
+import ui.components.EnlargeableCardImage
 import ui.components.SearchTextField
 import ui.dialog.SettingsDialog
 
@@ -105,23 +99,26 @@ fun ScryfallDialogContent(
         viewModel.setPrintingsButtonEnabled(printingsButtonEnabled)
     }
 
-    BoxWithConstraints(Modifier.wrapContentSize()) {
-        val searchBarHeight = remember(Unit) { maxWidth / 9f + 30.dp }
-        val padding = remember(Unit) { searchBarHeight / 10f }
+    BoxWithConstraints(
+        modifier = Modifier.wrapContentSize(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        val searchBarHeight = remember(Unit) { maxWidth / 8.5f + 30.dp }
         val textSize = remember(Unit) { (maxHeight / 50f).value }
         Column(
-            modifier = modifier,
-            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.wrapContentSize().align(Alignment.TopCenter)
         ) {
             SearchTextField(
                 Modifier
-                    .fillMaxWidth(0.9f)
+                    .fillMaxWidth()
                     .height(searchBarHeight)
-                    .padding(top = padding)
+                    .padding(
+                        top = dimensions.paddingMedium,
+                        start = dimensions.paddingMedium,
+                        end = dimensions.paddingMedium
+                    )
                     .clip(RoundedCornerShape(15))
-                    .border(
-                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
-                    ),
+                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)),
                 query = state.textFieldValue,
                 onQueryChange = viewModel::setTextFieldValue,
                 searchInProgress = state.isSearchInProgress
@@ -132,11 +129,25 @@ fun ScryfallDialogContent(
             }
 
             AnimatedVisibility(
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding), visible = state.lastSearchWasError
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = dimensions.paddingSmall),
+                visible = state.lastSearchWasError
             ) {
                 Text("No cards found :(", color = Color.Red, fontSize = textSize.scaledSp)
             }
-            if (state.lastSearchWasError) return@Column
+            if (state.lastSearchWasError) return@BoxWithConstraints
+//            AnimatedVisibility(
+//                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = dimensions.paddingSmall),
+//                visible = (state.backStackDiff == 0 || state.isSearchInProgress)
+//            ) {
+//                Text(
+//                    "${state.cardResults.size + state.rulingsResults.size} results",
+//                    color = MaterialTheme.colorScheme.onPrimary,
+//                    fontSize = textSize.scaledSp,
+//                    textAlign = TextAlign.Center,
+//                    modifier = Modifier.padding(vertical = dimensions.paddingSmall)
+//                )
+//            }
+
             LazyColumn(
                 Modifier.pointerInput(Unit) {
                     detectTapGestures(onPress = { focusManager.clearFocus() })
@@ -144,15 +155,15 @@ fun ScryfallDialogContent(
                 state = listState
             ) {
                 if (state.backStackDiff == 0 || state.isSearchInProgress) return@LazyColumn
-                item {
-                    Text(
-                        "${state.cardResults.size + state.rulingsResults.size} results",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = textSize.scaledSp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(vertical = padding).align(Alignment.CenterHorizontally)
-                    )
-                }
+            item {
+                Text(
+                    "${state.cardResults.size + state.rulingsResults.size} results",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = textSize.scaledSp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(vertical = dimensions.paddingSmall)
+                )
+            }
                 items(state.cardResults) { card ->
                     CardInfoPreview(
                         card = card,
@@ -196,14 +207,15 @@ fun ScryfallDialogContent(
                     if (state.rulingsResults.isNotEmpty()) {
                         item {
                             HorizontalDivider(
-                                modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = padding).align(Alignment.CenterHorizontally), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)
+                                modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = dimensions.paddingSmall),
+                                color = MaterialTheme.colorScheme.onPrimary.halfAlpha()
                             )
                         }
                     }
                 }
                 items(state.rulingsResults) { ruling ->
                     RulingPreview(ruling)
-                    Spacer(modifier = Modifier.height(padding))
+                    Spacer(modifier = Modifier.height(dimensions.paddingSmall))
                 }
 //            item {
 //                AnimatedVisibility(
@@ -223,7 +235,7 @@ fun ScryfallButton(
     text: String,
     onTap: () -> Unit
 ) {
-    val originalColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.35f)
+    val originalColor = MaterialTheme.colorScheme.onSurface
     val pressedColor = Color.Green.copy(alpha = 0.5f)
     var color by remember { mutableStateOf(originalColor) }
     val coroutineScope = rememberCoroutineScope()
@@ -242,7 +254,7 @@ fun ScryfallButton(
         },
     ) {
         val textSize = remember(Unit) { (maxWidth / 4.5f).value }
-        val textPadding = remember(Unit) { maxWidth / 12f }
+        val textPadding = remember(Unit) { maxWidth / 13.5f }
         Surface(
             modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(30)), color = animatedColor
         ) {
@@ -287,7 +299,7 @@ private fun TextPreview(
 
     BoxWithConstraints(
         modifier = Modifier.fillMaxWidth(0.9f).border(
-            dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(10)
+            dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(10)
         ).clip(RoundedCornerShape(10)), contentAlignment = Alignment.Center
     ) {
         val textSize = remember(Unit) { (maxWidth / 30f).value }
@@ -314,59 +326,6 @@ private fun TextPreview(
 }
 
 @Composable
-fun ExpandableCard(
-    modifier: Modifier = Modifier,
-    imageUri: String
-) {
-    val card = Card(
-        artist = "",
-        name = "",
-        printsSearchUri = "",
-        setName = "",
-        imageUris = ImageUris(
-            large = imageUri,
-            small = imageUri,
-            normal = imageUri,
-            artCrop = imageUri,
-        )
-    )
-    ExpandableCard(modifier = modifier, card = card)
-}
-
-@Composable
-fun ExpandableCard(
-    modifier: Modifier = Modifier,
-    card: Card,
-    placeholderPainter: Painter = painterResource(Res.drawable.card_back)
-) {
-    var showLargeImage by remember { mutableStateOf(false) }
-    val haptic = LocalHapticFeedback.current
-
-    if (showLargeImage) {
-        Dialog(onDismissRequest = { showLargeImage = false }, properties = DialogProperties(
-            usePlatformDefaultWidth = false
-        ), content = {
-            Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    showLargeImage = false
-                })
-            }) {
-                CardImage(modifier = Modifier.fillMaxSize(), imageUri = card.getUris().large, placeholderPainter = placeholderPainter)
-            }
-        })
-    }
-
-    BoxWithConstraints(modifier.clip(RoundedCornerShape(8)).aspectRatio(5 / 7f).pointerInput(Unit) {
-        detectTapGestures(onLongPress = {
-            showLargeImage = true
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        })
-    }) {
-        CardImage(modifier = Modifier.fillMaxSize(), imageUri = card.getUris().small, placeholderPainter = placeholderPainter)
-    }
-}
-
-@Composable
 fun CardInfoPreview(
     card: Card, onRulings: () -> Unit = {}, onSelect: () -> Unit = {}, onPrintings: () -> Unit = {}, selectButtonEnabled: Boolean, printingsButtonEnabled: Boolean, rulingsButtonEnabled: Boolean
 ) {
@@ -383,7 +342,7 @@ fun CardInfoPreview(
         Box(Modifier.padding(horizontal = padding, vertical = padding / 2f)) {
             Surface(
                 modifier = Modifier.fillMaxSize().border(
-                    dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
+                    dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)
                 ).clip(RoundedCornerShape(15)), color = MaterialTheme.colorScheme.background.copy(alpha = 0.2f)
             ) {
                 Row(
@@ -410,22 +369,31 @@ fun CardInfoPreview(
                         )
                         Row {
                             if (rulingsButtonEnabled) {
-                                ScryfallButton(modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Rulings", onTap = {
-                                    onRulings()
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                })
+                                ScryfallButton(
+                                    modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = dimensions.paddingSmall).clip(RoundedCornerShape(30)),
+                                    text = "Rulings",
+                                    onTap = {
+                                        onRulings()
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    })
                             }
                             if (selectButtonEnabled) {
-                                ScryfallButton(modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Select", onTap = {
-                                    onSelect()
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                })
+                                ScryfallButton(
+                                    modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = dimensions.paddingSmall).clip(RoundedCornerShape(30)),
+                                    text = "Select",
+                                    onTap = {
+                                        onSelect()
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    })
                             }
                             if (printingsButtonEnabled) {
-                                ScryfallButton(modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = 5.dp).clip(RoundedCornerShape(30)), text = "Printings", onTap = {
-                                    onPrintings()
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                })
+                                ScryfallButton(
+                                    modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = dimensions.paddingSmall).clip(RoundedCornerShape(30)),
+                                    text = "Printings",
+                                    onTap = {
+                                        onPrintings()
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    })
                             }
 
                         }
@@ -434,9 +402,10 @@ fun CardInfoPreview(
                         modifier = Modifier.fillMaxHeight().weight(1.0f).padding(vertical = padding / 10f),
                         verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        ExpandableCard(
+                        EnlargeableCardImage(
                             modifier = Modifier.fillMaxHeight(),
-                            card = card
+                            smallImageUri = card.getUris().small,
+                            largeImageUri = card.getUris().large,
                         )
                     }
 

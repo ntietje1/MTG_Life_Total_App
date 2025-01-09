@@ -40,6 +40,7 @@ import lifelinked.shared.generated.resources.twenty_icon
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
+import theme.halfAlpha
 import theme.scaledSp
 import ui.components.SettingsButton
 import ui.components.TextFieldWithButton
@@ -79,7 +80,7 @@ fun StartingLifeDialogContent(
             TextFieldWithButton(
                 modifier = Modifier.fillMaxWidth(0.8f).height(textFieldHeight)
                     .border(
-                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f), RoundedCornerShape(15)
+                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)
                     ), value = state.textFieldValue, onValueChange = {
                     viewModel.setTextFieldValue(it)
                 }, label = "Custom Starting Life", keyboardOptions = KeyboardOptions.Default.copy(
