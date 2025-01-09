@@ -153,11 +153,19 @@ fun SingleCounter(
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
-    BoxWithConstraints(Modifier.wrapContentSize()) {
+    BoxWithConstraints(
+        Modifier
+            .wrapContentSize()
+            .bounceClick(
+                bounceAmount = 0.01f,
+                interactionSource = interactionSource,
+                repeatEnabled = true
+            )
+    ) {
         val textSize = remember(Unit) { (maxWidth /15f).value }
         val padding = remember(Unit) { (maxWidth / 30f) }
         Row(
-            modifier = modifier.bounceClick(0.01f).background(backgroundColor, RoundedCornerShape(20)),
+            modifier = modifier.background(backgroundColor, RoundedCornerShape(20)),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

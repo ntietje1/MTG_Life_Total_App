@@ -18,11 +18,12 @@ fun Modifier.bounceClick(
     maxDelayMillis: Long = 100,
     minDelayMillis: Long = 50,
     delayDecayFactor: Float = 0.0f,
+    onPress: () -> Unit = {}
 ): Modifier {
     return repeatingClickable(
         interactionSource = interactionSource,
         indication = indication,
-        onPress = { },
+        onPress = onPress,
         enabled = repeatEnabled,
         initialDelayMillis = initialDelayMillis,
         maxDelayMillis = maxDelayMillis,
