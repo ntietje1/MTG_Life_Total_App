@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.placeholder_icon
 import org.jetbrains.compose.resources.vectorResource
+import theme.LocalDimensions
 import theme.defaultTextStyle
 import theme.generateShadow
 import theme.scaledSp
@@ -150,6 +151,7 @@ fun ImageWithShadow(
     shadowColor: Color = Color.Black,
     shadowAlpha: Float = 0.7f,
 ) {
+    val dimensions = LocalDimensions.current
     Box(modifier = modifier.padding(2.dp)) {
         if (shadowEnabled) {
             Image(
@@ -161,8 +163,8 @@ fun ImageWithShadow(
                 colorFilter = ColorFilter.tint(shadowColor),
                 modifier = Modifier
                     .fillMaxSize()
-                    .offset(1.dp, 1.dp)
-                    .blur(2.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                    .offset(dimensions.borderThin, dimensions.borderThin)
+                    .blur(dimensions.paddingTiny, edgeTreatment = BlurredEdgeTreatment.Unbounded)
             )
         }
 

@@ -22,11 +22,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -481,11 +484,16 @@ fun PlayerButton(
                                     BoxWithConstraints(Modifier.wrapContentSize()) {
                                         val padding = maxWidth / 30f
                                         LazyRow(
-                                            Modifier.fillMaxSize().padding(padding),
+                                            modifier = Modifier.fillMaxSize().padding(vertical = padding),
                                             horizontalArrangement = Arrangement.spacedBy(padding),
                                         ) {
-                                            items(state.player.activeCounters) { counterType ->
-                                                Counter(textColor = state.player.textColor, iconResource = counterType.resource, value = viewModel.getCounterValue(counterType), onIncrement = {
+                                            itemsIndexed(state.player.activeCounters) { index, counterType ->
+                                                Counter(
+                                                    modifier = Modifier
+                                                        .fillMaxHeight()
+                                                        .aspectRatio(0.70f)
+                                                        .then(if (index == 0) Modifier.padding(start = padding) else Modifier),
+                                                    textColor = state.player.textColor, iconResource = counterType.resource, value = viewModel.getCounterValue(counterType), onIncrement = {
                                                     viewModel.incrementCounterValue(
                                                         counterType, 1
                                                     )
@@ -497,6 +505,11 @@ fun PlayerButton(
                                             }
                                             item {
                                                 AddCounter(
+                                                    modifier = Modifier.fillMaxHeight().aspectRatio(0.70f).padding(
+                                                        top = dimensions.paddingMedium,
+                                                        bottom = dimensions.paddingMedium,
+                                                        end = padding
+                                                    ),
                                                     textColor = state.player.textColor,
                                                 ) {
                                                     viewModel.onAddCounterButtonClicked()
@@ -517,7 +530,7 @@ fun PlayerButton(
                                             Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
                                             LazyHorizontalGrid(
-                                                modifier = Modifier.fillMaxSize().padding(padding).clip(RoundedCornerShape(12)),
+                                                modifier = Modifier.fillMaxSize().padding(padding).clip(RoundedCornerShape(8)),
                                                 rows = GridCells.Fixed(3),
                                                 horizontalArrangement = Arrangement.Center,
                                                 verticalArrangement = Arrangement.Center
@@ -681,6 +694,7 @@ fun CounterWrapper(
     BoxWithConstraints(modifier.fillMaxSize()) {
         val smallPadding = maxHeight / 20f
         val smallTextSize = maxHeight.value.scaledSp / 12f
+        val dimensions = LocalDimensions.current
         Column(
             Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -693,7 +707,7 @@ fun CounterWrapper(
                 Modifier.fillMaxSize().background(
                     Color.Black.copy(alpha = 0.2f), shape = RoundedCornerShape(12)
                 ).border(
-                    0.5.dp, textColor.copy(alpha = 0.9f), RoundedCornerShape(12)
+                    dimensions.borderThin, textColor.copy(alpha = 0.9f), RoundedCornerShape(12)
                 ).clip(RoundedCornerShape(12))
             ) {
                 content()
@@ -704,14 +718,16 @@ fun CounterWrapper(
 
 @Composable
 fun AddCounter(
+    modifier: Modifier = Modifier,
     textColor: Color,
     onTap: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
-    BoxWithConstraints(Modifier.fillMaxHeight().aspectRatio(0.70f).padding(5.dp).bounceClick(0.0125f).background(
+    val dimensions = LocalDimensions.current
+    BoxWithConstraints(modifier.bounceClick(0.0125f).background(
         Color.Black.copy(0.2f), shape = RoundedCornerShape(15)
     ).border(
-        0.5.dp, textColor.copy(alpha = 0.9f), RoundedCornerShape(15)
+        dimensions.borderThin, textColor.copy(alpha = 0.9f), RoundedCornerShape(15)
     ).pointerInput(Unit) {
         detectTapGestures {
             onTap()
@@ -732,14 +748,17 @@ fun AddCounter(
 
 @Composable
 fun Counter(
+    modifier: Modifier = Modifier,
     textColor: Color, iconResource: DrawableResource, value: Int, onIncrement: () -> Unit, onDecrement: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
+    val dimensions = LocalDimensions.current
+
     BoxWithConstraints(
-        Modifier.fillMaxHeight().aspectRatio(0.70f).bounceClick(0.0125f).background(
+        modifier.bounceClick(0.0125f).background(
             Color.Black.copy(0.2f), shape = RoundedCornerShape(15)
         ).border(
-            0.5.dp, textColor.copy(alpha = 0.9f), RoundedCornerShape(15)
+            dimensions.borderThin, textColor.copy(alpha = 0.9f), RoundedCornerShape(15)
         ).clip(RoundedCornerShape(15))
     ) {
         val textSize = (maxHeight.value / 2.8f + maxWidth.value / 6f + 30).scaledSp / 1.5f
@@ -805,7 +824,7 @@ fun PlayerButtonBackground(
         }
     }
     Surface(
-        modifier = modifier.fillMaxSize().then(if (imageUri != null) Modifier.padding(1.dp) else Modifier), color = c
+        modifier = modifier.fillMaxSize(), color = c
     ) {}
     if (imageUri != null) {
         KamelImage(
