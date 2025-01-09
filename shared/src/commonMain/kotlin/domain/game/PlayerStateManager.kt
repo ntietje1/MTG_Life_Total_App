@@ -9,14 +9,7 @@ import ui.lifecounter.CounterType
 /**
  * Manages player state operations
  */
-class PlayerStateManager(
-    private val settingsManager: ISettingsManager,
-    private val imageManager: IImageManager,
-) {
-    companion object {
-        const val RECENT_CHANGE_DELAY = 1500L
-    }
-
+class PlayerStateManager {
     fun generatePlayer(startingLife: Int, playerNum: Int): Player {
         val name = "P$playerNum"
         return Player(life = startingLife, name = name, playerNum = playerNum)
@@ -31,16 +24,6 @@ class PlayerStateManager(
             commanderDamage = List(MAX_PLAYERS * 2) { 0 },
             counters = List(CounterType.entries.size) { 0 },
             activeCounters = listOf()
-        )
-    }
-
-    fun clearRecentChange(player: Player): Player {
-        return player.copy(recentChange = 0)
-    }
-
-    fun incrementLife(player: Player, value: Int): Player {
-        return player.copy(
-            life = player.life + value, recentChange = player.recentChange + value
         )
     }
 

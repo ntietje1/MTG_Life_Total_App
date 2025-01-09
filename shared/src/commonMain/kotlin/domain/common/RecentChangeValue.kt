@@ -1,6 +1,5 @@
 package domain.common
 
-import domain.game.PlayerStateManager.Companion.RECENT_CHANGE_DELAY
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -19,12 +18,15 @@ class RecentChangeValue(
     private val recentChangeDelay: Long = RECENT_CHANGE_DELAY,
     private val updateCallback: (NumberWithRecentChange) -> Unit,
 ) {
-
     constructor(
         initialValue: Int = 0,
         recentChangeDelay: Long = RECENT_CHANGE_DELAY,
         updateCallback: (NumberWithRecentChange) -> Unit
     ) : this(NumberWithRecentChange(initialValue, 0), recentChangeDelay, updateCallback)
+
+    companion object {
+        const val RECENT_CHANGE_DELAY = 1500L
+    }
 
     private val _value = MutableStateFlow(initialValue)
     val value: StateFlow<NumberWithRecentChange> = _value.asStateFlow()

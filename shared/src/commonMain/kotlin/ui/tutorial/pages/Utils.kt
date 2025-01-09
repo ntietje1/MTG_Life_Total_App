@@ -234,7 +234,7 @@ abstract class MockLifeCounterViewModel(
 ) : LifeCounterViewModel(
     initialState = lifeCounterState,
     settingsManager = settingsManager,
-    playerStateManager = PlayerStateManager(settingsManager, imageManager),
+    playerStateManager = PlayerStateManager(),
     commanderManager = CommanderDamageManager(notificationManager),
     imageManager = imageManager,
     notificationManager = notificationManager,
