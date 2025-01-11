@@ -44,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -93,6 +94,7 @@ import ui.modifier.animatedBorderCard
 import ui.modifier.bounceClick
 import ui.modifier.repeatingClickable
 import ui.modifier.rotateVertically
+import kotlin.math.pow
 
 @Composable
 fun PlayerButton(
@@ -231,30 +233,9 @@ fun PlayerButton(
                 )
 
                 val smallButtonSize = remember(Unit) { (maxWidth / 15f) + (maxHeight / 10f) }
-                val settingsStateMargin = remember(Unit) { smallButtonSize / 7f }
-                val commanderStateMargin = remember(Unit) { settingsStateMargin * 1.4f }
 
                 val wideButton = remember(Unit) { maxWidth / maxHeight > 1.4 }
 
-                val playerInfoModifier = remember(Unit) {
-                    if (wideButton) {
-                        Modifier.padding(bottom = smallButtonSize / 2f).offset(y = -smallButtonSize / 8f)
-                    } else {
-                        Modifier.offset(y = maxHeight / 20f)
-                    }
-                }
-
-                val commanderDealerModifier = remember {
-                    if (!wideButton) Modifier.offset(y = smallButtonSize / 4f) else Modifier
-                }
-
-                val settingsPadding = remember {
-                    if (wideButton) Modifier.padding(
-                        bottom = smallButtonSize / 4, top = smallButtonSize / 8
-                    ) else Modifier.padding(
-                        top = smallButtonSize / 4
-                    )
-                }
                 if (!state.player.setDead) {
                     when (state.buttonState) {
                         PBState.NORMAL -> {
@@ -310,9 +291,16 @@ fun PlayerButton(
                 }
 
                 @Composable
-                fun Skull() {
+                fun FormattedSettingsButton(modifier: Modifier, imageResource: DrawableResource, text: String, onPress: () -> Unit) {
                     SettingsButton(
-                        modifier = playerInfoModifier.align(Alignment.Center).size(smallButtonSize * 4).padding(top = maxHeight / 9f),
+                        modifier = modifier, imageVector = vectorResource(imageResource), text = text, onPress = onPress, mainColor = state.player.textColor, backgroundColor = Color.Transparent
+                    )
+                }
+
+                @Composable
+                fun Skull(modifier: Modifier = Modifier) {
+                    SettingsButton(
+                        modifier = modifier.align(Alignment.Center).size(smallButtonSize * 4).padding(top = maxHeight / 9f),
                         backgroundColor = Color.Transparent,
                         mainColor = state.player.textColor,
                         imageVector = vectorResource(Res.drawable.skull_icon),
@@ -321,20 +309,30 @@ fun PlayerButton(
                 }
 
                 @Composable
-                fun FormattedSettingsButton(modifier: Modifier, imageResource: DrawableResource, text: String, onPress: () -> Unit) {
-                    SettingsButton(
-                        modifier = modifier, imageVector = vectorResource(imageResource), text = text, onPress = onPress, mainColor = state.player.textColor, backgroundColor = Color.Transparent
-                    )
-                }
-
-                @Composable
                 fun PlayerButtonContent(modifier: Modifier = Modifier) {
                     BoxWithConstraints(modifier.fillMaxSize()) {
                         val textSize = remember { (maxWidth / 15f).value }
+
+                        val playerInfoModifier = remember(Unit) {
+                            if (wideButton) {
+                                Modifier.padding(bottom = smallButtonSize / 2f).offset(y = -smallButtonSize / 8f)
+                            } else {
+                                Modifier.offset(y = maxHeight / 20f)
+                            }
+                        }
+
+                        val settingsModifier = remember(Unit) {
+                            if (wideButton) Modifier.padding(
+                                bottom = smallButtonSize / 4, top = smallButtonSize / 8
+                            ) else Modifier.padding(
+                                top = smallButtonSize / 4
+                            )
+                        }
+
                         when (state.buttonState) {
                             PBState.NORMAL -> {
                                 if (isDead) {
-                                    Skull()
+                                    Skull(playerInfoModifier)
                                 } else {
                                     LifeNumber(
                                         modifier = playerInfoModifier.fillMaxSize(),
@@ -374,7 +372,7 @@ fun PlayerButton(
 
                             PBState.COMMANDER_RECEIVER -> {
                                 if (isDead) {
-                                    Skull()
+                                    Skull(playerInfoModifier)
                                 } else {
                                     CommanderDamageNumber(
                                         modifier = playerInfoModifier.fillMaxSize(),
@@ -389,6 +387,10 @@ fun PlayerButton(
                             }
 
                             PBState.COMMANDER_DEALER -> {
+                                val commanderDealerModifier = remember(Unit) {
+                                    if (!wideButton) Modifier.offset(y = smallButtonSize / 4f) else Modifier
+                                }
+
                                 Column(
                                     commanderDealerModifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
                                 ) {
@@ -421,7 +423,7 @@ fun PlayerButton(
                             }
 
                             PBState.SETTINGS -> {
-                                BoxWithConstraints(settingsPadding.fillMaxSize()) {
+                                BoxWithConstraints(settingsModifier.fillMaxSize()) {
                                     val (settingsButtonSize, smallPadding, _) = remember { generateSizes(maxWidth, maxHeight) }
                                     val settingsButtonModifier = remember { Modifier.size(settingsButtonSize).padding(smallPadding / 2f) }
                                     LazyHorizontalGrid(
@@ -469,7 +471,7 @@ fun PlayerButton(
 
                             PBState.COUNTERS_VIEW -> {
                                 CounterWrapper(
-                                    modifier = settingsPadding.fillMaxSize(), textColor = state.player.textColor, text = "Counters"
+                                    modifier = settingsModifier.fillMaxSize(), textColor = state.player.textColor, text = "Counters"
                                 ) {
                                     BoxWithConstraints(Modifier.wrapContentSize()) {
                                         val padding = maxWidth / 30f
@@ -512,7 +514,7 @@ fun PlayerButton(
 
                             PBState.COUNTERS_SELECT -> {
                                 CounterWrapper(
-                                    modifier = settingsPadding.fillMaxSize(), textColor = state.player.textColor, text = "Select Counters"
+                                    modifier = settingsModifier.fillMaxSize(), textColor = state.player.textColor, text = "Select Counters"
                                 ) {
                                     BoxWithConstraints(Modifier.wrapContentSize()) {
                                         val padding = maxWidth / 50f + maxHeight / 60f
@@ -557,6 +559,9 @@ fun PlayerButton(
                         }
                     }
                 }
+
+                val settingsStateMargin = remember(Unit) { smallButtonSize / 7f }
+                val commanderStateMargin = remember(Unit) { settingsStateMargin * 1.4f }
 
                 @Composable
                 fun BackButton(modifier: Modifier = Modifier) {
@@ -907,7 +912,8 @@ fun CommanderDamageNumber(
                     .align(Alignment.Center)
                     .fillMaxHeight(0.6f)
                     .width(dimensions.borderThin)
-                    .offset(y = dividerOffset),
+                    .offset(y = dividerOffset)
+                    .alpha(0.4f),
                 color = textColor
             )
         }
@@ -918,12 +924,12 @@ fun CommanderDamageNumber(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.fillMaxHeight().width(numberWidth).background(Color.Red.copy(alpha = 0.2f))
+                modifier = Modifier.fillMaxHeight()
                     .then(
                         if (secondValue != null) {
-                            Modifier.padding(end = padding * 2, start = padding)
+                            Modifier.width(numberWidth).padding(end = padding * 2, start = padding)
                         } else {
-                            Modifier
+                            Modifier.fillMaxWidth()
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -931,7 +937,7 @@ fun CommanderDamageNumber(
                 SingleCommanderDamageNumber(
                     modifier = Modifier.then(
                         if (secondValue != null) {
-                            Modifier.fillMaxSize().padding(horizontal = padding)
+                            Modifier.fillMaxSize().padding(padding)
                         } else {
                             Modifier.fillMaxSize()
                         }
@@ -942,13 +948,12 @@ fun CommanderDamageNumber(
                 )
             }
             if (secondValue == null) return@BoxWithConstraints
-//            Spacer(modifier = Modifier.width(padding * 4))
             Box(
-                modifier = Modifier.fillMaxHeight().width(numberWidth).padding(start = padding * 2, end = padding).background(Color.Green.copy(alpha = 0.2f)),
+                modifier = Modifier.fillMaxHeight().width(numberWidth).padding(start = padding * 2, end = padding),
                 contentAlignment = Alignment.Center
             ) {
                 SingleCommanderDamageNumber(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = padding),
+                    modifier = Modifier.fillMaxSize().padding(padding),
                     name = name,
                     textColor = textColor,
                     value = secondValue
@@ -1003,80 +1008,82 @@ fun NumericValue(
     iconResource: DrawableResource,
 ) {
     BoxWithConstraints(
-        modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
         val largeText = value.number.toString()
-        val recentChangeText = if (value.recentChange == 0) "" else if (value.recentChange > 0) "+${value.recentChange}" else "${value.recentChange}"
-        val wideButton = remember(Unit) { maxWidth / maxHeight > 1.4 }
-        var largeTextSize = remember {
-            if (wideButton) {
-                (maxHeight.value / 2f + maxWidth.value / 10f + 10)
-            } else {
-                (maxHeight.value / 6f + maxWidth.value / 2.5f + 10)
-            }
-        }
+        val recentChangeText = if (value.recentChange == 0) ""
+        else if (value.recentChange > 0) "+${value.recentChange}"
+        else "${value.recentChange}"
 
-        if (largeText.length >= 3) {
-            for (i in 0 until largeText.length - 2) {
-                largeTextSize /= 1.15f
-            }
-        }
-        val smallTextSize = remember { maxHeight.value / 14f + 4 }
-        val smallTextPadding = remember { (smallTextSize / 4f).dp }
-        val recentChangeSize = remember { (maxHeight / 7f).value }
+        val aspectRatio = maxWidth / maxHeight
+        val heightWeight = (1f / (1f + aspectRatio)).pow(1.3f)
+        val widthWeight = (1f - heightWeight).pow(1.3f)
 
-        val iconSize = remember { maxHeight / 7f }
+        val largeTextSize = (
+                maxHeight.value / 3.5f * heightWeight +
+                        maxWidth.value / 9f * widthWeight +
+                        (maxHeight.value * maxWidth.value).pow(0.525f) / 4.15f +
+                        10f
+                )
 
-        Column(
-            Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
+        val smallTextSize = largeTextSize / 12f + 10f
+        val smallTextPadding = largeTextSize.dp / 20f
+        val recentChangeSize = 5f + largeTextSize / 6f
+        val iconSize = (largeTextSize / 6f + 10f).dp
+
+        Text(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .offset(y = smallTextPadding * (3 - heightWeight.pow(2) * 2)),
+            text = name,
+            color = textColor,
+            fontSize = smallTextSize.scaledSp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = textShadowStyle()
+        )
+        Row(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(top = smallTextPadding * 4)
+                .wrapContentSize(unbounded = true),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Spacer(modifier = Modifier.weight(1f))
             Text(
-                modifier = Modifier.padding(top = smallTextPadding, bottom = smallTextPadding * 3).offset(y = smallTextPadding * 4),
-                text = name,
+                modifier = Modifier.wrapContentHeight(unbounded = true),
+                text = largeText,
                 color = textColor,
-                fontSize = smallTextSize.scaledSp,
+                fontSize = largeTextSize.scaledSp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
                 style = textShadowStyle()
             )
-            Row(
-                modifier = Modifier.wrapContentSize(unbounded = true),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    modifier = Modifier.wrapContentHeight(unbounded = true),
-                    text = largeText,
-                    color = textColor,
-                    fontSize = largeTextSize.scaledSp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    style = textShadowStyle()
-                )
-                Spacer(modifier = Modifier.weight(0.2f))
-                Text(
-                    modifier = Modifier.weight(0.8f).padding(start = (recentChangeSize * 2).dp).wrapContentSize(unbounded = true),
-                    text = recentChangeText,
-                    color = textColor,
-                    fontSize = recentChangeSize.scaledSp,
-                    maxLines = 1,
-                    style = textShadowStyle()
-                )
-            }
-            SettingsButton(
-                modifier = Modifier.size(iconSize).offset(y = (largeTextSize / 48f).dp),
-                backgroundColor = Color.Transparent,
-                mainColor = textColor,
-                imageVector = vectorResource(iconResource),
-                enabled = false
+            Spacer(modifier = Modifier.weight(0.2f))
+            Text(
+                modifier = Modifier.weight(0.8f).padding(start = recentChangeSize.dp).wrapContentSize(unbounded = true),
+                text = recentChangeText,
+                color = textColor,
+                fontSize = recentChangeSize.scaledSp,
+                maxLines = 1,
+                style = textShadowStyle()
             )
         }
+        SettingsButton(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .size(iconSize)
+                .offset(y = smallTextPadding * (1.5f + heightWeight.pow(2) * 2)),
+            backgroundColor = Color.Transparent,
+            mainColor = textColor,
+            imageVector = vectorResource(iconResource),
+            enabled = false
+        )
     }
 }
 
