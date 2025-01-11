@@ -254,8 +254,12 @@ class SettingsManager private constructor() : ISettingsManager {
     }
 
     override fun loadPlayerPrefs(): ArrayList<Player> {
-        val allPrefString = settings.getString("playerPrefs", "[]")
-        return Json.decodeFromString<List<Player>>(allPrefString).reversed().toCollection(ArrayList())
+        try {
+            val allPrefString = settings.getString("playerPrefs", "[]")
+            return Json.decodeFromString<List<Player>>(allPrefString).reversed().toCollection(ArrayList())
+        } catch (e: Exception) {
+            return ArrayList()
+        }
     }
 
     private fun savePlayerPrefs(players: ArrayList<Player>) {
