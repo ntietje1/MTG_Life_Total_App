@@ -181,40 +181,47 @@ fun DiceRollDialogContent(
             }
 
             Spacer(modifier = Modifier.weight(0.05f))
-            Text(
-                text = "Last result", color = MaterialTheme.colorScheme.onPrimary, fontSize = resultTextSize.scaledSp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().weight(0.1f)
-            )
-            Spacer(modifier = Modifier.height(dimensions.paddingTiny))
-            Box(
-                modifier = Modifier.weight(0.35f).aspectRatio(1.0f).align(Alignment.CenterHorizontally)
-                    .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15))
-            ) {
-                SettingsButton(modifier = Modifier.fillMaxSize().bounceClick(bounceAmount = 0.02f).graphicsLayer(scaleX = animatedSize, scaleY = animatedSize).then(
-                    if (state.lastResult == null) {
-                        Modifier.alpha(0.001f)
-                    } else {
-                        Modifier
-                    }
-                ),
-                    imageVector = if (state.faceValue != null) resources[state.faceValue]!! else vectorResource(Res.drawable.d20_icon),
-                    text = "",
-                    mainColor = MaterialTheme.colorScheme.onPrimary,
-                    shadowEnabled = false,
-                    enabled = false,
-                    overlay = {
-                        BoxWithConstraints(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Text(
-                                text = if (state.lastResult != null) state.lastResult.toString() else "",
-                                color = MaterialTheme.colorScheme.background,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = if (state.lastResult.toString().length >= 3) maxHeight.value.scaledSp / (5 + (state.lastResult.toString().length - 2) * 1.3f) else maxHeight.value.scaledSp / 5,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
-                            )
+            Column(modifier.weight(0.45f)) {
+                Text(
+                    text = "Last result",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = dimensions.textSmall.scaledSp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+                Box(
+                    modifier = Modifier.aspectRatio(1.0f).align(Alignment.CenterHorizontally)
+                        .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15))
+                ) {
+                    SettingsButton(modifier = Modifier.fillMaxSize().bounceClick(bounceAmount = 0.02f).graphicsLayer(scaleX = animatedSize, scaleY = animatedSize).then(
+                        if (state.lastResult == null) {
+                            Modifier.alpha(0.001f)
+                        } else {
+                            Modifier
                         }
-                    })
+                    ),
+                        imageVector = if (state.faceValue != null) resources[state.faceValue]!! else vectorResource(Res.drawable.d20_icon),
+                        text = "",
+                        mainColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowEnabled = false,
+                        enabled = false,
+                        overlay = {
+                            BoxWithConstraints(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text(
+                                    text = if (state.lastResult != null) state.lastResult.toString() else "",
+                                    color = MaterialTheme.colorScheme.background,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = if (state.lastResult.toString().length >= 3) maxHeight.value.scaledSp / (5 + (state.lastResult.toString().length - 2) * 1.3f) else maxHeight.value.scaledSp / 5,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Center)
+                                )
+                            }
+                        }
+                    )
+                }
             }
             Spacer(modifier = Modifier.weight(0.025f))
         }

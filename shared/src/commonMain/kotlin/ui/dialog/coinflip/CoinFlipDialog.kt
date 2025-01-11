@@ -69,6 +69,7 @@ import theme.LocalDimensions
 import theme.halfAlpha
 import theme.scaledSp
 import ui.components.InfoButton
+import ui.components.ResetButton
 import ui.components.SettingsButton
 import ui.flippable.Flippable
 import ui.flippable.FlippableState
@@ -105,7 +106,6 @@ fun CoinFlipDialogContent(
         val buttonSize = remember(Unit) { maxWidth / 12f + maxHeight / 15f }
         val padding = remember(Unit) { buttonSize / 2 }
         val counterHeight = remember(Unit) { maxHeight / 16f }
-        val textSize = remember(Unit) { (buttonSize / 8f).value }
         Column(
             Modifier.wrapContentSize().align(Alignment.TopStart), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -142,7 +142,7 @@ fun CoinFlipDialogContent(
                 text = "Krark's Thumbs: ${state.krarksThumbs}",
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
-                fontSize = textSize.scaledSp,
+                fontSize = dimensions.textTiny.scaledSp,
                 textAlign = TextAlign.Center
             )
         }
@@ -185,7 +185,7 @@ fun CoinFlipDialogContent(
                 text = "Coins to Flip: ${state.baseCoins}",
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
-                fontSize = textSize.scaledSp,
+                fontSize = dimensions.textTiny.scaledSp,
                 textAlign = TextAlign.Center
             )
         }
@@ -240,7 +240,7 @@ fun CoinFlipDialogContent(
                 text = "Total Number of Coins: ${viewModel.coinControllers.size}",
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
-                fontSize = textSize.scaledSp,
+                fontSize = dimensions.textTiny.scaledSp,
                 modifier = Modifier.padding(bottom = padding / 8f).align(Alignment.CenterHorizontally)
             )
             Spacer(Modifier.weight(0.1f))
@@ -255,7 +255,7 @@ fun CoinFlipDialogContent(
                         text = "Flip Until You Lose",
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                         fontWeight = FontWeight.Bold,
-                        fontSize = textSize.scaledSp,
+                        fontSize = dimensions.textTiny.scaledSp,
                         modifier = Modifier.padding(top = padding / 8f, bottom = padding / 8f)
                     )
                     Row(
@@ -306,7 +306,7 @@ fun CoinFlipDialogContent(
                 text = "Last Result",
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
-                fontSize = textSize.scaledSp * 1.2f,
+                fontSize = dimensions.textTiny.scaledSp * 1.2f,
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 8f, bottom = padding / 24f)
             )
             LastResult(
@@ -317,7 +317,7 @@ fun CoinFlipDialogContent(
                 text = "Flip History",
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
-                fontSize = textSize.scaledSp * 1.2f,
+                fontSize = dimensions.textTiny.scaledSp * 1.2f,
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 8f, bottom = padding / 24f)
             )
             FlipHistory(
@@ -369,31 +369,6 @@ fun CoinFlippable(
                 onTap()
             })
         })
-    }
-}
-
-@Composable
-fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
-    BoxWithConstraints(
-        modifier = modifier.aspectRatio(2.5f).clip(RoundedCornerShape(15)).pointerInput(Unit) {
-            detectTapGestures(onTap = { _ -> onReset() })
-        },
-
-        ) {
-        val textSize = remember(Unit) { (maxWidth / 4f).value }
-        val textPadding = remember(Unit) { maxHeight / 9f }
-        Surface(
-            modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.onSurface.halfAlpha()
-        ) {
-            Text(
-                text = "Reset",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                style = TextStyle(fontSize = textSize.scaledSp),
-                modifier = Modifier.align(Alignment.BottomCenter).padding(top = textPadding)
-            )
-        }
     }
 }
 
@@ -465,7 +440,7 @@ private fun HistoryBase(modifier: Modifier = Modifier, historyString: AnnotatedS
         }
     }
     val textColor = MaterialTheme.colorScheme.onPrimary
-    
+
     // Process the AnnotatedString to replace unspecified colors
     val processedText = remember(historyString, textColor) {
         buildAnnotatedString {

@@ -33,9 +33,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import ui.dialog.coinflip.ResetButton
-import ui.modifier.bounceClick
-import ui.modifier.repeatingClickable
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.b_icon
 import lifelinked.shared.generated.resources.c_icon
@@ -48,7 +45,11 @@ import lifelinked.shared.generated.resources.storm_icon
 import lifelinked.shared.generated.resources.u_icon
 import lifelinked.shared.generated.resources.w_icon
 import org.jetbrains.compose.resources.vectorResource
+import theme.LocalDimensions
 import theme.scaledSp
+import ui.components.ResetButton
+import ui.modifier.bounceClick
+import ui.modifier.repeatingClickable
 
 
 const val COUNTER_DIALOG_ENTRIES = 7
@@ -62,6 +63,7 @@ fun CounterDialogContent(
 ) {
 
     val haptic = LocalHapticFeedback.current
+    val dimensions = LocalDimensions.current
 
     val counterResources = arrayListOf(
         Triple(vectorResource(Res.drawable.w_icon), Color(0xFFfffbd5), Color(0xFF211d15)),
@@ -121,7 +123,7 @@ fun CounterDialogContent(
             }
 
             item {
-                ResetButton(modifier = Modifier.height(counterSize / 2f).padding(top = 5.dp), onReset = {
+                ResetButton(modifier = Modifier.height(counterSize / 2f).padding(top = dimensions.paddingSmall), onReset = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     resetCounters()
                 })
@@ -162,7 +164,7 @@ fun SingleCounter(
                 repeatEnabled = true
             )
     ) {
-        val textSize = remember(Unit) { (maxWidth /15f).value }
+        val textSize = remember(Unit) { (maxWidth / 15f).value }
         val padding = remember(Unit) { (maxWidth / 30f) }
         Row(
             modifier = modifier.background(backgroundColor, RoundedCornerShape(20)),

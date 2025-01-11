@@ -421,8 +421,8 @@ fun AnimatedGridDialog(
                         MaterialTheme.colorScheme.surface.halfAlpha().halfAlpha()
                     )
                     .border(
-                    dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()
-                ),
+                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()
+                    ),
             ) {
                 content()
             }
@@ -444,11 +444,11 @@ fun AnimatedGridDialog(
     SettingsDialog(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
         onDismiss = {
-        onDismiss()
-    }, content = dialogContent, onBack = {
-        backHandler.pop()
+            onDismiss()
+        }, content = dialogContent, onBack = {
+            backHandler.pop()
 //        backStack.removeLast().invoke()
-    })
+        })
 }
 
 @Composable
