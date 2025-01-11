@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Dp
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.unit.dp
 
 private val DarkColorScheme = darkColorScheme(
     primary = Black,
@@ -41,6 +42,7 @@ class Dimensions(val screenWidth: Dp, val screenHeight: Dp) {
     val borderSmall = screenWidth / 500f + screenHeight / 750f
     val borderMedium = screenWidth / 250f + screenHeight / 375f
     val infoButtonSize = screenWidth / 32f + screenHeight / 40f
+    val textMedium = (screenHeight / 80f + screenWidth / 120f + 5.dp).value
 }
 
 @Composable

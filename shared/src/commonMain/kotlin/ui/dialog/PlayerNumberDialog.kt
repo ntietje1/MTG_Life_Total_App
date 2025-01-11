@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import ui.components.SettingsButton
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.alternate4player_icon
@@ -28,6 +29,7 @@ import lifelinked.shared.generated.resources.six_icon
 import lifelinked.shared.generated.resources.three_icon
 import lifelinked.shared.generated.resources.two_icon
 import org.jetbrains.compose.resources.vectorResource
+import theme.LocalDimensions
 import theme.scaledSp
 
 @Composable
@@ -80,7 +82,8 @@ fun FourPlayerLayoutContent(
     modifier: Modifier = Modifier, onDismiss: () -> Unit, setPlayerNum: (Int) -> Unit, setAlt4PlayerLayout: (value: Boolean) -> Unit
 ) {
     BoxWithConstraints(modifier) {
-        val buttonSize = remember(Unit) { maxWidth * 0.7f }
+        val buttonSize = remember(Unit) { min(maxWidth * 0.7f, maxHeight * 0.5f) }
+        val dimensions = LocalDimensions.current
         Column(
             modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -88,9 +91,9 @@ fun FourPlayerLayoutContent(
                 modifier = Modifier
                     .wrapContentHeight()
                     .wrapContentWidth()
-                    .padding(top = 30.dp),
+                    .padding(top = dimensions.paddingMedium * 2),
                 text = "Select a 4 player layout",
-                fontSize = 25.scaledSp,
+                fontSize = dimensions.textMedium.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary
             )
             SettingsButton(Modifier.size(buttonSize), imageVector = vectorResource(Res.drawable.default4player_icon), shadowEnabled = false, onPress = {
@@ -103,7 +106,7 @@ fun FourPlayerLayoutContent(
                 setAlt4PlayerLayout(true)
                 onDismiss()
             })
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(dimensions.paddingMedium))
         }
     }
 }

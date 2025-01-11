@@ -456,20 +456,16 @@ fun GridDialogContent(
     modifier: Modifier = Modifier, title: String, columns: Int = 3, content: LazyGridScope.() -> Unit
 ) {
     BoxWithConstraints(modifier = modifier) {
+        val dimensions = LocalDimensions.current
         val padding = remember(Unit) { maxHeight / 60f }
-        val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
         Column(
             Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.weight(0.1f))
-//            Spacer(modifier = Modifier.height(padding * 3f))
             Text(
-                modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
+                modifier = Modifier.wrapContentSize(), text = title, fontSize = dimensions.textMedium.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.weight(0.015f))
-//            Spacer(modifier = Modifier.height(padding * 2f))
-//            Box(Modifier.fillMaxSize().background(color = Color.Red),
-//                contentAlignment = Alignment.Center) {
             LazyVerticalGrid(
                 modifier = Modifier.padding(horizontal = padding / 2f).wrapContentSize(),
                 columns = GridCells.Fixed(columns),
@@ -478,7 +474,6 @@ fun GridDialogContent(
                 content = content
             )
             Spacer(modifier = Modifier.weight(0.15f))
-//            Spacer(modifier = Modifier.height(padding / 2f))
         }
     }
 }
@@ -488,20 +483,16 @@ fun GridDialogContent(
     modifier: Modifier = Modifier, title: String, columns: Int = 3, items: List<@Composable () -> Unit> = emptyList()
 ) {
     BoxWithConstraints(modifier = modifier) {
+        val dimensions = LocalDimensions.current
         val padding = remember(Unit) { maxHeight / 60f }
-        val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
         Column(
             Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.weight(0.1f))
-//            Spacer(modifier = Modifier.height(padding * 3f))
             Text(
-                modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
+                modifier = Modifier.wrapContentSize(), text = title, fontSize = dimensions.textMedium.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.weight(0.015f))
-//            Spacer(modifier = Modifier.height(padding * 2f))
-//            Box(Modifier.fillMaxSize().background(color = Color.Red),
-//                contentAlignment = Alignment.Center) {
             LazyVerticalGrid(modifier = Modifier.padding(horizontal = padding / 2f).wrapContentSize(),
                 columns = GridCells.Fixed(columns),
                 verticalArrangement = Arrangement.Center,
@@ -519,7 +510,6 @@ fun GridDialogContent(
                     }
                 })
             Spacer(modifier = Modifier.weight(0.15f))
-//            Spacer(modifier = Modifier.height(padding / 2f))
         }
     }
 }
