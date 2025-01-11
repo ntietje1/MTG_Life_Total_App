@@ -7,7 +7,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class NumberWithRecentChange(
     val number: Int,
     val recentChange: Int
@@ -18,12 +20,6 @@ class RecentChangeValue(
     private val recentChangeDelay: Long = RECENT_CHANGE_DELAY,
     private val updateCallback: (NumberWithRecentChange) -> Unit,
 ) {
-    constructor(
-        initialValue: Int = 0,
-        recentChangeDelay: Long = RECENT_CHANGE_DELAY,
-        updateCallback: (NumberWithRecentChange) -> Unit
-    ) : this(NumberWithRecentChange(initialValue, 0), recentChangeDelay, updateCallback)
-
     companion object {
         const val RECENT_CHANGE_DELAY = 1500L
     }
@@ -48,12 +44,6 @@ class RecentChangeValue(
                 _value.value.recentChange + change
             )
         )
-        updateRecentChange()
-    }
-
-    fun set(newValue: Int) {
-        val change = newValue - _value.value.number
-        updateValue(NumberWithRecentChange(newValue, change))
         updateRecentChange()
     }
 

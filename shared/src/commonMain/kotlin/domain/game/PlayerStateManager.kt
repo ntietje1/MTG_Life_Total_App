@@ -1,7 +1,6 @@
 package domain.game
 
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
+import domain.common.NumberWithRecentChange
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
 import ui.lifecounter.CounterType
@@ -12,23 +11,22 @@ import ui.lifecounter.CounterType
 class PlayerStateManager {
     fun generatePlayer(startingLife: Int, playerNum: Int): Player {
         val name = "P$playerNum"
-        return Player(life = startingLife, name = name, playerNum = playerNum)
+        return Player(lifeTotal = NumberWithRecentChange(startingLife, 0), name = name, playerNum = playerNum)
     }
 
     fun resetPlayerState(player: Player, startingLife: Int): Player {
         return player.copy(
-            life = startingLife,
-            recentChange = 0,
+            lifeTotal = NumberWithRecentChange(startingLife, 0),
             monarch = false,
             setDead = false,
-            commanderDamage = List(MAX_PLAYERS * 2) { 0 },
+            commanderDamage = List(MAX_PLAYERS * 2) { NumberWithRecentChange(0, 0) },
             counters = List(CounterType.entries.size) { 0 },
             activeCounters = listOf()
         )
     }
 
     fun isPlayerDead(player: Player, autoKo: Boolean): Boolean {
-        return player.setDead || (autoKo && (player.life <= 0 || player.commanderDamage.any { it >= 21 }))
+        return player.setDead || (autoKo && (player.life <= 0 || player.commanderDamage.any { it.number >= 21 }))
     }
 
     fun toggleSetDead(player: Player, value: Boolean? = null): Player {

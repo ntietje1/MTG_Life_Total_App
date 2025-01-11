@@ -43,7 +43,7 @@ class TimerManager(
         stopObserver()
     }
 
-    fun setupTimerStateObserver(scope: CoroutineScope) {
+    fun registerTimerStateObserver(scope: CoroutineScope) {
         // Observe timer enabled changes
         super.checkAttached()
         observerJob = scope.launch {

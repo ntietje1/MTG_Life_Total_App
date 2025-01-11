@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import domain.common.NumberWithRecentChange
 import domain.game.timer.TurnTimer
 import domain.system.SystemManager
 import io.kamel.image.KamelImage
@@ -235,10 +236,16 @@ fun PlayerButton(
 
                 val wideButton = remember(Unit) { maxWidth / maxHeight > 1.4 }
 
-                val playerInfoPadding = remember(Unit) {
+                val playerInfoModifier = remember(Unit) {
                     if (wideButton) {
                         Modifier.padding(bottom = smallButtonSize / 2f).offset(y = -smallButtonSize / 8f)
-                    } else Modifier.offset(y = smallButtonSize / 4f)
+                    } else {
+                        Modifier.offset(y = maxHeight / 20f)
+                    }
+                }
+
+                val commanderDealerModifier = remember {
+                    if (!wideButton) Modifier.offset(y = smallButtonSize / 4f) else Modifier
                 }
 
                 val settingsPadding = remember {
@@ -305,7 +312,7 @@ fun PlayerButton(
                 @Composable
                 fun Skull() {
                     SettingsButton(
-                        modifier = playerInfoPadding.align(Alignment.Center).size(smallButtonSize * 4).padding(top = maxHeight / 9f),
+                        modifier = playerInfoModifier.align(Alignment.Center).size(smallButtonSize * 4).padding(top = maxHeight / 9f),
                         backgroundColor = Color.Transparent,
                         mainColor = state.player.textColor,
                         imageVector = vectorResource(Res.drawable.skull_icon),
@@ -330,11 +337,10 @@ fun PlayerButton(
                                     Skull()
                                 } else {
                                     LifeNumber(
-                                        modifier = playerInfoPadding.fillMaxSize(),
+                                        modifier = playerInfoModifier.fillMaxSize(),
                                         name = state.player.name,
                                         textColor = state.player.textColor,
-                                        largeText = state.player.life.toString(),
-                                        recentChangeText = if (state.player.recentChange == 0) "" else if (state.player.recentChange > 0) "+${state.player.recentChange}" else "${state.player.recentChange}",
+                                        value = state.player.lifeTotal
                                     )
                                 }
                             }
@@ -371,22 +377,20 @@ fun PlayerButton(
                                     Skull()
                                 } else {
                                     CommanderDamageNumber(
-                                        modifier = playerInfoPadding.fillMaxSize(),
+                                        modifier = playerInfoModifier.fillMaxSize(),
                                         name = state.player.name,
                                         textColor = state.player.textColor,
-                                        firstValue = viewModel.getCommanderDamage(
-                                            partner = false
-                                        ).toString(),
+                                        firstValue = viewModel.getCommanderDamage(partner = false),
                                         secondValue = if (currentDealer?.partnerMode == true) viewModel.getCommanderDamage(
                                             partner = true
-                                        ).toString() else null,
+                                        ) else null,
                                     )
                                 }
                             }
 
                             PBState.COMMANDER_DEALER -> {
                                 Column(
-                                    Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+                                    commanderDealerModifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
                                 ) {
                                     Text(
                                         modifier = Modifier,
@@ -888,14 +892,14 @@ fun CommanderDamageNumber(
     modifier: Modifier = Modifier,
     name: String,
     textColor: Color,
-    firstValue: String,
-    secondValue: String?,
+    firstValue: NumberWithRecentChange,
+    secondValue: NumberWithRecentChange?,
 ) {
     BoxWithConstraints(modifier = modifier) {
         val dividerOffset = remember { maxHeight / 12f }
         val dimensions = LocalDimensions.current
-        val numberWidth = remember { maxWidth * 0.3f }
-        val padding = remember { maxWidth * 0.1f }
+        val numberWidth = remember { maxWidth * 0.4f }
+        val padding = remember { maxWidth * 0.05f }
 
         if (secondValue != null) {
             VerticalDivider(
@@ -914,7 +918,14 @@ fun CommanderDamageNumber(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.fillMaxHeight().width(numberWidth),
+                modifier = Modifier.fillMaxHeight().width(numberWidth).background(Color.Red.copy(alpha = 0.2f))
+                    .then(
+                        if (secondValue != null) {
+                            Modifier.padding(end = padding * 2, start = padding)
+                        } else {
+                            Modifier
+                        }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 SingleCommanderDamageNumber(
@@ -927,22 +938,20 @@ fun CommanderDamageNumber(
                     ),
                     name = name,
                     textColor = textColor,
-                    value = firstValue,
-                    recentChange = 0
+                    value = firstValue
                 )
             }
             if (secondValue == null) return@BoxWithConstraints
-            Spacer(modifier = Modifier.width(padding*4))
+//            Spacer(modifier = Modifier.width(padding * 4))
             Box(
-                modifier = Modifier.fillMaxHeight().width(numberWidth).padding(horizontal = padding),
+                modifier = Modifier.fillMaxHeight().width(numberWidth).padding(start = padding * 2, end = padding).background(Color.Green.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
                 SingleCommanderDamageNumber(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = padding),
                     name = name,
                     textColor = textColor,
-                    value = secondValue,
-                    recentChange = 0
+                    value = secondValue
                 )
             }
         }
@@ -954,8 +963,7 @@ fun SingleCommanderDamageNumber(
     modifier: Modifier = Modifier,
     name: String,
     textColor: Color,
-    value: String,
-    recentChange: Int
+    value: NumberWithRecentChange,
 ) {
     val iconResource = remember { Res.drawable.commander_solid_icon }
 
@@ -964,8 +972,7 @@ fun SingleCommanderDamageNumber(
         iconResource = iconResource,
         name = name,
         textColor = textColor,
-        largeText = value,
-        recentChangeText = if (recentChange == 0) "" else if (recentChange > 0) "+$recentChange" else "$recentChange"
+        value = value
     )
 }
 
@@ -974,17 +981,15 @@ fun LifeNumber(
     modifier: Modifier = Modifier,
     textColor: Color,
     name: String,
-    largeText: String,
-    recentChangeText: String,
-    ) {
+    value: NumberWithRecentChange
+) {
     val iconResource = remember { Res.drawable.heart_solid_icon }
 
     NumericValue(
         modifier = modifier,
         textColor = textColor,
         name = name,
-        largeText = largeText,
-        recentChangeText = recentChangeText,
+        value = value,
         iconResource = iconResource,
     )
 }
@@ -994,15 +999,22 @@ fun NumericValue(
     modifier: Modifier = Modifier,
     textColor: Color,
     name: String,
-    largeText: String,
-    recentChangeText: String,
+    value: NumberWithRecentChange,
     iconResource: DrawableResource,
 ) {
     BoxWithConstraints(
         modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
-        var largeTextSize = remember { (maxHeight.value / 2.8f + maxWidth.value / 6f + 30) }
-        val largeTextPadding = remember { (largeTextSize / 6f).dp }
+        val largeText = value.number.toString()
+        val recentChangeText = if (value.recentChange == 0) "" else if (value.recentChange > 0) "+${value.recentChange}" else "${value.recentChange}"
+        val wideButton = remember(Unit) { maxWidth / maxHeight > 1.4 }
+        var largeTextSize = remember {
+            if (wideButton) {
+                (maxHeight.value / 2f + maxWidth.value / 10f + 10)
+            } else {
+                (maxHeight.value / 6f + maxWidth.value / 2.5f + 10)
+            }
+        }
 
         if (largeText.length >= 3) {
             for (i in 0 until largeText.length - 2) {
@@ -1016,7 +1028,9 @@ fun NumericValue(
         val iconSize = remember { maxHeight / 7f }
 
         Column(
-            Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+            Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
             Text(
                 modifier = Modifier.padding(top = smallTextPadding, bottom = smallTextPadding * 3).offset(y = smallTextPadding * 4),
@@ -1030,7 +1044,7 @@ fun NumericValue(
                 style = textShadowStyle()
             )
             Row(
-                modifier = Modifier.wrapContentSize(unbounded = true).offset(y = (-largeTextSize / 12f).dp).padding(top = largeTextPadding),
+                modifier = Modifier.wrapContentSize(unbounded = true),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -1042,19 +1056,21 @@ fun NumericValue(
                     fontSize = largeTextSize.scaledSp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
+                    maxLines = 1,
                     style = textShadowStyle()
                 )
                 Spacer(modifier = Modifier.weight(0.2f))
                 Text(
-                    modifier = Modifier.weight(0.8f).padding(start = 25.dp).wrapContentSize(unbounded = true),
+                    modifier = Modifier.weight(0.8f).padding(start = (recentChangeSize * 2).dp).wrapContentSize(unbounded = true),
                     text = recentChangeText,
                     color = textColor,
                     fontSize = recentChangeSize.scaledSp,
+                    maxLines = 1,
                     style = textShadowStyle()
                 )
             }
             SettingsButton(
-                modifier = Modifier.size(iconSize).padding(top = 2.dp).offset(y = (largeTextSize / 48f).dp),
+                modifier = Modifier.size(iconSize).offset(y = (largeTextSize / 48f).dp),
                 backgroundColor = Color.Transparent,
                 mainColor = textColor,
                 imageVector = vectorResource(iconResource),

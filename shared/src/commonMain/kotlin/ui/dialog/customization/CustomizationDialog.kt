@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.min
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import di.BackHandler
+import domain.common.NumberWithRecentChange
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.camera_icon
@@ -397,7 +398,7 @@ fun PlayerButtonPreview(
             isDead = isDead,
         )
         LifeNumber(
-            modifier = Modifier.fillMaxHeight().fillMaxWidth().padding(bottom = padding), largeText = lifeNumber.toString(), name = name, textColor = accentColor, recentChangeText = ""
+            modifier = Modifier.fillMaxHeight().fillMaxWidth().padding(bottom = padding), value = NumberWithRecentChange(lifeNumber, 0), name = name, textColor = accentColor
         )
     }
 }

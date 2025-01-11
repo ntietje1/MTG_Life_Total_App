@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import domain.common.NumberWithRecentChange
 import domain.game.CommanderDamageManager
 import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
@@ -293,32 +294,32 @@ data class MockGameState(
     val playerStates: List<PlayerButtonState> = listOf(
         PlayerButtonState(
             player = Player(
-                life = 40, name = "Player 1", color = PlayerColor7, playerNum = 1
+                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 1", color = PlayerColor7, playerNum = 1
             )
         ),
         PlayerButtonState(
             Player(
-                life = 40, name = "Player 2", color = PlayerColor2, playerNum = 2
+                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 2", color = PlayerColor2, playerNum = 2
             )
         ),
         PlayerButtonState(
             Player(
-                life = 40, name = "Player 3", color = PlayerColor5, playerNum = 3
+                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 3", color = PlayerColor5, playerNum = 3
             )
         ),
         PlayerButtonState(
             Player(
-                life = 40, name = "Player 4", color = PlayerColor6, playerNum = 4
+                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 4", color = PlayerColor6, playerNum = 4
             )
         ),
         PlayerButtonState(
             Player(
-                life = 40, name = "Player 5", color = PlayerColor9, playerNum = 5
+                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 5", color = PlayerColor9, playerNum = 5
             )
         ),
         PlayerButtonState(
             Player(
-                life = 40, name = "Player 6", color = PlayerColor8, playerNum = 6
+                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 6", color = PlayerColor8, playerNum = 6
             )
         ),
     ), val lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false), val mockSettingsManager: ISettingsManager = MockSettingsManager(

@@ -63,16 +63,31 @@ open class PlayerButtonViewModel(
         get() = _customizationViewmodel
 
     private val lifeTotal = RecentChangeValue(
-        initialValue = NumberWithRecentChange(initialState.player.life, initialState.player.recentChange)
+        initialValue = initialState.player.lifeTotal
     ) {
         setPlayer(
-            state.value.player.copy(life = it.number, recentChange = it.recentChange)
+            state.value.player.copy(lifeTotal = it)
         )
     }.attach(viewModelScope)
+
+    private val commanderDamageTrackers = List(Player.MAX_PLAYERS * 2) { index ->
+        RecentChangeValue(
+            initialValue = initialState.player.commanderDamage[index]
+        ) { newValue ->
+            setPlayer(
+                state.value.player.copy(
+                    commanderDamage = state.value.player.commanderDamage.toMutableList().apply {
+                        this[index] = newValue
+                    }
+                )
+            )
+        }.attach(viewModelScope)
+    }
 
     override fun onCleared() {
         super.onCleared()
         lifeTotal.cancel()
+        commanderDamageTrackers.forEach { it.cancel() }
     }
 
     internal fun setPlayer(player: Player) {
@@ -225,12 +240,14 @@ open class PlayerButtonViewModel(
         return state.value.player.activeCounters.contains(counterType)
     }
 
-    fun getCommanderDamage(partner: Boolean): Int {
+    fun getCommanderDamage(partner: Boolean): NumberWithRecentChange {
         return commanderManager.getCommanderDamage(state.value.player, partner)
     }
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
-        setPlayer(commanderManager.incrementCommanderDamage(state.value.player, value, partner))
+        val currentDealer = currentDealer.value ?: return
+        val index = (currentDealer.playerNum - 1) + (if (partner) Player.MAX_PLAYERS else 0)
+        commanderDamageTrackers[index].increment(value)
         gameStateManager.savePlayerState(state.value.player)
     }
 

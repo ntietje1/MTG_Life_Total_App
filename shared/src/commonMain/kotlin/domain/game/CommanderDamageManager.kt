@@ -1,9 +1,10 @@
 package domain.game
 
-import model.Player
+import domain.common.NumberWithRecentChange
 import domain.system.NotificationManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import model.Player
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 /**
@@ -29,8 +30,8 @@ class CommanderDamageManager(
         return player.copy(partnerMode = value)
     }
 
-    fun getCommanderDamage(player: Player, partner: Boolean): Int {
-        val currentDealer = _currentDealer.value ?: return 0
+    fun getCommanderDamage(player: Player, partner: Boolean): NumberWithRecentChange {
+        val currentDealer = _currentDealer.value ?: return NumberWithRecentChange(0, 0)
         val index = (currentDealer.playerNum - 1) + (if (partner) Player.MAX_PLAYERS else 0)
         return player.commanderDamage[index]
     }
@@ -43,14 +44,19 @@ class CommanderDamageManager(
     }
 
     private fun receiveCommanderDamage(player: Player, index: Int, value: Int): Player {
-        if (value < 0 && player.commanderDamage[index] + value < 0) {
+        val currentDamage = player.commanderDamage[index].number
+        if (value < 0 && currentDamage + value < 0) {
             notificationManager.showNotification("Commander damage cannot be negative")
             return player
-        } else if (value > 0 && player.commanderDamage[index] + value >= 99) {
+        } else if (value > 0 && currentDamage + value >= 99) {
             notificationManager.showNotification("Commander damage limit reached")
             return player
-        } else return player.copy(commanderDamage = player.commanderDamage.toMutableList().apply {
-            this[index] += value
-        }.toList())
+        }
+
+        return player.copy(
+            commanderDamage = player.commanderDamage.toMutableList().apply {
+                this[index] = NumberWithRecentChange(currentDamage + value, value)
+            }
+        )
     }
 } 

@@ -100,7 +100,7 @@ fun TutorialPage2(
         ) {
 
             private fun checkComplete() {
-                if (state.value.player.commanderDamage.any { it >= 21 }) {
+                if (state.value.player.commanderDamage.any { it.number >= 21 }) {
                     onComplete()
                     complete = true
                 }
