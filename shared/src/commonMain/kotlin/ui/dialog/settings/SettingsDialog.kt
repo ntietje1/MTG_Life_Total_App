@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
@@ -82,8 +83,6 @@ fun SettingsDialogContent(
 
     BoxWithConstraints(modifier) {
         val buttonHeight = remember(Unit) { 10.dp + maxWidth / 10f }
-        val textSize = remember(Unit) { (maxWidth / 30f).value }
-        val smallPadding = remember(Unit) { maxWidth / 50f }
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -263,9 +262,9 @@ fun SettingsDialogContent(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = smallPadding, end = smallPadding, top = smallPadding),
+                        .padding(start = dimensions.paddingSmall, end = dimensions.paddingSmall, top = dimensions.paddingMedium),
                     text = "LifeLinked v${version.value} by Nicholas Tietje",
-                    fontSize = textSize.scaledSp,
+                    fontSize = dimensions.textSmall.scaledSp,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
                     style = defaultTextStyle()
@@ -275,9 +274,9 @@ fun SettingsDialogContent(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = smallPadding, end = smallPadding, top = smallPadding / 4f, bottom = smallPadding * 1.5f),
+                        .padding(start = dimensions.paddingSmall, end = dimensions.paddingSmall, top = dimensions.paddingTiny, bottom = dimensions.paddingMedium),
                     text = "Card art & information powered by the Scryfall API",
-                    fontSize = textSize.scaledSp,
+                    fontSize = dimensions.textSmall.scaledSp,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
                     style = defaultTextStyle()
@@ -294,15 +293,13 @@ fun SettingsDialogHeader(
     text: String = "placeholder text",
 ) {
     BoxWithConstraints(
-        modifier
-            .background(Color.White.copy(alpha = 0.0f)), contentAlignment = Alignment.BottomStart
+        modifier, contentAlignment = Alignment.BottomStart
     ) {
-        val textSize = remember(Unit) { (maxWidth / 24f).value }
-        val padding = remember(Unit) { maxWidth / 35f }
+        val dimensions = LocalDimensions.current
         Text(
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.padding(dimensions.paddingMedium),
             text = text,
-            fontSize = textSize.scaledSp,
+            fontSize = dimensions.textMedium.scaledSp,
             color = MaterialTheme.colorScheme.onPrimary,
             style = defaultTextStyle()
         )
@@ -341,12 +338,11 @@ fun SettingsDialogButtonWithToggle(
     toggle: (Boolean) -> Unit = {},
 ) {
     val haptic = LocalHapticFeedback.current
+    val dimensions = LocalDimensions.current
     val isChecked = remember { mutableStateOf(initialState) }
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val iconSize = remember(Unit) { 10.dp + maxHeight / 2.25f }
-        val padding = remember(Unit) { 2.dp + maxWidth / 50f }
-        val textSize = remember(Unit) { 7 + (maxWidth / 32f).value }
         val toggleScale = remember(Unit) { (maxWidth.value + 5) / 500.dp.value }
         Row(
             modifier = modifier
@@ -361,9 +357,10 @@ fun SettingsDialogButtonWithToggle(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Box(Modifier.wrapContentSize().padding(
-                start = padding * 3/4f, end = padding / 2f,
-                top = padding, bottom = padding
+            Box(Modifier.wrapContentSize()
+                .padding(
+                start = dimensions.paddingMedium, end = dimensions.paddingTiny,
+                top = dimensions.paddingSmall, bottom = dimensions.paddingSmall
             )) {
                 SettingsButton(
                     modifier = Modifier
@@ -375,16 +372,16 @@ fun SettingsDialogButtonWithToggle(
                 )
             }
             Text(
-                modifier = Modifier.fillMaxWidth(0.8f).padding(start = padding / 4f),
+                modifier = Modifier.fillMaxWidth(0.7f).padding(start = dimensions.paddingMedium),
                 text = text,
-                fontSize = textSize.scaledSp,
+                fontSize = dimensions.textMedium.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 style = defaultTextStyle()
             )
             Spacer(modifier = Modifier.weight(1f))
             if (toggleVisible) {
                 Switch(
-                    modifier = Modifier.scale(toggleScale).padding(end = padding),
+                    modifier = Modifier.weight(1f).scale(toggleScale),
                     checked = isChecked.value,
                     onCheckedChange = { checked ->
                         isChecked.value = checked
@@ -400,6 +397,7 @@ fun SettingsDialogButtonWithToggle(
                         uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
                     )
                 )
+                Spacer(modifier = Modifier.width(dimensions.paddingMedium))
             }
         }
     }
