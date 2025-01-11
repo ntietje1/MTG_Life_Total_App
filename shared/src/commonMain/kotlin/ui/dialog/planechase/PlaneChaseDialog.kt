@@ -168,7 +168,6 @@ fun PlaneChaseDialogContent( //TODO: add animations
 
     BoxWithConstraints(modifier = modifier.padding(bottom = 20.dp)) {
         val buttonSize = remember(Unit) { maxWidth / 6f }
-        val textSize = remember(Unit) { (maxWidth / 35f).value }
         InfoButton(
             modifier = Modifier.size(dimensions.infoButtonSize).align(Alignment.TopEnd).padding(end = dimensions.paddingSmall, top = dimensions.paddingSmall),
             onPress = goToPlanechaseTutorial
@@ -178,7 +177,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
             Text(
                 modifier = Modifier.fillMaxWidth().padding(top = dimensions.paddingTiny),
                 text = "Planar deck size: ${state.planarDeck.size}",
-                fontSize = textSize.scaledSp,
+                fontSize = dimensions.textSmall.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )
@@ -313,7 +312,6 @@ fun ChoosePlanesDialogContent(
         val searchBarHeight = remember(Unit) { maxWidth / 9f + 30.dp }
         val padding = remember(Unit) { searchBarHeight / 10f }
         val columnCount = remember(Unit) { if (maxWidth / 3 > maxHeight / 4) 3 else 2 }
-        val textSize = remember(Unit) { (maxHeight / 50f).value }
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -346,7 +344,7 @@ fun ChoosePlanesDialogContent(
             Text(
                 modifier = Modifier.fillMaxWidth().padding(vertical = dimensions.paddingTiny),
                 text = "${state.planarDeck.intersect(filteredPlanes.toSet()).size}/${filteredPlanes.size} Planes Selected, ${state.allPlanes.size - filteredPlanes.size}/${state.allPlanes.size} Hidden",
-                fontSize = textSize.scaledSp,
+                fontSize = dimensions.textSmall.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )

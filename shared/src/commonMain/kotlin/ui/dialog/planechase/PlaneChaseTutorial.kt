@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.unit.min
 import theme.LocalDimensions
 import theme.scaledSp
 import ui.components.SelectableEnlargeableCardImage
@@ -26,7 +27,7 @@ fun PlanechaseTutorialContent(
     BoxWithConstraints(
         modifier = Modifier.wrapContentSize(),
     ) {
-        val textSize = remember(Unit) { (maxWidth / 50f + maxHeight / 150f).value }
+        val cardHeight = min(maxWidth / 1.5f, maxHeight / 2.5f)
         LazyColumn(
             modifier = modifier.padding(dimensions.paddingMedium),
             verticalArrangement = Arrangement.Top,
@@ -47,7 +48,7 @@ fun PlanechaseTutorialContent(
                             Planechase is a casual Magic: The Gathering variant where players travel between different planes, each with unique effects that modify the game.
                         """.trimIndent(),
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = textSize.scaledSp,
+                        fontSize = dimensions.textSmall.scaledSp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = dimensions.paddingSmall)
@@ -57,7 +58,7 @@ fun PlanechaseTutorialContent(
             item {
                 SelectableEnlargeableCardImage(
                     modifier = Modifier
-                        .height(dimensions.screenWidth / 1.5f)
+                        .height(cardHeight)
                         .padding(horizontal = dimensions.screenWidth / 20f)
                         .rotate(90f),
                     normalImageUri = "https://cards.scryfall.io/large/front/d/8/d8da872d-55e0-4596-ba8e-f9ff7b2c0a86.jpg?1680815480",
@@ -85,7 +86,7 @@ fun PlanechaseTutorialContent(
                             It is recommended to use a separate device to display the Planechase screen side by side with your game, making it easily visible to all players.
                         """.trimIndent(),
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = textSize.scaledSp,
+                        fontSize = dimensions.textSmall.scaledSp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = dimensions.paddingSmall)
@@ -95,7 +96,7 @@ fun PlanechaseTutorialContent(
             item {
                 SelectableEnlargeableCardImage(
                     modifier = Modifier
-                        .height(dimensions.screenWidth / 1.5f)
+                        .height(cardHeight)
                         .padding(horizontal = dimensions.screenWidth / 20f)
                         .rotate(90f),
                     normalImageUri = "https://cards.scryfall.io/large/front/b/e/be4da23c-bc51-4601-8f86-4e6f4eb27e6a.jpg?1680815547",
@@ -127,7 +128,7 @@ fun PlanechaseTutorialContent(
                             On your turn, you may roll the planar die by paying mana. The first roll is free, and each additional roll costs one more mana (e.g., second roll costs {1}, third roll costs {2}, etc.). This cost resets at the beginning of your next turn.
                         """.trimIndent(),
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = textSize.scaledSp,
+                        fontSize = dimensions.textSmall.scaledSp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = dimensions.paddingSmall)

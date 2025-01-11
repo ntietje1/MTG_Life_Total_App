@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +21,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.min
+import theme.LocalDimensions
 import theme.scaledSp
 import ui.components.EnlargeableCardImage
 import ui.flippable.Flippable
@@ -30,21 +33,22 @@ import ui.flippable.rememberFlipController
 fun CoinFlipTutorialContent(
     modifier: Modifier = Modifier,
 ) {
+    val dimensions = LocalDimensions.current
     BoxWithConstraints(
         modifier = Modifier.wrapContentSize(),
     ) {
-        val padding = remember(Unit) { maxWidth / 50f + maxHeight / 75f }
-        val textSize = remember(Unit) { (maxWidth / 50f + maxHeight / 150f).value }
+        val cardWidth = min(maxWidth / 3, (maxHeight / 4) / (7/5f))
+        val textWidth = maxWidth - cardWidth - dimensions.paddingMedium * 2
         LazyColumn(
-            modifier = modifier, verticalArrangement = Arrangement.spacedBy(padding / 6f), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = modifier, verticalArrangement = Arrangement.spacedBy(dimensions.paddingMedium), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
                 val flipController = rememberFlipController()
                 Row(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(dimensions.paddingMedium), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
                 ) {
                     Flippable(
-                        modifier = Modifier.fillMaxWidth(0.33f),
+                        modifier = Modifier.width(cardWidth),
                         flipController = flipController,
                         frontSide = {
                             EnlargeableCardImage(
@@ -67,7 +71,7 @@ fun CoinFlipTutorialContent(
                             This means that if you call heads, any number of heads will win the flip.
                             
                             This ability stacks exponentially, so if you have two thumbs, you flip four coins and ignore three, and so on.
-                        """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize.scaledSp, modifier = Modifier.fillMaxWidth().padding(padding / 2f).clickable {
+                        """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary, fontSize = dimensions.textSmall.scaledSp, modifier = Modifier.fillMaxWidth().padding(dimensions.paddingMedium).clickable {
                         flipController.flip()
                     })
                 }
@@ -76,7 +80,7 @@ fun CoinFlipTutorialContent(
             item {
                 val flipController = rememberFlipController()
                 Row(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(dimensions.paddingMedium), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(text = buildAnnotatedString {
                         append("\"Flip until you lose\" means that you will keep flipping coins until you get don't get the result you called.\n\n")
@@ -86,7 +90,7 @@ fun CoinFlipTutorialContent(
                         }
                         append(" of the result you called.\n\n")
                         append("For example, the \"Call Heads\" button will flip until you fail to get a single head among all coins flipped.")
-                    }, color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize.scaledSp, modifier = Modifier.fillMaxWidth(0.67f).padding(padding / 2f).clickable {
+                    }, color = MaterialTheme.colorScheme.onPrimary, fontSize = dimensions.textSmall.scaledSp, modifier = Modifier.width(textWidth).padding(dimensions.paddingMedium).clickable {
                         flipController.flip()
                     })
                     Flippable(
@@ -113,10 +117,10 @@ fun CoinFlipTutorialContent(
             item {
                 val flipController = rememberFlipController()
                 Row(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(padding), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(dimensions.paddingMedium), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
                 ) {
                     Flippable(
-                        modifier = Modifier.fillMaxWidth(0.33f),
+                        modifier = Modifier.width(cardWidth),
                         flipController = flipController,
                         frontSide = {
                             EnlargeableCardImage(
@@ -137,7 +141,7 @@ fun CoinFlipTutorialContent(
                             You can adjust the number of Krark's Thumbs you have with the "Krark's Thumbs" buttons.
                         
                             You also may want to flip a specific amount of coins simultaneously, which you can set with the "Coins to Flip" button.
-                        """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary, fontSize = textSize.scaledSp, modifier = Modifier.fillMaxWidth().padding(padding / 2f).clickable {
+                        """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary, fontSize = dimensions.textSmall.scaledSp, modifier = Modifier.fillMaxWidth().padding(dimensions.paddingMedium).clickable {
                         flipController.flip()
                     })
                 }
@@ -147,8 +151,8 @@ fun CoinFlipTutorialContent(
                 Text(
                     text = """
                             Hint: if something breaks, the "Reset" button hopefully will fix it :)
-                        """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f), fontSize = textSize.scaledSp,
-                    modifier = Modifier.padding(horizontal = padding * 1.5f).padding(bottom = padding)
+                        """.trimIndent(), color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f), fontSize = dimensions.textSmall.scaledSp,
+                    modifier = Modifier.padding(horizontal = dimensions.paddingLarge).padding(bottom = dimensions.paddingLarge)
                 )
             }
         }

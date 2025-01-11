@@ -37,9 +37,7 @@ fun AboutMeDialogContent(
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier) {
-        val iconSize = remember(Unit) { maxWidth / 5f }
-        val padding = remember(Unit) {  maxWidth / 25f }
-        val textSize = remember(Unit) {  (maxWidth / 24f).value }
+        val iconSize = maxWidth / 5f
         val dimensions = LocalDimensions.current
 
         Column(
@@ -54,7 +52,7 @@ fun AboutMeDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .background(Color.White.copy(alpha = 0.2f))
+                    .background(MaterialTheme.colorScheme.onSurface)
                     .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
@@ -62,7 +60,7 @@ fun AboutMeDialogContent(
                     Image(
                         modifier = Modifier
                             .size(iconSize)
-                            .padding(horizontal = padding / 2f, vertical = padding / 4f)
+                            .padding(horizontal = dimensions.paddingMedium, vertical = dimensions.paddingSmall)
                             .aspectRatio(1.0f)
                             .clip(CircleShape),
                         bitmap = imageResource(Res.drawable.about_me),
@@ -72,22 +70,22 @@ fun AboutMeDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .padding(end = padding)
+                        .padding(end = dimensions.paddingMedium)
                 ) {
                     Text(
-                        modifier = Modifier.padding(bottom = padding, top = padding),
+                        modifier = Modifier.padding(bottom = dimensions.paddingMedium, top = dimensions.paddingMedium),
                         text = "Nick Tietje",
                         style = TextStyle(
-                            fontSize = textSize.scaledSp,
+                            fontSize = dimensions.textSmall.scaledSp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                     Text(
-                        modifier = Modifier.padding(bottom = padding),
+                        modifier = Modifier.padding(bottom = dimensions.paddingMedium),
                         text = "Nick is an undergraduate studying computer science and chemical engineering at Northeastern University and is pursuing a career in software development. He splits his time between reading, biking, and gaming.",
                         style = TextStyle(
-                            fontSize = textSize.scaledSp,
+                            fontSize = dimensions.textSmall.scaledSp,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     )

@@ -59,7 +59,6 @@ fun GifDialogContent(
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val searchBarHeight = remember(Unit) { maxWidth / 9f + 30.dp }
         val padding = remember(Unit) { searchBarHeight / 10f }
-        val textSize = remember(Unit) { (maxHeight / 50f).value }
         val buttonWidth = remember(Unit) { (maxWidth / 2f) - 16.dp }
         val buttonHeight = remember(Unit) { buttonWidth / 1.75f }
         val numberToQuery = remember(Unit) { (maxHeight / buttonHeight).toInt() * 2 }
@@ -95,7 +94,7 @@ fun GifDialogContent(
             AnimatedVisibility(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding), visible = state.lastSearchWasError
             ) {
-                Text("An error occurred while searching :(", color = Color.Red, fontSize = textSize.scaledSp)
+                Text("An error occurred while searching :(", color = Color.Red, fontSize = dimensions.textSmall.scaledSp)
             }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),

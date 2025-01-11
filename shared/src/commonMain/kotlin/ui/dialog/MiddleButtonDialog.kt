@@ -180,7 +180,7 @@ fun MiddleButtonDialog(
                     resetCounters = { viewModel.resetCounters() })
             }, Pair(dialogState == MiddleButtonDialogState.Scryfall) {
                 ScryfallDialogContent(
-                    Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     selectButtonEnabled = false,
                     rulingsButtonEnabled = true,
                     addToBackStack = { _, block -> backHandler.push(block) },

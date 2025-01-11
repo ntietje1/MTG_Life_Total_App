@@ -58,24 +58,6 @@ import ui.components.SearchTextField
 import ui.dialog.SettingsDialog
 
 @Composable
-fun ScryfallSearchDialog(
-    modifier: Modifier = Modifier,
-    addToBackStack: (String, () -> Unit) -> Unit,
-    onDismiss: () -> Unit,
-    onImageSelected: (String) -> Unit,
-    viewModel: ScryfallSearchViewModel = koinInject()
-) {
-    SettingsDialog(modifier = modifier, backButtonEnabled = false, onDismiss = onDismiss) {
-        ScryfallDialogContent(
-            modifier = Modifier.fillMaxSize(),
-            addToBackStack = addToBackStack,
-            onImageSelected = onImageSelected,
-            viewModel = viewModel
-        )
-    }
-}
-
-@Composable
 fun ScryfallDialogContent(
     modifier: Modifier = Modifier,
     addToBackStack: (String, () -> Unit) -> Unit,
@@ -100,11 +82,10 @@ fun ScryfallDialogContent(
     }
 
     BoxWithConstraints(
-        modifier = Modifier.wrapContentSize(),
+        modifier = modifier,
         contentAlignment = Alignment.TopCenter
     ) {
         val searchBarHeight = remember(Unit) { maxWidth / 8.5f + 30.dp }
-        val textSize = remember(Unit) { (maxHeight / 50f).value }
         Column(
             modifier = Modifier.wrapContentSize().align(Alignment.TopCenter)
         ) {
@@ -132,7 +113,7 @@ fun ScryfallDialogContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = dimensions.paddingSmall),
                 visible = state.lastSearchWasError
             ) {
-                Text("No cards found :(", color = Color.Red, fontSize = textSize.scaledSp)
+                Text("No cards found :(", color = Color.Red, fontSize = dimensions.textSmall.scaledSp)
             }
             if (state.lastSearchWasError) return@BoxWithConstraints
 //            AnimatedVisibility(
@@ -159,7 +140,7 @@ fun ScryfallDialogContent(
                 Text(
                     "${state.cardResults.size + state.rulingsResults.size} results",
                     color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = textSize.scaledSp,
+                    fontSize = dimensions.textSmall.scaledSp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(vertical = dimensions.paddingSmall)
                 )

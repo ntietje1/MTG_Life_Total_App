@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.min
 import model.Player
 import model.Player.Companion.allPlayerColors
 import org.koin.compose.koinInject
+import theme.LocalDimensions
 import theme.scaledSp
 import theme.toHsv
 import ui.dialog.customization.PlayerButtonPreview
@@ -50,7 +51,7 @@ import ui.lifecounter.playerbutton.PBState
 import ui.modifier.routePointerChangesTo
 
 @Composable
-fun ColorPickerDialogContent( //TODO: make it only change preferences if change was actually made
+fun ColorPickerDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     initialColor: Color,
@@ -60,6 +61,7 @@ fun ColorPickerDialogContent( //TODO: make it only change preferences if change 
 ) {
     val state by viewModel.state.collectAsState()
     var previewPlayer by remember { mutableStateOf(initialPlayer) }
+    val dimensions = LocalDimensions.current
 
     LaunchedEffect(initialColor) {
         if (state.oldColor == Color.Unspecified) {
@@ -75,23 +77,20 @@ fun ColorPickerDialogContent( //TODO: make it only change preferences if change 
 
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val barWidth = remember(Unit) { min(maxWidth * 0.75f, maxHeight * 0.5f) }
-        val padding = remember(Unit) { min(maxWidth / 15f, maxHeight / 25f) }
-//        val buttonSize = remember(Unit) { min(maxWidth / 3.5f, maxHeight / 6f) }
         val barHeight = remember(Unit) { maxWidth / 12f }
-        val titleSize = remember(Unit) { (maxWidth / 40f + maxHeight / 60f).value }
         val playerButtonPreviewHeight = remember(Unit) { min(maxWidth / 2f, maxHeight / 3.35f) }
 
         Column(
             modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
         ) {
 
-            Spacer(modifier = Modifier.height(padding * 0.5f))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
             Text(
-                modifier = Modifier.wrapContentSize(), text = title, fontSize = titleSize.scaledSp, color = MaterialTheme.colorScheme.onPrimary
+                modifier = Modifier.wrapContentSize(), text = title, fontSize = dimensions.textMedium.scaledSp, color = MaterialTheme.colorScheme.onPrimary
             )
 
-            Spacer(modifier = Modifier.height(padding))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
             PhysicsDraggable(
                 Modifier.height(playerButtonPreviewHeight).aspectRatio(1.75f)
@@ -108,7 +107,7 @@ fun ColorPickerDialogContent( //TODO: make it only change preferences if change 
                 )
             }
 
-            Spacer(modifier = Modifier.height(padding))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
             ColorGrid(
                 modifier = Modifier.width(barWidth).height(barHeight * 2.5f).align(Alignment.CenterHorizontally),
@@ -123,7 +122,7 @@ fun ColorPickerDialogContent( //TODO: make it only change preferences if change 
                 }
             )
 
-            Spacer(modifier = Modifier.height(padding))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
             HueBar(
                 modifier = Modifier.width(barWidth).height(barHeight),
@@ -133,7 +132,7 @@ fun ColorPickerDialogContent( //TODO: make it only change preferences if change 
                 updateColor(state.newColor)
             }
 
-            Spacer(modifier = Modifier.height(padding))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
             SatBar(
                 modifier = Modifier.width(barWidth).height(barHeight),
@@ -144,7 +143,7 @@ fun ColorPickerDialogContent( //TODO: make it only change preferences if change 
                 updateColor(state.newColor)
             }
 
-            Spacer(modifier = Modifier.height(padding))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
             ValBar(
                 modifier = Modifier.width(barWidth).height(barHeight),
@@ -155,7 +154,7 @@ fun ColorPickerDialogContent( //TODO: make it only change preferences if change 
                 updateColor(state.newColor)
             }
 
-            Spacer(modifier = Modifier.height(padding * 3f))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge * 3f))
         }
     }
 }

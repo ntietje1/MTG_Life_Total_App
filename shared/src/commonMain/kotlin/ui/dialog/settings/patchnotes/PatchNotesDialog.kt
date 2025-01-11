@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -106,7 +104,7 @@ fun PatchNotesDialogContent(
                         date = it.date,
                         notes = it.notes
                     )
-                    if (index != 0 && index != patchNotes.size - 1) {
+                    if (index != patchNotes.size - 1) {
                         HorizontalDivider(
                             modifier = Modifier.fillMaxWidth(),
                             thickness = dimensions.borderThin,
@@ -133,45 +131,31 @@ fun InProgressItems(
     modifier: Modifier = Modifier,
     items: List<String>
 ) {
-    BoxWithConstraints(modifier) {
-        val padding = remember(Unit) { maxWidth / 25f }
-        val textSize = remember(Unit) { (maxWidth / 24f).value }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .background(MaterialTheme.colorScheme.onSurface.halfAlpha()),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(end = padding, start = padding / 1.25f)
-            ) {
-                Text(
-                    modifier = Modifier.padding(bottom = padding / 7f, top = padding / 2f),
-                    text = "In Development",
-                    style = TextStyle(
-                        fontSize = textSize.scaledSp * 1.2f,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+    val dimensions = LocalDimensions.current
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.onSurface.halfAlpha())
+            .padding(start = dimensions.paddingMedium, top = dimensions.paddingSmall, bottom = dimensions.paddingMedium)
+    ) {
+        Text(
+            modifier = Modifier.padding(bottom = dimensions.paddingTiny, top = dimensions.paddingSmall),
+            text = "In Development",
+            style = TextStyle(
+                fontSize = (dimensions.textMedium * 1.2f).scaledSp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        )
+        Spacer(modifier = Modifier.padding(bottom = dimensions.paddingSmall, top = dimensions.paddingTiny))
+        items.forEach {
+            Text(
+                modifier = Modifier.padding(bottom = dimensions.paddingSmall),
+                text = "• $it",
+                style = TextStyle(
+                    fontSize = dimensions.textSmall.scaledSp,
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
-                Spacer(modifier = Modifier.padding(bottom = padding / 2f, top = padding / 7f))
-                items.forEach {
-                    Text(
-                        modifier = Modifier.padding(bottom = padding / 1.5f),
-                        text = "• $it",
-                        style = TextStyle(
-                            fontSize = textSize.scaledSp * 0.9f,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    )
-                }
-            }
+            )
         }
     }
 }
@@ -184,54 +168,40 @@ fun PatchNotesItem(
     date: String,
     notes: List<String>
 ) {
-    BoxWithConstraints(modifier) {
-        val padding = remember(Unit) { maxWidth / 25f }
-        val textSize = remember(Unit) { (maxWidth / 24f).value }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .background(MaterialTheme.colorScheme.onSurface.halfAlpha()),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(end = padding, start = padding / 1.25f)
-            ) {
-                Text(
-                    modifier = Modifier.padding(bottom = padding / 7f, top = padding / 2f),
-                    text = "$version - $title",
-                    style = TextStyle(
-                        fontSize = textSize.scaledSp * 1.2f,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+    val dimensions = LocalDimensions.current
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.onSurface.halfAlpha())
+            .padding(start = dimensions.paddingMedium, top = dimensions.paddingSmall, bottom = dimensions.paddingMedium)
+    ) {
+        Text(
+            modifier = Modifier.padding(bottom = dimensions.paddingTiny, top = dimensions.paddingSmall),
+            text = "$version - $title",
+            style = TextStyle(
+                fontSize = (dimensions.textMedium * 1.2f).scaledSp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        )
+        Text(
+            modifier = Modifier.padding(bottom = dimensions.paddingSmall, top = dimensions.paddingTiny),
+            text = date,
+            style = TextStyle(
+                fontSize = dimensions.textSmall.scaledSp,
+                fontWeight = FontWeight.Medium,
+                fontStyle = FontStyle.Italic,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        )
+        notes.forEach {
+            Text(
+                modifier = Modifier.padding(bottom = dimensions.paddingSmall),
+                text = "• $it",
+                style = TextStyle(
+                    fontSize = dimensions.textSmall.scaledSp,
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
-                Text(
-                    modifier = Modifier.padding(bottom = padding / 2f, top = padding / 7f, start = padding / 10f),
-                    text = date,
-                    style = TextStyle(
-                        fontSize = textSize.scaledSp,
-                        fontWeight = FontWeight.Medium,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                )
-                notes.forEach {
-                    Text(
-                        modifier = Modifier.padding(bottom = padding / 1.5f),
-                        text = "• $it",
-                        style = TextStyle(
-                            fontSize = textSize.scaledSp * 0.9f,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    )
-                }
-            }
+            )
         }
     }
 }

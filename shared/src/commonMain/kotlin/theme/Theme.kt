@@ -38,6 +38,7 @@ class Dimensions(val screenWidth: Dp, val screenHeight: Dp) {
     val paddingTiny = screenWidth / 750f + screenHeight / 1000f
     val paddingSmall = screenWidth / 200f + screenHeight / 300f
     val paddingMedium = screenWidth / 100f + screenHeight / 150f
+    val paddingLarge = screenWidth / 50f + screenHeight / 75f
     val borderThin = screenWidth / 1000f + screenHeight / 1500f
     val borderSmall = screenWidth / 500f + screenHeight / 750f
     val borderMedium = screenWidth / 250f + screenHeight / 375f
