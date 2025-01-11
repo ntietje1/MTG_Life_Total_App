@@ -92,26 +92,6 @@ fun PlayerCustomizationDialog(
         viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
     }
 
-//    LaunchedEffect(Unit, initialPlayer.name) {
-//        viewModel.setPlayer(initialPlayer)
-//    }
-
-    /**
-     * FEATURES:
-     * 1. Change name
-     * 2. Load player profile
-     * 3. Reset customization
-     * 3. Change accent color
-     * 4. Change background
-     * 4a. Change background color
-     * 4b. Change background image (upload)
-     * 4c. Change background image (search scryfall)
-     * 4d. Change background gif
-     * 4e. Change background image (draw)
-     * 5. Change border
-     * //TODO: add "stacked" player cards that you can toggle through once you choose that profile
-     */
-
     val singleImagePicker = rememberImagePickerLauncher(selectionMode = SelectionMode.Single, scope = rememberCoroutineScope(), onResult = { byteArrays ->
         byteArrays.firstOrNull()?.let {
             viewModel.onImageFileSelected(it)
