@@ -30,7 +30,7 @@ actual val platformModule = module {
     single { NotificationManager(get()) }
     single<ISettingsManager> { SettingsManager.instance }
     single<IImageManager> { ImageManager(get()) }
-    single { PlayerStateManager() }
+    single { PlayerStateManager(get()) }
     single { PlayerCustomizationManager(get()) }
     single { CommanderDamageManager(get()) }
     single { GameStateManager(get()) }

@@ -2,6 +2,7 @@ package domain.game
 
 import domain.common.NumberWithRecentChange
 import domain.common.RecentChangeValue
+import domain.storage.ISettingsManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import model.Player
@@ -13,7 +14,9 @@ import kotlin.coroutines.coroutineContext
 /**
  * Manages player state operations
  */
-class PlayerStateManager : AttachableFlowManager<List<PlayerButtonViewModel>>() {
+class PlayerStateManager(
+    private val settingsManager: ISettingsManager
+) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
     private val lifeTotalTrackers = mutableMapOf<Int, RecentChangeValue>()
 
     override fun detach() {
@@ -22,12 +25,14 @@ class PlayerStateManager : AttachableFlowManager<List<PlayerButtonViewModel>>() 
         lifeTotalTrackers.clear()
     }
 
-    fun generatePlayer(startingLife: Int, playerNum: Int): Player {
+    fun generatePlayer(playerNum: Int): Player {
+        val startingLife = settingsManager.startingLife.value
         val name = "P$playerNum"
         return Player(lifeTotal = NumberWithRecentChange(startingLife, 0), name = name, playerNum = playerNum)
     }
 
-    fun resetPlayerState(player: Player, startingLife: Int): Player {
+    fun resetPlayerState(player: Player): Player {
+        val startingLife = settingsManager.startingLife.value
         lifeTotalTrackers[player.playerNum]?.set(startingLife)
         return player.copy(
             lifeTotal = NumberWithRecentChange(startingLife, 0),
@@ -74,11 +79,6 @@ class PlayerStateManager : AttachableFlowManager<List<PlayerButtonViewModel>>() 
             val currentPlayer = requireAttached().value.getPlayer(initialPlayer.playerNum)
             onUpdate(currentPlayer.copy(lifeTotal = newValue))
         }.apply { attach(trackerScope) }
-    }
-
-    fun detachLifeTracker(playerNum: Int) {
-        lifeTotalTrackers[playerNum]?.cancel()
-        lifeTotalTrackers.remove(playerNum)
     }
 
     fun incrementLife(player: Player, value: Int) {

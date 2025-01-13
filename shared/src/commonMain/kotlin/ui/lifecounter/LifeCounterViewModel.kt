@@ -91,19 +91,13 @@ open class LifeCounterViewModel(
     // Generate viewmodels for all players and update the viewmodel list flow
     private fun generatePlayerButtonViewModels() {
         val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
-        val viewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
-        _playerButtonViewModels.value = viewModels
+        _playerButtonViewModels.value = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
         while (savedPlayers.size < MAX_PLAYERS) {
-            playerCustomizationManager.resetPlayerPrefs(
-                playerStateManager.generatePlayer(
-                    startingLife = settingsManager.startingLife.value,
-                    playerNum = savedPlayers.size + 1,
-                )
-            ).also { newPlayer ->
-                savedPlayers += newPlayer
-                viewModels += generatePlayerButtonViewModel(newPlayer)
-                _playerButtonViewModels.value = viewModels
-            }
+            val newPlayer = playerCustomizationManager.resetPlayerPrefs(
+                playerStateManager.generatePlayer(playerNum = savedPlayers.size + 1)
+            )
+            savedPlayers += newPlayer
+            _playerButtonViewModels.value += generatePlayerButtonViewModel(newPlayer)
         }
     }
 
@@ -204,9 +198,7 @@ open class LifeCounterViewModel(
         resetCounters()
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
-        playerButtonViewModels.value.forEach {
-            it.resetState(startingLife = settingsManager.startingLife.value)
-        }
+        playerButtonViewModels.value.forEach { it.resetState() }
         savePlayerStates()
         viewModelScope.launch {
             timerManager.reset()

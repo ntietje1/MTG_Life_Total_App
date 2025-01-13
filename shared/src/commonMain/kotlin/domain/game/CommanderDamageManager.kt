@@ -78,11 +78,6 @@ class CommanderDamageManager(
         }
     }
 
-    fun detachCommanderTrackers(playerNum: Int) {
-        commanderDamageTrackers[playerNum]?.forEach { it.cancel() }
-        commanderDamageTrackers.remove(playerNum)
-    }
-
     fun resetCommanderDamage(player: Player): Player {
         val commanderDamageTracker = requireNotNull(commanderDamageTrackers[player.playerNum])
         commanderDamageTracker.forEach { it.set(0) }

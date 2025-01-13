@@ -83,12 +83,6 @@ open class PlayerButtonViewModel(
         setPlayer(state.value.player.copy(commanderDamage = updatedPlayer.commanderDamage))
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        playerStateManager.detachLifeTracker(state.value.player.playerNum)
-        commanderManager.detachCommanderTrackers(state.value.player.playerNum)
-    }
-
     internal fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
     }
@@ -252,10 +246,9 @@ open class PlayerButtonViewModel(
         setPlayer(playerCustomizationManager.copyPlayerPrefs(state.value.player, other))
     }
 
-    fun resetState(startingLife: Int) {
-        setPlayer(playerStateManager.resetPlayerState(state.value.player, startingLife))
+    fun resetState() {
+        setPlayer(playerStateManager.resetPlayerState(state.value.player))
         setPlayer(commanderManager.resetCommanderDamage(state.value.player))
-        println("commander damage: ${state.value.player.commanderDamage}")
 
         gameStateManager.savePlayerState(state.value.player)
     }
