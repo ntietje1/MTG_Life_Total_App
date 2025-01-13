@@ -1,5 +1,6 @@
 package domain.common
 
+import domain.game.AttachableManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -19,7 +20,7 @@ class RecentChangeValue(
     initialValue: NumberWithRecentChange = NumberWithRecentChange(0, 0),
     private val recentChangeDelay: Long = RECENT_CHANGE_DELAY,
     private val updateCallback: (NumberWithRecentChange) -> Unit,
-) {
+): AttachableManager<CoroutineScope>() {
     companion object {
         const val RECENT_CHANGE_DELAY = 1500L
     }
@@ -27,12 +28,10 @@ class RecentChangeValue(
     private val _value = MutableStateFlow(initialValue)
     val value: StateFlow<NumberWithRecentChange> = _value.asStateFlow()
 
-    private lateinit var scope: CoroutineScope
-
     private var recentChangeJob: Job? = null
 
-    fun attach(scope: CoroutineScope): RecentChangeValue {
-        this.scope = scope
+    override fun attach(source: CoroutineScope): RecentChangeValue {
+        super.attach(source)
         updateRecentChange()
         return this
     }
@@ -48,6 +47,7 @@ class RecentChangeValue(
     }
 
     private fun updateRecentChange() {
+        val scope = requireAttached()
         recentChangeJob?.cancel()
         recentChangeJob = scope.launch {
             delay(recentChangeDelay)

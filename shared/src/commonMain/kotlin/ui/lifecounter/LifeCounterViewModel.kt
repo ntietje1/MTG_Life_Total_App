@@ -14,6 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.launch
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
@@ -51,7 +52,6 @@ open class LifeCounterViewModel(
         gameStateManager.attach(playerButtonViewModels)
         commanderManager.attach(playerButtonViewModels)
         timerManager.attach(playerButtonViewModels)
-        timerManager.registerTimerStateObserver(viewModelScope)
 
         generatePlayerButtonViewModels()
         registerCommanderListener()
@@ -83,12 +83,13 @@ open class LifeCounterViewModel(
         }
     }
 
+    // Generate viewmodels for all players and update the viewmodel list flow
     private fun generatePlayerButtonViewModels() {
         val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
         val viewModels = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
         _playerButtonViewModels.value = viewModels
         while (savedPlayers.size < MAX_PLAYERS) {
-            playerCustomizationManager.resetPlayerPrefs( //TODO: this only checks the actual value of the viewmodel flow, not the current viewmodel list here, resulting in duplicate colors
+            playerCustomizationManager.resetPlayerPrefs(
                 playerStateManager.generatePlayer(
                     startingLife = settingsManager.startingLife.value,
                     playerNum = savedPlayers.size + 1,
@@ -138,6 +139,7 @@ open class LifeCounterViewModel(
         setAllButtonStates(PBState.NORMAL)
     }
 
+    // Return a viewmodel for a player button
     open fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
         return PlayerButtonViewModel(
             initialState = PlayerButtonState(player),

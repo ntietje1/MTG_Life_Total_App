@@ -2,24 +2,30 @@ package domain.game
 
 import kotlinx.coroutines.flow.StateFlow
 
-abstract class AttachableManager<T> {
-    protected var attachedFlow: StateFlow<T>? = null
+interface Attachable<T> {
+    fun attach(source: T): Attachable<T>
+    fun detach()
+}
 
-    open fun attach(flow: StateFlow<T>) {
-        if (attachedFlow != null) {
+abstract class AttachableManager<T> : Attachable<T> {
+    private var attached: T? = null
+
+    override fun attach(source: T): AttachableManager<T> {
+        if (attached != null) {
             println("WARNING: ${this::class.simpleName} is already attached, detaching previous")
             detach()
         }
-        attachedFlow = flow
+        attached = source
+        return this
     }
 
-    open fun detach() {
-        attachedFlow = null
+    override fun detach() {
+        attached = null
     }
 
-    protected open fun checkAttached() {
-        if (attachedFlow == null) {
-            throw IllegalStateException("${this::class.simpleName} must be attached before use")
-        }
+    protected open fun requireAttached(): T {
+        return attached ?: throw IllegalStateException("${this::class.simpleName} must be attached before use")
     }
-} 
+}
+
+abstract class AttachableFlowManager<T : Any> : AttachableManager<StateFlow<T>>()

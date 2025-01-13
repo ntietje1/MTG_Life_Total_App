@@ -10,7 +10,7 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
  */
 class GameStateManager(
     private val settingsManager: ISettingsManager
-) : AttachableManager<List<PlayerButtonViewModel>>() {
+) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
     fun toggleDayNight(currentState: DayNightState): DayNightState {
         return when (currentState) {
             DayNightState.NONE -> DayNightState.DAY
@@ -20,8 +20,8 @@ class GameStateManager(
     }
 
     fun setMonarchy(targetPlayerNum: Int, value: Boolean) {
-        checkAttached()
-        attachedFlow!!.value.forEach { playerButtonViewModel ->
+        val playerButtonViewModels = requireAttached().value
+        playerButtonViewModels.forEach { playerButtonViewModel ->
             playerButtonViewModel.setPlayer(
                 updateMonarchy(
                     player = playerButtonViewModel.state.value.player,
@@ -42,7 +42,7 @@ class GameStateManager(
     }
 
     fun saveGameState() {
-        checkAttached()
-        settingsManager.savePlayerStates(attachedFlow!!.value.map { it.state.value.player })
+        val playerButtonViewModels = requireAttached().value
+        settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
     }
 } 

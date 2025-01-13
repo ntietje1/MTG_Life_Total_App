@@ -68,7 +68,7 @@ open class PlayerButtonViewModel(
         setPlayer(
             state.value.player.copy(lifeTotal = it)
         )
-    }.attach(viewModelScope)
+    }.apply { attach(viewModelScope) }
 
     private val commanderDamageTrackers = List(Player.MAX_PLAYERS * 2) { index ->
         RecentChangeValue(
@@ -81,7 +81,7 @@ open class PlayerButtonViewModel(
                     }
                 )
             )
-        }.attach(viewModelScope)
+        }.apply { attach(viewModelScope) }
     }
 
     override fun onCleared() {

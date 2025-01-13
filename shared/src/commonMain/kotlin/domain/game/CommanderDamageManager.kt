@@ -13,17 +13,17 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
  */
 class CommanderDamageManager(
     private val notificationManager: NotificationManager
-) : AttachableManager<List<PlayerButtonViewModel>>() {
+) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
     private val _currentDealer = MutableStateFlow<Player?>(null)
     val currentDealer = _currentDealer.asStateFlow()
 
     fun setCurrentDealer(dealer: Player?) {
-        checkAttached()
+        requireAttached()
         _currentDealer.value = dealer
     }
 
     fun togglePartnerMode(player: Player, value: Boolean): Player {
-        checkAttached()
+        requireAttached()
         if (_currentDealer.value?.playerNum == player.playerNum) {
             _currentDealer.value = player.copy(partnerMode = value)
         }
@@ -37,7 +37,7 @@ class CommanderDamageManager(
     }
 
     fun incrementCommanderDamage(player: Player, value: Int, partner: Boolean): Player {
-        checkAttached()
+        requireAttached()
         val currentDealer = _currentDealer.value ?: return player
         val index = (currentDealer.playerNum - 1) + (if (partner) Player.MAX_PLAYERS else 0)
         return receiveCommanderDamage(player, index, value)

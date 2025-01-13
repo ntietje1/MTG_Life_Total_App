@@ -12,11 +12,11 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
  */
 class PlayerCustomizationManager(
     private val settingsManager: ISettingsManager
-) : AttachableManager<List<PlayerButtonViewModel>>() {
+) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
 
     fun resetPlayerPrefs(player: Player): Player {
-        checkAttached()
-        val usedColors = attachedFlow!!.value.map { it.state.value.player.color }
+        val playerButtonViewModels = requireAttached().value
+        val usedColors = playerButtonViewModels.map { it.state.value.player.color }
         val newColor = allPlayerColors.filter { it !in usedColors }.random()
 
         return player.copy(
@@ -37,7 +37,8 @@ class PlayerCustomizationManager(
     }
 
     fun saveAllPlayerPrefs() {
-        attachedFlow!!.value.forEach {
+        val playerButtonViewModels = requireAttached().value
+        playerButtonViewModels.forEach {
             savePlayerPrefs(it.state.value.player)
         }
     }
@@ -47,7 +48,8 @@ class PlayerCustomizationManager(
     }
 
     fun resetAllPlayerPrefs() {
-        attachedFlow!!.value.forEach {
+        val playerButtonViewModels = requireAttached().value
+        playerButtonViewModels.forEach {
             it.resetPlayerPref()
             it.copyPrefs(it.state.value.player)
         }
