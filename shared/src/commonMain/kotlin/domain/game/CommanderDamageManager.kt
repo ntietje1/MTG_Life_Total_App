@@ -65,13 +65,11 @@ class CommanderDamageManager(
         val trackerScope = CoroutineScope(coroutineContext + Job())
 
         commanderDamageTrackers[initialPlayer.playerNum] = List(Player.MAX_PLAYERS * 2) { index ->
-            RecentChangeValue(
-                initialValue = initialPlayer.commanderDamage[index]
-            ) { newValue ->
+            RecentChangeValue(initialValue = initialPlayer.commanderDamage[index]) { updatedValue ->
                 val currentPlayer = requireAttached().value.getPlayer(initialPlayer.playerNum)
                 onUpdate(currentPlayer.copy(
                     commanderDamage = currentPlayer.commanderDamage.toMutableList().apply {
-                        this[index] = newValue
+                        this[index] = updatedValue
                     }
                 ))
             }.apply { attach(trackerScope) }

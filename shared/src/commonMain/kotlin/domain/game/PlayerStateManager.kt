@@ -6,7 +6,6 @@ import domain.storage.ISettingsManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import model.Player
-import model.Player.Companion.MAX_PLAYERS
 import ui.lifecounter.CounterType
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 import kotlin.coroutines.coroutineContext
