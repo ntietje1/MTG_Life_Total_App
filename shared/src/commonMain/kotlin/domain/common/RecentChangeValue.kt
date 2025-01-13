@@ -36,6 +36,11 @@ class RecentChangeValue(
         return this
     }
 
+    override fun detach() {
+        super.detach()
+        cancel()
+    }
+
     fun increment(change: Int) {
         updateValue(
             NumberWithRecentChange(
