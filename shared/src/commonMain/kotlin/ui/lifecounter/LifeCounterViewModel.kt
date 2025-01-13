@@ -3,6 +3,7 @@ package ui.lifecounter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.game.CommanderDamageManager
+import domain.game.CommanderState
 import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
 import domain.game.PlayerStateManager
@@ -72,16 +73,24 @@ open class LifeCounterViewModel(
     }
 
     private suspend fun registerCommanderListener() {
-        commanderManager.currentDealer.collect { dealer ->
-            if (dealer == null) {
-                setAllButtonStates(PBState.NORMAL)
-                setMiddleButtonState(MiddleButtonState.DEFAULT)
-            } else {
-                setAllButtonStates(PBState.COMMANDER_RECEIVER)
-                setMiddleButtonState(MiddleButtonState.COMMANDER_EXIT)
-                playerButtonViewModels.value.find {
-                    it.state.value.player.playerNum == dealer.playerNum
-                }?.setPlayerButtonState(PBState.COMMANDER_DEALER)
+        commanderManager.commanderState.collect { commanderState ->
+            when (commanderState) {
+                is CommanderState.Inactive -> {
+                    setAllButtonStates(PBState.NORMAL)
+                    setMiddleButtonState(MiddleButtonState.DEFAULT)
+                }
+                is CommanderState.Active -> {
+                    setMiddleButtonState(MiddleButtonState.COMMANDER_EXIT)
+                    playerButtonViewModels.value.forEach {
+                        it.setPlayerButtonState(
+                            if (it.state.value.player.playerNum == commanderState.dealer.playerNum) {
+                                PBState.COMMANDER_DEALER
+                            } else {
+                                PBState.COMMANDER_RECEIVER
+                            }
+                        )
+                    }
+                }
             }
         }
     }

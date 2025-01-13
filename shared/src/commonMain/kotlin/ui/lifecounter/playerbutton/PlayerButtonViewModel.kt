@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import domain.common.Backstack
 import domain.common.NumberWithRecentChange
 import domain.game.CommanderDamageManager
+import domain.game.CommanderState
 import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
 import domain.game.PlayerStateManager
@@ -45,7 +46,7 @@ open class PlayerButtonViewModel(
         playerStateManager.isPlayerDead(playerState.player, autoKo)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    val currentDealer: StateFlow<Player?> = commanderManager.currentDealer
+    val commanderState: StateFlow<CommanderState> = commanderManager.commanderState
 
     private val backstack = Backstack()
 

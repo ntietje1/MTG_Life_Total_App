@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import domain.common.NumberWithRecentChange
+import domain.game.CommanderState
 import domain.game.timer.TurnTimer
 import domain.system.SystemManager
 import io.kamel.image.KamelImage
@@ -106,7 +107,8 @@ fun PlayerButton(
 ) {
     val state by viewModel.state.collectAsState()
     val isDead by viewModel.isDead.collectAsState()
-    val currentDealer by viewModel.currentDealer.collectAsState()
+    val commanderState by viewModel.commanderState.collectAsState()
+    val currentDealerIsPartnered = (commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
     val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
 
@@ -250,7 +252,7 @@ fun PlayerButton(
 
                         PBState.COMMANDER_RECEIVER -> {
                             Row(Modifier.fillMaxSize()) {
-                                LifeChangeButtons(Modifier.then(if (currentDealer?.partnerMode == true) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()), onIncrementLife = {
+                                LifeChangeButtons(Modifier.then(if (currentDealerIsPartnered) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()), onIncrementLife = {
                                     viewModel.incrementCommanderDamage(
                                         value = 1,
                                         partner = false
@@ -265,7 +267,7 @@ fun PlayerButton(
                                     viewModel.incrementLife(1)
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 })
-                                if (currentDealer?.partnerMode == true) {
+                                if (currentDealerIsPartnered) {
                                     LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
                                         viewModel.incrementCommanderDamage(
                                             value = 1,
@@ -379,7 +381,7 @@ fun PlayerButton(
                                         name = state.player.name,
                                         textColor = state.player.textColor,
                                         firstValue = viewModel.getCommanderDamage(partner = false),
-                                        secondValue = if (currentDealer?.partnerMode == true) viewModel.getCommanderDamage(
+                                        secondValue = if (currentDealerIsPartnered) viewModel.getCommanderDamage(
                                             partner = true
                                         ) else null,
                                     )
@@ -405,7 +407,7 @@ fun PlayerButton(
                                     )
                                     Spacer(modifier = Modifier.height(smallButtonSize / 4f))
                                     SettingsButton(modifier = Modifier.size(smallButtonSize * 1.5f),
-                                        imageVector = vectorResource(if (currentDealer?.partnerMode == true) Res.drawable.sword_icon_double else Res.drawable.sword_icon),
+                                        imageVector = vectorResource(if (currentDealerIsPartnered) Res.drawable.sword_icon_double else Res.drawable.sword_icon),
                                         backgroundColor = Color.Transparent,
                                         mainColor = state.player.textColor,
                                         onPress = {
