@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.common.Backstack
 import domain.common.NumberWithRecentChange
-import domain.common.RecentChangeValue
 import domain.game.CommanderDamageManager
 import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
@@ -62,32 +61,32 @@ open class PlayerButtonViewModel(
     open val customizationViewmodel: CustomizationViewModel?
         get() = _customizationViewmodel
 
-    private val lifeTotal = RecentChangeValue(
-        initialValue = initialState.player.lifeTotal
-    ) {
-        setPlayer(
-            state.value.player.copy(lifeTotal = it)
-        )
-    }.apply { attach(viewModelScope) }
-
-    private val commanderDamageTrackers = List(Player.MAX_PLAYERS * 2) { index ->
-        RecentChangeValue(
-            initialValue = initialState.player.commanderDamage[index]
-        ) { newValue ->
-            setPlayer(
-                state.value.player.copy(
-                    commanderDamage = state.value.player.commanderDamage.toMutableList().apply {
-                        this[index] = newValue
-                    }
-                )
+    init {
+        viewModelScope.launch {
+            playerStateManager.attachLifeTracker(
+                initialPlayer = state.value.player,
+                onUpdate = ::setLifeTotal
             )
-        }.apply { attach(viewModelScope) }
+
+            commanderManager.attachCommanderTrackers(
+                initialPlayer = state.value.player,
+                onUpdate = ::setCommanderDamage
+            )
+        }
+    }
+
+    private fun setLifeTotal(updatedPlayer: Player) {
+        setPlayer(state.value.player.copy(lifeTotal = updatedPlayer.lifeTotal))
+    }
+
+    private fun setCommanderDamage(updatedPlayer: Player) {
+        setPlayer(state.value.player.copy(commanderDamage = updatedPlayer.commanderDamage))
     }
 
     override fun onCleared() {
         super.onCleared()
-        lifeTotal.cancel()
-        commanderDamageTrackers.forEach { it.cancel() }
+        playerStateManager.detachLifeTracker(state.value.player.playerNum)
+        commanderManager.detachCommanderTrackers(state.value.player.playerNum)
     }
 
     internal fun setPlayer(player: Player) {
@@ -95,7 +94,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun incrementLife(value: Int) {
-        lifeTotal.increment(value)
+        playerStateManager.incrementLife(state.value.player, value)
         gameStateManager.savePlayerState(state.value.player)
     }
 
@@ -245,9 +244,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
-        val currentDealer = currentDealer.value ?: return
-        val index = (currentDealer.playerNum - 1) + (if (partner) Player.MAX_PLAYERS else 0)
-        commanderDamageTrackers[index].increment(value)
+        commanderManager.incrementCommanderDamage(state.value.player, value, partner)
         gameStateManager.savePlayerState(state.value.player)
     }
 

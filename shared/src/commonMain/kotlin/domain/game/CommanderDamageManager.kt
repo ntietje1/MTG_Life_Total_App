@@ -1,11 +1,15 @@
 package domain.game
 
 import domain.common.NumberWithRecentChange
+import domain.common.RecentChangeValue
 import domain.system.NotificationManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import model.Player
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import kotlin.coroutines.coroutineContext
 
 /**
  * Manages commander damage and commander mode for players
@@ -14,8 +18,15 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
 class CommanderDamageManager(
     private val notificationManager: NotificationManager
 ) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
+    companion object {
+        const val MAX_COMMANDER_DAMAGE = 100
+        const val MIN_COMMANDER_DAMAGE = 0
+    }
+
     private val _currentDealer = MutableStateFlow<Player?>(null)
     val currentDealer = _currentDealer.asStateFlow()
+
+    private val commanderDamageTrackers = mutableMapOf<Int, List<RecentChangeValue>>()
 
     fun setCurrentDealer(dealer: Player?) {
         requireAttached()
@@ -36,27 +47,48 @@ class CommanderDamageManager(
         return player.commanderDamage[index]
     }
 
-    fun incrementCommanderDamage(player: Player, value: Int, partner: Boolean): Player {
-        requireAttached()
-        val currentDealer = _currentDealer.value ?: return player
-        val index = (currentDealer.playerNum - 1) + (if (partner) Player.MAX_PLAYERS else 0)
-        return receiveCommanderDamage(player, index, value)
+    suspend fun attachCommanderTrackers(
+        initialPlayer: Player,
+        onUpdate: (Player) -> Unit
+    ) {
+        val trackerScope = CoroutineScope(coroutineContext + Job())
+
+        commanderDamageTrackers[initialPlayer.playerNum] = List(Player.MAX_PLAYERS * 2) { index ->
+            RecentChangeValue(
+                initialValue = initialPlayer.commanderDamage[index]
+            ) { newValue ->
+                val currentPlayer = requireAttached().value.getPlayer(initialPlayer.playerNum)
+                onUpdate(currentPlayer.copy(
+                    commanderDamage = currentPlayer.commanderDamage.toMutableList().apply {
+                        this[index] = newValue
+                    }
+                ))
+            }.apply { attach(trackerScope) }
+        }
     }
 
-    private fun receiveCommanderDamage(player: Player, index: Int, value: Int): Player {
-        val currentDamage = player.commanderDamage[index].number
-        if (value < 0 && currentDamage + value < 0) {
-            notificationManager.showNotification("Commander damage cannot be negative")
-            return player
-        } else if (value > 0 && currentDamage + value >= 99) {
-            notificationManager.showNotification("Commander damage limit reached")
-            return player
-        }
+    fun detachCommanderTrackers(playerNum: Int) {
+        commanderDamageTrackers[playerNum]?.forEach { it.cancel() }
+        commanderDamageTrackers.remove(playerNum)
+    }
 
-        return player.copy(
-            commanderDamage = player.commanderDamage.toMutableList().apply {
-                this[index] = NumberWithRecentChange(currentDamage + value, value)
-            }
-        )
+    fun incrementCommanderDamage(player: Player, value: Int, partner: Boolean) {
+        val currentDealer = _currentDealer.value ?: return
+        val index = (currentDealer.playerNum - 1) + (if (partner) Player.MAX_PLAYERS else 0)
+        val currentDamage = player.commanderDamage[index].number
+        if (checkValidCommanderDamage(value, currentDamage)) {
+            commanderDamageTrackers[player.playerNum]?.get(index)?.increment(value)
+        }
+    }
+
+    private fun checkValidCommanderDamage(value: Int, currentDamage: Int): Boolean {
+        if (value < 0 && currentDamage + value < MIN_COMMANDER_DAMAGE) {
+            notificationManager.showNotification("Commander damage cannot be negative")
+            return false
+        } else if (value > 0 && currentDamage + value >= MAX_COMMANDER_DAMAGE) {
+            notificationManager.showNotification("Commander damage limit reached")
+            return false
+        }
+        return true
     }
 } 

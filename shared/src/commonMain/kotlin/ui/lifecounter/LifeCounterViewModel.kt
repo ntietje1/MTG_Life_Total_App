@@ -14,7 +14,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.launch
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
@@ -52,6 +51,11 @@ open class LifeCounterViewModel(
         gameStateManager.attach(playerButtonViewModels)
         commanderManager.attach(playerButtonViewModels)
         timerManager.attach(playerButtonViewModels)
+        playerStateManager.attach(playerButtonViewModels)
+
+        viewModelScope.launch {
+            timerManager.registerTimerStateObserver()
+        }
 
         generatePlayerButtonViewModels()
         registerCommanderListener()

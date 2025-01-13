@@ -64,9 +64,6 @@ class TimerManager(
 
     suspend fun onTimerEnabledChange(timerEnabled: Boolean) {
         gameTimer.setTimerEnabled(timerEnabled)
-        if (!observerRegistered) {
-            registerTimerStateObserver()
-        }
         if (timerEnabled) {
             if (gameTimer.timerState.value.firstPlayer == null) {
                 promptForFirstPlayer()
@@ -130,7 +127,7 @@ class TimerManager(
         }
     }
 
-    private suspend fun registerTimerStateObserver() {
+    suspend fun registerTimerStateObserver() {
         // Observe timer enabled changes
         requireAttached()
         observerJob = CoroutineScope(coroutineContext).launch {

@@ -1,14 +1,21 @@
 package domain.game
 
 import domain.common.NumberWithRecentChange
+import domain.common.RecentChangeValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
 import ui.lifecounter.CounterType
+import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import kotlin.coroutines.coroutineContext
 
 /**
  * Manages player state operations
  */
-class PlayerStateManager {
+class PlayerStateManager : AttachableFlowManager<List<PlayerButtonViewModel>>() {
+    private val lifeTotalTrackers = mutableMapOf<Int, RecentChangeValue>()
+
     fun generatePlayer(startingLife: Int, playerNum: Int): Player {
         val name = "P$playerNum"
         return Player(lifeTotal = NumberWithRecentChange(startingLife, 0), name = name, playerNum = playerNum)
@@ -48,4 +55,31 @@ class PlayerStateManager {
             }
         })
     }
+
+    suspend fun attachLifeTracker(
+        initialPlayer: Player,
+        onUpdate: (Player) -> Unit
+    ) {
+        val trackerScope = CoroutineScope(coroutineContext + Job())
+
+        lifeTotalTrackers[initialPlayer.playerNum] = RecentChangeValue(
+            initialValue = initialPlayer.lifeTotal
+        ) { newValue ->
+            val currentPlayer = requireAttached().value.getPlayer(initialPlayer.playerNum)
+            onUpdate(currentPlayer.copy(lifeTotal = newValue))
+        }.apply { attach(trackerScope) }
+    }
+
+    fun detachLifeTracker(playerNum: Int) {
+        lifeTotalTrackers[playerNum]?.cancel()
+        lifeTotalTrackers.remove(playerNum)
+    }
+
+    fun incrementLife(player: Player, value: Int) {
+        lifeTotalTrackers[player.playerNum]?.increment(value)
+    }
+}
+
+fun List<PlayerButtonViewModel>.getPlayer(playerNum: Int): Player {
+    return find { it.state.value.player.playerNum == playerNum }?.state?.value?.player ?: throw IllegalArgumentException("Player not found")
 }

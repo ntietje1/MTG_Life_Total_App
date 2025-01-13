@@ -28,4 +28,4 @@ abstract class AttachableManager<T> : Attachable<T> {
     }
 }
 
-abstract class AttachableFlowManager<T : Any> : AttachableManager<StateFlow<T>>()
+abstract class AttachableFlowManager<T> : AttachableManager<StateFlow<T>>()
