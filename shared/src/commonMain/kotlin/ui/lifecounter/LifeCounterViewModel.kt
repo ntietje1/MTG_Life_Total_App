@@ -205,12 +205,7 @@ open class LifeCounterViewModel(
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
         playerButtonViewModels.value.forEach {
-            it.setPlayer(
-                playerStateManager.resetPlayerState(
-                    player = it.state.value.player,
-                    startingLife = settingsManager.startingLife.value
-                )
-            )
+            it.resetState(startingLife = settingsManager.startingLife.value)
         }
         savePlayerStates()
         viewModelScope.launch {

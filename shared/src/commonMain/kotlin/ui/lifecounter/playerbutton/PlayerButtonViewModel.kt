@@ -254,6 +254,9 @@ open class PlayerButtonViewModel(
 
     fun resetState(startingLife: Int) {
         setPlayer(playerStateManager.resetPlayerState(state.value.player, startingLife))
+        setPlayer(commanderManager.resetCommanderDamage(state.value.player))
+        println("commander damage: ${state.value.player.commanderDamage}")
+
         gameStateManager.savePlayerState(state.value.player)
     }
 }

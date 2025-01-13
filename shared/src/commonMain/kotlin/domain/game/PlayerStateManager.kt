@@ -28,11 +28,11 @@ class PlayerStateManager : AttachableFlowManager<List<PlayerButtonViewModel>>() 
     }
 
     fun resetPlayerState(player: Player, startingLife: Int): Player {
+        lifeTotalTrackers[player.playerNum]?.set(startingLife)
         return player.copy(
             lifeTotal = NumberWithRecentChange(startingLife, 0),
             monarch = false,
             setDead = false,
-            commanderDamage = List(MAX_PLAYERS * 2) { NumberWithRecentChange(0, 0) },
             counters = List(CounterType.entries.size) { 0 },
             activeCounters = listOf()
         )

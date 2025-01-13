@@ -9,6 +9,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import model.Player
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import kotlin.collections.List
+import kotlin.collections.forEach
+import kotlin.collections.mutableMapOf
+import kotlin.collections.set
+import kotlin.collections.toMutableList
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -76,6 +81,14 @@ class CommanderDamageManager(
     fun detachCommanderTrackers(playerNum: Int) {
         commanderDamageTrackers[playerNum]?.forEach { it.cancel() }
         commanderDamageTrackers.remove(playerNum)
+    }
+
+    fun resetCommanderDamage(player: Player): Player {
+        val commanderDamageTracker = requireNotNull(commanderDamageTrackers[player.playerNum])
+        commanderDamageTracker.forEach { it.set(0) }
+        return player.copy(
+            commanderDamage = List(Player.MAX_PLAYERS * 2) { NumberWithRecentChange(0, 0) }
+        )
     }
 
     fun incrementCommanderDamage(player: Player, value: Int, partner: Boolean) {

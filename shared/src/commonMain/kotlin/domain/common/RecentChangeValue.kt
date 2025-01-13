@@ -46,6 +46,10 @@ class RecentChangeValue(
         updateRecentChange()
     }
 
+    fun set(value: Int) {
+        updateValue(NumberWithRecentChange(value, 0))
+    }
+
     private fun updateRecentChange() {
         val scope = requireAttached()
         recentChangeJob?.cancel()
