@@ -68,6 +68,7 @@ open class LifeCounterViewModel(
         gameStateManager.detach()
         commanderManager.detach()
         timerManager.detach()
+        playerStateManager.detach()
     }
 
     private fun registerCommanderListener() {

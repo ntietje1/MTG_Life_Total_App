@@ -16,6 +16,12 @@ import kotlin.coroutines.coroutineContext
 class PlayerStateManager : AttachableFlowManager<List<PlayerButtonViewModel>>() {
     private val lifeTotalTrackers = mutableMapOf<Int, RecentChangeValue>()
 
+    override fun detach() {
+        super.detach()
+        lifeTotalTrackers.values.forEach { it.cancel() }
+        lifeTotalTrackers.clear()
+    }
+
     fun generatePlayer(startingLife: Int, playerNum: Int): Player {
         val name = "P$playerNum"
         return Player(lifeTotal = NumberWithRecentChange(startingLife, 0), name = name, playerNum = playerNum)

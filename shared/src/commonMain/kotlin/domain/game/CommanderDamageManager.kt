@@ -28,6 +28,12 @@ class CommanderDamageManager(
 
     private val commanderDamageTrackers = mutableMapOf<Int, List<RecentChangeValue>>()
 
+    override fun detach() {
+        super.detach()
+        commanderDamageTrackers.values.forEach { it -> it.forEach { it.cancel() } }
+        commanderDamageTrackers.clear()
+    }
+
     fun setCurrentDealer(dealer: Player?) {
         requireAttached()
         _currentDealer.value = dealer
