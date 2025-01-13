@@ -32,13 +32,13 @@ class RecentChangeValue(
 
     override fun attach(source: CoroutineScope): RecentChangeValue {
         super.attach(source)
-        updateRecentChange()
+        resetRecentChangeJob()
         return this
     }
 
     override fun detach() {
         super.detach()
-        cancel()
+        cancelRecentChangeJob()
     }
 
     fun increment(change: Int) {
@@ -48,14 +48,14 @@ class RecentChangeValue(
                 _value.value.recentChange + change
             )
         )
-        updateRecentChange()
+        resetRecentChangeJob()
     }
 
     fun set(value: Int) {
         updateValue(NumberWithRecentChange(value, 0))
     }
 
-    private fun updateRecentChange() {
+    private fun resetRecentChangeJob() {
         val scope = requireAttached()
         recentChangeJob?.cancel()
         recentChangeJob = scope.launch {
@@ -64,7 +64,7 @@ class RecentChangeValue(
         }
     }
 
-    fun cancel() {
+    private fun cancelRecentChangeJob() {
         recentChangeJob?.cancel()
         recentChangeJob = null
     }

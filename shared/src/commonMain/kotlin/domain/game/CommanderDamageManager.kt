@@ -35,7 +35,7 @@ class CommanderDamageManager(
 
     override fun detach() {
         super.detach()
-        commanderDamageTrackers.values.forEach { it -> it.forEach { it.cancel() } }
+        commanderDamageTrackers.values.forEach { it -> it.forEach { it.detach() } }
         commanderDamageTrackers.clear()
     }
 

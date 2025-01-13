@@ -50,15 +50,15 @@ open class LifeCounterViewModel(
         playerCustomizationManager.attach(playerButtonViewModels)
         gameStateManager.attach(playerButtonViewModels)
         commanderManager.attach(playerButtonViewModels)
-        timerManager.attach(playerButtonViewModels)
         playerStateManager.attach(playerButtonViewModels)
-
-        viewModelScope.launch {
-            timerManager.registerTimerStateObserver()
-        }
+        timerManager.attach(playerButtonViewModels)
 
         generatePlayerButtonViewModels()
-        registerCommanderListener()
+
+        viewModelScope.launch {
+            registerCommanderListener()
+            timerManager.registerTimerStateObserver()
+        }
     }
 
     override fun onCleared() {
@@ -71,22 +71,21 @@ open class LifeCounterViewModel(
         playerStateManager.detach()
     }
 
-    private fun registerCommanderListener() {
-        viewModelScope.launch {
-            commanderManager.currentDealer.collect { dealer ->
-                if (dealer == null) {
-                    setAllButtonStates(PBState.NORMAL)
-                    setMiddleButtonState(MiddleButtonState.DEFAULT)
-                } else {
-                    setAllButtonStates(PBState.COMMANDER_RECEIVER)
-                    setMiddleButtonState(MiddleButtonState.COMMANDER_EXIT)
-                    playerButtonViewModels.value.find {
-                        it.state.value.player.playerNum == dealer.playerNum
-                    }?.setPlayerButtonState(PBState.COMMANDER_DEALER)
-                }
+    private suspend fun registerCommanderListener() {
+        commanderManager.currentDealer.collect { dealer ->
+            if (dealer == null) {
+                setAllButtonStates(PBState.NORMAL)
+                setMiddleButtonState(MiddleButtonState.DEFAULT)
+            } else {
+                setAllButtonStates(PBState.COMMANDER_RECEIVER)
+                setMiddleButtonState(MiddleButtonState.COMMANDER_EXIT)
+                playerButtonViewModels.value.find {
+                    it.state.value.player.playerNum == dealer.playerNum
+                }?.setPlayerButtonState(PBState.COMMANDER_DEALER)
             }
         }
     }
+
 
     // Generate viewmodels for all players and update the viewmodel list flow
     private fun generatePlayerButtonViewModels() {

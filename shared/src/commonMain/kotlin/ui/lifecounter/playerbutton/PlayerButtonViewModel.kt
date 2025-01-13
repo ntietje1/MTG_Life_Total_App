@@ -89,7 +89,7 @@ open class PlayerButtonViewModel(
 
     open fun incrementLife(value: Int) {
         playerStateManager.incrementLife(state.value.player, value)
-        gameStateManager.savePlayerState(state.value.player)
+        gameStateManager.saveGameState()
     }
 
     fun setTimer(timer: TurnTimer?) {
@@ -143,7 +143,7 @@ open class PlayerButtonViewModel(
         setPlayer(playerStateManager.toggleSetDead(state.value.player))
         closeSettingsMenu()
         backstack.clear()
-        gameStateManager.savePlayerState(state.value.player)
+        gameStateManager.saveGameState()
     }
 
     open fun popBackStack() {
@@ -219,17 +219,17 @@ open class PlayerButtonViewModel(
 
     fun togglePartnerMode(value: Boolean) {
         setPlayer(commanderManager.togglePartnerMode(state.value.player, value))
-        gameStateManager.savePlayerState(state.value.player)
+        gameStateManager.saveGameState()
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
         setPlayer(playerStateManager.incrementCounter(state.value.player, counterType, value))
-        gameStateManager.savePlayerState(state.value.player)
+        gameStateManager.saveGameState()
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
         setPlayer(playerStateManager.setActiveCounters(state.value.player, counterType, active))
-        gameStateManager.savePlayerState(state.value.player)
+        gameStateManager.saveGameState()
         return state.value.player.activeCounters.contains(counterType)
     }
 
@@ -239,7 +239,7 @@ open class PlayerButtonViewModel(
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
         commanderManager.incrementCommanderDamage(state.value.player, value, partner)
-        gameStateManager.savePlayerState(state.value.player)
+        gameStateManager.saveGameState()
     }
 
     open fun copyPrefs(other: Player) {
@@ -249,7 +249,6 @@ open class PlayerButtonViewModel(
     fun resetState() {
         setPlayer(playerStateManager.resetPlayerState(state.value.player))
         setPlayer(commanderManager.resetCommanderDamage(state.value.player))
-
-        gameStateManager.savePlayerState(state.value.player)
+        gameStateManager.saveGameState()
     }
 }

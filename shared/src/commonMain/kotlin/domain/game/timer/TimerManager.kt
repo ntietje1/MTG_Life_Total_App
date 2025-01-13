@@ -25,12 +25,6 @@ class TimerManager(
     private val gameTimer: GameTimer = GameTimer(settingsManager.savedTimerState.value ?: GameTimerState())
     private var timerJob: Job? = null
 
-    override fun attach(source: StateFlow<List<PlayerButtonViewModel>>): TimerManager {
-        super.attach(source)
-        initializeGameTimer()
-        return this
-    }
-
     override fun detach() {
         super.detach()
         stopTimerLoop()
@@ -100,6 +94,7 @@ class TimerManager(
 
     private fun initializeGameTimer() {
         val playerButtonViewModels = requireAttached().value
+        println("playerbutonviewmodels: $playerButtonViewModels")
         gameTimer.initialize(
             playerCount = settingsManager.numPlayers.value,
             deadCheck = { index -> playerButtonViewModels[index].isDead.value }
@@ -130,6 +125,7 @@ class TimerManager(
     suspend fun registerTimerStateObserver() {
         // Observe timer enabled changes
         requireAttached()
+        initializeGameTimer()
         observerJob = CoroutineScope(coroutineContext).launch {
             settingsManager.turnTimer.collect { turnTimerEnabled ->
                 onTimerEnabledChange(turnTimerEnabled)

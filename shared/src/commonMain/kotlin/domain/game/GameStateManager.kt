@@ -37,10 +37,6 @@ class GameStateManager(
         return player.copy(monarch = value && player.playerNum == targetPlayerNum)
     }
 
-    fun savePlayerState(player: Player) {
-        saveGameState() // eventually will be replaced with a more efficient method
-    }
-
     fun saveGameState() {
         val playerButtonViewModels = requireAttached().value
         settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })

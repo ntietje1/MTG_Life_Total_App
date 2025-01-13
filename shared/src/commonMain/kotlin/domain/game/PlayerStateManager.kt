@@ -20,7 +20,7 @@ class PlayerStateManager(
 
     override fun detach() {
         super.detach()
-        lifeTotalTrackers.values.forEach { it.cancel() }
+        lifeTotalTrackers.values.forEach { it.detach() }
         lifeTotalTrackers.clear()
     }
 
