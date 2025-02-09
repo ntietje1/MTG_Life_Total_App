@@ -1,15 +1,18 @@
 package di
+
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import com.hypeapps.lifelinked.db.Database
+import domain.game.CommanderDamageManager
+import domain.game.GameStateManager
+import domain.game.PlayerCustomizationManager
+import domain.game.PlayerStateManager
+import domain.game.timer.TimerManager
 import domain.storage.IImageManager
 import domain.storage.ISettingsManager
 import domain.storage.ImageManager
 import domain.storage.SettingsManager
-import domain.game.GameStateManager
-import domain.game.CommanderDamageManager
-import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
-import domain.game.timer.TimerManager
 import domain.system.NotificationManager
-import domain.system.SystemManager
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
 import ui.dialog.color.ColorDialogViewModel
@@ -31,29 +34,37 @@ actual val platformModule = module {
     single { PlayerStateManager(get()) }
     single { PlayerCustomizationManager(get()) }
     single { CommanderDamageManager(get()) }
-    single { GameStateManager(get()) }
+    single { GameStateManager(get(), get()) }
     single { TimerManager(get()) }
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
     single { TutorialViewModel(get()) }
     single { PlayerSelectViewModel(get()) }
-    single { LifeCounterViewModel(
-        settingsManager = get(),
-        playerStateManager = get(),
-        commanderManager = get(),
-        imageManager = get(),
-        notificationManager = get(),
-        playerCustomizationManager = get(),
-        planeChaseViewModel = get(),
-        gameStateManager = get(),
-        timerManager = get()
-    )  }
+    single {
+        LifeCounterViewModel(
+            settingsManager = get(),
+            playerStateManager = get(),
+            commanderManager = get(),
+            imageManager = get(),
+            notificationManager = get(),
+            playerCustomizationManager = get(),
+            planeChaseViewModel = get(),
+            gameStateManager = get(),
+            timerManager = get()
+        )
+    }
     single { PatchNotesViewModel(get()) }
     single { StartingLifeViewModel(get()) }
     single { ScryfallSearchViewModel() }
     single { ColorDialogViewModel() }
     single { GifDialogViewModel() }
     single { DiceRollViewModel() }
+    single<SqlDriver> {
+        NativeSqliteDriver(
+            schema = Database.Schema,
+            name = "lifelinked.db"
+        )
+    }
 }
 
 actual val platform: Platform

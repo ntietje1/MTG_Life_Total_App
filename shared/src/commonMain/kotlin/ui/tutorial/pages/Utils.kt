@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import data.GameRepository
 import domain.common.NumberWithRecentChange
 import domain.game.CommanderDamageManager
 import domain.game.GameStateManager
@@ -67,6 +68,7 @@ class MockSettingsManager(
     lastSplashScreenShown: String = SettingsManager.instance.lastSplashScreenShown.value,
     turnTimer: Boolean = SettingsManager.instance.turnTimer.value,
     devMode: Boolean = SettingsManager.instance.devMode.value,
+    currentGameId: Long? = SettingsManager.instance.currentGameId.value,
     patchNotes: String = SettingsManager.instance.patchNotes.value,
     private var playerStates: List<Player> = emptyList(),
     private var allPlanes: List<Card> = emptyList(),
@@ -150,6 +152,12 @@ class MockSettingsManager(
     override val devMode: StateFlow<Boolean> = _devMode.asStateFlow()
     override fun setDevMode(value: Boolean) {
         _devMode.value = value
+    }
+
+    private val _currentGameId = MutableStateFlow(currentGameId)
+    override val currentGameId: StateFlow<Long?> = _currentGameId.asStateFlow()
+    override fun setCurrentGameId(value: Long) {
+        _currentGameId.value = value
     }
 
     private val _patchNotes = MutableStateFlow(patchNotes)
@@ -241,7 +249,7 @@ abstract class MockLifeCounterViewModel(
     notificationManager = notificationManager,
     planeChaseViewModel = PlaneChaseViewModel(settingsManager),
     playerCustomizationManager = PlayerCustomizationManager(settingsManager),
-    gameStateManager = GameStateManager(settingsManager),
+    gameStateManager = GameStateManager(settingsManager, Any() as GameRepository),
     timerManager = TimerManager(settingsManager)
 )
 

@@ -1,0 +1,62 @@
+CREATE TABLE game (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    num_players INTEGER NOT NULL DEFAULT 4,
+    start_timestamp INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    end_timestamp INTEGER DEFAULT NULL,
+    winner_pid INTEGER DEFAULT NULL,
+    FOREIGN KEY (winner_pid) REFERENCES player(id)
+);
+
+CREATE TABLE game_player (
+    game_id INTEGER NOT NULL,
+    player_id INTEGER NOT NULL,
+    FOREIGN KEY (game_id) REFERENCES game(id),
+    FOREIGN KEY (player_id) REFERENCES player(id),
+    PRIMARY KEY (game_id, player_id)
+);
+
+getGameWithPlayers:
+SELECT 
+    g.*,
+    p.id AS player_id,
+    p.name,
+    p.image_string,
+    p.color,
+    p.text_color,
+    p.player_num,
+    p.life_total,
+    p.life_total_recent_change,
+    p.monarch,
+    p.set_dead,
+    p.partner_mode,
+    GROUP_CONCAT(cd.damage || ',' || cd.recent_change) AS commander_damages,
+    GROUP_CONCAT(c.value) AS counters
+FROM game g
+JOIN game_player gp ON g.id = gp.game_id
+JOIN player p ON gp.player_id = p.id
+LEFT JOIN commander_damage cd ON p.id = cd.reciever_player_id
+LEFT JOIN counter c ON p.id = c.player_id
+WHERE g.id = ?
+GROUP BY p.id
+ORDER BY p.player_num;
+
+insertGame:
+INSERT INTO game (num_players)
+VALUES (?);
+
+updateGame:
+UPDATE game 
+SET num_players = ?, 
+    end_timestamp = ?, 
+    winner_pid = ?
+WHERE id = ?;
+
+insertGamePlayer:
+INSERT INTO game_player (game_id, player_id)
+VALUES (?, ?);
+
+removeAllGamePlayers:
+DELETE FROM game_player WHERE game_id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

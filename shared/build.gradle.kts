@@ -7,6 +7,15 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kapt)
+    alias(libs.plugins.sqldelight)
+}
+
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("com.hypeapps.lifelinked.db")
+        }
+    }
 }
 
 kotlin {
@@ -71,6 +80,10 @@ kotlin {
             implementation(libs.koin.androidx.compose)
 
             implementation(libs.kotlinx.coroutines.android)
+
+            implementation(libs.sqldelight.android)
+            implementation(libs.sqldelight.coroutines)
+            implementation(libs.sqldelight.primitive.adapters)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -103,9 +116,16 @@ kotlin {
 //            implementation(libs.coil.network.ktor)
 
             implementation(libs.kamel.image.default)
+
+            implementation(libs.sqldelight.coroutines)
+            implementation(libs.sqldelight.primitive.adapters)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+
+            implementation(libs.sqldelight.native)
+            implementation(libs.sqldelight.coroutines)
+            implementation(libs.sqldelight.primitive.adapters)
         }
     }
 }

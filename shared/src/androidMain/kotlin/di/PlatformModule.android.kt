@@ -1,5 +1,8 @@
 package di
 
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.hypeapps.lifelinked.db.Database
 import domain.storage.IImageManager
 import domain.storage.ISettingsManager
 import domain.storage.ImageManager
@@ -33,7 +36,7 @@ actual val platformModule = module {
     single { PlayerStateManager(get()) }
     single { PlayerCustomizationManager(get()) }
     single { CommanderDamageManager(get()) }
-    single { GameStateManager(get()) }
+    single { GameStateManager(get(), get()) }
     single { TimerManager(get()) }
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
@@ -58,6 +61,12 @@ actual val platformModule = module {
     single { ColorDialogViewModel() }
     single { GifDialogViewModel() }
     viewModel { DiceRollViewModel() }
+    single<SqlDriver> { AndroidSqliteDriver(
+            schema = Database.Schema,
+            context = get(),
+            name = "lifelinked.db"
+        )
+    }
 }
 
 actual val platform: Platform

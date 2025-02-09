@@ -84,13 +84,16 @@ open class PlayerButtonViewModel(
         setPlayer(state.value.player.copy(commanderDamage = updatedPlayer.commanderDamage))
     }
 
-    internal fun setPlayer(player: Player) {
+    fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
+//        viewModelScope.launch {
+//            gameStateManager.savePlayerState(state.value.player)
+//        }
     }
 
     open fun incrementLife(value: Int) {
         playerStateManager.incrementLife(state.value.player, value)
-        gameStateManager.saveGameState()
+//        gameStateManager.savePlayerState(state.value.player)
     }
 
     fun setTimer(timer: TurnTimer?) {
@@ -144,7 +147,7 @@ open class PlayerButtonViewModel(
         setPlayer(playerStateManager.toggleSetDead(state.value.player))
         closeSettingsMenu()
         backstack.clear()
-        gameStateManager.saveGameState()
+//        gameStateManager.saveGameState()
     }
 
     open fun popBackStack() {
@@ -220,17 +223,17 @@ open class PlayerButtonViewModel(
 
     fun togglePartnerMode(value: Boolean) {
         setPlayer(commanderManager.togglePartnerMode(state.value.player, value))
-        gameStateManager.saveGameState()
+//        gameStateManager.saveGameState()
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
         setPlayer(playerStateManager.incrementCounter(state.value.player, counterType, value))
-        gameStateManager.saveGameState()
+//        gameStateManager.saveGameState()
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
         setPlayer(playerStateManager.setActiveCounters(state.value.player, counterType, active))
-        gameStateManager.saveGameState()
+//        gameStateManager.saveGameState()
         return state.value.player.activeCounters.contains(counterType)
     }
 
@@ -240,7 +243,7 @@ open class PlayerButtonViewModel(
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
         commanderManager.incrementCommanderDamage(state.value.player, value, partner)
-        gameStateManager.saveGameState()
+//        gameStateManager.saveGameState()
     }
 
     open fun copyPrefs(other: Player) {
@@ -250,6 +253,6 @@ open class PlayerButtonViewModel(
     fun resetState() {
         setPlayer(playerStateManager.resetPlayerState(state.value.player))
         setPlayer(commanderManager.resetCommanderDamage(state.value.player))
-        gameStateManager.saveGameState()
+//        gameStateManager.saveGameState()
     }
 }

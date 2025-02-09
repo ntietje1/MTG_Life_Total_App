@@ -1,0 +1,67 @@
+import kotlin.Boolean;
+
+CREATE TABLE player (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    image_string TEXT,
+    color INTEGER NOT NULL,
+    text_color INTEGER NOT NULL,
+    player_num INTEGER NOT NULL,
+    life_total INTEGER NOT NULL,
+    life_total_recent_change INTEGER NOT NULL,
+    monarch INTEGER AS Boolean NOT NULL DEFAULT 0,
+    set_dead INTEGER AS Boolean NOT NULL DEFAULT 0,
+    partner_mode INTEGER AS Boolean NOT NULL DEFAULT 0
+);
+
+CREATE TABLE commander_damage (
+    reciever_player_id INTEGER NOT NULL,
+    dealer_player_id INTEGER NOT NULL,
+    damage INTEGER NOT NULL,
+    recent_change INTEGER NOT NULL,
+    FOREIGN KEY (reciever_player_id) REFERENCES player(id),
+    FOREIGN KEY (dealer_player_id) REFERENCES player(id),
+    PRIMARY KEY (reciever_player_id, dealer_player_id)
+);
+
+CREATE TABLE counter (
+    player_id INTEGER NOT NULL,
+    counter_type INTEGER NOT NULL,
+    value INTEGER NOT NULL,
+    FOREIGN KEY (player_id) REFERENCES player(id),
+    PRIMARY KEY (player_id, counter_type)
+);
+
+-- Queries
+insertPlayer:
+INSERT OR REPLACE INTO player (
+    name, image_string, color, text_color, player_num, 
+    life_total, life_total_recent_change, monarch, set_dead, partner_mode
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+insertCommanderDamage:
+INSERT OR REPLACE INTO commander_damage (reciever_player_id, dealer_player_id, damage, recent_change)
+VALUES (?, ?, ?, ?);
+
+insertCounter:
+INSERT OR REPLACE INTO counter (player_id, counter_type, value)
+VALUES (?, ?, ?);
+
+getAllPlayers:
+SELECT 
+    p.*,
+    GROUP_CONCAT(cd.damage || ',' || cd.recent_change) AS commander_damages,
+    GROUP_CONCAT(c.value) AS counters
+FROM player p
+LEFT JOIN commander_damage cd ON p.id = cd.reciever_player_id
+LEFT JOIN counter c ON p.id = c.player_id
+GROUP BY p.id;
+
+deletePlayer:
+DELETE FROM player WHERE id = ?;
+
+deleteAllPlayers:
+DELETE FROM player;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

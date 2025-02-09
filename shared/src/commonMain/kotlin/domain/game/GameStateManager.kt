@@ -1,7 +1,12 @@
 package domain.game
 
+import data.GameRepository
 import domain.storage.ISettingsManager
+import kotlinx.coroutines.flow.Flow
+import model.Game
+import model.GameWithPlayers
 import model.Player
+import model.Player.Companion.MAX_PLAYERS
 import ui.lifecounter.DayNightState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
@@ -9,8 +14,9 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
  * Manages a game state that is shared among all players
  */
 class GameStateManager(
-    private val settingsManager: ISettingsManager
-) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
+    private val settingsManager: ISettingsManager,
+    private val gameRepository: GameRepository
+) {
     fun toggleDayNight(currentState: DayNightState): DayNightState {
         return when (currentState) {
             DayNightState.NONE -> DayNightState.DAY
@@ -19,9 +25,8 @@ class GameStateManager(
         }
     }
 
-    fun setMonarchy(targetPlayerNum: Int, value: Boolean) {
-        val playerButtonViewModels = requireAttached().value
-        playerButtonViewModels.forEach { playerButtonViewModel ->
+    fun setMonarchy(targetPlayerNum: Int, value: Boolean): (PlayerButtonViewModel) -> Unit {
+        return { playerButtonViewModel ->
             playerButtonViewModel.setPlayer(
                 updateMonarchy(
                     player = playerButtonViewModel.state.value.player,
@@ -30,15 +35,53 @@ class GameStateManager(
                 )
             )
         }
-        saveGameState()
     }
 
     private fun updateMonarchy(player: Player, targetPlayerNum: Int, value: Boolean): Player {
         return player.copy(monarch = value && player.playerNum == targetPlayerNum)
     }
 
-    fun saveGameState() {
-        val playerButtonViewModels = requireAttached().value
-        settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
+//    fun loadGameState() {
+//        val playerStates = settingsManager.loadPlayerStates()
+//        val playerButtonViewModels = playerStates.map { PlayerButtonViewModel(it) }
+//        attach(playerButtonViewModels)
+//    }
+
+    fun savePlayerState(player: Player, currentGameId: Long): Long {
+//        val playerButtonViewModels = requireAttached().value
+//        settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
+        return gameRepository.insertPlayer(player, currentGameId)
+//        return 0L
+    }
+
+//    suspend fun saveGameState() {
+//        val playerButtonViewModels = requireAttached().value
+//        settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
+//    }
+
+    fun newGame(numPlayers: Int, playerGenerateFunction: (Int) -> Player): GameWithPlayers {
+        var game = Game(numPlayers = numPlayers)
+        val gid = gameRepository.insertGame(
+            game = game
+        )
+        game = game.copy(id = gid)
+        val players = List(MAX_PLAYERS) {
+            val player = playerGenerateFunction(it + 1)
+            val pid = gameRepository.insertPlayer(
+                player = player, gid
+            )
+            player.copy(id = pid)
+        }
+        return GameWithPlayers(game, players)
+    }
+
+    fun saveGameState(gameWithPlayers: GameWithPlayers) {
+        println("GameStateManager.saveGameState2($gameWithPlayers)")
+        gameRepository.updateGameWithPlayers(gameWithPlayers)
+        println("GameStateManager.saveGameState2 done")
+    }
+
+    fun loadGameState(gameId: Long): GameWithPlayers {
+        return gameRepository.getGameWithPlayers(gameId)
     }
 } 

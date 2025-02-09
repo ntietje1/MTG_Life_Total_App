@@ -53,6 +53,9 @@ interface ISettingsManager {
     val devMode: StateFlow<Boolean>
     fun setDevMode(value: Boolean)
 
+    val currentGameId: StateFlow<Long?>
+    fun setCurrentGameId(value: Long)
+
     fun loadPlayerStates(): List<Player>
     fun savePlayerStates(players: List<Player>)
 
@@ -167,6 +170,13 @@ class SettingsManager private constructor() : ISettingsManager {
     override fun setDevMode(value: Boolean) {
         settings.putBoolean("devMode", value)
         _devMode.value = value
+    }
+
+    private val _currentGameId = MutableStateFlow(settings.getLongOrNull("currentGameId"))
+    override val currentGameId: StateFlow<Long?> = _currentGameId.asStateFlow()
+    override fun setCurrentGameId(value: Long) {
+        settings.putLong("currentGameId", value)
+        _currentGameId.value = value
     }
 
     private val _patchNotes = MutableStateFlow(settings.getString("patchNotes", ""))
