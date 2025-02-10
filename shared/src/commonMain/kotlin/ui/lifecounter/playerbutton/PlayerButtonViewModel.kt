@@ -65,12 +65,12 @@ open class PlayerButtonViewModel(
     init {
         viewModelScope.launch {
             playerStateManager.attachLifeTracker(
-                initialPlayer = state.value.player,
+                getCurrentPlayer = { state.value.player },
                 onUpdate = ::setLifeTotal
             )
 
             commanderManager.attachCommanderTrackers(
-                initialPlayer = state.value.player,
+                getCurrentPlayer = { state.value.player },
                 onUpdate = ::setCommanderDamage
             )
         }
@@ -84,7 +84,7 @@ open class PlayerButtonViewModel(
         setPlayer(state.value.player.copy(commanderDamage = updatedPlayer.commanderDamage))
     }
 
-    fun setPlayer(player: Player) {
+    private fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
     }
 
@@ -121,8 +121,14 @@ open class PlayerButtonViewModel(
         timerManager.moveTimer()
     }
 
+    fun setMonarchy(value: Boolean) {
+        if (state.value.player.monarch == value) return
+        setPlayer(playerStateManager.setMonarchy(state.value.player, value))
+        saveState()
+    }
+
     open fun onMonarchyButtonClicked(value: Boolean) {
-        setPlayer(gameStateManager.setMonarchy(state.value.player, value))
+        setMonarchy(value)
     }
 
     open fun onCommanderButtonClicked() {
@@ -153,7 +159,7 @@ open class PlayerButtonViewModel(
         setPlayer(playerStateManager.toggleSetDead(state.value.player))
         setPlayerButtonState(PBState.NORMAL)
         backstack.clear()
-//        gameStateManager.saveGameState()
+        saveState()
     }
 
     open fun popBackStack() {

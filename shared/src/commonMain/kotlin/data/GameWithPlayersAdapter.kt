@@ -44,7 +44,7 @@ class GameWithPlayerAdapter(
             textColor = getGameWithPlayers.text_color.toInt(),
             playerNum = playerNum.toInt(),
             lifeTotal = getGameWithPlayers.life_total.toInt(),
-            monarch = getGameWithPlayers.monarch,
+            monarch = game.monarchyPlayerNum == playerNum,
             setDead = getGameWithPlayers.set_dead,
             partnerMode = getGameWithPlayers.partner_mode,
             commanderDamages = commanderDamages,

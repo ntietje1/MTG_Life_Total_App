@@ -1,7 +1,13 @@
 package data
 
 import androidx.compose.ui.graphics.toArgb
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import com.hypeapps.lifelinked.db.Database
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import model.Game
 import model.GameWithPlayers
 import model.Player
@@ -143,22 +149,33 @@ class GameRepository(
         )
     }
 
+    fun getGameWithPlayersAsFlow(gameId: Long): Flow<GameWithPlayers> {
+        return database.gameQueries.getGameWithPlayers(gameId)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { results ->
+                require(results.isNotEmpty()) { "No game with id $gameId found" }
+                
+                val commanderDamages = database.gameQueries.getCommanderDamages(gameId)
+                    .executeAsList()
+                    .groupBy { it.receiver_player_num }
 
-//    fun getGameWithPlayersAsFlow(gameId: Long): Flow<GameWithPlayers> {
-//        println("GameRepository.getGameWithPlayers($gameId)")
-//        return database.gameQueries.getGameWithPlayers(gameId)
-//            .asFlow()
-//            .mapToList(Dispatchers.IO)
-//            .map { results ->
-//                require(results.isNotEmpty()) { "No game with id $gameId found" }
-//                println("GameRepository.getGameWithPlayers($gameId) results: $results")
-//                val game = gameWithPlayersAdapter.toGameWithPlayer(results.first()).first
-//                println("GameRepository.getGameWithPlayers($gameId) game: $game")
-//                val players = results.map { row -> gameWithPlayersAdapter.toGameWithPlayer(row).second }
-//                println("GameRepository.getGameWithPlayers($gameId) players: $players")
-//                GameWithPlayers(game, players)
-//            }
-//    }
+                val counters = database.gameQueries.getCounters(gameId)
+                    .executeAsList()
+                    .groupBy { it.player_num }
+
+                GameWithPlayers(
+                    game = gameWithPlayersAdapter.toGame(results.first()),
+                    players = results.map { row ->
+                        gameWithPlayersAdapter.toGameWithPlayer(
+                            row, 
+                            commanderDamages[row.player_num] ?: emptyList(),
+                            counters[row.player_num] ?: emptyList()
+                        ).second
+                    }
+                )
+            }
+    }
 
     fun insertGame(game: Game): Long {
         var gameId: Long

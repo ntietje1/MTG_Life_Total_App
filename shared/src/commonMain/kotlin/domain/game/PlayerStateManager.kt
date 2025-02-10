@@ -8,7 +8,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import model.Player
 import ui.lifecounter.CounterType
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -17,11 +16,10 @@ import kotlin.coroutines.coroutineContext
 class PlayerStateManager(
     private val settingsManager: ISettingsManager,
     private val gameRepository: GameRepository
-) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
+)  {
     private val lifeTotalTrackers = mutableMapOf<Int, RecentChangeValue>()
 
-    override fun detach() {
-        super.detach()
+    fun onClear() {
         lifeTotalTrackers.values.forEach { it.detach() }
         lifeTotalTrackers.clear()
     }
@@ -62,6 +60,10 @@ class PlayerStateManager(
         })
     }
 
+    fun setMonarchy(player: Player, value: Boolean): Player {
+        return player.copy(monarch = value)
+    }
+
     fun setActiveCounters(player: Player, counterType: CounterType, active: Boolean): Player {
         return player.copy(activeCounters = player.activeCounters.toMutableList().apply {
             if (active) {
@@ -73,24 +75,20 @@ class PlayerStateManager(
     }
 
     suspend fun attachLifeTracker(
-        initialPlayer: Player,
+        getCurrentPlayer: () -> Player,
         onUpdate: (Player) -> Unit
     ) {
         val trackerScope = CoroutineScope(coroutineContext + Job())
+        val initialPlayer = getCurrentPlayer()
 
         lifeTotalTrackers[initialPlayer.playerNum] = RecentChangeValue(
             initialValue = initialPlayer.lifeTotal
         ) { newValue ->
-            val currentPlayer = requireAttached().value.getPlayer(initialPlayer.playerNum)
-            onUpdate(currentPlayer.copy(lifeTotal = newValue))
+            onUpdate(getCurrentPlayer().copy(lifeTotal = newValue))
         }.apply { attach(trackerScope) }
     }
 
     fun incrementLife(player: Player, value: Int) {
         lifeTotalTrackers[player.playerNum]?.increment(value)
     }
-}
-
-fun List<PlayerButtonViewModel>.getPlayer(playerNum: Int): Player {
-    return find { it.state.value.player.playerNum == playerNum }?.state?.value?.player ?: throw IllegalArgumentException("Player not found")
 }

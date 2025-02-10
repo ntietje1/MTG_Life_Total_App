@@ -8,12 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import model.Player
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
-import kotlin.collections.List
-import kotlin.collections.forEach
-import kotlin.collections.mutableMapOf
 import kotlin.collections.set
-import kotlin.collections.toMutableList
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -29,7 +24,7 @@ sealed class CommanderState {
 
 class CommanderDamageManager(
     private val notificationManager: NotificationManager
-) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
+)  {
     companion object {
         const val MAX_COMMANDER_DAMAGE = 100
         const val MIN_COMMANDER_DAMAGE = 0
@@ -40,19 +35,19 @@ class CommanderDamageManager(
 
     private val commanderDamageTrackers = mutableMapOf<Int, List<RecentChangeValue>>()
 
-    override fun detach() {
-        super.detach()
+    fun onClear() {
+//        super.detach()
         commanderDamageTrackers.values.forEach { it -> it.forEach { it.detach() } }
         commanderDamageTrackers.clear()
     }
 
     fun setCurrentDealer(dealer: Player?) {
-        requireAttached()
+//        requireAttached()
         _commanderState.value = dealer?.let { CommanderState.Active(it) } ?: CommanderState.Inactive
     }
 
     fun togglePartnerMode(player: Player, value: Boolean): Player {
-        requireAttached()
+//        requireAttached()
         if (_commanderState.value is CommanderState.Active) {
             _commanderState.value = CommanderState.Active(player.copy(partnerMode = value))
         }
@@ -67,14 +62,16 @@ class CommanderDamageManager(
     }
 
     suspend fun attachCommanderTrackers(
-        initialPlayer: Player,
+        getCurrentPlayer: () -> Player,
         onUpdate: (Player) -> Unit
     ) {
         val trackerScope = CoroutineScope(coroutineContext + Job())
+        val initialPlayer = getCurrentPlayer()
 
         commanderDamageTrackers[initialPlayer.playerNum] = List(Player.MAX_PLAYERS * 2) { index ->
             RecentChangeValue(initialValue = initialPlayer.commanderDamage[index]) { updatedValue ->
-                val currentPlayer = requireAttached().value.getPlayer(initialPlayer.playerNum)
+//                val currentPlayer = requireAttached().value.getPlayer(initialPlayer.playerNum)
+                val currentPlayer = getCurrentPlayer()
                 onUpdate(currentPlayer.copy(
                     commanderDamage = currentPlayer.commanderDamage.toMutableList().apply {
                         this[index] = updatedValue
@@ -113,4 +110,8 @@ class CommanderDamageManager(
         }
         return true
     }
-} 
+}
+
+//fun List<PlayerButtonViewModel>.getPlayer(playerNum: Int): Player {
+//    return find { it.state.value.player.playerNum == playerNum }?.state?.value?.player ?: throw IllegalArgumentException("Player not found")
+//}

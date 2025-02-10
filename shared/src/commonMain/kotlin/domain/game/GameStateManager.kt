@@ -2,10 +2,15 @@ package domain.game
 
 import data.GameRepository
 import domain.storage.ISettingsManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import model.Game
 import model.GameWithPlayers
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
+import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import kotlin.coroutines.coroutineContext
 
 /**
  * Manages a game state that is shared among all players
@@ -15,41 +20,19 @@ class GameStateManager(
     private val gameRepository: GameRepository
 ) {
 
-    fun setMonarchy(player: Player, value: Boolean): Player {
-        if (!value) {
-            return player.copy(monarch = false)
-        } else {
-            return player.copy(monarch = true)
-            //TODO: set all other players to false
+    suspend fun attachMonarchyObserver(playerButtonViewModels:  StateFlow<List<PlayerButtonViewModel>>) {
+        playerButtonViewModels.value.forEach { viewModel ->
+            CoroutineScope(coroutineContext).launch {
+                viewModel.state.collect { state ->
+                    if (state.player.monarch) {
+                        playerButtonViewModels.value
+                            .filter { it != viewModel }
+                            .forEach { it.setMonarchy(false) }
+                    }
+                }
+            }
         }
     }
-//    fun setMonarchy(targetPlayerNum: Int, value: Boolean): (PlayerButtonViewModel) -> Unit {
-//        return { playerButtonViewModel ->
-//            playerButtonViewModel.setPlayer(
-//                updateMonarchy(
-//                    player = playerButtonViewModel.state.value.player,
-//                    targetPlayerNum = targetPlayerNum,
-//                    value = value
-//                )
-//            )
-//        }
-//    }
-
-//    private fun updateMonarchy(player: Player, targetPlayerNum: Int, value: Boolean): Player {
-//        return player.copy(monarch = value && player.playerNum == targetPlayerNum)
-//    }
-
-//    fun loadGameState() {
-//        val playerStates = settingsManager.loadPlayerStates()
-//        val playerButtonViewModels = playerStates.map { PlayerButtonViewModel(it) }
-//        attach(playerButtonViewModels)
-//    }
-
-
-//    suspend fun saveGameState() {
-//        val playerButtonViewModels = requireAttached().value
-//        settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
-//    }
 
     fun newGame(numPlayers: Int, playerGenerateFunction: (Int) -> Player): GameWithPlayers {
         var game = Game(numPlayers = numPlayers)
