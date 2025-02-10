@@ -2,7 +2,6 @@ package domain.game
 
 import data.GameRepository
 import domain.storage.ISettingsManager
-import kotlinx.coroutines.flow.Flow
 import model.Game
 import model.GameWithPlayers
 import model.Player
@@ -47,10 +46,10 @@ class GameStateManager(
 //        attach(playerButtonViewModels)
 //    }
 
-    fun savePlayerState(player: Player, currentGameId: Long): Long {
+    fun savePlayerState(player: Player) {
 //        val playerButtonViewModels = requireAttached().value
 //        settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
-        return gameRepository.insertPlayer(player, currentGameId)
+        return gameRepository.updatePlayer(player)
 //        return 0L
     }
 
@@ -65,12 +64,12 @@ class GameStateManager(
             game = game
         )
         game = game.copy(id = gid)
+        settingsManager.setCurrentGameId(gid)
         val players = List(MAX_PLAYERS) {
-            val player = playerGenerateFunction(it + 1)
-            val pid = gameRepository.insertPlayer(
-                player = player, gid
-            )
-            player.copy(id = pid)
+            playerGenerateFunction(it + 1).copy(gameId = gid)
+        }
+        players.forEach {
+            gameRepository.insertPlayer(it)
         }
         return GameWithPlayers(game, players)
     }

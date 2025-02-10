@@ -14,13 +14,10 @@ class PlayerCustomizationManager(
     private val settingsManager: ISettingsManager
 ) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
 
-    fun resetPlayerPrefs(player: Player): Player {
-        val playerButtonViewModels = requireAttached().value
-        val usedColors = playerButtonViewModels.map { it.state.value.player.color }
+    fun resetPlayerPrefs(player: Player, usedColors: Set<Color>): Player {
         val newColor = allPlayerColors.filter { it !in usedColors }.random()
 
         return player.copy(
-            name = "P${player.playerNum}",
             textColor = Color.White,
             imageString = null,
             color = newColor
@@ -36,22 +33,22 @@ class PlayerCustomizationManager(
         )
     }
 
-    fun saveAllPlayerPrefs() {
-        val playerButtonViewModels = requireAttached().value
-        playerButtonViewModels.forEach {
-            savePlayerPrefs(it.state.value.player)
-        }
-    }
+//    fun saveAllPlayerPrefs() {
+//        val playerButtonViewModels = requireAttached().value
+//        playerButtonViewModels.forEach {
+//            savePlayerPrefs(it.state.value.player)
+//        }
+//    }
 
     fun savePlayerPrefs(player: Player) {
         settingsManager.savePlayerPref(player)
     }
 
-    fun resetAllPlayerPrefs() {
-        val playerButtonViewModels = requireAttached().value
-        playerButtonViewModels.forEach {
-            it.resetPlayerPref()
-            it.copyPrefs(it.state.value.player)
-        }
-    }
+//    fun resetAllPlayerPrefs() {
+//        val playerButtonViewModels = requireAttached().value
+//        playerButtonViewModels.forEach {
+//            it.resetPlayerPref()
+//            it.copyPrefs(it.state.value.player)
+//        }
+//    }
 } 

@@ -1,58 +1,42 @@
 package data
 
 import androidx.compose.ui.graphics.Color
-import data.utils.SqliteListConverter
+import com.hypeapps.lifelinked.db.GetCommanderDamages
+import com.hypeapps.lifelinked.db.GetCounters
 import domain.common.NumberWithRecentChange
 import model.Player
 import ui.lifecounter.CounterType
 
 class PlayerAdapter {
     fun toPlayer(
-        id: Long,
+        gameId: Long,
         name: String,
         imageString: String?,
         color: Int,
         textColor: Int,
         playerNum: Int,
         lifeTotal: Int,
-        lifeTotalRecentChange: Int,
         monarch: Boolean,
         setDead: Boolean,
         partnerMode: Boolean,
-        commanderDamages: String?,
-        counters: String?,
+        commanderDamages: List<GetCommanderDamages>,
+        counters: List<GetCounters>,
         activeCounters: String?
     ): Player {
         return Player(
-            id = id,
+            gameId = gameId,
             name = name,
             imageString = imageString,
             color = Color(color),
             textColor = Color(textColor),
             playerNum = playerNum,
-            lifeTotal = NumberWithRecentChange(lifeTotal, lifeTotalRecentChange),
+            lifeTotal = NumberWithRecentChange(lifeTotal, 0),
             monarch = monarch,
-            commanderDamage = parseCommanderDamages(commanderDamages),
-            counters = parseCounters(counters),
+            commanderDamage = commanderDamages.map { NumberWithRecentChange(it.damage.toInt(), 0) },
+            counters = counters.map { it.counter_value.toInt() }, //TODO: to be changed to number with recent change
             activeCounters = CounterType.entries, //TODO: to be refactored out
             setDead = setDead,
             partnerMode = partnerMode
-        )
-    }
-
-    private fun parseCommanderDamages(damagesStr: String?): List<NumberWithRecentChange> {
-        return SqliteListConverter.fromPairedString(
-            str = damagesStr,
-            defaultSize = Player.MAX_PLAYERS * 2,
-            defaultValue = NumberWithRecentChange(0, 0)
-        ) { pair -> NumberWithRecentChange(pair[0].toInt(), pair[1].toInt()) }
-    }
-
-    private fun parseCounters(countersStr: String?): List<Int> {
-        return SqliteListConverter.fromString(
-            str = countersStr,
-            defaultSize = CounterType.entries.size * 2,
-            defaultValue = 0
         )
     }
 }

@@ -146,10 +146,10 @@ fun MiddleButtonDialog(
             ) {
                 PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
-                    viewModel.resetGameState()
+                    viewModel.onResetGame(samePlayers = false)
                     triggerEnterAnimation()
                 }, resetPlayers = {
-                    viewModel.resetGameState()
+                    viewModel.onResetGame(samePlayers = false)
                     triggerEnterAnimation()
                 }, show4PlayerDialog = { setDialogState(MiddleButtonDialogState.FourPlayerLayout) })
             }, Pair(
@@ -157,14 +157,14 @@ fun MiddleButtonDialog(
             ) {
                 FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
-                    viewModel.resetGameState()
+                    viewModel.onResetGame(samePlayers = false)
                     triggerEnterAnimation()
                 }, setAlt4PlayerLayout = { setAlt4PlayerLayout(it) })
             }, Pair(
                 dialogState == MiddleButtonDialogState.StartingLife
             ) {
                 StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, resetGameState = {
-                    viewModel.resetGameState()
+                    viewModel.onResetGame(samePlayers = false)
                     triggerEnterAnimation()
                 })
             }, Pair(
@@ -246,8 +246,8 @@ fun MiddleButtonDialog(
                 GridDialogContent(
                     Modifier.fillMaxSize(), title = "Settings", columns = numColumns, items = listOf({
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
-                            viewModel.savePlayerStates()
-                            viewModel.savePlayerPrefs()
+//                            viewModel.savePlayerStates()
+//                            viewModel.savePlayerPrefs()
                             goToPlayerSelectScreen(false)
                             onDismiss()
                         })
@@ -341,7 +341,7 @@ fun MiddleButtonDialog(
             optionTwoMessage = "Different players",
             onOptionOne = {
                 onReset = {
-                    viewModel.resetGameState()
+                    viewModel.onResetGame(samePlayers = true)
 //                onDismiss()
                     println("resetting game, same players")
                     false
@@ -351,8 +351,7 @@ fun MiddleButtonDialog(
             },
             onOptionTwo = {
                 onReset = {
-                    viewModel.resetAllPrefs()
-                    viewModel.resetGameState()
+                    viewModel.onResetGame(samePlayers = false)
                     println("resetting game, different players")
 //                onDismiss()
                     true

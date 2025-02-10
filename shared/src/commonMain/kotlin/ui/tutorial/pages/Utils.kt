@@ -249,7 +249,7 @@ abstract class MockLifeCounterViewModel(
     notificationManager = notificationManager,
     planeChaseViewModel = PlaneChaseViewModel(settingsManager),
     playerCustomizationManager = PlayerCustomizationManager(settingsManager),
-    gameStateManager = GameStateManager(settingsManager, Any() as GameRepository),
+    gameStateManager = GameStateManager(settingsManager, Any() as GameRepository), //TODO: need to make interface
     timerManager = TimerManager(settingsManager)
 )
 

@@ -86,14 +86,15 @@ open class PlayerButtonViewModel(
 
     fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
-//        viewModelScope.launch {
-//            gameStateManager.savePlayerState(state.value.player)
-//        }
+    }
+
+    private fun saveState() {
+        gameStateManager.savePlayerState(state.value.player)
     }
 
     open fun incrementLife(value: Int) {
         playerStateManager.incrementLife(state.value.player, value)
-//        gameStateManager.savePlayerState(state.value.player)
+        saveState()
     }
 
     fun setTimer(timer: TurnTimer?) {
@@ -161,7 +162,7 @@ open class PlayerButtonViewModel(
     }
 
     fun resetPlayerPref() {
-        setPlayer(playerCustomizationManager.resetPlayerPrefs(state.value.player))
+        setPlayer(playerCustomizationManager.resetPlayerPrefs(state.value.player, emptySet())) //TODO: should p[ass used colors here
         resetCustomizationMenuViewModel()
     }
 
@@ -228,6 +229,7 @@ open class PlayerButtonViewModel(
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
         setPlayer(playerStateManager.incrementCounter(state.value.player, counterType, value))
+        saveState()
 //        gameStateManager.saveGameState()
     }
 
@@ -243,6 +245,7 @@ open class PlayerButtonViewModel(
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
         commanderManager.incrementCommanderDamage(state.value.player, value, partner)
+        saveState()
 //        gameStateManager.saveGameState()
     }
 

@@ -42,13 +42,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
+import domain.storage.ISettingsManager
 import domain.system.SystemManager
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
+import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.blendWith
 import ui.components.SettingsButton
@@ -64,6 +65,7 @@ fun LifeCounterScreen(
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     firstNavigation: Boolean,
+    settingsManager: ISettingsManager = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
@@ -80,20 +82,18 @@ fun LifeCounterScreen(
             },
             onDismiss = { viewModel.setMiddleButtonDialogState(null) },
             viewModel = viewModel,
-            toggleTheme = { viewModel.toggleDarkTheme() },
-            toggleKeepScreenOn = { viewModel.toggleKeepScreenOn() },
+            toggleTheme = { settingsManager.setDarkTheme(!settingsManager.darkTheme.value) },
+            toggleKeepScreenOn = { settingsManager.setKeepScreenOn(!settingsManager.keepScreenOn.value) },
             goToPlayerSelectScreen = { changeNumPlayers ->
-                viewModel.setShowButtons(false)
+                viewModel.restartButtons()
                 goToPlayerSelectScreen(changeNumPlayers)
             },
-            setAlt4PlayerLayout = { viewModel.setAlt4PlayerLayout(it) },
+            setAlt4PlayerLayout = { settingsManager.setAlt4PlayerLayout(it) },
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
-                    viewModel.setMiddleButtonDialogState(null)
-                    viewModel.setShowButtons(false)
-                    delay(10)
-                    viewModel.setShowButtons(true)
+                    viewModel.setMiddleButtonDialogState(null) //TODO: remove this
+                    viewModel.restartButtons()
                 }
             },
             updateTurnTimerEnabled = { viewModel.setTimerEnabled(it) },

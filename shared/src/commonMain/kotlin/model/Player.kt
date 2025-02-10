@@ -115,13 +115,13 @@ object PlayerSerializer : KSerializer<Player> {
 
 @Serializable(with = PlayerSerializer::class)
 data class Player(
-    val id: Long = -1,
+    val gameId: Long = -1,
+    val playerNum: Int = -1,
     val lifeTotal: NumberWithRecentChange = NumberWithRecentChange(-1, 0),
     val imageString: String? = null, // represents a local file name or scryfall url
     //TODO: make a PlayerBackground interface/sealed class that can be a local file, scryfall url, or a color
     val color: Color = Color.LightGray,
     val textColor: Color = Color.White,
-    val playerNum: Int = -1,
     val name: String = "Placeholder",
     val monarch: Boolean = false,
     val commanderDamage: List<NumberWithRecentChange> = List(MAX_PLAYERS * 2) { NumberWithRecentChange(0, 0) },

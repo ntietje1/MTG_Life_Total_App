@@ -5,7 +5,7 @@ data class Game(
     val numPlayers: Int,
     val startTimestamp: Long = 0,
     val endTimestamp: Long? = null,
-    val winnerPid: Long? = null
+    val winnerPlayerNum: Long? = null
 )
 
 data class GameWithPlayers(

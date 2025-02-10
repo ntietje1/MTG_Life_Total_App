@@ -84,10 +84,6 @@ fun TutorialPage5(
             }
         }
 
-        override fun toggleDarkTheme(value: Boolean?) {
-            notificationManager.showNotification("Changing theme disabled", 3000)
-        }
-
         override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
             setBlurUI(value != null)
             when (value) {
@@ -201,7 +197,6 @@ fun TutorialPage5(
             viewModel = lifeCounterViewModel,
             goToPlayerSelectScreen = {
                 notificationManager.showNotification("Player select disabled", 3000)
-                lifeCounterViewModel.setShowButtons(true)
             },
             goToTutorialScreen = {},
             firstNavigation = false
