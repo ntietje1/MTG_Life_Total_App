@@ -1,18 +1,19 @@
 package domain.game
 
 import androidx.compose.ui.graphics.Color
+import data.GameRepository
 import domain.storage.ISettingsManager
 import model.Player
 import model.Player.Companion.allPlayerColors
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 /**
  * Manages player customization operations
  * Attaches to PlayerButtonViewModels flow to get player color information
  */
 class PlayerCustomizationManager(
-    private val settingsManager: ISettingsManager
-) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
+    private val settingsManager: ISettingsManager,
+    private val gameRepository: GameRepository,
+) {
 
     fun resetPlayerPrefs(player: Player, usedColors: Set<Color>): Player {
         val newColor = allPlayerColors.filter { it !in usedColors }.random()
@@ -33,22 +34,7 @@ class PlayerCustomizationManager(
         )
     }
 
-//    fun saveAllPlayerPrefs() {
-//        val playerButtonViewModels = requireAttached().value
-//        playerButtonViewModels.forEach {
-//            savePlayerPrefs(it.state.value.player)
-//        }
-//    }
-
     fun savePlayerPrefs(player: Player) {
         settingsManager.savePlayerPref(player)
     }
-
-//    fun resetAllPlayerPrefs() {
-//        val playerButtonViewModels = requireAttached().value
-//        playerButtonViewModels.forEach {
-//            it.resetPlayerPref()
-//            it.copyPrefs(it.state.value.player)
-//        }
-//    }
 } 

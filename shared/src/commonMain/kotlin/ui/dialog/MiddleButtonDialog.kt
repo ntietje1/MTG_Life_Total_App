@@ -59,6 +59,7 @@ import lifelinked.shared.generated.resources.star_icon_small
 import lifelinked.shared.generated.resources.sun_and_moon_icon
 import lifelinked.shared.generated.resources.sun_icon
 import lifelinked.shared.generated.resources.x_icon
+import model.DayNightState
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
@@ -75,7 +76,6 @@ import ui.dialog.settings.AboutMeDialogContent
 import ui.dialog.settings.SettingsDialogContent
 import ui.dialog.settings.patchnotes.PatchNotesDialogContent
 import ui.dialog.startinglife.StartingLifeDialogContent
-import ui.lifecounter.DayNightState
 import ui.lifecounter.LifeCounterViewModel
 
 enum class MiddleButtonDialogState {
@@ -291,11 +291,11 @@ fun MiddleButtonDialog(
                             backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
-                        SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
+                        SettingsButton(buttonModifier, imageVector = when (state.game.dayNightState) {
                             DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
                             DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
                             DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
-                        }, text = when (state.dayNight) {
+                        }, text = when (state.game.dayNightState) {
                             DayNightState.DAY -> "Day/Night"
                             DayNightState.NIGHT -> "Day/Night"
                             DayNightState.NONE -> "Day/Night"

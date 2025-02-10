@@ -1,10 +1,19 @@
+import kotlin.Boolean;
+
 CREATE TABLE game (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     num_players INTEGER NOT NULL DEFAULT 4,
+    alt_player_layout INTEGER AS Boolean NOT NULL DEFAULT 0,
     start_timestamp INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
     end_timestamp INTEGER DEFAULT NULL,
+    first_player_num INTEGER DEFAULT NULL,
+    turn_timer_enabled INTEGER AS Boolean NOT NULL DEFAULT 0,
+    monarchy_player_num INTEGER DEFAULT NULL,
     winner_player_num INTEGER DEFAULT NULL,
-    FOREIGN KEY (winner_player_num) REFERENCES player(player_num)
+    day_night_state TEXT DEFAULT 'NONE',
+    FOREIGN KEY (winner_player_num) REFERENCES player(player_num),
+    FOREIGN KEY (monarchy_player_num) REFERENCES player(player_num),
+    FOREIGN KEY (first_player_num) REFERENCES player(player_num)
 );
 
 getGameWithPlayers:
@@ -37,9 +46,19 @@ VALUES (?);
 
 updateGame:
 UPDATE game 
-SET num_players = ?, 
-    end_timestamp = ?, 
-    winner_player_num = ?
+SET num_players = ?,
+    alt_player_layout = ?,
+    end_timestamp = ?,
+    first_player_num = ?,
+    turn_timer_enabled = ?,
+    monarchy_player_num = ?,
+    winner_player_num = ?,
+    day_night_state = ?
+WHERE id = ?;
+
+updateMonarchy:
+UPDATE game
+SET monarchy_player_num = ?
 WHERE id = ?;
 
 lastInsertRowId:

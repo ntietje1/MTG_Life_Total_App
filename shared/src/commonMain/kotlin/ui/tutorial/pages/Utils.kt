@@ -60,10 +60,10 @@ class MockSettingsManager(
     keepScreenOn: Boolean = SettingsManager.instance.keepScreenOn.value,
     cameraRollDisabled: Boolean = SettingsManager.instance.cameraRollDisabled.value,
     fastCoinFlip: Boolean = SettingsManager.instance.fastCoinFlip.value,
-    numPlayers: Int = SettingsManager.instance.numPlayers.value,
-    alt4PlayerLayout: Boolean = SettingsManager.instance.alt4PlayerLayout.value,
+    numPlayers: Int = SettingsManager.instance.defaultNumPlayers.value,
+    alt4PlayerLayout: Boolean = SettingsManager.instance.defaultAlt4PlayerLayout.value,
     darkTheme: Boolean = SettingsManager.instance.darkTheme.value,
-    startingLife: Int = SettingsManager.instance.startingLife.value,
+    startingLife: Int = SettingsManager.instance.defaultStartingLife.value,
     tutorialSkip: Boolean = SettingsManager.instance.tutorialSkip.value,
     lastSplashScreenShown: String = SettingsManager.instance.lastSplashScreenShown.value,
     turnTimer: Boolean = SettingsManager.instance.turnTimer.value,
@@ -107,14 +107,14 @@ class MockSettingsManager(
     }
 
     private val _numPlayers = MutableStateFlow(numPlayers)
-    override val numPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
-    override fun setNumPlayers(value: Int) {
+    override val defaultNumPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
+    override fun setDefaultNumPlayers(value: Int) {
         _numPlayers.value = value
     }
 
     private val _alt4PlayerLayout = MutableStateFlow(alt4PlayerLayout)
-    override val alt4PlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
-    override fun setAlt4PlayerLayout(value: Boolean) {
+    override val defaultAlt4PlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
+    override fun setDefaultAltPlayerLayout(value: Boolean) {
         _alt4PlayerLayout.value = value
     }
 
@@ -125,8 +125,8 @@ class MockSettingsManager(
     }
 
     private val _startingLife = MutableStateFlow(startingLife)
-    override val startingLife: StateFlow<Int> = _startingLife.asStateFlow()
-    override fun setStartingLife(value: Int) {
+    override val defaultStartingLife: StateFlow<Int> = _startingLife.asStateFlow()
+    override fun setDefaultStartingLife(value: Int) {
         _startingLife.value = value
     }
 
@@ -248,7 +248,7 @@ abstract class MockLifeCounterViewModel(
     imageManager = imageManager,
     notificationManager = notificationManager,
     planeChaseViewModel = PlaneChaseViewModel(settingsManager),
-    playerCustomizationManager = PlayerCustomizationManager(settingsManager),
+    playerCustomizationManager = PlayerCustomizationManager(settingsManager, Any() as GameRepository),
     gameStateManager = GameStateManager(settingsManager, Any() as GameRepository), //TODO: need to make interface
     timerManager = TimerManager(settingsManager)
 )

@@ -7,7 +7,7 @@ class LifeCounterMeasurements(
     private val maxWidth: Dp,
     private val maxHeight: Dp,
     private val numPlayers: Int,
-    private val alt4Layout: Boolean = true
+    private val altLayout: Boolean = true
 ) {
     data class ButtonPlacement(val index: Int, val width: Dp, val height: Dp, val angle: Float, val timerAlignment: Alignment)
 
@@ -25,7 +25,7 @@ class LifeCounterMeasurements(
             1 -> maxWidth*7/8 to maxHeight/16
             2 -> maxWidth/2  to maxHeight/2
             3 -> maxWidth / 2  to (maxHeight - unit3) - (middleButtonSize / 5)
-            4 -> if (!alt4Layout) {
+            4 -> if (!altLayout) {
                 maxWidth/2  to maxHeight/2
             } else {
                 maxWidth/2  to (unit4alt) + (middleButtonSize / 5)
@@ -76,7 +76,7 @@ class LifeCounterMeasurements(
             )
         }
 
-        4 -> if (alt4Layout) {
+        4 -> if (altLayout) {
             listOf(
                 listOf(
                     ButtonPlacement(

@@ -8,7 +8,6 @@ CREATE TABLE player (
     color INTEGER NOT NULL,
     text_color INTEGER NOT NULL,
     life_total INTEGER NOT NULL,
-    monarch INTEGER AS Boolean NOT NULL DEFAULT 0,
     set_dead INTEGER AS Boolean NOT NULL DEFAULT 0,
     partner_mode INTEGER AS Boolean NOT NULL DEFAULT 0,
     FOREIGN KEY (game_id) REFERENCES game(id),
@@ -38,8 +37,8 @@ CREATE TABLE counter (
 insertPlayer:
 INSERT INTO player (
     game_id, player_num, name, image_string, color, text_color,
-    life_total, monarch, set_dead, partner_mode
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    life_total, set_dead, partner_mode
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updatePlayer:
 UPDATE player SET
@@ -48,7 +47,6 @@ UPDATE player SET
     color = ?,
     text_color = ?,
     life_total = ?,
-    monarch = ?,
     set_dead = ?,
     partner_mode = ?
 WHERE game_id = ? AND player_num = ?;

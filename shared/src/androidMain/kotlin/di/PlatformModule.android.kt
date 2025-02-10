@@ -3,17 +3,16 @@ package di
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.hypeapps.lifelinked.db.Database
+import domain.game.CommanderDamageManager
+import domain.game.GameStateManager
+import domain.game.PlayerCustomizationManager
+import domain.game.PlayerStateManager
+import domain.game.timer.TimerManager
 import domain.storage.IImageManager
 import domain.storage.ISettingsManager
 import domain.storage.ImageManager
 import domain.storage.SettingsManager
-import domain.game.GameStateManager
-import domain.game.CommanderDamageManager
-import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
-import domain.game.timer.TimerManager
 import domain.system.NotificationManager
-import domain.system.SystemManager
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
@@ -33,8 +32,8 @@ actual val platformModule = module {
     single { NotificationManager(get()) }
     single<ISettingsManager> { SettingsManager.instance }
     single<IImageManager> { ImageManager(get()) }
-    single { PlayerStateManager(get()) }
-    single { PlayerCustomizationManager(get()) }
+    single { PlayerStateManager(get(), get()) }
+    single { PlayerCustomizationManager(get(), get()) }
     single { CommanderDamageManager(get()) }
     single { GameStateManager(get(), get()) }
     single { TimerManager(get()) }

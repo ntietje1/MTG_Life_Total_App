@@ -6,8 +6,6 @@ import model.Game
 import model.GameWithPlayers
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
-import ui.lifecounter.DayNightState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 /**
  * Manages a game state that is shared among all players
@@ -16,29 +14,30 @@ class GameStateManager(
     private val settingsManager: ISettingsManager,
     private val gameRepository: GameRepository
 ) {
-    fun toggleDayNight(currentState: DayNightState): DayNightState {
-        return when (currentState) {
-            DayNightState.NONE -> DayNightState.DAY
-            DayNightState.DAY -> DayNightState.NIGHT
-            DayNightState.NIGHT -> DayNightState.DAY
+
+    fun setMonarchy(player: Player, value: Boolean): Player {
+        if (!value) {
+            return player.copy(monarch = false)
+        } else {
+            return player.copy(monarch = true)
+            //TODO: set all other players to false
         }
     }
+//    fun setMonarchy(targetPlayerNum: Int, value: Boolean): (PlayerButtonViewModel) -> Unit {
+//        return { playerButtonViewModel ->
+//            playerButtonViewModel.setPlayer(
+//                updateMonarchy(
+//                    player = playerButtonViewModel.state.value.player,
+//                    targetPlayerNum = targetPlayerNum,
+//                    value = value
+//                )
+//            )
+//        }
+//    }
 
-    fun setMonarchy(targetPlayerNum: Int, value: Boolean): (PlayerButtonViewModel) -> Unit {
-        return { playerButtonViewModel ->
-            playerButtonViewModel.setPlayer(
-                updateMonarchy(
-                    player = playerButtonViewModel.state.value.player,
-                    targetPlayerNum = targetPlayerNum,
-                    value = value
-                )
-            )
-        }
-    }
-
-    private fun updateMonarchy(player: Player, targetPlayerNum: Int, value: Boolean): Player {
-        return player.copy(monarch = value && player.playerNum == targetPlayerNum)
-    }
+//    private fun updateMonarchy(player: Player, targetPlayerNum: Int, value: Boolean): Player {
+//        return player.copy(monarch = value && player.playerNum == targetPlayerNum)
+//    }
 
 //    fun loadGameState() {
 //        val playerStates = settingsManager.loadPlayerStates()
@@ -46,12 +45,6 @@ class GameStateManager(
 //        attach(playerButtonViewModels)
 //    }
 
-    fun savePlayerState(player: Player) {
-//        val playerButtonViewModels = requireAttached().value
-//        settingsManager.savePlayerStates(playerButtonViewModels.map { it.state.value.player })
-        return gameRepository.updatePlayer(player)
-//        return 0L
-    }
 
 //    suspend fun saveGameState() {
 //        val playerButtonViewModels = requireAttached().value
@@ -74,10 +67,8 @@ class GameStateManager(
         return GameWithPlayers(game, players)
     }
 
-    fun saveGameState(gameWithPlayers: GameWithPlayers) {
-        println("GameStateManager.saveGameState2($gameWithPlayers)")
-        gameRepository.updateGameWithPlayers(gameWithPlayers)
-        println("GameStateManager.saveGameState2 done")
+    fun saveGame(game: Game) {
+        gameRepository.updateGame(game)
     }
 
     fun loadGameState(gameId: Long): GameWithPlayers {

@@ -2,9 +2,6 @@ package data
 
 import androidx.compose.ui.graphics.toArgb
 import com.hypeapps.lifelinked.db.Database
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.withContext
 import model.Game
 import model.GameWithPlayers
 import model.Player
@@ -14,7 +11,8 @@ class GameRepository(
     private val playerAdapter: PlayerAdapter,
     private val gameWithPlayersAdapter: GameWithPlayerAdapter
 ) {
-    private val queries = database.playerQueries
+    private val playerQueries = database.playerQueries
+    private val gameQueries = database.gameQueries
 
 //    fun getAllPlayersAsFlow(): Flow<List<Player>> {
 //        return queries.getAllPlayers()
@@ -45,7 +43,7 @@ class GameRepository(
     fun updatePlayer(player: Player) {
         println("GameRepository.updatePlayer($player)")
 //        withContext(Dispatchers.IO) {
-        queries.updatePlayer(
+        playerQueries.updatePlayer(
             game_id = player.gameId,
             player_num = player.playerNum.toLong(),
             name = player.name,
@@ -53,7 +51,6 @@ class GameRepository(
             color = player.color.toArgb().toLong(),
             text_color = player.textColor.toArgb().toLong(),
             life_total = player.lifeTotal.number.toLong(),
-            monarch = player.monarch,
             set_dead = player.setDead,
             partner_mode = player.partnerMode
         )
@@ -61,7 +58,7 @@ class GameRepository(
         println("GameRepository.updatePlayer($player) updated player")
 
         player.commanderDamage.forEachIndexed { index, damage ->
-            queries.updateCommanderDamage(
+            playerQueries.updateCommanderDamage(
                 game_id = player.gameId,
                 receiver_player_num = player.playerNum.toLong(),
                 dealer_player_num = index.toLong(),
@@ -72,7 +69,7 @@ class GameRepository(
         println("GameRepository.updatePlayer($player) updated commander damages")
 
         player.counters.forEachIndexed { index, value ->
-            queries.updateCounter(
+            playerQueries.updateCounter(
                 game_id = player.gameId,
                 player_num = player.playerNum.toLong(),
                 counter_type = index.toLong(),
@@ -88,7 +85,7 @@ class GameRepository(
         println("GameRepository.insertPlayer($player)")
 //        withContext(Dispatchers.IO) {
 
-        queries.insertPlayer(
+        playerQueries.insertPlayer(
             game_id = player.gameId,
             player_num = player.playerNum.toLong(),
             name = player.name,
@@ -104,7 +101,7 @@ class GameRepository(
 
         // Insert commander damages
         player.commanderDamage.forEachIndexed { index, damage ->
-            queries.insertCommanderDamage(
+            playerQueries.insertCommanderDamage(
                 game_id = player.gameId,
                 receiver_player_num = player.playerNum.toLong(),
                 dealer_player_num = index.toLong(),
@@ -116,7 +113,7 @@ class GameRepository(
 
         // Insert counters
         player.counters.forEachIndexed { index, value ->
-            queries.insertCounter(
+            playerQueries.insertCounter(
                 game_id = player.gameId,
                 player_num = player.playerNum.toLong(),
                 counter_type = index.toLong(),
@@ -125,12 +122,6 @@ class GameRepository(
         }
 
         println("GameRepository.insertPlayer($player) done")
-    }
-
-    suspend fun deleteAllPlayers() {
-        withContext(Dispatchers.IO) {
-            queries.deleteAllPlayers()
-        }
     }
 
     fun getGameWithPlayers(gameId: Long): GameWithPlayers {
@@ -182,22 +173,19 @@ class GameRepository(
         return gameId
     }
 
-    fun updateGameWithPlayers(gameWithPlayers: GameWithPlayers) {
-        val game = gameWithPlayers.game
-        val players = gameWithPlayers.players
-//        withContext(Dispatchers.IO) {
-        println("GameRepository.updateGameWithPlayers($game)")
+    fun updateGame(game: Game) {
+        println("GameRepository.updateGame($game)")
         database.gameQueries.updateGame(
+            id = game.id,
             num_players = game.numPlayers.toLong(),
+            alt_player_layout = game.altPlayerLayout,
             end_timestamp = game.endTimestamp,
             winner_player_num = game.winnerPlayerNum,
-            id = game.id
+            first_player_num = game.firstPlayerNum,
+            turn_timer_enabled = game.turnTimerEnabled,
+            monarchy_player_num = game.monarchyPlayerNum,
+            day_night_state = game.dayNightState.name
         )
-        println("GameRepository.updateGameWithPlayers updated game")
-        players.forEach {
-            updatePlayer(it)
-        }
-        println("GameRepository.updateGameWithPlayers done")
+        println("GameRepository.updateGame($game) done")
     }
-//    }
 }

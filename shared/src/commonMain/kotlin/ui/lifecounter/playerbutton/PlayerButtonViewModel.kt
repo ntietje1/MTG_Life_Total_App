@@ -89,7 +89,11 @@ open class PlayerButtonViewModel(
     }
 
     private fun saveState() {
-        gameStateManager.savePlayerState(state.value.player)
+        playerStateManager.savePlayerState(state.value.player)
+    }
+
+    private fun savePrefs() {
+        playerCustomizationManager.savePlayerPrefs(state.value.player)
     }
 
     open fun incrementLife(value: Int) {
@@ -118,7 +122,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun onMonarchyButtonClicked(value: Boolean) {
-        gameStateManager.setMonarchy(state.value.player.playerNum, value)
+        setPlayer(gameStateManager.setMonarchy(state.value.player, value))
     }
 
     open fun onCommanderButtonClicked() {
@@ -140,13 +144,14 @@ open class PlayerButtonViewModel(
             setPlayerButtonState(PBState.SETTINGS)
             backstack.push { setPlayerButtonState(PBState.NORMAL) }
         } else {
-            closeSettingsMenu()
+            setPlayerButtonState(PBState.NORMAL)
+            backstack.clear()
         }
     }
 
     open fun onKOButtonClicked() {
         setPlayer(playerStateManager.toggleSetDead(state.value.player))
-        closeSettingsMenu()
+        setPlayerButtonState(PBState.NORMAL)
         backstack.clear()
 //        gameStateManager.saveGameState()
     }
@@ -156,22 +161,12 @@ open class PlayerButtonViewModel(
         backstack.pop().invoke()
     }
 
-    private fun closeSettingsMenu() {
-        setPlayerButtonState(PBState.NORMAL)
-        backstack.clear()
-    }
-
-    fun resetPlayerPref() {
-        setPlayer(playerCustomizationManager.resetPlayerPrefs(state.value.player, emptySet())) //TODO: should p[ass used colors here
-        resetCustomizationMenuViewModel()
-    }
-
-    fun savePlayerPref() {
-        playerCustomizationManager.savePlayerPrefs(state.value.player)
-    }
-
     fun getCounterValue(counterType: CounterType): Int {
         return state.value.player.counters[counterType.ordinal]
+    }
+
+    open fun copyPrefs(other: Player) {
+        setPlayer(playerCustomizationManager.copyPlayerPrefs(state.value.player, other))
     }
 
     private fun resetCustomizationMenuViewModel() {
@@ -224,18 +219,17 @@ open class PlayerButtonViewModel(
 
     fun togglePartnerMode(value: Boolean) {
         setPlayer(commanderManager.togglePartnerMode(state.value.player, value))
-//        gameStateManager.saveGameState()
+        saveState()
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
         setPlayer(playerStateManager.incrementCounter(state.value.player, counterType, value))
         saveState()
-//        gameStateManager.saveGameState()
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
         setPlayer(playerStateManager.setActiveCounters(state.value.player, counterType, active))
-//        gameStateManager.saveGameState()
+        saveState()
         return state.value.player.activeCounters.contains(counterType)
     }
 
@@ -246,16 +240,5 @@ open class PlayerButtonViewModel(
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
         commanderManager.incrementCommanderDamage(state.value.player, value, partner)
         saveState()
-//        gameStateManager.saveGameState()
-    }
-
-    open fun copyPrefs(other: Player) {
-        setPlayer(playerCustomizationManager.copyPlayerPrefs(state.value.player, other))
-    }
-
-    fun resetState() {
-        setPlayer(playerStateManager.resetPlayerState(state.value.player))
-        setPlayer(commanderManager.resetCommanderDamage(state.value.player))
-//        gameStateManager.saveGameState()
     }
 }

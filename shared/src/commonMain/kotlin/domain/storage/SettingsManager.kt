@@ -29,17 +29,17 @@ interface ISettingsManager {
     val fastCoinFlip: StateFlow<Boolean>
     fun setFastCoinFlip(value: Boolean)
 
-    val numPlayers: StateFlow<Int>
-    fun setNumPlayers(value: Int)
+    val defaultNumPlayers: StateFlow<Int>
+    fun setDefaultNumPlayers(value: Int)
 
-    val alt4PlayerLayout: StateFlow<Boolean>
-    fun setAlt4PlayerLayout(value: Boolean)
+    val defaultAlt4PlayerLayout: StateFlow<Boolean>
+    fun setDefaultAltPlayerLayout(value: Boolean)
 
     val darkTheme: StateFlow<Boolean>
     fun setDarkTheme(value: Boolean)
 
-    val startingLife: StateFlow<Int>
-    fun setStartingLife(value: Int)
+    val defaultStartingLife: StateFlow<Int>
+    fun setDefaultStartingLife(value: Int)
 
     val tutorialSkip: StateFlow<Boolean>
     fun setTutorialSkip(value: Boolean)
@@ -116,18 +116,18 @@ class SettingsManager private constructor() : ISettingsManager {
         _fastCoinFlip.value = value
     }
 
-    private val _numPlayers = MutableStateFlow(settings.getInt("numPlayers", 4))
-    override var numPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
-    override fun setNumPlayers(value: Int) {
+    private val _defaultNumPlayers = MutableStateFlow(settings.getInt("numPlayers", 4))
+    override var defaultNumPlayers: StateFlow<Int> = _defaultNumPlayers.asStateFlow()
+    override fun setDefaultNumPlayers(value: Int) {
         settings.putInt("numPlayers", value)
-        _numPlayers.value = value
+        _defaultNumPlayers.value = value
     }
 
-    private val _alt4PlayerLayout = MutableStateFlow(settings.getBoolean("alt4PlayerLayout", false))
-    override val alt4PlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
-    override fun setAlt4PlayerLayout(value: Boolean) {
+    private val _defaultAlt4PlayerLayout = MutableStateFlow(settings.getBoolean("alt4PlayerLayout", false))
+    override val defaultAlt4PlayerLayout: StateFlow<Boolean> = _defaultAlt4PlayerLayout.asStateFlow()
+    override fun setDefaultAltPlayerLayout(value: Boolean) {
         settings.putBoolean("alt4PlayerLayout", value)
-        _alt4PlayerLayout.value = value
+        _defaultAlt4PlayerLayout.value = value
     }
 
     private val _darkTheme = MutableStateFlow(settings.getBoolean("darkTheme", true))
@@ -137,11 +137,11 @@ class SettingsManager private constructor() : ISettingsManager {
         _darkTheme.value = value
     }
 
-    private val _startingLife = MutableStateFlow(settings.getInt("startingLife", 40))
-    override val startingLife: StateFlow<Int> = _startingLife.asStateFlow()
-    override fun setStartingLife(value: Int) {
+    private val _defaultStartingLife = MutableStateFlow(settings.getInt("startingLife", 40))
+    override val defaultStartingLife: StateFlow<Int> = _defaultStartingLife.asStateFlow()
+    override fun setDefaultStartingLife(value: Int) {
         settings.putInt("startingLife", value)
-        _startingLife.value = value
+        _defaultStartingLife.value = value
     }
 
     private val _tutorialSkip = MutableStateFlow(settings.getBoolean("tutorialSkip", false))

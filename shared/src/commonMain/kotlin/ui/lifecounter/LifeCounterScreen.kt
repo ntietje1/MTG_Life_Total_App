@@ -69,8 +69,6 @@ fun LifeCounterScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
-    val numPlayers by viewModel.numPlayers.collectAsState()
-    val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
     val dimensions = LocalDimensions.current
 
     if (state.middleButtonDialogState != null) {
@@ -88,7 +86,7 @@ fun LifeCounterScreen(
                 viewModel.restartButtons()
                 goToPlayerSelectScreen(changeNumPlayers)
             },
-            setAlt4PlayerLayout = { settingsManager.setAlt4PlayerLayout(it) },
+            setAlt4PlayerLayout = { viewModel.setAltPlayerLayout(it) },
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
@@ -112,9 +110,9 @@ fun LifeCounterScreen(
     BoxWithConstraints(
         modifier.background(MaterialTheme.colorScheme.background)
     ) {
-        val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) {
+        val m = remember(maxHeight, maxWidth, state.game.numPlayers, state.game.altPlayerLayout) {
             LifeCounterMeasurements(
-                maxWidth = maxWidth - dimensions.paddingTiny * 2, maxHeight = maxHeight - dimensions.paddingTiny * 2, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
+                maxWidth = maxWidth - dimensions.paddingTiny * 2, maxHeight = maxHeight - dimensions.paddingTiny * 2, numPlayers = state.game.numPlayers, altLayout = state.game.altPlayerLayout
             )
         }
         val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }

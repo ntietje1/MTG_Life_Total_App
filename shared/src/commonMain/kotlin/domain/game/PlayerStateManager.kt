@@ -1,5 +1,6 @@
 package domain.game
 
+import data.GameRepository
 import domain.common.NumberWithRecentChange
 import domain.common.RecentChangeValue
 import domain.storage.ISettingsManager
@@ -14,7 +15,8 @@ import kotlin.coroutines.coroutineContext
  * Manages player state operations
  */
 class PlayerStateManager(
-    private val settingsManager: ISettingsManager
+    private val settingsManager: ISettingsManager,
+    private val gameRepository: GameRepository
 ) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
     private val lifeTotalTrackers = mutableMapOf<Int, RecentChangeValue>()
 
@@ -24,14 +26,18 @@ class PlayerStateManager(
         lifeTotalTrackers.clear()
     }
 
+    fun savePlayerState(player: Player) {
+        return gameRepository.updatePlayer(player)
+    }
+
     fun generatePlayer(playerNum: Int): Player {
-        val startingLife = settingsManager.startingLife.value
+        val startingLife = settingsManager.defaultStartingLife.value
         val name = "P$playerNum"
         return Player(lifeTotal = NumberWithRecentChange(startingLife, 0), name = name, playerNum = playerNum)
     }
 
     fun resetPlayerState(player: Player): Player {
-        val startingLife = settingsManager.startingLife.value
+        val startingLife = settingsManager.defaultStartingLife.value
         lifeTotalTrackers[player.playerNum]?.set(startingLife)
         return player.copy(
             lifeTotal = NumberWithRecentChange(startingLife, 0),
