@@ -93,7 +93,6 @@ class GameRepository(
             color = player.color.toArgb().toLong(),
             text_color = player.textColor.toArgb().toLong(),
             life_total = player.lifeTotal.number.toLong(),
-            monarch = player.monarch,
             set_dead = player.setDead,
             partner_mode = player.partnerMode
         )
