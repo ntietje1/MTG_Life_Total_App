@@ -5,13 +5,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.game.CommanderDamageManager
 import domain.game.CommanderState
-import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
 import domain.game.timer.TimerManager
+import domain.state.game.MonarchyState
 import domain.storage.IImageManager
 import domain.storage.ISettingsManager
 import domain.system.NotificationManager
+import domain.usecase.game.LoadGameStateUseCase
+import domain.usecase.game.NewGameUseCase
+import domain.usecase.game.SaveGameUseCase
+import domain.usecase.player.NewPlayerUseCase
+import domain.usecase.player.state.ManagePlayerStateUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +27,9 @@ import model.Game
 import model.GameWithPlayers
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
+import org.koin.core.parameter.parametersOf
 import ui.dialog.COUNTER_DIALOG_ENTRIES
 import ui.dialog.MiddleButtonDialogState
 import ui.dialog.planechase.PlaneChaseViewModel
@@ -32,16 +39,20 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 open class LifeCounterViewModel(
     private val settingsManager: ISettingsManager,
-    internal val playerStateManager: PlayerStateManager,
     internal val commanderManager: CommanderDamageManager,
     private val imageManager: IImageManager,
     protected val notificationManager: NotificationManager,
     internal val playerCustomizationManager: PlayerCustomizationManager,
     private val planeChaseViewModel: PlaneChaseViewModel,
-    internal val gameStateManager: GameStateManager,
+    private val newGameUseCase: NewGameUseCase,
+    private val saveGameUseCase: SaveGameUseCase,
+    private val loadGameStateUseCase: LoadGameStateUseCase,
+    private val monarchyState: MonarchyState,
+    private val managePlayerStateUseCase: ManagePlayerStateUseCase,
+    private val newPlayerUseCase: NewPlayerUseCase,
     internal val timerManager: TimerManager,
     initialState: LifeCounterState = LifeCounterState(),
-) : ViewModel() {
+) : ViewModel(), KoinComponent {
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<LifeCounterState> = _state.asStateFlow()
 
@@ -57,8 +68,11 @@ open class LifeCounterViewModel(
         generatePlayerButtonViewModels(initialGameWithPlayers.players)
         setGame(initialGameWithPlayers.game)
 
+        monarchyState.observeMonarchChanges(
+            players = playerButtonViewModels
+        )
+
         viewModelScope.launch {
-            gameStateManager.attachMonarchyObserver(playerButtonViewModels)
             registerCommanderListener()
             timerManager.registerTimerStateObserver()
         }
@@ -67,7 +81,7 @@ open class LifeCounterViewModel(
     private fun getOrGenerateCurrentGameWithPlayers(): GameWithPlayers {
         return try {
             settingsManager.currentGameId.value?.let { currentGameId ->
-                gameStateManager.loadGameState(currentGameId)
+                loadGameStateUseCase(currentGameId)
             } ?: generateNewGame(samePlayers = false)
         } catch (e: Exception) {
             generateNewGame(samePlayers = false)
@@ -76,16 +90,16 @@ open class LifeCounterViewModel(
 
     private fun generateNewGame(samePlayers: Boolean): GameWithPlayers {
         val usedColors = mutableSetOf<Color>()
-        return gameStateManager.newGame(numPlayers = settingsManager.defaultNumPlayers.value) { playerNum ->
+        return newGameUseCase(numPlayers = settingsManager.defaultNumPlayers.value) { playerNum ->
             if (samePlayers) {
-                commanderManager.resetCommanderDamage(
-                    playerStateManager.resetPlayerState(
+                commanderManager.resetCommanderDamage( //TODO: remove this when this becomes part of managerPlayerStateUseCase
+                    managePlayerStateUseCase.resetPlayerState(
                         playerButtonViewModels.value[playerNum - 1].state.value.player
                     )
                 )
             } else
-                playerCustomizationManager.resetPlayerPrefs(
-                    player = playerStateManager.generatePlayer(playerNum = playerNum),
+                playerCustomizationManager.resetPlayerPrefs( //TODO: remove this when customization module is created and is used in newplayerusecase
+                    player = newPlayerUseCase.invoke(playerNum = playerNum),
                     usedColors = usedColors
                 ).also { usedColors += it.color }
         }
@@ -102,7 +116,6 @@ open class LifeCounterViewModel(
         gameStateJob?.cancel()
         commanderManager.onClear()
         timerManager.detach()
-        playerStateManager.onClear()
     }
 
     private suspend fun registerCommanderListener() {
@@ -168,18 +181,8 @@ open class LifeCounterViewModel(
 
     // Return a viewmodel for a player button
     open fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-        println("Generating view model for player: $player")
-        return PlayerButtonViewModel(
-            initialState = PlayerButtonState(player),
-            settingsManager = settingsManager,
-            imageManager = imageManager,
-            notificationManager = notificationManager,
-            playerStateManager = playerStateManager,
-            commanderManager = commanderManager,
-            playerCustomizationManager = playerCustomizationManager,
-            gameStateManager = gameStateManager,
-            timerManager = timerManager
-        )
+        val initialState = PlayerButtonState(player)
+        return get<PlayerButtonViewModel> { parametersOf(initialState) }
     }
 
     open fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
@@ -197,14 +200,14 @@ open class LifeCounterViewModel(
     open fun setAltPlayerLayout(value: Boolean) {
         setGame(state.value.game.copy(altPlayerLayout = value))
         settingsManager.setDefaultAltPlayerLayout(value)
-        saveGameState()
+        saveGameUseCase(state.value.game)
     }
 
     open fun setNumPlayers(value: Int) {
         if (value < 1 || value > MAX_PLAYERS) throw IllegalArgumentException("Invalid number of players")
         settingsManager.setDefaultNumPlayers(value)
         setGame(state.value.game.copy(numPlayers = value))
-        saveGameState()
+        saveGameUseCase(state.value.game)
     }
 
     private fun setGame(game: Game) {
@@ -252,7 +255,7 @@ open class LifeCounterViewModel(
 
     fun setDayNight(value: DayNightState) {
         _state.value = _state.value.copy(game = state.value.game.copy(dayNightState = value))
-        saveGameState()
+        saveGameUseCase(state.value.game)
     }
 
     fun toggleDayNight() {
@@ -262,9 +265,6 @@ open class LifeCounterViewModel(
             DayNightState.NIGHT -> DayNightState.DAY
         }
         setDayNight(newState)
-        saveGameState()
+        saveGameUseCase(state.value.game)
     }
-
-    private fun saveGameState() {
-        gameStateManager.saveGame(state.value.game)}
 }

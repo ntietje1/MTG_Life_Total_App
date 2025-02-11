@@ -4,9 +4,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import com.hypeapps.lifelinked.db.Database
 import domain.game.CommanderDamageManager
-import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
 import domain.game.timer.TimerManager
 import domain.storage.IImageManager
 import domain.storage.ISettingsManager
@@ -23,6 +21,8 @@ import ui.dialog.scryfall.ScryfallSearchViewModel
 import ui.dialog.settings.patchnotes.PatchNotesViewModel
 import ui.dialog.startinglife.StartingLifeViewModel
 import ui.lifecounter.LifeCounterViewModel
+import ui.lifecounter.playerbutton.PlayerButtonState
+import ui.lifecounter.playerbutton.PlayerButtonViewModel
 import ui.playerselect.PlayerSelectViewModel
 import ui.tutorial.TutorialViewModel
 
@@ -31,10 +31,8 @@ actual val platformModule = module {
     single { NotificationManager() }
     single<ISettingsManager> { SettingsManager.instance }
     single<IImageManager> { ImageManager() }
-    single { PlayerStateManager(get(), get()) }
     single { PlayerCustomizationManager(get(), get()) }
     single { CommanderDamageManager(get()) }
-    single { GameStateManager(get(), get()) }
     single { TimerManager(get()) }
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
@@ -43,13 +41,31 @@ actual val platformModule = module {
     single {
         LifeCounterViewModel(
             settingsManager = get(),
-            playerStateManager = get(),
             commanderManager = get(),
             imageManager = get(),
             notificationManager = get(),
             playerCustomizationManager = get(),
             planeChaseViewModel = get(),
-            gameStateManager = get(),
+            newGameUseCase = get(),
+            saveGameUseCase = get(),
+            loadGameStateUseCase = get(),
+            monarchyState = get(),
+            managePlayerStateUseCase = get(),
+            timerManager = get(),
+            newPlayerUseCase = get()
+        )
+    }
+    factory { (initialState: PlayerButtonState) ->
+        PlayerButtonViewModel(
+            initialState = initialState,
+            settingsManager = get(),
+            imageManager = get(),
+            playerCustomizationManager = get(),
+            managePlayerStateUseCase = get(),
+            savePlayerStateUseCase = get(),
+            playerLifeRecentChangeState = get(),
+            commanderManager = get(),
+            notificationManager = get(),
             timerManager = get()
         )
     }

@@ -23,9 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import domain.game.CommanderDamageManager
-import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
 import domain.game.timer.TimerManager
 import domain.storage.IImageManager
 import domain.storage.ISettingsManager
@@ -138,9 +136,7 @@ fun TutorialPage5(
             imageManager: IImageManager,
             notificationManager: NotificationManager,
             customizationManager: PlayerCustomizationManager,
-            playerStateManager: PlayerStateManager,
             commanderDamageManager: CommanderDamageManager,
-            gameStateManager: GameStateManager,
             timerManager: TimerManager
         ) : MockPlayerButtonViewModel(
             state = state,
@@ -148,9 +144,7 @@ fun TutorialPage5(
             imageManager = imageManager,
             notificationManager = notificationManager,
             customizationManager = customizationManager,
-            playerStateManager = playerStateManager,
             commanderDamageManager = commanderDamageManager,
-            gameStateManager = gameStateManager,
             timerManager = timerManager
         ) {
             override fun onCommanderButtonClicked() {
@@ -169,9 +163,7 @@ fun TutorialPage5(
                 imageManager = gameState.mockImageManager,
                 notificationManager = this.notificationManager,
                 customizationManager = this.playerCustomizationManager,
-                playerStateManager = this.playerStateManager,
                 commanderDamageManager = this.commanderManager,
-                gameStateManager = this.gameStateManager,
                 timerManager = this.timerManager
             )
         }

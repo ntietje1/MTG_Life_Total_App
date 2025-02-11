@@ -18,11 +18,11 @@ data class NumberWithRecentChange(
 
 class RecentChangeValue(
     initialValue: NumberWithRecentChange = NumberWithRecentChange(0, 0),
-    private val recentChangeDelay: Long = RECENT_CHANGE_DELAY,
+    private val recentChangeDelay: Long = DEFAULT_RECENT_CHANGE_DELAY,
     private val updateCallback: (NumberWithRecentChange) -> Unit,
 ): AttachableManager<CoroutineScope>() {
     companion object {
-        const val RECENT_CHANGE_DELAY = 1500L
+        const val DEFAULT_RECENT_CHANGE_DELAY = 1500L
     }
 
     private val _value = MutableStateFlow(initialValue)

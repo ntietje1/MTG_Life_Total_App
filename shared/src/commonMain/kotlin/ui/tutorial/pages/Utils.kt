@@ -26,15 +26,23 @@ import androidx.compose.ui.window.DialogProperties
 import data.GameRepository
 import domain.common.NumberWithRecentChange
 import domain.game.CommanderDamageManager
-import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
 import domain.game.timer.GameTimerState
 import domain.game.timer.TimerManager
+import domain.state.game.MonarchyState
+import domain.state.game.PlayerLifeRecentChangeState
 import domain.storage.IImageManager
 import domain.storage.ISettingsManager
 import domain.storage.SettingsManager
 import domain.system.NotificationManager
+import domain.usecase.game.LoadGameStateUseCase
+import domain.usecase.game.NewGameUseCase
+import domain.usecase.game.SaveGameUseCase
+import domain.usecase.player.NewPlayerUseCase
+import domain.usecase.player.state.ManagePlayerStateUseCase
+import domain.usecase.player.state.SavePlayerStateUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -213,26 +221,28 @@ class MockImageManager : IImageManager {
     }
 }
 
+private val mockRepository = Any() as GameRepository
+private val mockManagePlayerStateUseCase = Any() as ManagePlayerStateUseCase
+
 open class MockPlayerButtonViewModel(
     state: PlayerButtonState,
     settingsManager: ISettingsManager,
     imageManager: IImageManager,
     notificationManager: NotificationManager,
     customizationManager: PlayerCustomizationManager,
-    playerStateManager: PlayerStateManager,
     commanderDamageManager: CommanderDamageManager,
-    gameStateManager: GameStateManager,
     timerManager: TimerManager
 ) : PlayerButtonViewModel(
     initialState = state,
     settingsManager = settingsManager,
     imageManager = imageManager,
     notificationManager = notificationManager,
-    playerStateManager = playerStateManager,
     playerCustomizationManager = customizationManager,
     commanderManager = commanderDamageManager,
-    gameStateManager = gameStateManager,
-    timerManager = timerManager
+    timerManager = timerManager,
+    managePlayerStateUseCase = mockManagePlayerStateUseCase,
+    savePlayerStateUseCase = Any() as SavePlayerStateUseCase,
+    playerLifeRecentChangeState = Any() as PlayerLifeRecentChangeState
 )
 
 abstract class MockLifeCounterViewModel(
@@ -243,14 +253,18 @@ abstract class MockLifeCounterViewModel(
 ) : LifeCounterViewModel(
     initialState = lifeCounterState,
     settingsManager = settingsManager,
-    playerStateManager = PlayerStateManager(settingsManager, Any() as GameRepository),
     commanderManager = CommanderDamageManager(notificationManager),
     imageManager = imageManager,
     notificationManager = notificationManager,
     planeChaseViewModel = PlaneChaseViewModel(settingsManager),
-    playerCustomizationManager = PlayerCustomizationManager(settingsManager, Any() as GameRepository),
-    gameStateManager = GameStateManager(settingsManager, Any() as GameRepository), //TODO: need to make interface
-    timerManager = TimerManager(settingsManager)
+    playerCustomizationManager = PlayerCustomizationManager(settingsManager, mockRepository),
+    newGameUseCase = NewGameUseCase(settingsManager, mockRepository),
+    saveGameUseCase = SaveGameUseCase(mockRepository),
+    loadGameStateUseCase = LoadGameStateUseCase(mockRepository),
+    monarchyState = MonarchyState(CoroutineScope(Dispatchers.Main)),
+    timerManager = TimerManager(settingsManager),
+    managePlayerStateUseCase = mockManagePlayerStateUseCase,
+    newPlayerUseCase = Any() as NewPlayerUseCase,
 )
 
 @Composable
