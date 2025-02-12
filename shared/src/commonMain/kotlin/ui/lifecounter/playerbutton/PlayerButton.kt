@@ -156,6 +156,10 @@ fun PlayerButton(
     var timerTextSize by remember(Unit) { mutableStateOf(15) }
     var timerPadding by remember(Unit) { mutableStateOf(5) }
 
+    LaunchedEffect(state.buttonState) {
+        println("PlayerButton: state.buttonState = ${state.buttonState}")
+    }
+
     @Composable
     fun Timer(modifier: Modifier = Modifier, timer: TurnTimer) {
         val textSize = timerTextSize.scaledSp

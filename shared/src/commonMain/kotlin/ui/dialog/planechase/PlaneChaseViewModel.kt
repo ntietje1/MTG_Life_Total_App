@@ -5,7 +5,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.storage.ISettingsManager
+import domain.storage.ISettingsStore
 import domain.api.ScryfallApi
 import model.card.Card
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PlaneChaseViewModel(
-    private val settingsManager: ISettingsManager
+    private val settingsManager: ISettingsStore
 ): ViewModel() {
 
     private val _state = MutableStateFlow(PlaneChaseState())

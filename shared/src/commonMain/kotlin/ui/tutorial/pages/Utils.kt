@@ -30,17 +30,15 @@ import domain.game.PlayerCustomizationManager
 import domain.game.timer.GameTimerState
 import domain.game.timer.TimerManager
 import domain.state.game.MonarchyState
-import domain.state.game.PlayerLifeRecentChangeState
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
-import domain.storage.SettingsManager
+import domain.storage.IImageStore
+import domain.storage.ISettingsStore
+import domain.storage.LocalSettingsStore
 import domain.system.NotificationManager
 import domain.usecase.game.LoadGameStateUseCase
 import domain.usecase.game.NewGameUseCase
 import domain.usecase.game.SaveGameUseCase
 import domain.usecase.player.NewPlayerUseCase
 import domain.usecase.player.state.ManagePlayerStateUseCase
-import domain.usecase.player.state.SavePlayerStateUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,30 +58,29 @@ import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.LifeCounterViewModel
 import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
-class MockSettingsManager(
-    autoKo: Boolean = SettingsManager.instance.autoKo.value,
-    autoSkip: Boolean = SettingsManager.instance.autoSkip.value,
-    keepScreenOn: Boolean = SettingsManager.instance.keepScreenOn.value,
-    cameraRollDisabled: Boolean = SettingsManager.instance.cameraRollDisabled.value,
-    fastCoinFlip: Boolean = SettingsManager.instance.fastCoinFlip.value,
-    numPlayers: Int = SettingsManager.instance.defaultNumPlayers.value,
-    alt4PlayerLayout: Boolean = SettingsManager.instance.defaultAlt4PlayerLayout.value,
-    darkTheme: Boolean = SettingsManager.instance.darkTheme.value,
-    startingLife: Int = SettingsManager.instance.defaultStartingLife.value,
-    tutorialSkip: Boolean = SettingsManager.instance.tutorialSkip.value,
-    lastSplashScreenShown: String = SettingsManager.instance.lastSplashScreenShown.value,
-    turnTimer: Boolean = SettingsManager.instance.turnTimer.value,
-    devMode: Boolean = SettingsManager.instance.devMode.value,
-    currentGameId: Long? = SettingsManager.instance.currentGameId.value,
-    patchNotes: String = SettingsManager.instance.patchNotes.value,
+class MockSettingsStore(
+    autoKo: Boolean = LocalSettingsStore.instance.autoKo.value,
+    autoSkip: Boolean = LocalSettingsStore.instance.autoSkip.value,
+    keepScreenOn: Boolean = LocalSettingsStore.instance.keepScreenOn.value,
+    cameraRollDisabled: Boolean = LocalSettingsStore.instance.cameraRollDisabled.value,
+    fastCoinFlip: Boolean = LocalSettingsStore.instance.fastCoinFlip.value,
+    numPlayers: Int = LocalSettingsStore.instance.defaultNumPlayers.value,
+    alt4PlayerLayout: Boolean = LocalSettingsStore.instance.defaultAlt4PlayerLayout.value,
+    darkTheme: Boolean = LocalSettingsStore.instance.darkTheme.value,
+    startingLife: Int = LocalSettingsStore.instance.defaultStartingLife.value,
+    tutorialSkip: Boolean = LocalSettingsStore.instance.tutorialSkip.value,
+    lastSplashScreenShown: String = LocalSettingsStore.instance.lastSplashScreenShown.value,
+    turnTimer: Boolean = LocalSettingsStore.instance.turnTimer.value,
+    devMode: Boolean = LocalSettingsStore.instance.devMode.value,
+    currentGameId: Long? = LocalSettingsStore.instance.currentGameId.value,
+    patchNotes: String = LocalSettingsStore.instance.patchNotes.value,
     private var playerStates: List<Player> = emptyList(),
     private var allPlanes: List<Card> = emptyList(),
     private var planarDeck: List<Card> = emptyList(),
     private var planarBackStack: List<Card> = emptyList(),
     private val playerPrefs: ArrayList<Player> = arrayListOf()
-) : ISettingsManager {
+) : ISettingsStore {
     private val _autoKo = MutableStateFlow(autoKo)
     override val autoKo: StateFlow<Boolean> = _autoKo.asStateFlow()
     override fun setAutoKo(value: Boolean) {
@@ -211,7 +208,7 @@ class MockSettingsManager(
     }
 }
 
-class MockImageManager : IImageManager {
+class MockImageStore : IImageStore {
     override suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
         return fileName
     }
@@ -224,31 +221,32 @@ class MockImageManager : IImageManager {
 private val mockRepository = Any() as GameRepository
 private val mockManagePlayerStateUseCase = Any() as ManagePlayerStateUseCase
 
-open class MockPlayerButtonViewModel(
-    state: PlayerButtonState,
-    settingsManager: ISettingsManager,
-    imageManager: IImageManager,
-    notificationManager: NotificationManager,
-    customizationManager: PlayerCustomizationManager,
-    commanderDamageManager: CommanderDamageManager,
-    timerManager: TimerManager
-) : PlayerButtonViewModel(
-    initialState = state,
-    settingsManager = settingsManager,
-    imageManager = imageManager,
-    notificationManager = notificationManager,
-    playerCustomizationManager = customizationManager,
-    commanderManager = commanderDamageManager,
-    timerManager = timerManager,
-    managePlayerStateUseCase = mockManagePlayerStateUseCase,
-    savePlayerStateUseCase = Any() as SavePlayerStateUseCase,
-    playerLifeRecentChangeState = Any() as PlayerLifeRecentChangeState
-)
+//open class MockPlayerButtonViewModel(
+//    state: PlayerButtonState,
+//    settingsManager: ISettingsStore,
+//    imageManager: IImageStore,
+//    notificationManager: NotificationManager,
+//    customizationManager: PlayerCustomizationManager,
+//    commanderDamageManager: CommanderDamageManager,
+//    timerManager: TimerManager
+//) : PlayerButtonViewModel(
+//    initialState = state,
+//    settingsManager = settingsManager,
+//    imageManager = imageManager,
+//    notificationManager = notificationManager,
+//    playerCustomizationManager = customizationManager,
+//    commanderManager = commanderDamageManager,
+//    timerManager = timerManager,
+//    managePlayerStateUseCase = mockManagePlayerStateUseCase,
+//    savePlayerStateUseCase = Any() as SavePlayerStateUseCase,
+//    playerLifeRecentChangeState = Any() as PlayerLifeRecentChangeState,
+//    managePlayerCustomizationUseCase = Any() as ManagePlayerCustomizationUseCase
+//)
 
 abstract class MockLifeCounterViewModel(
     lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-    settingsManager: ISettingsManager,
-    imageManager: IImageManager,
+    settingsManager: ISettingsStore,
+    imageManager: IImageStore,
     notificationManager: NotificationManager
 ) : LifeCounterViewModel(
     initialState = lifeCounterState,
@@ -344,7 +342,7 @@ data class MockGameState(
                 lifeTotal = NumberWithRecentChange(40, 0), name = "Player 6", color = PlayerColor8, playerNum = 6
             )
         ),
-    ), val lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false), val mockSettingsManager: ISettingsManager = MockSettingsManager(
+    ), val lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false), val mockSettingsManager: ISettingsStore = MockSettingsStore(
         autoKo = false,
         numPlayers = 4,
         alt4PlayerLayout = false,
@@ -354,5 +352,5 @@ data class MockGameState(
         planarDeck = emptyList(),
         planarBackStack = emptyList(),
         playerPrefs = arrayListOf()
-    ), val mockImageManager: IImageManager = MockImageManager()
+    ), val mockImageManager: IImageStore = MockImageStore()
 )

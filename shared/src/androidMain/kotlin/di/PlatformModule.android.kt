@@ -6,15 +6,17 @@ import com.hypeapps.lifelinked.db.Database
 import domain.game.CommanderDamageManager
 import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
-import domain.storage.ImageManager
-import domain.storage.SettingsManager
+import domain.storage.IImageStore
+import domain.storage.ISettingsStore
+import domain.storage.LocalImageStore
+import domain.storage.LocalSettingsStore
 import domain.system.NotificationManager
+import model.Player
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
 import ui.dialog.color.ColorDialogViewModel
+import ui.dialog.customization.CustomizationViewModel
 import ui.dialog.dice.DiceRollViewModel
 import ui.dialog.gif.GifDialogViewModel
 import ui.dialog.planechase.PlaneChaseViewModel
@@ -30,8 +32,8 @@ import ui.tutorial.TutorialViewModel
 actual val platformModule = module {
     single { platform }
     single { NotificationManager(get()) }
-    single<ISettingsManager> { SettingsManager.instance }
-    single<IImageManager> { ImageManager(get()) }
+    single<ISettingsStore> { LocalSettingsStore.instance }
+    single<IImageStore> { LocalImageStore(get()) }
     single { PlayerCustomizationManager(get(), get()) }
     single { CommanderDamageManager(get()) }
     single { TimerManager(get()) }
@@ -67,7 +69,17 @@ actual val platformModule = module {
             playerLifeRecentChangeState = get(),
             commanderManager = get(),
             notificationManager = get(),
-            timerManager = get()
+            timerManager = get(),
+            managePlayerCustomizationUseCase = get(),
+            savePlayerCustomizationUseCase = get()
+        )
+    }
+    factory { (initialPlayer: Player) ->
+        CustomizationViewModel(
+            initialPlayer = initialPlayer,
+            managePlayerCustomizationUseCase = get(),
+            deletePlayerCustomizationUseCase = get(),
+            loadPlayerCustomizationUseCase = get()
         )
     }
     viewModel { PatchNotesViewModel(get()) }

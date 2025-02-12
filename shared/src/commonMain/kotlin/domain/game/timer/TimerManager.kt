@@ -1,7 +1,7 @@
 package domain.game.timer
 
 import domain.game.AttachableFlowManager
-import domain.storage.ISettingsManager
+import domain.storage.ISettingsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -14,7 +14,7 @@ import kotlin.coroutines.coroutineContext
  * Contains all LifeCounterViewModel timer related logic
  */
 class TimerManager(
-    private val settingsManager: ISettingsManager
+    private val settingsManager: ISettingsStore
 ) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
 
     private var observerJob: Job? = null

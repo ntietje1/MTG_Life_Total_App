@@ -10,9 +10,11 @@ import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
 import domain.game.timer.TurnTimer
 import domain.state.game.PlayerLifeRecentChangeState
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
+import domain.storage.IImageStore
+import domain.storage.ISettingsStore
 import domain.system.NotificationManager
+import domain.usecase.player.customization.ManagePlayerCustomizationUseCase
+import domain.usecase.player.customization.SavePlayerCustomizationUseCase
 import domain.usecase.player.state.ManagePlayerStateUseCase
 import domain.usecase.player.state.SavePlayerStateUseCase
 import kotlinx.coroutines.delay
@@ -24,21 +26,26 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import model.Player
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
+import org.koin.core.parameter.parametersOf
 import ui.dialog.customization.CustomizationViewModel
 import ui.lifecounter.CounterType
 
 open class PlayerButtonViewModel(
     initialState: PlayerButtonState,
-    private val settingsManager: ISettingsManager,
-    private val imageManager: IImageManager,
+    private val settingsManager: ISettingsStore,
+    private val imageManager: IImageStore,
     private val commanderManager: CommanderDamageManager,
     protected val notificationManager: NotificationManager,
     private val playerCustomizationManager: PlayerCustomizationManager,
     private val managePlayerStateUseCase: ManagePlayerStateUseCase,
     private val savePlayerStateUseCase: SavePlayerStateUseCase,
+    private val savePlayerCustomizationUseCase: SavePlayerCustomizationUseCase,
     private val playerLifeRecentChangeState: PlayerLifeRecentChangeState,
+    private val managePlayerCustomizationUseCase: ManagePlayerCustomizationUseCase,
     private val timerManager: TimerManager
-) : ViewModel() {
+) : ViewModel(), KoinComponent {
     private var _state = MutableStateFlow(initialState)
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
 
@@ -78,7 +85,7 @@ open class PlayerButtonViewModel(
         }
     }
 
-    override fun onCleared() {
+    public override fun onCleared() {
         super.onCleared()
         playerLifeRecentChangeState.clear()
     }
@@ -93,10 +100,6 @@ open class PlayerButtonViewModel(
 
     private fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
-    }
-
-    private fun savePrefs() {
-        playerCustomizationManager.savePlayerPrefs(state.value.player)
     }
 
     open fun incrementLife(value: Int) {
@@ -149,6 +152,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun onSettingsButtonClicked() {
+        println("PlayerButtonViewModel.onSettingsButtonClicked: state.value.buttonState = ${state.value.buttonState}")
         if (state.value.buttonState == PBState.NORMAL) {
             setPlayerButtonState(PBState.SETTINGS)
             backstack.push { setPlayerButtonState(PBState.NORMAL) }
@@ -175,26 +179,29 @@ open class PlayerButtonViewModel(
     }
 
     open fun copyPrefs(other: Player) {
-        setPlayer(playerCustomizationManager.copyPlayerPrefs(state.value.player, other))
+//        setPlayer(playerCustomizationManager.copyPlayerPrefs(state.value.player, other))
+        setPlayer(managePlayerCustomizationUseCase.copy(state.value.player, other))
     }
 
     private fun resetCustomizationMenuViewModel() {
-        _customizationViewmodel = CustomizationViewModel(
-            initialPlayer = state.value.player,
-            imageManager = imageManager,
-            settingsManager = settingsManager,
-        )
+        _customizationViewmodel = get<CustomizationViewModel> {
+            parametersOf(state.value.player)
+        }
     }
 
     private fun onCustomizationApply() {
         val customizationViewmodel = requireNotNull(customizationViewmodel)
-        val player = customizationViewmodel.state.value.player
+        val customizedPlayer = customizationViewmodel.state.value.player
         viewModelScope.launch {
-            copyPrefs(player.copy(imageString = null))
+            copyPrefs(customizedPlayer.copy(imageString = null))
             delay(50)
-            copyPrefs(player)
+            copyPrefs(customizedPlayer)
             resetCustomizationMenuViewModel()
-            playerCustomizationManager.savePlayerPrefs(state.value.player)
+//            playerCustomizationManager.savePlayerPrefs(state.value.player)
+            savePlayerCustomizationUseCase(state.value.player)
+            if (customizedPlayer.name != state.value.player.name) {
+                savePlayerStateUseCase(state.value.player) // Ensure that the correct name is saved to game state
+            }
         }
     }
 

@@ -1,13 +1,13 @@
 package ui.playerselect
 
 import androidx.lifecycle.ViewModel
-import domain.storage.SettingsManager
+import domain.storage.LocalSettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class PlayerSelectViewModel(
-    private val settingsManager: SettingsManager
+    private val settingsManager: LocalSettingsStore
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlayerSelectState())

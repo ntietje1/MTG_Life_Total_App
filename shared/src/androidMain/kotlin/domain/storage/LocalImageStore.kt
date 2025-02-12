@@ -4,7 +4,7 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-actual class ImageManager(private val context: Context) : IImageManager {
+actual class LocalImageStore(private val context: Context) : IImageStore {
     private suspend fun saveImage(bytes: ByteArray, name: String): String {
         return withContext(context = Dispatchers.IO) {
             val fileName = "$name-${getNextNumber(name)}"

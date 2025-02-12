@@ -5,7 +5,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 
-actual class ImageManager: IImageManager {
+actual class LocalImageStore: IImageStore {
     actual override fun getImagePath(fileName: String): String? {
         val documentsDir = NSSearchPathForDirectoriesInDomains(
             NSDocumentDirectory, NSUserDomainMask, true

@@ -1,11 +1,11 @@
 package domain.usecase.player.state
 
 import domain.common.NumberWithRecentChange
-import domain.storage.ISettingsManager
+import domain.storage.ISettingsStore
 import model.Player
 
 class NewPlayerStateUseCase(
-    private val settingsManager: ISettingsManager
+    private val settingsManager: ISettingsStore
 ) {
     operator fun invoke(playerNum: Int): Player {
         val startingLife = settingsManager.defaultStartingLife.value

@@ -1,6 +1,6 @@
 package di
 import data.GameRepository
-import domain.storage.SettingsManager
+import domain.storage.LocalSettingsStore
 import model.VersionNumber
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -8,7 +8,7 @@ import org.koin.dsl.module
 expect val platformModule : Module
 
 val sharedModule = module {
-    single { SettingsManager.instance }
+    single { LocalSettingsStore.instance }
     single { BackHandler() }
     single { VersionNumber.current }
     single { DatabaseModule(get()) }

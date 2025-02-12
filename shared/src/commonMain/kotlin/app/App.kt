@@ -11,7 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import domain.storage.ISettingsManager
+import domain.storage.ISettingsStore
 import di.BackHandler
 import domain.system.SystemManager
 import model.VersionNumber
@@ -38,7 +38,7 @@ private enum class LifeLinkedScreen(val route: String) {
 @Composable
 fun LifeLinkedApp() {
     KoinContext {
-        val settingsManager: ISettingsManager by currentKoinScope().inject()
+        val settingsManager: ISettingsStore by currentKoinScope().inject()
         val keepScreenOn by settingsManager.keepScreenOn.collectAsState()
         val darkTheme by settingsManager.darkTheme.collectAsState()
         SystemManager.keepScreenOn(keepScreenOn)

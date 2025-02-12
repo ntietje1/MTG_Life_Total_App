@@ -1,11 +1,11 @@
 package domain.usecase.player.state
 import domain.state.game.PlayerLifeRecentChangeState
-import domain.storage.ISettingsManager
+import domain.storage.ISettingsStore
 import model.Player
 import ui.lifecounter.CounterType
 
 class ManagePlayerStateUseCase(
-    private val settingsManager: ISettingsManager,
+    private val settingsManager: ISettingsStore,
     private val playerLifeRecentChangeState: PlayerLifeRecentChangeState
 ) {
     fun resetPlayerState(player: Player): Player {

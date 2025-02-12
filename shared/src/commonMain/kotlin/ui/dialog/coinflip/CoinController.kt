@@ -1,6 +1,6 @@
 package ui.dialog.coinflip
 
-import domain.storage.SettingsManager
+import domain.storage.LocalSettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import ui.flippable.FlipAnimationType
@@ -8,7 +8,7 @@ import ui.flippable.FlippableController
 import kotlin.random.Random
 
 class CoinController(
-    private val settingsManager: SettingsManager,
+    private val settingsManager: LocalSettingsStore,
 ) {
     companion object {
         private var animationCorrectionFactor = 1.0f

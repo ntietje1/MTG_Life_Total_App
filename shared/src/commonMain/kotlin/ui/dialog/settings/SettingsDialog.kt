@@ -29,8 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -39,7 +37,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import di.Platform
-import domain.storage.SettingsManager
+import domain.storage.LocalSettingsStore
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.change_name_icon
 import lifelinked.shared.generated.resources.coffee_icon
@@ -74,7 +72,7 @@ fun SettingsDialogContent(
     goToTutorialScreen: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
     updateTurnTimerEnabled: (Boolean) -> Unit,
-    settingsManager: SettingsManager = koinInject(),
+    settingsManager: LocalSettingsStore = koinInject(),
     platform: Platform = koinInject(),
     version: VersionNumber = koinInject()
 ) {

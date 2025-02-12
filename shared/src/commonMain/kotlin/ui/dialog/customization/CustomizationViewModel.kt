@@ -5,36 +5,31 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
-import model.Player
-import kotlinx.coroutines.delay
+import domain.usecase.player.customization.DeletePlayerCustomizationUseCase
+import domain.usecase.player.customization.LoadPlayerCustomizationUseCase
+import domain.usecase.player.customization.ManagePlayerCustomizationUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import model.Player
 
 open class CustomizationViewModel(
     private val initialPlayer: Player,
-    val imageManager: IImageManager,
-    val settingsManager: ISettingsManager
+    private val managePlayerCustomizationUseCase: ManagePlayerCustomizationUseCase,
+    private val deletePlayerCustomizationUseCase: DeletePlayerCustomizationUseCase,
+    private val loadPlayerCustomizationUseCase: LoadPlayerCustomizationUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(CustomizationDialogState(initialPlayer))
     val state: StateFlow<CustomizationDialogState> = _state.asStateFlow()
 
+    fun getPlayerProfiles() = loadPlayerCustomizationUseCase.getFilteredPlayerProfiles(state.value.player)
+    fun deletePlayerProfile(player: Player) = deletePlayerCustomizationUseCase(player)
+
     fun revertChanges() {
         setPlayer(initialPlayer)
-        initialPlayer.imageString?.let { onChangeImage(it) }
+        initialPlayer.imageString?.let { setImageUri(it) }
         setChangeWasMade(false)
-    }
-
-    fun onImageFileSelected(file: ByteArray) {
-        var copiedUri = ""
-        viewModelScope.launch {
-            copiedUri = imageManager.copyImageToLocalStorage(file, state.value.player.name)
-        }.invokeOnCompletion {
-            onChangeImage(copiedUri)
-        }
     }
 
     open fun setPlayer(player: Player) {
@@ -42,42 +37,58 @@ open class CustomizationViewModel(
         setChangeNameField(TextFieldValue(player.name, selection = TextRange(player.name.length)))
     }
 
-    fun onChangeImage(uri: String) {
+    fun onImageSelected(uri: String) {
+        val locatedUri = loadPlayerCustomizationUseCase.getImagePath(uri)
+        setImageUri(locatedUri)
+        setChangeWasMade(true)
+    }
+
+    fun onImageFileSelected(file: ByteArray) {
         viewModelScope.launch {
-            setImageUri(null)
-            delay(50)
-            setImageUri(
-                when {
-                    uri.startsWith("http") -> uri
-                    uri.startsWith("/data/") -> "file://$uri"
-                    else -> imageManager.getImagePath(uri)
-                }
-            )
+            val updatedPlayer = managePlayerCustomizationUseCase.updatePlayerImageBytes(state.value.player, file)
+            setPlayer(updatedPlayer)
+            val imagePath = loadPlayerCustomizationUseCase.getImagePath(updatedPlayer.imageString!!)
+            setImageUri(imagePath)
+            setChangeWasMade(true)
         }
     }
 
     fun onChangeBackgroundColor(color: Color) {
         setImageUri(null)
         setBackgroundColor(color)
+        setChangeWasMade(true)
     }
 
     fun onChangeTextColor(color: Color) {
         setTextColor(color)
+        setChangeWasMade(true)
     }
 
     private fun setImageUri(uri: String?) {
-        setChangeWasMade(true)
-        setPlayer(state.value.player.copy(imageString = uri))
+        if (uri == state.value.player.imageString) return
+        val updatedPlayer = managePlayerCustomizationUseCase.updatePlayerImageUri(
+            state.value.player,
+            uri
+        )
+        setPlayer(updatedPlayer)
     }
 
     private fun setBackgroundColor(color: Color) {
-        setChangeWasMade(true)
-        setPlayer(state.value.player.copy(color = color))
+        if (color == state.value.player.color) return
+        val updatedPlayer = managePlayerCustomizationUseCase.updatePlayerBackgroundColor(
+            state.value.player,
+            color
+        )
+        setPlayer(updatedPlayer)
     }
 
     private fun setTextColor(color: Color) {
-        setChangeWasMade(true)
-        setPlayer(state.value.player.copy(textColor = color))
+        if (color == state.value.player.textColor) return
+        val updatedPlayer = managePlayerCustomizationUseCase.updatePlayerAccentColor(
+            state.value.player,
+            color
+        )
+        setPlayer(updatedPlayer)
     }
 
     fun showCameraWarning(value: Boolean? = null) {

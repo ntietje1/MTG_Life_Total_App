@@ -8,8 +8,8 @@ import domain.game.CommanderState
 import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
 import domain.state.game.MonarchyState
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
+import domain.storage.IImageStore
+import domain.storage.ISettingsStore
 import domain.system.NotificationManager
 import domain.usecase.game.LoadGameStateUseCase
 import domain.usecase.game.NewGameUseCase
@@ -38,9 +38,9 @@ import ui.lifecounter.playerbutton.PlayerButtonState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 open class LifeCounterViewModel(
-    private val settingsManager: ISettingsManager,
+    private val settingsManager: ISettingsStore,
     internal val commanderManager: CommanderDamageManager,
-    private val imageManager: IImageManager,
+    private val imageManager: IImageStore,
     protected val notificationManager: NotificationManager,
     internal val playerCustomizationManager: PlayerCustomizationManager,
     private val planeChaseViewModel: PlaneChaseViewModel,
@@ -106,6 +106,7 @@ open class LifeCounterViewModel(
     }
 
     private fun generatePlayerButtonViewModels(players: List<Player>) {
+        _playerButtonViewModels.value.forEach { it.onCleared() }
         _playerButtonViewModels.value = List(MAX_PLAYERS) { i ->
             generatePlayerButtonViewModel(players[i])
         }

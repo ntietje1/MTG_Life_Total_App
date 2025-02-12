@@ -1,14 +1,14 @@
 package domain.usecase.game
 
 import data.GameRepository
-import domain.storage.ISettingsManager
+import domain.storage.ISettingsStore
 import model.Game
 import model.GameWithPlayers
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
 
 class NewGameUseCase(
-    private val settingsManager: ISettingsManager,
+    private val settingsManager: ISettingsStore,
     private val gameRepository: GameRepository
 ) {
     operator fun invoke(

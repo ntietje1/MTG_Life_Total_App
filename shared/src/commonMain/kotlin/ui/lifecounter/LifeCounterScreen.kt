@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
-import domain.storage.ISettingsManager
+import domain.storage.ISettingsStore
 import domain.system.SystemManager
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
@@ -65,7 +65,7 @@ fun LifeCounterScreen(
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     firstNavigation: Boolean,
-    settingsManager: ISettingsManager = koinInject()
+    settingsManager: ISettingsStore = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
@@ -133,7 +133,7 @@ fun LifeCounterScreen(
                             val height = remember(Unit) { placement.height - dimensions.paddingTiny * 4 }
                             val rotation = remember(Unit) { placement.angle }
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
-                            val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
+                            val playerButtonViewModel = remember { viewModel.playerButtonViewModels.value[placement.index] }
                             val timerColor = playerButtonViewModel.state.value.player.textColor
                             AnimatedPlayerButton(modifier = Modifier.padding(dimensions.paddingTiny),
                                 visible = state.showButtons,

@@ -1,7 +1,7 @@
 package ui.dialog.settings.patchnotes
 
 import androidx.lifecycle.ViewModel
-import domain.storage.SettingsManager
+import domain.storage.LocalSettingsStore
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
 
 class PatchNotesViewModel(
-    private val settingsManager: SettingsManager
+    private val settingsManager: LocalSettingsStore
 ): ViewModel() {
     private val _state = MutableStateFlow(PatchNotesState())
     val state: StateFlow<PatchNotesState> = _state.asStateFlow()

@@ -13,7 +13,7 @@ import model.VersionNumber
 import model.card.Card
 
 
-interface ISettingsManager {
+interface ISettingsStore {
     val autoKo: StateFlow<Boolean>
     fun setAutoKo(value: Boolean)
 
@@ -73,10 +73,10 @@ interface ISettingsManager {
     fun setSavedTimerState(value: GameTimerState?)
 }
 
-class SettingsManager private constructor() : ISettingsManager {
+class LocalSettingsStore private constructor() : ISettingsStore {
 
     companion object {
-        val instance: SettingsManager by lazy { SettingsManager() }
+        val instance: LocalSettingsStore by lazy { LocalSettingsStore() }
     }
 
     private val settings: Settings = Settings()

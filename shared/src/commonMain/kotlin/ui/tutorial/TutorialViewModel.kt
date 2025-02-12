@@ -1,13 +1,13 @@
 package ui.tutorial
 
 import androidx.lifecycle.ViewModel
-import domain.storage.SettingsManager
+import domain.storage.LocalSettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class TutorialViewModel(
-    val settingsManager: SettingsManager
+    val settingsManager: LocalSettingsStore
 ) : ViewModel() {
     private val _state = MutableStateFlow(TutorialState(currentPage = 0, totalPages = 5))
     val state: StateFlow<TutorialState> = _state.asStateFlow()

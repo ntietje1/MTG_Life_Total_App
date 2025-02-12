@@ -2,13 +2,13 @@ package ui.dialog.startinglife
 
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
-import domain.storage.SettingsManager
+import domain.storage.LocalSettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class StartingLifeViewModel(
-    private val settingsManager: SettingsManager
+    private val settingsManager: LocalSettingsStore
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StartingLifeState())

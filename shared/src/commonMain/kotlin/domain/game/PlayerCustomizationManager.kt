@@ -2,7 +2,7 @@ package domain.game
 
 import androidx.compose.ui.graphics.Color
 import data.GameRepository
-import domain.storage.ISettingsManager
+import domain.storage.ISettingsStore
 import model.Player
 import model.Player.Companion.allPlayerColors
 
@@ -11,7 +11,7 @@ import model.Player.Companion.allPlayerColors
  * Attaches to PlayerButtonViewModels flow to get player color information
  */
 class PlayerCustomizationManager(
-    private val settingsManager: ISettingsManager,
+    private val settingsManager: ISettingsStore,
     private val gameRepository: GameRepository,
 ) {
 

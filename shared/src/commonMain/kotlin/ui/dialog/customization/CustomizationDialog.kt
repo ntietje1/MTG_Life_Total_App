@@ -28,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,6 +47,7 @@ import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import di.BackHandler
 import domain.common.NumberWithRecentChange
+import domain.storage.ISettingsStore
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.camera_icon
@@ -58,7 +58,6 @@ import lifelinked.shared.generated.resources.pencil_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.search_icon
 import lifelinked.shared.generated.resources.text_icon
-import model.Player
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
@@ -83,6 +82,7 @@ fun PlayerCustomizationDialog(
     viewModel: CustomizationViewModel,
     backHandler: BackHandler = koinInject(),
     notificationManager: NotificationManager = koinInject(),
+    settingsManager: ISettingsStore = koinInject(),
 ) {
     val state by viewModel.state.collectAsState()
     val haptic = LocalHapticFeedback.current
@@ -100,7 +100,7 @@ fun PlayerCustomizationDialog(
     })
 
     if (state.showCameraWarning) {
-        if (viewModel.settingsManager.cameraRollDisabled.value) {
+        if (settingsManager.cameraRollDisabled.value) {
             WarningDialog(title = "Info", message = "Camera roll access is disabled. Enable in settings.", optionOneEnabled = false, optionTwoEnabled = true, onDismiss = {
                 viewModel.showCameraWarning(false)
             })
@@ -295,13 +295,7 @@ fun PlayerCustomizationDialog(
             }
         }
     }, Pair(state.customizationMenuState == CustomizationMenuState.LOAD_PLAYER) {
-        val playerList = remember {
-            mutableStateListOf<Player>().apply {
-                addAll(viewModel.settingsManager.loadPlayerPrefs().filter { it.name == "P${state.player.playerNum}" })
-                addAll(viewModel.settingsManager.loadPlayerPrefs().filter { !it.isDefaultOrEmptyName() })
-//                addAll(viewModel.settingsManager.loadPlayerPrefs())
-            }
-        }
+        val playerList = remember { viewModel.getPlayerProfiles().toMutableList() }
         LoadPlayerDialogContent(playerList = playerList, onPlayerSelected = { player ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             viewModel.setPlayer(player)
@@ -310,7 +304,7 @@ fun PlayerCustomizationDialog(
         }, onPlayerDeleted = { player ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             playerList.remove(player)
-            viewModel.settingsManager.deletePlayerPref(player)
+            viewModel.deletePlayerProfile(player)
             notificationManager.showNotification("Deleted ${player.name} Successfully", 3000)
         })
     }, Pair(state.customizationMenuState == CustomizationMenuState.SCRYFALL_SEARCH) {
@@ -320,7 +314,7 @@ fun PlayerCustomizationDialog(
             scryfallBackStack.add(label)
         }, selectButtonEnabled = true, printingsButtonEnabled = true, rulingsButtonEnabled = false, onImageSelected = {
             notificationManager.showNotification("Selected Image Successfully", 3000)
-            viewModel.onChangeImage(it)
+            viewModel.onImageSelected(it)
             while (scryfallBackStack.isNotEmpty()) {
                 backHandler.pop()
                 scryfallBackStack.removeLast()
@@ -349,7 +343,7 @@ fun PlayerCustomizationDialog(
     }, Pair(state.customizationMenuState == CustomizationMenuState.GIF_SEARCH) {
         GifDialogContent(modifier = Modifier.fillMaxSize(), onGifSelected = {
             notificationManager.showNotification("Selected Gif Successfully", 3000)
-            viewModel.onChangeImage(it)
+            viewModel.onImageSelected(it)
             backHandler.pop()
         })
     }))
