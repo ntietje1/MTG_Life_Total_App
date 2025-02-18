@@ -58,8 +58,8 @@ WHERE id = ?;
 
 updateMonarchy:
 UPDATE game
-SET monarchy_player_num = ?
-WHERE id = ?;
+SET monarchy_player_num = :monarchy_player_num
+WHERE id = :game_id;
 
 lastInsertRowId:
 SELECT last_insert_rowid();

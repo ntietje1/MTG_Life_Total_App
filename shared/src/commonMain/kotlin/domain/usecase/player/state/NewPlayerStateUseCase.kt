@@ -14,6 +14,9 @@ class NewPlayerStateUseCase(
             lifeTotal = NumberWithRecentChange(startingLife, 0),
             name = name,
             playerNum = playerNum,
-        )
+            monarch = false,
+        ).also {
+            println("New player: ${it.name}")
+        }
     }
 }

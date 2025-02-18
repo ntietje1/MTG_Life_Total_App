@@ -6,11 +6,10 @@ import domain.common.Backstack
 import domain.common.NumberWithRecentChange
 import domain.game.CommanderDamageManager
 import domain.game.CommanderState
-import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
 import domain.game.timer.TurnTimer
+import domain.state.game.MonarchyState
 import domain.state.game.PlayerLifeRecentChangeState
-import domain.storage.IImageStore
 import domain.storage.ISettingsStore
 import domain.system.NotificationManager
 import domain.usecase.player.customization.ManagePlayerCustomizationUseCase
@@ -33,18 +32,17 @@ import ui.dialog.customization.CustomizationViewModel
 import ui.lifecounter.CounterType
 
 open class PlayerButtonViewModel(
-    initialState: PlayerButtonState,
+    private val initialState: PlayerButtonState,
     private val settingsManager: ISettingsStore,
-    private val imageManager: IImageStore,
     private val commanderManager: CommanderDamageManager,
     protected val notificationManager: NotificationManager,
-    private val playerCustomizationManager: PlayerCustomizationManager,
     private val managePlayerStateUseCase: ManagePlayerStateUseCase,
     private val savePlayerStateUseCase: SavePlayerStateUseCase,
     private val savePlayerCustomizationUseCase: SavePlayerCustomizationUseCase,
     private val playerLifeRecentChangeState: PlayerLifeRecentChangeState,
     private val managePlayerCustomizationUseCase: ManagePlayerCustomizationUseCase,
-    private val timerManager: TimerManager
+    private val timerManager: TimerManager,
+    private val monarchyState: MonarchyState,
 ) : ViewModel(), KoinComponent {
     private var _state = MutableStateFlow(initialState)
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
@@ -72,34 +70,54 @@ open class PlayerButtonViewModel(
         get() = _customizationViewmodel
 
     init {
+        attachObservers()
+    }
+
+    private fun attachObservers() {
         viewModelScope.launch {
             playerLifeRecentChangeState.attachLifeTracker(
                 getCurrentPlayer = { state.value.player },
-                onUpdate = ::setLifeTotal
+                onUpdate = {
+                    setPlayer(state.value.player.copy(lifeTotal = it.lifeTotal))
+                }
             )
 
             commanderManager.attachCommanderTrackers(
                 getCurrentPlayer = { state.value.player },
-                onUpdate = ::setCommanderDamage
+                onUpdate = {
+                    setPlayer(state.value.player.copy(commanderDamage = it.commanderDamage))
+                }
+            )
+
+            monarchyState.attachMonarchyTracker(
+                player = state.value.player,
+                onUpdate = ::setMonarchy
             )
         }
     }
 
-    public override fun onCleared() {
+    private fun removeObservers() {
+        playerLifeRecentChangeState.clear()
+        commanderManager.onClear()
+        monarchyState.clear()
+    }
+
+    override fun onCleared() {
         super.onCleared()
         playerLifeRecentChangeState.clear()
+        commanderManager.onClear()
+        monarchyState.clear()
     }
 
-    private fun setLifeTotal(updatedPlayer: Player) {
-        setPlayer(state.value.player.copy(lifeTotal = updatedPlayer.lifeTotal))
-    }
-
-    private fun setCommanderDamage(updatedPlayer: Player) {
-        setPlayer(state.value.player.copy(commanderDamage = updatedPlayer.commanderDamage))
+    fun resetPlayer(player: Player) {
+        setPlayer(player)
+        removeObservers()
+        attachObservers()
     }
 
     private fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
+        resetCustomizationMenuViewModel()
     }
 
     open fun incrementLife(value: Int) {
@@ -127,10 +145,10 @@ open class PlayerButtonViewModel(
         timerManager.moveTimer()
     }
 
-    fun setMonarchy(value: Boolean) {
-        if (state.value.player.monarch == value) return
+    private fun setMonarchy(value: Boolean) {
+        if (value == state.value.player.monarch) return
         setPlayer(managePlayerStateUseCase.setMonarchy(state.value.player, value))
-        savePlayerStateUseCase(state.value.player)
+        println("Monarchy set to $value for player: ${state.value.player.playerNum}")
     }
 
     open fun onMonarchyButtonClicked(value: Boolean) {
@@ -152,7 +170,6 @@ open class PlayerButtonViewModel(
     }
 
     open fun onSettingsButtonClicked() {
-        println("PlayerButtonViewModel.onSettingsButtonClicked: state.value.buttonState = ${state.value.buttonState}")
         if (state.value.buttonState == PBState.NORMAL) {
             setPlayerButtonState(PBState.SETTINGS)
             backstack.push { setPlayerButtonState(PBState.NORMAL) }
@@ -179,14 +196,18 @@ open class PlayerButtonViewModel(
     }
 
     open fun copyPrefs(other: Player) {
-//        setPlayer(playerCustomizationManager.copyPlayerPrefs(state.value.player, other))
         setPlayer(managePlayerCustomizationUseCase.copy(state.value.player, other))
+        resetCustomizationMenuViewModel()
     }
 
-    private fun resetCustomizationMenuViewModel() {
+    private fun initCustomizationMenuViewModel() {
         _customizationViewmodel = get<CustomizationViewModel> {
             parametersOf(state.value.player)
         }
+    }
+
+    private fun resetCustomizationMenuViewModel() {
+        _customizationViewmodel = null
     }
 
     private fun onCustomizationApply() {
@@ -196,8 +217,7 @@ open class PlayerButtonViewModel(
             copyPrefs(customizedPlayer.copy(imageString = null))
             delay(50)
             copyPrefs(customizedPlayer)
-            resetCustomizationMenuViewModel()
-//            playerCustomizationManager.savePlayerPrefs(state.value.player)
+            initCustomizationMenuViewModel()
             savePlayerCustomizationUseCase(state.value.player)
             if (customizedPlayer.name != state.value.player.name) {
                 savePlayerStateUseCase(state.value.player) // Ensure that the correct name is saved to game state
@@ -207,7 +227,7 @@ open class PlayerButtonViewModel(
 
     open fun onShowCustomizeMenu(value: Boolean) {
         if (value && customizationViewmodel == null) {
-            resetCustomizationMenuViewModel()
+            initCustomizationMenuViewModel()
         }
         if (!value) {
             onCustomizationApply()

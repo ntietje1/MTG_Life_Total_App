@@ -32,7 +32,7 @@ interface ISettingsStore {
     val defaultNumPlayers: StateFlow<Int>
     fun setDefaultNumPlayers(value: Int)
 
-    val defaultAlt4PlayerLayout: StateFlow<Boolean>
+    val defaultAltPlayerLayout: StateFlow<Boolean>
     fun setDefaultAltPlayerLayout(value: Boolean)
 
     val darkTheme: StateFlow<Boolean>
@@ -124,7 +124,7 @@ class LocalSettingsStore private constructor() : ISettingsStore {
     }
 
     private val _defaultAlt4PlayerLayout = MutableStateFlow(settings.getBoolean("alt4PlayerLayout", false))
-    override val defaultAlt4PlayerLayout: StateFlow<Boolean> = _defaultAlt4PlayerLayout.asStateFlow()
+    override val defaultAltPlayerLayout: StateFlow<Boolean> = _defaultAlt4PlayerLayout.asStateFlow()
     override fun setDefaultAltPlayerLayout(value: Boolean) {
         settings.putBoolean("alt4PlayerLayout", value)
         _defaultAlt4PlayerLayout.value = value

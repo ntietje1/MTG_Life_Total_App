@@ -12,7 +12,7 @@ import domain.usecase.player.state.SavePlayerStateUseCase
 import org.koin.dsl.module
 
 val playerModule = module {
-    factory { ManagePlayerStateUseCase(get(), get()) }
+    factory { ManagePlayerStateUseCase(get(), get(), get()) }
     factory { ManagePlayerCounterUseCase() }
     factory { SavePlayerStateUseCase(get()) }
     factory { NewPlayerStateUseCase(get()) }
@@ -23,5 +23,5 @@ val playerModule = module {
     factory { ResetPlayerCustomizationUseCase() }
     factory { ManagePlayerCustomizationUseCase(get()) }
 
-    factory { NewPlayerUseCase(get()) }
+    factory { NewPlayerUseCase(get(), get()) }
 }

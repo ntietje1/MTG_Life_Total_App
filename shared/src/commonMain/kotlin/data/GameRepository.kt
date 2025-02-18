@@ -47,7 +47,7 @@ class GameRepository(
 //    }
 
     fun updatePlayer(player: Player) {
-        println("GameRepository.updatePlayer($player)")
+//        println("GameRepository.updatePlayer($player)")
 //        withContext(Dispatchers.IO) {
         playerQueries.updatePlayer(
             game_id = player.gameId,
@@ -61,7 +61,7 @@ class GameRepository(
             partner_mode = player.partnerMode
         )
 
-        println("GameRepository.updatePlayer($player) updated player")
+//        println("GameRepository.updatePlayer($player) updated player")
 
         player.commanderDamage.forEachIndexed { index, damage ->
             playerQueries.updateCommanderDamage(
@@ -72,7 +72,7 @@ class GameRepository(
             )
         }
 
-        println("GameRepository.updatePlayer($player) updated commander damages")
+//        println("GameRepository.updatePlayer($player) updated commander damages")
 
         player.counters.forEachIndexed { index, value ->
             playerQueries.updateCounter(
@@ -83,12 +83,12 @@ class GameRepository(
             )
         }
 
-        println("GameRepository.updatePlayer($player) updated counters")
+//        println("GameRepository.updatePlayer($player) updated counters")
     }
 
 
     fun insertPlayer(player: Player) {
-        println("GameRepository.insertPlayer($player)")
+//        println("GameRepository.insertPlayer($player)")
 //        withContext(Dispatchers.IO) {
 
         playerQueries.insertPlayer(
@@ -102,7 +102,7 @@ class GameRepository(
             set_dead = player.setDead,
             partner_mode = player.partnerMode
         )
-        println("GameRepository.insertPlayer($player) inserted player")
+//        println("GameRepository.insertPlayer($player) inserted player")
 
         // Insert commander damages
         player.commanderDamage.forEachIndexed { index, damage ->
@@ -114,7 +114,7 @@ class GameRepository(
             )
         }
 
-        println("GameRepository.insertPlayer($player) inserted commander damages")
+//        println("GameRepository.insertPlayer($player) inserted commander damages")
 
         // Insert counters
         player.counters.forEachIndexed { index, value ->
@@ -126,7 +126,7 @@ class GameRepository(
             )
         }
 
-        println("GameRepository.insertPlayer($player) done")
+//        println("GameRepository.insertPlayer($player) done")
     }
 
     fun getGameWithPlayers(gameId: Long): GameWithPlayers {
@@ -184,13 +184,13 @@ class GameRepository(
             num_players = game.numPlayers.toLong()
         )
         gameId = database.gameQueries.lastInsertRowId().executeAsOne()
-        println("GameRepository.insertGame($game) gameId: $gameId")
+//        println("GameRepository.insertGame($game) gameId: $gameId")
 //        }
         return gameId
     }
 
     fun updateGame(game: Game) {
-        println("GameRepository.updateGame($game)")
+//        println("GameRepository.updateGame($game)")
         database.gameQueries.updateGame(
             id = game.id,
             num_players = game.numPlayers.toLong(),
@@ -202,6 +202,10 @@ class GameRepository(
             monarchy_player_num = game.monarchyPlayerNum,
             day_night_state = game.dayNightState.name
         )
-        println("GameRepository.updateGame($game) done")
+//        println("GameRepository.updateGame($game) done")
+    }
+
+    fun updateGameMonarchy(gameId: Long, playerNum: Int?) {
+        database.gameQueries.updateMonarchy(playerNum?.toLong(), gameId)
     }
 }

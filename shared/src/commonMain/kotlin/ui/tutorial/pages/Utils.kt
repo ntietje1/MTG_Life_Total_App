@@ -25,22 +25,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import data.GameRepository
 import domain.common.NumberWithRecentChange
-import domain.game.CommanderDamageManager
-import domain.game.PlayerCustomizationManager
 import domain.game.timer.GameTimerState
-import domain.game.timer.TimerManager
-import domain.state.game.MonarchyState
 import domain.storage.IImageStore
 import domain.storage.ISettingsStore
 import domain.storage.LocalSettingsStore
-import domain.system.NotificationManager
-import domain.usecase.game.LoadGameStateUseCase
-import domain.usecase.game.NewGameUseCase
-import domain.usecase.game.SaveGameUseCase
-import domain.usecase.player.NewPlayerUseCase
 import domain.usecase.player.state.ManagePlayerStateUseCase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,9 +43,7 @@ import theme.PlayerColor8
 import theme.PlayerColor9
 import theme.defaultTextStyle
 import theme.scaledSp
-import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.LifeCounterState
-import ui.lifecounter.LifeCounterViewModel
 import ui.lifecounter.playerbutton.PlayerButtonState
 
 class MockSettingsStore(
@@ -66,7 +53,7 @@ class MockSettingsStore(
     cameraRollDisabled: Boolean = LocalSettingsStore.instance.cameraRollDisabled.value,
     fastCoinFlip: Boolean = LocalSettingsStore.instance.fastCoinFlip.value,
     numPlayers: Int = LocalSettingsStore.instance.defaultNumPlayers.value,
-    alt4PlayerLayout: Boolean = LocalSettingsStore.instance.defaultAlt4PlayerLayout.value,
+    alt4PlayerLayout: Boolean = LocalSettingsStore.instance.defaultAltPlayerLayout.value,
     darkTheme: Boolean = LocalSettingsStore.instance.darkTheme.value,
     startingLife: Int = LocalSettingsStore.instance.defaultStartingLife.value,
     tutorialSkip: Boolean = LocalSettingsStore.instance.tutorialSkip.value,
@@ -118,7 +105,7 @@ class MockSettingsStore(
     }
 
     private val _alt4PlayerLayout = MutableStateFlow(alt4PlayerLayout)
-    override val defaultAlt4PlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
+    override val defaultAltPlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
     override fun setDefaultAltPlayerLayout(value: Boolean) {
         _alt4PlayerLayout.value = value
     }
@@ -243,27 +230,24 @@ private val mockManagePlayerStateUseCase = Any() as ManagePlayerStateUseCase
 //    managePlayerCustomizationUseCase = Any() as ManagePlayerCustomizationUseCase
 //)
 
-abstract class MockLifeCounterViewModel(
-    lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-    settingsManager: ISettingsStore,
-    imageManager: IImageStore,
-    notificationManager: NotificationManager
-) : LifeCounterViewModel(
-    initialState = lifeCounterState,
-    settingsManager = settingsManager,
-    commanderManager = CommanderDamageManager(notificationManager),
-    imageManager = imageManager,
-    notificationManager = notificationManager,
-    planeChaseViewModel = PlaneChaseViewModel(settingsManager),
-    playerCustomizationManager = PlayerCustomizationManager(settingsManager, mockRepository),
-    newGameUseCase = NewGameUseCase(settingsManager, mockRepository),
-    saveGameUseCase = SaveGameUseCase(mockRepository),
-    loadGameStateUseCase = LoadGameStateUseCase(mockRepository),
-    monarchyState = MonarchyState(CoroutineScope(Dispatchers.Main)),
-    timerManager = TimerManager(settingsManager),
-    managePlayerStateUseCase = mockManagePlayerStateUseCase,
-    newPlayerUseCase = Any() as NewPlayerUseCase,
-)
+//abstract class MockLifeCounterViewModel(
+//    lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
+//    settingsManager: ISettingsStore,
+//    notificationManager: NotificationManager
+//) : LifeCounterViewModel(
+//    initialState = lifeCounterState,
+//    settingsManager = settingsManager,
+//    commanderManager = CommanderDamageManager(notificationManager),
+//    notificationManager = notificationManager,
+//    planeChaseViewModel = PlaneChaseViewModel(settingsManager),
+//    newGameUseCase = NewGameUseCase(settingsManager, mockRepository),
+//    saveGameUseCase = SaveGameUseCase(mockRepository),
+//    loadGameStateUseCase = LoadGameStateUseCase(mockRepository),
+//    timerManager = TimerManager(settingsManager),
+//    managePlayerStateUseCase = mockManagePlayerStateUseCase,
+//    newPlayerUseCase = Any() as NewPlayerUseCase,
+//    monarchy
+//)
 
 @Composable
 fun TutorialScreenWrapper(

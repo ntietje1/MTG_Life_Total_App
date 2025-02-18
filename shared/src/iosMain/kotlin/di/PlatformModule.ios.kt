@@ -44,25 +44,21 @@ actual val platformModule = module {
         LifeCounterViewModel(
             settingsManager = get(),
             commanderManager = get(),
-            imageManager = get(),
             notificationManager = get(),
-            playerCustomizationManager = get(),
             planeChaseViewModel = get(),
             newGameUseCase = get(),
             saveGameUseCase = get(),
             loadGameStateUseCase = get(),
-            monarchyState = get(),
             managePlayerStateUseCase = get(),
             timerManager = get(),
-            newPlayerUseCase = get()
+            newPlayerUseCase = get(),
+            monarchyState = get()
         )
     }
     factory { (initialState: PlayerButtonState) ->
         PlayerButtonViewModel(
             initialState = initialState,
             settingsManager = get(),
-            imageManager = get(),
-            playerCustomizationManager = get(),
             managePlayerStateUseCase = get(),
             savePlayerStateUseCase = get(),
             playerLifeRecentChangeState = get(),
@@ -70,7 +66,8 @@ actual val platformModule = module {
             notificationManager = get(),
             timerManager = get(),
             managePlayerCustomizationUseCase = get(),
-            savePlayerCustomizationUseCase = get()
+            savePlayerCustomizationUseCase = get(),
+            monarchyState = get()
         )
     }
     factory { (initialPlayer: Player) ->

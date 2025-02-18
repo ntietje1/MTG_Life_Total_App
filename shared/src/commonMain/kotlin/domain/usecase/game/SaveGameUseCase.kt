@@ -9,4 +9,9 @@ class SaveGameUseCase(
     operator fun invoke(game: Game) {
         gameRepository.updateGame(game)
     }
+
+    fun saveMonarchy(gameId: Long, playerNum: Int?) {
+        gameRepository.updateGameMonarchy(gameId, playerNum)
+        println("SaveGameUseCase.saveMonarchy($gameId, $playerNum)")
+    }
 }

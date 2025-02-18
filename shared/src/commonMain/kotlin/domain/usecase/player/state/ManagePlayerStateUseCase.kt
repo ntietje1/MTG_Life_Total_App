@@ -1,4 +1,5 @@
 package domain.usecase.player.state
+import domain.state.game.MonarchyState
 import domain.state.game.PlayerLifeRecentChangeState
 import domain.storage.ISettingsStore
 import model.Player
@@ -6,7 +7,8 @@ import ui.lifecounter.CounterType
 
 class ManagePlayerStateUseCase(
     private val settingsManager: ISettingsStore,
-    private val playerLifeRecentChangeState: PlayerLifeRecentChangeState
+    private val playerLifeRecentChangeState: PlayerLifeRecentChangeState,
+    private val monarchyState: MonarchyState
 ) {
     fun resetPlayerState(player: Player): Player {
         return resetLife(player)
@@ -15,6 +17,11 @@ class ManagePlayerStateUseCase(
     }
 
     fun setMonarchy(player: Player, value: Boolean): Player {
+        if (value) {
+            monarchyState.setMonarchState(player.playerNum)
+        } else {
+            monarchyState.setMonarchState(null)
+        }
         return player.copy(monarch = value)
     }
 

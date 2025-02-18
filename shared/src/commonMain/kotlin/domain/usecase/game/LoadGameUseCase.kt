@@ -4,9 +4,11 @@ import data.GameRepository
 import model.GameWithPlayers
 
 class LoadGameStateUseCase(
-    private val gameRepository: GameRepository
+    private val repository: GameRepository
 ) {
     operator fun invoke(gameId: Long): GameWithPlayers {
-        return gameRepository.getGameWithPlayers(gameId)
+        return repository.getGameWithPlayers(gameId).also {
+            println("LoadGameStateUseCase.invoke($gameId) done, monarchId: ${it.game.monarchyPlayerNum}")
+        }
     }
 }

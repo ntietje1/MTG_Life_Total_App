@@ -12,10 +12,12 @@ class NewGameUseCase(
     private val gameRepository: GameRepository
 ) {
     operator fun invoke(
-        numPlayers: Int, 
+        numPlayers: Int = settingsManager.defaultNumPlayers.value,
+        altPlayerLayout: Boolean = settingsManager.defaultAltPlayerLayout.value,
+        turnTimerEnabled: Boolean = settingsManager.turnTimer.value,
         playerGenerateFunction: (Int) -> Player
     ): GameWithPlayers {
-        var game = Game(numPlayers = numPlayers)
+        var game = Game(numPlayers = numPlayers, altPlayerLayout = altPlayerLayout, turnTimerEnabled = turnTimerEnabled)
         val gid = gameRepository.insertGame(game)
         game = game.copy(id = gid)
         settingsManager.setCurrentGameId(gid)

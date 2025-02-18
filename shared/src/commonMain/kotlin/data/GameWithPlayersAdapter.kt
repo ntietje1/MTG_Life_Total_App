@@ -3,6 +3,7 @@ package data
 import com.hypeapps.lifelinked.db.GetCommanderDamages
 import com.hypeapps.lifelinked.db.GetCounters
 import com.hypeapps.lifelinked.db.GetGameWithPlayers
+import model.DayNightState
 import model.Game
 import model.Player
 
@@ -31,7 +32,12 @@ class GameWithPlayerAdapter(
             numPlayers = getGameWithPlayers.num_players.toInt(),
             startTimestamp = getGameWithPlayers.start_timestamp,
             endTimestamp = getGameWithPlayers.end_timestamp,
-            winnerPlayerNum = getGameWithPlayers.winner_player_num
+            winnerPlayerNum = getGameWithPlayers.winner_player_num,
+            monarchyPlayerNum = getGameWithPlayers.monarchy_player_num,
+            firstPlayerNum = getGameWithPlayers.first_player_num,
+            turnTimerEnabled = getGameWithPlayers.turn_timer_enabled,
+            dayNightState = getGameWithPlayers.day_night_state?.let { DayNightState.valueOf(it) } ?: DayNightState.NONE,
+            altPlayerLayout = getGameWithPlayers.alt_player_layout
         )
         println("GameWithPlayerAdapter.toGameWithPlayer game: $game")
 

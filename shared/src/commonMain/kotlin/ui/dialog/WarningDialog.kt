@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import theme.LocalDimensions
@@ -87,7 +86,6 @@ fun WarningDialog(
                     ) {
                         if (optionTwoEnabled) {
                             TextButton(onClick = {
-                                onDismiss()
                                 onOptionTwo()
                             }, modifier = Modifier.fillMaxWidth(0.5f)
                             ) {
@@ -102,7 +100,6 @@ fun WarningDialog(
                         }
                         if (optionOneEnabled) {
                             TextButton(onClick = {
-                                onDismiss()
                                 onOptionOne()
                             }, modifier = Modifier.fillMaxWidth()
                             ) {
