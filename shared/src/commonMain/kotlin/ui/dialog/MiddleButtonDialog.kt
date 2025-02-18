@@ -82,6 +82,8 @@ enum class MiddleButtonDialogState {
     Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, PatchNotes, AboutMe, PlaneChase, PlanarDeck, PlanarTutorial
 }
 
+enum class ResetDialogState { SAME_PLAYERS, SKIP_PLAYER_SELECT }
+
 @Composable
 fun MiddleButtonDialog(
     modifier: Modifier = Modifier,
@@ -102,8 +104,13 @@ fun MiddleButtonDialog(
 
     val state by viewModel.state.collectAsState()
     val haptic = LocalHapticFeedback.current
-    var showResetDialog by remember { mutableStateOf(false) }
-    var showChooseFirstPlayerDialog by remember { mutableStateOf(false) }
+    var resetDialogState by remember { mutableStateOf<ResetDialogState?>(null) }
+    var onReset: () -> Boolean by remember {
+        mutableStateOf({
+            println("This should never be called")
+            false
+        })
+    }
 
     BoxWithConstraints(
         modifier = modifier
@@ -253,7 +260,7 @@ fun MiddleButtonDialog(
                         })
                     }, {
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.reset_icon), text = "Reset Game", shadowEnabled = false, onPress = {
-                            showResetDialog = true
+                            resetDialogState = ResetDialogState.SAME_PLAYERS
                         })
                     }, {
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
@@ -325,61 +332,71 @@ fun MiddleButtonDialog(
             })
         )
     }
-    var onReset: () -> Boolean by remember {
-        mutableStateOf({
-            println("This should never be called")
-            false
-        })
-    }
 
-    if (showResetDialog) {
+    if (resetDialogState != null) {
         WarningDialog(
-            onDismiss = { showResetDialog = false },
-            title = "Reset Game",
-            message = "Select an option to start a new game",
-            optionOneMessage = "Same players",
-            optionTwoMessage = "Different players",
+            onDismiss = { resetDialogState = null },
+            title = when (resetDialogState) {
+                ResetDialogState.SAME_PLAYERS -> "Reset Game"
+                ResetDialogState.SKIP_PLAYER_SELECT -> "Choose New First Player"
+                null -> ""
+            },
+            message = when (resetDialogState) {
+                ResetDialogState.SAME_PLAYERS -> "Select an option to start a new game"
+                ResetDialogState.SKIP_PLAYER_SELECT -> "Select whether to skip player selection or not"
+                null -> ""
+            },
+            optionOneMessage = when (resetDialogState) {
+                ResetDialogState.SAME_PLAYERS -> "Same players"
+                ResetDialogState.SKIP_PLAYER_SELECT -> "Select"
+                null -> ""
+            },
+            optionTwoMessage = when (resetDialogState) {
+                ResetDialogState.SAME_PLAYERS -> "Different players"
+                ResetDialogState.SKIP_PLAYER_SELECT -> "Skip"
+                null -> ""
+            },
             onOptionOne = {
-                onReset = {
-                    viewModel.onResetGame(samePlayers = true)
-//                onDismiss()
-                    println("resetting game, same players")
-                    false
+                when (resetDialogState) {
+                    ResetDialogState.SAME_PLAYERS -> {
+                        onReset = {
+                            println("resetting game, same players")
+                            viewModel.onResetGame(samePlayers = true)
+                            false
+                        }
+                        resetDialogState = ResetDialogState.SKIP_PLAYER_SELECT
+                        println("selected same players")
+                    }
+                    ResetDialogState.SKIP_PLAYER_SELECT -> {
+                        println("selected to select new first player")
+                        val allowChangeNumPlayers = onReset()
+                        resetDialogState = null
+                        onDismiss()
+                        goToPlayerSelectScreen(allowChangeNumPlayers)
+                    }
+                    null -> {}
                 }
-                showResetDialog = false
-                showChooseFirstPlayerDialog = true
             },
             onOptionTwo = {
-                onReset = {
-                    viewModel.onResetGame(samePlayers = false)
-                    println("resetting game, different players")
-//                onDismiss()
-                    true
+                when (resetDialogState) {
+                    ResetDialogState.SAME_PLAYERS -> {
+                        onReset = {
+                            println("resetting game, different players")
+                            viewModel.onResetGame(samePlayers = false)
+                            true
+                        }
+                        println("selected different players")
+                        resetDialogState = ResetDialogState.SKIP_PLAYER_SELECT
+                    }
+                    ResetDialogState.SKIP_PLAYER_SELECT -> {
+                        println("skipping player select")
+                        onReset()
+                        resetDialogState = null
+                        onDismiss()
+                    }
+                    null -> {}
                 }
-                showResetDialog = false
-                showChooseFirstPlayerDialog = true
-            },
-        )
-    }
-
-    if (showChooseFirstPlayerDialog) {
-        WarningDialog(
-            onDismiss = { showChooseFirstPlayerDialog = false },
-            title = "Choose New First Player",
-            message = "Select whether to skip player selection or not",
-            optionOneMessage = "Select",
-            optionTwoMessage = "Skip",
-            onOptionOne = {
-                val allowChangeNumPlayers = onReset()
-                showChooseFirstPlayerDialog = false
-                onDismiss()
-                goToPlayerSelectScreen(allowChangeNumPlayers)
-            },
-            onOptionTwo = {
-                onReset()
-                showChooseFirstPlayerDialog = false
-                onDismiss()
-            },
+            }
         )
     }
 }
