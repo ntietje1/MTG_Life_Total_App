@@ -1,19 +1,22 @@
 package domain.usecase.player.state
+import domain.state.game.CommanderDamageState
 import domain.state.game.MonarchyState
 import domain.state.game.PlayerLifeRecentChangeState
 import domain.storage.ISettingsStore
 import model.Player
-import ui.lifecounter.CounterType
 
 class ManagePlayerStateUseCase(
     private val settingsManager: ISettingsStore,
     private val playerLifeRecentChangeState: PlayerLifeRecentChangeState,
-    private val monarchyState: MonarchyState
+    private val monarchyState: MonarchyState,
+    private val commanderDamageState: CommanderDamageState,
+    private val managePlayerCounterUseCase: ManagePlayerCounterUseCase
 ) {
     fun resetPlayerState(player: Player): Player {
-        return resetLife(player)
-
-        //TODO: also reset using other state managers
+        var updatedPlayer = resetLife(player)
+        updatedPlayer = commanderDamageState.resetCommanderDamage(updatedPlayer)
+        updatedPlayer = managePlayerCounterUseCase.resetCounters(updatedPlayer)
+        return updatedPlayer
     }
 
     fun setMonarchy(player: Player, value: Boolean): Player {
@@ -34,18 +37,6 @@ class ManagePlayerStateUseCase(
     fun incrementLife(player: Player, value: Int): Player {
         val lifeTotal = playerLifeRecentChangeState.incrementLife(player.playerNum, value)
         return player.copy(lifeTotal = lifeTotal)
-    }
-
-    fun incrementCounter(player: Player, counterType: CounterType, value: Int): Player {
-        return player //TODO: use counter usecase here
-    }
-
-    fun setActiveCounter(player: Player, counterType: CounterType, value: Boolean): Player {
-        return player //TODO: use counter usecase here
-    }
-
-    fun resetCounters(player: Player): Player {
-        return player //TODO: use counter usecase here
     }
 
     fun isPlayerDead(player: Player, autoKo: Boolean): Boolean {

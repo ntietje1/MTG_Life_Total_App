@@ -1,4 +1,4 @@
-package domain.game
+package domain.state.game
 
 import domain.common.NumberWithRecentChange
 import domain.common.RecentChangeValue
@@ -13,16 +13,15 @@ import kotlin.coroutines.coroutineContext
 
 /**
  * Manages commander damage and commander mode for players
- * 1 instance per game
  */
-sealed class CommanderState {
-    data object Inactive : CommanderState()
-    data class Active(val dealer: Player) : CommanderState() {
+sealed class CommanderDealerState {
+    data object Inactive : CommanderDealerState()
+    data class Active(val dealer: Player) : CommanderDealerState() {
         fun getDealerIndex(partner: Boolean) = dealer.playerNum - 1 + if (partner) Player.MAX_PLAYERS else 0
     }
 }
 
-class CommanderDamageManager(
+class CommanderDamageState(
     private val notificationManager: NotificationManager
 )  {
     companion object {
@@ -30,34 +29,31 @@ class CommanderDamageManager(
         const val MIN_COMMANDER_DAMAGE = 0
     }
 
-    private val _commanderState = MutableStateFlow<CommanderState>(CommanderState.Inactive)
-    val commanderState = _commanderState.asStateFlow()
+    private val _commanderDealerState = MutableStateFlow<CommanderDealerState>(CommanderDealerState.Inactive)
+    val commanderState = _commanderDealerState.asStateFlow()
 
     private val commanderDamageTrackers = mutableMapOf<Int, List<RecentChangeValue>>()
 
     fun onClear() {
-//        super.detach()
         commanderDamageTrackers.values.forEach { it -> it.forEach { it.detach() } }
         commanderDamageTrackers.clear()
     }
 
     fun setCurrentDealer(dealer: Player?) {
-//        requireAttached()
-        _commanderState.value = dealer?.let { CommanderState.Active(it) } ?: CommanderState.Inactive
+        _commanderDealerState.value = dealer?.let { CommanderDealerState.Active(it) } ?: CommanderDealerState.Inactive
     }
 
     fun togglePartnerMode(player: Player, value: Boolean): Player {
-//        requireAttached()
-        if (_commanderState.value is CommanderState.Active) {
-            _commanderState.value = CommanderState.Active(player.copy(partnerMode = value))
+        if (_commanderDealerState.value is CommanderDealerState.Active) {
+            _commanderDealerState.value = CommanderDealerState.Active(player.copy(partnerMode = value))
         }
         return player.copy(partnerMode = value)
     }
 
     fun getCommanderDamage(player: Player, partner: Boolean): NumberWithRecentChange {
-        return when (val state = _commanderState.value) {
-            is CommanderState.Active -> player.commanderDamage[state.getDealerIndex(partner)]
-            is CommanderState.Inactive -> NumberWithRecentChange(0, 0)
+        return when (val state = _commanderDealerState.value) {
+            is CommanderDealerState.Active -> player.commanderDamage[state.getDealerIndex(partner)]
+            is CommanderDealerState.Inactive -> NumberWithRecentChange(0, 0)
         }
     }
 
@@ -70,7 +66,6 @@ class CommanderDamageManager(
 
         commanderDamageTrackers[initialPlayer.playerNum] = List(Player.MAX_PLAYERS * 2) { index ->
             RecentChangeValue(initialValue = initialPlayer.commanderDamage[index]) { updatedValue ->
-//                val currentPlayer = requireAttached().value.getPlayer(initialPlayer.playerNum)
                 val currentPlayer = getCurrentPlayer()
                 onUpdate(currentPlayer.copy(
                     commanderDamage = currentPlayer.commanderDamage.toMutableList().apply {
@@ -90,9 +85,9 @@ class CommanderDamageManager(
     }
 
     fun incrementCommanderDamage(player: Player, value: Int, partner: Boolean) {
-        val currentDealerIndex = when (val state = _commanderState.value) {
-            is CommanderState.Active -> state.getDealerIndex(partner)
-            is CommanderState.Inactive -> return
+        val currentDealerIndex = when (val state = _commanderDealerState.value) {
+            is CommanderDealerState.Active -> state.getDealerIndex(partner)
+            is CommanderDealerState.Inactive -> return
         }
         val currentDamage = player.commanderDamage[currentDealerIndex].number
         if (checkValidCommanderDamage(value, currentDamage)) {
@@ -111,7 +106,3 @@ class CommanderDamageManager(
         return true
     }
 }
-
-//fun List<PlayerButtonViewModel>.getPlayer(playerNum: Int): Player {
-//    return find { it.state.value.player.playerNum == playerNum }?.state?.value?.player ?: throw IllegalArgumentException("Player not found")
-//}

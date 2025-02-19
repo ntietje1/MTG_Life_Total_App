@@ -3,9 +3,9 @@ package di
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import com.hypeapps.lifelinked.db.Database
-import domain.game.CommanderDamageManager
 import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
+import domain.state.game.CommanderDamageState
 import domain.storage.IImageStore
 import domain.storage.ISettingsStore
 import domain.storage.LocalImageStore
@@ -34,7 +34,7 @@ actual val platformModule = module {
     single<ISettingsStore> { LocalSettingsStore.instance }
     single<IImageStore> { LocalImageStore() }
     single { PlayerCustomizationManager(get(), get()) }
-    single { CommanderDamageManager(get()) }
+    single { CommanderDamageState(get()) }
     single { TimerManager(get()) }
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
@@ -43,7 +43,7 @@ actual val platformModule = module {
     single {
         LifeCounterViewModel(
             settingsManager = get(),
-            commanderManager = get(),
+            commanderDamageState = get(),
             notificationManager = get(),
             planeChaseViewModel = get(),
             newGameUseCase = get(),
@@ -62,12 +62,13 @@ actual val platformModule = module {
             managePlayerStateUseCase = get(),
             savePlayerStateUseCase = get(),
             playerLifeRecentChangeState = get(),
-            commanderManager = get(),
+            commanderDamageState = get(),
             notificationManager = get(),
             timerManager = get(),
             managePlayerCustomizationUseCase = get(),
             savePlayerCustomizationUseCase = get(),
-            monarchyState = get()
+            monarchyState = get(),
+            managePlayerCounterUseCase = get()
         )
     }
     factory { (initialPlayer: Player) ->

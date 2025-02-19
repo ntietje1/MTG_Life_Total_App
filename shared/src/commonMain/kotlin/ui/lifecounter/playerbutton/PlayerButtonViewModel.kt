@@ -4,16 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.common.Backstack
 import domain.common.NumberWithRecentChange
-import domain.game.CommanderDamageManager
-import domain.game.CommanderState
 import domain.game.timer.TimerManager
 import domain.game.timer.TurnTimer
+import domain.state.game.CommanderDamageState
+import domain.state.game.CommanderDealerState
 import domain.state.game.MonarchyState
 import domain.state.game.PlayerLifeRecentChangeState
 import domain.storage.ISettingsStore
 import domain.system.NotificationManager
 import domain.usecase.player.customization.ManagePlayerCustomizationUseCase
 import domain.usecase.player.customization.SavePlayerCustomizationUseCase
+import domain.usecase.player.state.ManagePlayerCounterUseCase
 import domain.usecase.player.state.ManagePlayerStateUseCase
 import domain.usecase.player.state.SavePlayerStateUseCase
 import kotlinx.coroutines.delay
@@ -34,9 +35,10 @@ import ui.lifecounter.CounterType
 open class PlayerButtonViewModel(
     private val initialState: PlayerButtonState,
     private val settingsManager: ISettingsStore,
-    private val commanderManager: CommanderDamageManager,
+    private val commanderDamageState: CommanderDamageState,
     protected val notificationManager: NotificationManager,
     private val managePlayerStateUseCase: ManagePlayerStateUseCase,
+    private val managePlayerCounterUseCase: ManagePlayerCounterUseCase,
     private val savePlayerStateUseCase: SavePlayerStateUseCase,
     private val savePlayerCustomizationUseCase: SavePlayerCustomizationUseCase,
     private val playerLifeRecentChangeState: PlayerLifeRecentChangeState,
@@ -53,7 +55,7 @@ open class PlayerButtonViewModel(
         managePlayerStateUseCase.isPlayerDead(playerState.player, autoKo)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    val commanderState: StateFlow<CommanderState> = commanderManager.commanderState
+    val commanderDealerState: StateFlow<CommanderDealerState> = commanderDamageState.commanderState
 
     private val backstack = Backstack()
 
@@ -82,7 +84,7 @@ open class PlayerButtonViewModel(
                 }
             )
 
-            commanderManager.attachCommanderTrackers(
+            commanderDamageState.attachCommanderTrackers(
                 getCurrentPlayer = { state.value.player },
                 onUpdate = {
                     setPlayer(state.value.player.copy(commanderDamage = it.commanderDamage))
@@ -98,14 +100,14 @@ open class PlayerButtonViewModel(
 
     private fun removeObservers() {
         playerLifeRecentChangeState.clear()
-        commanderManager.onClear()
+        commanderDamageState.onClear()
         monarchyState.clear()
     }
 
     override fun onCleared() {
         super.onCleared()
         playerLifeRecentChangeState.clear()
-        commanderManager.onClear()
+        commanderDamageState.onClear()
         monarchyState.clear()
     }
 
@@ -158,11 +160,11 @@ open class PlayerButtonViewModel(
     open fun onCommanderButtonClicked() {
         when (state.value.buttonState) {
             PBState.NORMAL -> {
-                commanderManager.setCurrentDealer(state.value.player)
+                commanderDamageState.setCurrentDealer(state.value.player)
             }
 
             PBState.COMMANDER_DEALER -> {
-                commanderManager.setCurrentDealer(null)
+                commanderDamageState.setCurrentDealer(null)
             }
 
             else -> {} // do nothing
@@ -254,27 +256,27 @@ open class PlayerButtonViewModel(
     }
 
     fun togglePartnerMode(value: Boolean) {
-        setPlayer(commanderManager.togglePartnerMode(state.value.player, value))
+        setPlayer(commanderDamageState.togglePartnerMode(state.value.player, value))
         savePlayerStateUseCase(state.value.player)
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
-        setPlayer(managePlayerStateUseCase.incrementCounter(state.value.player, counterType, value))
+        setPlayer(managePlayerCounterUseCase.incrementCounter(state.value.player, counterType, value))
         savePlayerStateUseCase(state.value.player)
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
-        setPlayer(managePlayerStateUseCase.setActiveCounter(state.value.player, counterType, active))
+        setPlayer(managePlayerCounterUseCase.setActiveCounter(state.value.player, counterType, active))
         savePlayerStateUseCase(state.value.player)
         return state.value.player.activeCounters.contains(counterType)
     }
 
     fun getCommanderDamage(partner: Boolean): NumberWithRecentChange {
-        return commanderManager.getCommanderDamage(state.value.player, partner)
+        return commanderDamageState.getCommanderDamage(state.value.player, partner)
     }
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
-        commanderManager.incrementCommanderDamage(state.value.player, value, partner)
+        commanderDamageState.incrementCommanderDamage(state.value.player, value, partner)
         savePlayerStateUseCase(state.value.player)
     }
 }

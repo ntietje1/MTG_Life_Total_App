@@ -3,9 +3,9 @@ package ui.lifecounter
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.game.CommanderDamageManager
-import domain.game.CommanderState
 import domain.game.timer.TimerManager
+import domain.state.game.CommanderDamageState
+import domain.state.game.CommanderDealerState
 import domain.state.game.MonarchyState
 import domain.storage.ISettingsStore
 import domain.system.NotificationManager
@@ -37,7 +37,7 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 open class LifeCounterViewModel(
     private val settingsManager: ISettingsStore,
-    internal val commanderManager: CommanderDamageManager,
+    internal val commanderDamageState: CommanderDamageState,
     protected val notificationManager: NotificationManager,
     private val monarchyState: MonarchyState,
     private val planeChaseViewModel: PlaneChaseViewModel,
@@ -72,6 +72,9 @@ open class LifeCounterViewModel(
             saveGameUseCase.saveMonarchy(_state.value.game.id, _state.value.game.monarchyPlayerNum?.toInt())
             println("Monarchy state saved: gameid = ${state.value.game.id} player ${state.value.game.monarchyPlayerNum}")
         }
+        viewModelScope.launch {
+            registerCommanderListener()
+        }
         timerManager.attach(playerButtonViewModels)
     }
 
@@ -95,10 +98,8 @@ open class LifeCounterViewModel(
         val usedColors = mutableSetOf<Color>()
         val gameWithPlayers = newGameUseCase { playerNum ->
             if (samePlayers) {
-                commanderManager.resetCommanderDamage( //TODO: remove this when this becomes part of managerPlayerStateUseCase
-                    managePlayerStateUseCase.resetPlayerState(
-                        playerButtonViewModels.value[playerNum - 1].state.value.player
-                    )
+                managePlayerStateUseCase.resetPlayerState(
+                    playerButtonViewModels.value[playerNum - 1].state.value.player
                 )
             } else {
                 newPlayerUseCase.invoke(playerNum = playerNum, usedColors = usedColors).also { usedColors += it.color }
@@ -136,19 +137,19 @@ open class LifeCounterViewModel(
     override fun onCleared() {
         super.onCleared()
         gameStateJob?.cancel()
-        commanderManager.onClear()
+        commanderDamageState.onClear()
         timerManager.detach()
     }
 
     private suspend fun registerCommanderListener() {
-        commanderManager.commanderState.collect { commanderState ->
+        commanderDamageState.commanderState.collect { commanderState ->
             when (commanderState) {
-                is CommanderState.Inactive -> {
+                is CommanderDealerState.Inactive -> {
                     setAllButtonStates(PBState.NORMAL)
                     setMiddleButtonState(MiddleButtonState.DEFAULT)
                 }
 
-                is CommanderState.Active -> {
+                is CommanderDealerState.Active -> {
                     setMiddleButtonState(MiddleButtonState.COMMANDER_EXIT)
                     playerButtonViewModels.value.forEach {
                         it.setPlayerButtonState(
@@ -196,7 +197,7 @@ open class LifeCounterViewModel(
     }
 
     fun onCommanderDealerButtonClicked() {
-        commanderManager.setCurrentDealer(null)
+        commanderDamageState.setCurrentDealer(null)
         setAllButtonStates(PBState.NORMAL)
     }
 

@@ -58,7 +58,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import domain.common.NumberWithRecentChange
-import domain.game.CommanderState
+import domain.state.game.CommanderDealerState
 import domain.game.timer.TurnTimer
 import domain.system.SystemManager
 import io.kamel.image.KamelImage
@@ -107,8 +107,8 @@ fun PlayerButton(
 ) {
     val state by viewModel.state.collectAsState()
     val isDead by viewModel.isDead.collectAsState()
-    val commanderState by viewModel.commanderState.collectAsState()
-    val currentDealerIsPartnered = (commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
+    val commanderState by viewModel.commanderDealerState.collectAsState()
+    val currentDealerIsPartnered = (commanderState as? CommanderDealerState.Active)?.dealer?.partnerMode == true
     val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
 
