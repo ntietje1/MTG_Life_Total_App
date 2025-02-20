@@ -193,10 +193,6 @@ open class PlayerButtonViewModel(
         backstack.pop().invoke()
     }
 
-    fun getCounterValue(counterType: CounterType): Int {
-        return state.value.player.counters[counterType.ordinal]
-    }
-
     open fun copyPrefs(other: Player) {
         setPlayer(managePlayerCustomizationUseCase.copy(state.value.player, other))
         resetCustomizationMenuViewModel()
@@ -262,13 +258,13 @@ open class PlayerButtonViewModel(
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
         setPlayer(managePlayerCounterUseCase.incrementCounter(state.value.player, counterType, value))
-        savePlayerStateUseCase(state.value.player)
+        savePlayerStateUseCase.saveCounter(state.value.player, counterType)
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
         setPlayer(managePlayerCounterUseCase.setActiveCounter(state.value.player, counterType, active))
         savePlayerStateUseCase(state.value.player)
-        return state.value.player.activeCounters.contains(counterType)
+        return state.value.player.counters.contains(counterType)
     }
 
     fun getCommanderDamage(partner: Boolean): NumberWithRecentChange {

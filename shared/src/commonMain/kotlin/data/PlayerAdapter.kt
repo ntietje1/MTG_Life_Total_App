@@ -20,8 +20,7 @@ class PlayerAdapter {
         setDead: Boolean,
         partnerMode: Boolean,
         commanderDamages: List<GetCommanderDamages>,
-        counters: List<GetCounters>,
-        activeCounters: String?
+        counters: List<GetCounters>
     ): Player {
         return Player(
             gameId = gameId,
@@ -33,8 +32,7 @@ class PlayerAdapter {
             lifeTotal = NumberWithRecentChange(lifeTotal, 0),
             monarch = monarch,
             commanderDamage = commanderDamages.map { NumberWithRecentChange(it.damage.toInt(), 0) },
-            counters = counters.map { it.counter_value.toInt() }, //TODO: to be changed to number with recent change
-            activeCounters = CounterType.entries, //TODO: to be refactored out
+            counters = counters.associate {  CounterType.valueOf(it.counter_type) to NumberWithRecentChange(it.counter_value.toInt(), 0) },
             setDead = setDead,
             partnerMode = partnerMode
         )

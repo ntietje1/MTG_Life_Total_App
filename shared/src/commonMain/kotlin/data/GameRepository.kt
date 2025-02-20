@@ -46,6 +46,10 @@ class GameRepository(
 //            }
 //    }
 
+    fun updateCounter(gameId: Long, playerNum: Int, counterType: String, counterValue: Int) {
+        playerQueries.updateCounter(counterValue.toLong(), gameId, playerNum.toLong(), counterType)
+    }
+
     fun updatePlayer(player: Player) {
 //        println("GameRepository.updatePlayer($player)")
 //        withContext(Dispatchers.IO) {
@@ -72,14 +76,16 @@ class GameRepository(
             )
         }
 
-//        println("GameRepository.updatePlayer($player) updated commander damages")
+//        println("GameRepository.updatePlayer($player ) updated commander damages")
 
-        player.counters.forEachIndexed { index, value ->
+        playerQueries.deleteAllPlayerCounters(player.gameId, player.playerNum.toLong())
+
+        player.counters.entries.toList().forEach {
             playerQueries.updateCounter(
                 game_id = player.gameId,
                 player_num = player.playerNum.toLong(),
-                counter_type = index.toLong(),
-                counter_value = value.toLong()
+                counter_type = it.key.name,
+                counter_value = it.value.number.toLong()
             )
         }
 
@@ -117,12 +123,12 @@ class GameRepository(
 //        println("GameRepository.insertPlayer($player) inserted commander damages")
 
         // Insert counters
-        player.counters.forEachIndexed { index, value ->
+        player.counters.entries.toList().forEach {
             playerQueries.insertCounter(
                 game_id = player.gameId,
                 player_num = player.playerNum.toLong(),
-                counter_type = index.toLong(),
-                counter_value = value.toLong()
+                counter_type = it.key.name,
+                counter_value = it.value.number.toLong()
             )
         }
 
@@ -130,23 +136,32 @@ class GameRepository(
     }
 
     fun getGameWithPlayers(gameId: Long): GameWithPlayers {
-        val results = database.gameQueries.getGameWithPlayers(gameId).executeAsList()
-        require(results.isNotEmpty()) { "No game with id $gameId found" }
+        try {
+            val results = database.gameQueries.getGameWithPlayers(gameId).executeAsList()
+            require(results.isNotEmpty()) { "No game with id $gameId found" }
 
-        val commanderDamages = database.gameQueries.getCommanderDamages(gameId)
-            .executeAsList()
-            .groupBy { it.receiver_player_num }
+            val commanderDamages = database.playerQueries.getCommanderDamages(gameId)
+                .executeAsList()
+                .groupBy { it.receiver_player_num }
 
-        val counters = database.gameQueries.getCounters(gameId)
-            .executeAsList()
-            .groupBy { it.player_num }
+            val counters = database.playerQueries.getCounters(gameId)
+                .executeAsList()
+                .groupBy { it.player_num }
 
-        return GameWithPlayers(
-            game = gameWithPlayersAdapter.toGame(results.first()),
-            players = results.map { row ->
-                gameWithPlayersAdapter.toGameWithPlayer(row, commanderDamages[row.player_num]!!, counters[row.player_num]!!).second
-            }
-        )
+            return GameWithPlayers(
+                game = gameWithPlayersAdapter.toGame(results.first()),
+                players = results.map { row ->
+                    gameWithPlayersAdapter.toGameWithPlayer(
+                        row,
+                        commanderDamages[row.player_num] ?: emptyList(),
+                        counters[row.player_num] ?: emptyList()
+                    ).second
+                }
+            )
+        } catch (e: Exception) {
+            println("GameRepository.getGameWithPlayers($gameId) error: $e")
+            throw e
+        }
     }
 
     fun getGameWithPlayersAsFlow(gameId: Long): Flow<GameWithPlayers> {
@@ -156,11 +171,11 @@ class GameRepository(
             .map { results ->
                 require(results.isNotEmpty()) { "No game with id $gameId found" }
                 
-                val commanderDamages = database.gameQueries.getCommanderDamages(gameId)
+                val commanderDamages = database.playerQueries.getCommanderDamages(gameId)
                     .executeAsList()
                     .groupBy { it.receiver_player_num }
 
-                val counters = database.gameQueries.getCounters(gameId)
+                val counters = database.playerQueries.getCounters(gameId)
                     .executeAsList()
                     .groupBy { it.player_num }
 

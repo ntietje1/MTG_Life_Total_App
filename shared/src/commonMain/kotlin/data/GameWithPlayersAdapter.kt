@@ -54,8 +54,7 @@ class GameWithPlayerAdapter(
             setDead = getGameWithPlayers.set_dead,
             partnerMode = getGameWithPlayers.partner_mode,
             commanderDamages = commanderDamages,
-            counters = counters,
-            activeCounters = null
+            counters = counters
         )
         println("GameWithPlayerAdapter.toGameWithPlayer player: $player")
 

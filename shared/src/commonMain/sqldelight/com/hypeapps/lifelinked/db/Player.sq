@@ -27,7 +27,7 @@ CREATE TABLE commander_damage (
 CREATE TABLE counter (
     game_id INTEGER NOT NULL,
     player_num INTEGER NOT NULL,
-    counter_type INTEGER NOT NULL,
+    counter_type TEXT NOT NULL,
     counter_value INTEGER NOT NULL,
     FOREIGN KEY (player_num) REFERENCES player(player_num),
     PRIMARY KEY (game_id, player_num, counter_type)
@@ -51,6 +51,20 @@ UPDATE player SET
     partner_mode = ?
 WHERE game_id = ? AND player_num = ?;
 
+getCommanderDamages:
+SELECT
+    receiver_player_num,
+    damage
+FROM commander_damage
+WHERE game_id = ?;
+
+getCounters:
+SELECT
+    player_num,
+    counter_type,
+    counter_value
+FROM counter
+WHERE game_id = ?;
 
 insertCommanderDamage:
 INSERT INTO commander_damage (game_id, receiver_player_num, dealer_player_num, damage)
@@ -69,6 +83,10 @@ updateCounter:
 UPDATE counter SET
     counter_value = ?
 WHERE game_id = ? AND player_num = ? AND counter_type = ?;
+
+deleteAllPlayerCounters:
+DELETE FROM counter
+WHERE game_id = ? AND player_num = ?;
 
 deleteAllPlayers:
 DELETE FROM player;

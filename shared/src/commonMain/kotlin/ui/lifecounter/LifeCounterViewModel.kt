@@ -79,6 +79,7 @@ open class LifeCounterViewModel(
     }
 
     private fun getOrGenerateCurrentGameWithPlayers() {
+        println("currentGameId: ${settingsManager.currentGameId.value}")
         try {
             settingsManager.currentGameId.value?.let { currentGameId ->
                 loadGameStateUseCase(currentGameId).also {

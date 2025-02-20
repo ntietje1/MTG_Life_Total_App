@@ -26,20 +26,6 @@ WHERE g.id = ? AND p.game_id = g.id
 GROUP BY p.player_num
 ORDER BY p.player_num;
 
-getCommanderDamages:
-SELECT
-    receiver_player_num,
-    damage
-FROM commander_damage
-WHERE game_id = ?;
-
-getCounters:
-SELECT 
-    player_num,
-    counter_value
-FROM counter
-WHERE game_id = ?;
-
 insertGame:
 INSERT INTO game (num_players)
 VALUES (?);

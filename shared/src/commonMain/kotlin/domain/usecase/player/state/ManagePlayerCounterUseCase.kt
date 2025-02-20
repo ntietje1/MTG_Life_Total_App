@@ -1,29 +1,35 @@
 package domain.usecase.player.state
 
+import domain.common.NumberWithRecentChange
 import model.Player
 import ui.lifecounter.CounterType
 
 class ManagePlayerCounterUseCase {
     fun incrementCounter(player: Player, counterType: CounterType, value: Int): Player {
-        return player.copy(counters = player.counters.toMutableList().apply {
-            this[counterType.ordinal] += value
-        })
+        return player.copy(
+            counters = player.counters.toMutableMap().apply {
+                this[counterType] = this.getOrPut(counterType) { NumberWithRecentChange(0, 0) }.copy(
+                    number = this[counterType]!!.number + value
+                )
+            }
+        )
     }
 
     fun setActiveCounter(player: Player, counterType: CounterType, active: Boolean): Player {
-        return player.copy(activeCounters = player.activeCounters.toMutableList().apply {
-            if (active) {
-                add(counterType)
-            } else {
-                remove(counterType)
+        return player.copy(
+            counters = player.counters.toMutableMap().apply {
+                if (active) {
+                    this[counterType] = this.getOrPut(counterType) { NumberWithRecentChange(0, 0) }
+                } else {
+                    this.remove(counterType)
+                }
             }
-        })
+        )
     }
 
     fun resetCounters(player: Player): Player {
         return player.copy(
-            counters = List(CounterType.entries.size) { 0 },
-            activeCounters = listOf()
+            counters = mapOf()
         )
     }
 }

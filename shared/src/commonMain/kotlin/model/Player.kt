@@ -6,7 +6,7 @@ import domain.common.NumberWithRecentChange
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.descriptors.element
@@ -40,7 +40,6 @@ object PlayerSerializer : KSerializer<Player> {
         element<List<Int>>("counters")
         element<Boolean>("setDead")
         element<Boolean>("partnerMode")
-        element<List<CounterType>>("activeCounters")
     }
 
     override fun serialize(encoder: Encoder, value: Player) {
@@ -53,10 +52,9 @@ object PlayerSerializer : KSerializer<Player> {
             encodeIntElement(descriptor, 5, value.playerNum)
             encodeBooleanElement(descriptor, 6, value.monarch)
             encodeSerializableElement(descriptor, 7, ListSerializer(NumberWithRecentChange.serializer()), value.commanderDamage)
-            encodeSerializableElement(descriptor, 8, ListSerializer(Int.serializer()), value.counters)
+            encodeSerializableElement(descriptor, 8, MapSerializer(CounterType.serializer(), NumberWithRecentChange.serializer()), value.counters)
             encodeBooleanElement(descriptor, 9, value.setDead)
             encodeBooleanElement(descriptor, 10, value.partnerMode)
-            encodeSerializableElement(descriptor, 11, ListSerializer(CounterType.serializer()), value.activeCounters)
         }
     }
 
@@ -70,10 +68,9 @@ object PlayerSerializer : KSerializer<Player> {
             var playerNum = 0
             var monarch = false
             var commanderDamage = mutableListOf<NumberWithRecentChange>()
-            var counters = mutableListOf<Int>()
+            var counters = mutableMapOf<CounterType, NumberWithRecentChange>()
             var setDead = false
             var partnerMode = false
-            var activeCounters = mutableListOf<CounterType>()
 
             while (true) {
                 when (val index = decodeElementIndex(descriptor)) {
@@ -85,10 +82,9 @@ object PlayerSerializer : KSerializer<Player> {
                     5 -> playerNum = decodeIntElement(descriptor, 5)
                     6 -> monarch = decodeBooleanElement(descriptor, 6)
                     7 -> commanderDamage = decodeSerializableElement(descriptor, 7, ListSerializer(NumberWithRecentChange.serializer())).toMutableList()
-                    8 -> counters = decodeSerializableElement(descriptor, 8, ListSerializer(Int.serializer())).toMutableList()
+                    8 -> counters = decodeSerializableElement(descriptor, 8, MapSerializer(CounterType.serializer(), NumberWithRecentChange.serializer())).toMutableMap()
                     9 -> setDead = decodeBooleanElement(descriptor, 9)
                     10 -> partnerMode = decodeBooleanElement(descriptor, 10)
-                    11 -> activeCounters = decodeSerializableElement(descriptor, 11, ListSerializer(CounterType.serializer())).toMutableList()
                     CompositeDecoder.DECODE_DONE -> break
                     else -> error("Unexpected index: $index")
                 }
@@ -106,7 +102,6 @@ object PlayerSerializer : KSerializer<Player> {
                 counters = counters,
                 setDead = setDead,
                 partnerMode = partnerMode,
-                activeCounters = activeCounters
             )
         }
 
@@ -125,8 +120,7 @@ data class Player(
     val name: String = "Placeholder",
     val monarch: Boolean = false,
     val commanderDamage: List<NumberWithRecentChange> = List(MAX_PLAYERS * 2) { NumberWithRecentChange(0, 0) },
-    val counters: List<Int> = List(CounterType.entries.size * 2) { 0 },
-    val activeCounters: List<CounterType> = listOf(),
+    val counters: Map<CounterType, NumberWithRecentChange> = mapOf(),
     val setDead: Boolean = false,
     val partnerMode: Boolean = false,
 ) {

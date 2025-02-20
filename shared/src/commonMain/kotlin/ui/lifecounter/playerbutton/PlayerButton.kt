@@ -58,8 +58,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import domain.common.NumberWithRecentChange
-import domain.state.game.CommanderDealerState
 import domain.game.timer.TurnTimer
+import domain.state.game.CommanderDealerState
 import domain.system.SystemManager
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -481,13 +481,14 @@ fun PlayerButton(
                                             modifier = Modifier.fillMaxSize().padding(vertical = padding),
                                             horizontalArrangement = Arrangement.spacedBy(padding),
                                         ) {
-                                            itemsIndexed(state.player.activeCounters) { index, counterType ->
+                                            itemsIndexed(state.player.counters.entries.toList()) { index, entry ->
+                                                val (counterType, value) = entry
                                                 Counter(
                                                     modifier = Modifier
                                                         .fillMaxHeight()
                                                         .aspectRatio(0.70f)
                                                         .then(if (index == 0) Modifier.padding(start = padding) else Modifier),
-                                                    textColor = state.player.textColor, iconResource = counterType.resource, value = viewModel.getCounterValue(counterType), onIncrement = {
+                                                    textColor = state.player.textColor, iconResource = counterType.resource, value = value.number, onIncrement = {
                                                         viewModel.incrementCounterValue(
                                                             counterType, 1
                                                         )
@@ -530,7 +531,7 @@ fun PlayerButton(
                                                 verticalArrangement = Arrangement.Center
                                             ) {
                                                 items(CounterType.entries.toTypedArray()) { counterType ->
-                                                    var selected by remember { mutableStateOf(counterType in state.player.activeCounters) }
+                                                    var selected by remember { mutableStateOf(counterType in state.player.counters.keys ) }
                                                     Box(modifier = Modifier.fillMaxSize().aspectRatio(1.0f).background(
                                                         if (selected) {
                                                             Color.Green.copy(alpha = 0.5f)

@@ -7,7 +7,7 @@ import model.GameWithPlayers
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
 
-class NewGameUseCase(
+class  NewGameUseCase(
     private val settingsManager: ISettingsStore,
     private val gameRepository: GameRepository
 ) {
@@ -21,6 +21,7 @@ class NewGameUseCase(
         val gid = gameRepository.insertGame(game)
         game = game.copy(id = gid)
         settingsManager.setCurrentGameId(gid)
+        println("Generated new game with ID: $gid")
         
         val players = List(MAX_PLAYERS) {
             playerGenerateFunction(it + 1).copy(gameId = gid)
