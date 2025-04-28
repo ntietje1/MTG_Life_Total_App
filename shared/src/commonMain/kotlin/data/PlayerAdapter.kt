@@ -9,6 +9,7 @@ import ui.lifecounter.CounterType
 class PlayerAdapter {
     fun toPlayer(
         id: Long,
+        gameId: Long,
         name: String,
         imageString: String?,
         color: Int,
@@ -16,7 +17,7 @@ class PlayerAdapter {
         playerNum: Int,
         lifeTotal: Int,
         lifeTotalRecentChange: Int,
-        monarch: Boolean,
+//        monarch: Boolean,
         setDead: Boolean,
         partnerMode: Boolean,
         commanderDamages: String?,
@@ -25,14 +26,16 @@ class PlayerAdapter {
     ): Player {
         return Player(
             id = id,
+            gameId = gameId,
             name = name,
             imageString = imageString,
             color = Color(color),
             textColor = Color(textColor),
             playerNum = playerNum,
             lifeTotal = NumberWithRecentChange(lifeTotal, lifeTotalRecentChange),
-            monarch = monarch,
+//            monarch = monarch,
             commanderDamage = parseCommanderDamages(commanderDamages),
+
             counters = parseCounters(counters),
             activeCounters = CounterType.entries, //TODO: to be refactored out
             setDead = setDead,

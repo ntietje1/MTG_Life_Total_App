@@ -41,7 +41,7 @@ actual val platformModule = module {
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
     viewModel { TutorialViewModel(get()) }
-    viewModel { PlayerSelectViewModel(get()) }
+    viewModel { PlayerSelectViewModel(get(), get()) }
     viewModel { 
         LifeCounterViewModel(
             settingsManager = get(),

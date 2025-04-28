@@ -25,17 +25,15 @@ class PlayerStateManager(
     }
 
     fun generatePlayer(playerNum: Int): Player {
-        val startingLife = settingsManager.startingLife.value
         val name = "P$playerNum"
-        return Player(lifeTotal = NumberWithRecentChange(startingLife, 0), name = name, playerNum = playerNum)
+        return Player(name = name, playerNum = playerNum)
     }
 
     fun resetPlayerState(player: Player): Player {
-        val startingLife = settingsManager.startingLife.value
+        val startingLife = settingsManager.defaultStartingLife.value
         lifeTotalTrackers[player.playerNum]?.set(startingLife)
         return player.copy(
             lifeTotal = NumberWithRecentChange(startingLife, 0),
-            monarch = false,
             setDead = false,
             counters = List(CounterType.entries.size) { 0 },
             activeCounters = listOf()

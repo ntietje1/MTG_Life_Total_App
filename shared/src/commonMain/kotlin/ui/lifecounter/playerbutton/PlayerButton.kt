@@ -107,6 +107,7 @@ fun PlayerButton(
 ) {
     val state by viewModel.state.collectAsState()
     val isDead by viewModel.isDead.collectAsState()
+    val isMonarch by viewModel.isMonarch.collectAsState()
     val commanderState by viewModel.commanderState.collectAsState()
     val currentDealerIsPartnered = (commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
     val haptic = LocalHapticFeedback.current
@@ -209,7 +210,7 @@ fun PlayerButton(
     ) {
         MonarchyIndicator(
             modifier = Modifier.wrapContentSize(),
-            monarch = state.player.monarch,
+            monarch = isMonarch,
             borderWidth = dimensions.paddingTiny,
         ) {
             BoxWithConstraints(
@@ -434,7 +435,7 @@ fun PlayerButton(
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.monarchy_icon, text = "Monarchy"
-                                            ) { viewModel.onMonarchyButtonClicked(!state.player.monarch) }
+                                            ) { viewModel.onMonarchyButtonClicked(!isMonarch) }
                                         }
                                         item {
                                             FormattedSettingsButton(

@@ -46,6 +46,12 @@ open class PlayerButtonViewModel(
         playerStateManager.isPlayerDead(playerState.player, autoKo)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    val isMonarch: StateFlow<Boolean> = combine(
+        gameStateManager.gameState, state
+    ) { gameState, playerState ->
+        gameState?.monarchPid == playerState.player.id
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
     val commanderState: StateFlow<CommanderState> = commanderManager.commanderState
 
     private val backstack = Backstack()
@@ -71,7 +77,7 @@ open class PlayerButtonViewModel(
 
             commanderManager.attachCommanderTrackers(
                 initialPlayer = state.value.player,
-                onUpdate = ::setCommanderDamage
+                onUpdate = ::setCommanderDamage,
             )
         }
     }
@@ -81,19 +87,18 @@ open class PlayerButtonViewModel(
     }
 
     private fun setCommanderDamage(updatedPlayer: Player) {
+//        println("setCommanderDamage: ${updatedPlayer.commanderDamage.map { it.number }}")
         setPlayer(state.value.player.copy(commanderDamage = updatedPlayer.commanderDamage))
+        gameStateManager.savePlayerState(state.value.player) //TODO: shouldn't save when recent change value is what changed
     }
 
     fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
-//        viewModelScope.launch {
-//            gameStateManager.savePlayerState(state.value.player)
-//        }
     }
 
     open fun incrementLife(value: Int) {
         playerStateManager.incrementLife(state.value.player, value)
-//        gameStateManager.savePlayerState(state.value.player)
+        gameStateManager.savePlayerState(state.value.player)
     }
 
     fun setTimer(timer: TurnTimer?) {
@@ -112,12 +117,10 @@ open class PlayerButtonViewModel(
         _state.value = state.value.copy(buttonState = buttonState)
     }
 
-    fun onMoveTimer() {
-        timerManager.moveTimer()
-    }
+    fun onMoveTimer() = timerManager.moveTimer()
 
     open fun onMonarchyButtonClicked(value: Boolean) {
-        gameStateManager.setMonarchy(state.value.player.playerNum, value)
+        gameStateManager.setMonarch(state.value.player.id, value)
     }
 
     open fun onCommanderButtonClicked() {
@@ -147,7 +150,7 @@ open class PlayerButtonViewModel(
         setPlayer(playerStateManager.toggleSetDead(state.value.player))
         closeSettingsMenu()
         backstack.clear()
-//        gameStateManager.saveGameState()
+        gameStateManager.savePlayerState(state.value.player)
     }
 
     open fun popBackStack() {
@@ -228,6 +231,7 @@ open class PlayerButtonViewModel(
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
         setPlayer(playerStateManager.incrementCounter(state.value.player, counterType, value))
+        //TODO: save counter here
 //        gameStateManager.saveGameState()
     }
 
@@ -243,7 +247,6 @@ open class PlayerButtonViewModel(
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
         commanderManager.incrementCommanderDamage(state.value.player, value, partner)
-//        gameStateManager.saveGameState()
     }
 
     open fun copyPrefs(other: Player) {

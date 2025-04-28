@@ -11,8 +11,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import domain.storage.ISettingsManager
 import di.BackHandler
+import domain.game.GameStateManager
+import domain.storage.ISettingsManager
 import domain.system.SystemManager
 import model.VersionNumber
 import org.koin.compose.KoinContext
@@ -39,6 +40,7 @@ private enum class LifeLinkedScreen(val route: String) {
 fun LifeLinkedApp() {
     KoinContext {
         val settingsManager: ISettingsManager by currentKoinScope().inject()
+        val gameStateManager: GameStateManager by currentKoinScope().inject()
         val keepScreenOn by settingsManager.keepScreenOn.collectAsState()
         val darkTheme by settingsManager.darkTheme.collectAsState()
         SystemManager.keepScreenOn(keepScreenOn)
@@ -50,10 +52,13 @@ fun LifeLinkedApp() {
             fun getStartScreen(): String {
                 return if (!currentVersionNumber.isSame(VersionNumber(settingsManager.lastSplashScreenShown.value))) {
                     LifeLinkedScreen.SPLASH.route
-                } else if (!settingsManager.autoSkip.value) {
-                    LifeLinkedScreen.PLAYER_SELECT.route
-                } else {
+                } else if (
+                    settingsManager.autoSkip.value ||
+                    gameStateManager.loadCurrentGameState()?.game?.playerSelectSeen == true
+                ) {
                     LifeLinkedScreen.LIFE_COUNTER.route
+                } else {
+                    LifeLinkedScreen.PLAYER_SELECT.route
                 }
             }
 

@@ -99,11 +99,11 @@ fun TutorialPage3(
             timerManager = timerManager
         ) {
 
-            private fun checkComplete() {
-                if (state.value.player.monarch) {
-                    onComplete()
-                    complete = true
-                }
+            private fun checkComplete() { //TODO: fix this with new monarch location
+//                if (state.value.player.monarch) {
+//                    onComplete()
+//                    complete = true
+//                }
             }
 
             override fun onCommanderButtonClicked() {

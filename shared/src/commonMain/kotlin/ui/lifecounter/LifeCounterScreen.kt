@@ -21,13 +21,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
 import domain.system.SystemManager
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.middle_icon
@@ -66,9 +65,7 @@ fun LifeCounterScreen(
     firstNavigation: Boolean,
 ) {
     val state by viewModel.state.collectAsState()
-    val scope = rememberCoroutineScope()
-    val numPlayers by viewModel.numPlayers.collectAsState()
-    val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
+    val gameState by viewModel.gameState.collectAsState()
     val dimensions = LocalDimensions.current
 
     if (state.middleButtonDialogState != null) {
@@ -86,16 +83,8 @@ fun LifeCounterScreen(
                 viewModel.setShowButtons(false)
                 goToPlayerSelectScreen(changeNumPlayers)
             },
-            setAlt4PlayerLayout = { viewModel.setAlt4PlayerLayout(it) },
+            setAltPlayerLayout = { viewModel.setAltPlayerLayout(it) },
             setNumPlayers = { viewModel.setNumPlayers(it) },
-            triggerEnterAnimation = {
-                scope.launch {
-                    viewModel.setMiddleButtonDialogState(null)
-                    viewModel.setShowButtons(false)
-                    delay(10)
-                    viewModel.setShowButtons(true)
-                }
-            },
             updateTurnTimerEnabled = { viewModel.setTimerEnabled(it) },
             goToTutorialScreen = goToTutorialScreen
         )
@@ -109,12 +98,18 @@ fun LifeCounterScreen(
         viewModel.setBlurBackground(state.middleButtonDialogState != null)
     }
 
+
+
     BoxWithConstraints(
         modifier.background(MaterialTheme.colorScheme.background)
     ) {
-        val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) {
+        if (gameState == null) {
+            Text("Game is loading!!!")
+            return@BoxWithConstraints
+        }
+        val m = remember(maxHeight, maxWidth, gameState!!.numPlayers, gameState!!.altPlayerLayout) {
             LifeCounterMeasurements(
-                maxWidth = maxWidth - dimensions.paddingTiny * 2, maxHeight = maxHeight - dimensions.paddingTiny * 2, numPlayers = numPlayers, alt4Layout = alt4PlayerLayout
+                maxWidth = maxWidth - dimensions.paddingTiny * 2, maxHeight = maxHeight - dimensions.paddingTiny * 2, numPlayers = gameState!!.numPlayers, alt4Layout = gameState!!.altPlayerLayout
             )
         }
         val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }

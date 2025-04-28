@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import ui.components.SettingsButton
 import lifelinked.shared.generated.resources.Res
@@ -36,26 +35,22 @@ import theme.scaledSp
 fun PlayerNumberDialogContent(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    setPlayerNum: (Int) -> Unit,
-    resetPlayers: () -> Unit,
+    setPlayerNumAndExit: (Int) -> Unit,
     show4PlayerDialog: () -> Unit
 ) {
     GridDialogContent(modifier, title = "Set number of players", items = listOf({
         SettingsButton(imageVector = vectorResource(Res.drawable.one_icon), text = "", shadowEnabled = false, onPress = {
-            setPlayerNum(1)
-            resetPlayers()
+            setPlayerNumAndExit(1)
             onDismiss()
         })
     }, {
         SettingsButton(imageVector = vectorResource(Res.drawable.two_icon), text = "", shadowEnabled = false, onPress = {
-            setPlayerNum(2)
-            resetPlayers()
+            setPlayerNumAndExit(2)
             onDismiss()
         })
     }, {
         SettingsButton(imageVector = vectorResource(Res.drawable.three_icon), text = "", shadowEnabled = false, onPress = {
-            setPlayerNum(3)
-            resetPlayers()
+            setPlayerNumAndExit(3)
             onDismiss()
         })
     }, {
@@ -64,14 +59,12 @@ fun PlayerNumberDialogContent(
         })
     }, {
         SettingsButton(imageVector = vectorResource(Res.drawable.five_icon), text = "", shadowEnabled = false, onPress = {
-            setPlayerNum(5)
-            resetPlayers()
+            setPlayerNumAndExit(5)
             onDismiss()
         })
     }, {
         SettingsButton(imageVector = vectorResource(Res.drawable.six_icon), text = "", onPress = {
-            setPlayerNum(6)
-            resetPlayers()
+            setPlayerNumAndExit(6)
             onDismiss()
         })
     }))
@@ -79,7 +72,7 @@ fun PlayerNumberDialogContent(
 
 @Composable
 fun FourPlayerLayoutContent(
-    modifier: Modifier = Modifier, onDismiss: () -> Unit, setPlayerNum: (Int) -> Unit, setAlt4PlayerLayout: (value: Boolean) -> Unit
+    modifier: Modifier = Modifier, onDismiss: () -> Unit, setPlayerNumAndExit: (Int) -> Unit, setAltPlayerLayout: (value: Boolean) -> Unit
 ) {
     BoxWithConstraints(modifier) {
         val buttonSize = remember(Unit) { min(maxWidth * 0.7f, maxHeight * 0.5f) }
@@ -97,13 +90,13 @@ fun FourPlayerLayoutContent(
                 color = MaterialTheme.colorScheme.onPrimary
             )
             SettingsButton(Modifier.size(buttonSize), imageVector = vectorResource(Res.drawable.default4player_icon), shadowEnabled = false, onPress = {
-                setPlayerNum(4)
-                setAlt4PlayerLayout(false)
+                setPlayerNumAndExit(4)
+                setAltPlayerLayout(false)
                 onDismiss()
             })
             SettingsButton(Modifier.size(buttonSize), imageVector = vectorResource(Res.drawable.alternate4player_icon), shadowEnabled = false, onPress = {
-                setPlayerNum(4)
-                setAlt4PlayerLayout(true)
+                setPlayerNumAndExit(4)
+                setAltPlayerLayout(true)
                 onDismiss()
             })
             Spacer(modifier = Modifier.height(dimensions.paddingMedium))

@@ -59,6 +59,7 @@ import lifelinked.shared.generated.resources.star_icon_small
 import lifelinked.shared.generated.resources.sun_and_moon_icon
 import lifelinked.shared.generated.resources.sun_icon
 import lifelinked.shared.generated.resources.x_icon
+import model.DayNightState
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.LocalDimensions
@@ -75,7 +76,6 @@ import ui.dialog.settings.AboutMeDialogContent
 import ui.dialog.settings.SettingsDialogContent
 import ui.dialog.settings.patchnotes.PatchNotesDialogContent
 import ui.dialog.startinglife.StartingLifeDialogContent
-import ui.lifecounter.DayNightState
 import ui.lifecounter.LifeCounterViewModel
 
 enum class MiddleButtonDialogState {
@@ -92,15 +92,16 @@ fun MiddleButtonDialog(
     toggleTheme: () -> Unit,
     toggleKeepScreenOn: () -> Unit,
     goToPlayerSelectScreen: (Boolean) -> Unit,
-    triggerEnterAnimation: () -> Unit,
+//    triggerEnterAnimation: () -> Unit,
     setNumPlayers: (Int) -> Unit,
-    setAlt4PlayerLayout: (Boolean) -> Unit,
+    setAltPlayerLayout: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     updateTurnTimerEnabled: (Boolean) -> Unit,
     backHandler: BackHandler = koinInject()
 ) {
 
     val state by viewModel.state.collectAsState()
+    val gameState by viewModel.gameState.collectAsState()
     val haptic = LocalHapticFeedback.current
     var showResetDialog by remember { mutableStateOf(false) }
     var showChooseFirstPlayerDialog by remember { mutableStateOf(false) }
@@ -144,28 +145,25 @@ fun MiddleButtonDialog(
             }, Pair(
                 dialogState == MiddleButtonDialogState.PlayerNumber
             ) {
-                PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
+                PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNumAndExit = {
                     setNumPlayers(it)
-                    viewModel.resetGameState()
-                    triggerEnterAnimation()
-                }, resetPlayers = {
-                    viewModel.resetGameState()
-                    triggerEnterAnimation()
+                    viewModel.onResetGame(samePlayers = true)
+//                    triggerEnterAnimation()
                 }, show4PlayerDialog = { setDialogState(MiddleButtonDialogState.FourPlayerLayout) })
             }, Pair(
                 dialogState == MiddleButtonDialogState.FourPlayerLayout
             ) {
-                FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
+                FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNumAndExit = {
                     setNumPlayers(it)
-                    viewModel.resetGameState()
-                    triggerEnterAnimation()
-                }, setAlt4PlayerLayout = { setAlt4PlayerLayout(it) })
+                    viewModel.onResetGame(samePlayers = true)
+//                    triggerEnterAnimation()
+                }, setAltPlayerLayout = { setAltPlayerLayout(it) })
             }, Pair(
                 dialogState == MiddleButtonDialogState.StartingLife
             ) {
                 StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, resetGameState = {
-                    viewModel.resetGameState()
-                    triggerEnterAnimation()
+                    viewModel.onResetGame(samePlayers = true)
+//                    triggerEnterAnimation()
                 })
             }, Pair(
                 dialogState == MiddleButtonDialogState.DiceRoll
@@ -246,8 +244,8 @@ fun MiddleButtonDialog(
                 GridDialogContent(
                     Modifier.fillMaxSize(), title = "Settings", columns = numColumns, items = listOf({
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.player_select_icon), text = "Player Select", shadowEnabled = false, onPress = {
-                            viewModel.savePlayerStates()
-                            viewModel.savePlayerPrefs()
+//                            viewModel.savePlayerStates()
+//                            viewModel.savePlayerPrefs()
                             goToPlayerSelectScreen(false)
                             onDismiss()
                         })
@@ -291,20 +289,30 @@ fun MiddleButtonDialog(
                             backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
-                        SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
-                            DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
-                            DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
-                            DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
-                        }, text = when (state.dayNight) {
-                            DayNightState.DAY -> "Day/Night"
-                            DayNightState.NIGHT -> "Day/Night"
-                            DayNightState.NONE -> "Day/Night"
-                        }, shadowEnabled = false, onPress = {
-                            viewModel.toggleDayNight()
-                        }, onLongPress = {
-                            viewModel.setDayNight(DayNightState.NONE)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        })
+                        if (gameState == null) {
+                            SettingsButton(
+                                buttonModifier,
+                                imageVector = vectorResource(Res.drawable.sun_and_moon_icon),
+                                text = "Day/Night",
+                                shadowEnabled = false,
+                                enabled = false
+                            )
+                        } else {
+                            SettingsButton(buttonModifier, imageVector = when (gameState!!.dayNightState) {
+                                DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
+                                DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
+                                DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
+                            }, text = when (gameState!!.dayNightState) {
+                                DayNightState.DAY -> "Day/Night"
+                                DayNightState.NIGHT -> "Day/Night"
+                                DayNightState.NONE -> "Day/Night"
+                            }, shadowEnabled = false, onPress = {
+                                viewModel.toggleDayNight()
+                            }, onLongPress = {
+                                viewModel.resetDayNight()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            })
+                        }
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.search_icon), text = "Card Search", shadowEnabled = false, onPress = {
                             setDialogState(MiddleButtonDialogState.Scryfall)
@@ -341,7 +349,8 @@ fun MiddleButtonDialog(
             optionTwoMessage = "Different players",
             onOptionOne = {
                 onReset = {
-                    viewModel.resetGameState()
+                    viewModel.onResetGame(samePlayers = true)
+//                    viewModel.resetGameState()
 //                onDismiss()
                     println("resetting game, same players")
                     false
@@ -351,8 +360,9 @@ fun MiddleButtonDialog(
             },
             onOptionTwo = {
                 onReset = {
-                    viewModel.resetAllPrefs()
-                    viewModel.resetGameState()
+                    viewModel.onResetGame(samePlayers = false)
+//                    viewModel.resetAllPrefs()
+//                    viewModel.resetGameState()
                     println("resetting game, different players")
 //                onDismiss()
                     true

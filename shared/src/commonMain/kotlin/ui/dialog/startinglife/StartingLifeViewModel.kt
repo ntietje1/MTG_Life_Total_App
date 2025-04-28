@@ -19,7 +19,7 @@ class StartingLifeViewModel(
     }
 
     fun setStartingLife(life: Int) {
-        settingsManager.setStartingLife(life)
+        settingsManager.setDefaultStartingLife(life)
     }
 
     fun parseStartingLife(): Int? {

@@ -28,7 +28,7 @@ sealed class CommanderState {
 }
 
 class CommanderDamageManager(
-    private val notificationManager: NotificationManager
+    private val notificationManager: NotificationManager,
 ) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
     companion object {
         const val MAX_COMMANDER_DAMAGE = 100
@@ -85,8 +85,9 @@ class CommanderDamageManager(
     }
 
     fun resetCommanderDamage(player: Player): Player {
-        val commanderDamageTracker = requireNotNull(commanderDamageTrackers[player.playerNum])
-        commanderDamageTracker.forEach { it.set(0) }
+        commanderDamageTrackers[player.playerNum]?.let { commanderDamageTracker ->
+            commanderDamageTracker.forEach { it.set(0) }
+        }
         return player.copy(
             commanderDamage = List(Player.MAX_PLAYERS * 2) { NumberWithRecentChange(0, 0) }
         )

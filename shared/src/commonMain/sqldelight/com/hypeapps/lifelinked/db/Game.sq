@@ -1,18 +1,15 @@
 CREATE TABLE game (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     num_players INTEGER NOT NULL DEFAULT 4,
+    altPlayerLayout INTEGER NOT NULL DEFAULT 0,
     start_timestamp INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
     end_timestamp INTEGER DEFAULT NULL,
     winner_pid INTEGER DEFAULT NULL,
+    monarch_pid INTEGER DEFAULT NULL,
+    day_night INTEGER NOT NULL DEFAULT 0,
+    player_select_seen INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (monarch_pid) REFERENCES player(id),
     FOREIGN KEY (winner_pid) REFERENCES player(id)
-);
-
-CREATE TABLE game_player (
-    game_id INTEGER NOT NULL,
-    player_id INTEGER NOT NULL,
-    FOREIGN KEY (game_id) REFERENCES game(id),
-    FOREIGN KEY (player_id) REFERENCES player(id),
-    PRIMARY KEY (game_id, player_id)
 );
 
 getGameWithPlayers:
@@ -26,14 +23,12 @@ SELECT
     p.player_num,
     p.life_total,
     p.life_total_recent_change,
-    p.monarch,
     p.set_dead,
     p.partner_mode,
     GROUP_CONCAT(cd.damage || ',' || cd.recent_change) AS commander_damages,
     GROUP_CONCAT(c.value) AS counters
 FROM game g
-JOIN game_player gp ON g.id = gp.game_id
-JOIN player p ON gp.player_id = p.id
+JOIN player p ON g.id = p.game_id
 LEFT JOIN commander_damage cd ON p.id = cd.reciever_player_id
 LEFT JOIN counter c ON p.id = c.player_id
 WHERE g.id = ?
@@ -44,19 +39,30 @@ insertGame:
 INSERT INTO game (num_players)
 VALUES (?);
 
-updateGame:
-UPDATE game 
-SET num_players = ?, 
-    end_timestamp = ?, 
-    winner_pid = ?
+updateGameMonarch:
+UPDATE game
+SET monarch_pid = ?
 WHERE id = ?;
 
-insertGamePlayer:
-INSERT INTO game_player (game_id, player_id)
-VALUES (?, ?);
+updateGameDayNight:
+UPDATE game
+SET day_night = ?
+WHERE id = ?;
 
-removeAllGamePlayers:
-DELETE FROM game_player WHERE game_id = ?;
+updateGameAltPlayerLayout:
+UPDATE game
+SET altPlayerLayout = ?
+WHERE id = ?;
+
+updateGameNumPlayers:
+UPDATE game
+SET num_players = ?
+WHERE id = ?;
+
+updatePlayerSelectSeen:
+UPDATE game
+SET player_select_seen = ?
+WHERE id = ?;
 
 lastInsertRowId:
 SELECT last_insert_rowid();

@@ -5,7 +5,6 @@ import domain.storage.ISettingsManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
@@ -86,7 +85,7 @@ class TimerManager(
         }
         val playerButtonViewModels = requireAttached().value
         playerButtonViewModels.forEach { it.onFirstPlayerPrompt() }
-        if (settingsManager.numPlayers.value == 1) {
+        if (settingsManager.defaultNumPlayers.value == 1) {
             handleFirstPlayerSelection(0)
         }
         initializeGameTimer()
@@ -96,7 +95,7 @@ class TimerManager(
         val playerButtonViewModels = requireAttached().value
         println("playerbutonviewmodels: $playerButtonViewModels")
         gameTimer.initialize(
-            playerCount = settingsManager.numPlayers.value,
+            playerCount = settingsManager.defaultNumPlayers.value,
             deadCheck = { index -> playerButtonViewModels[index].isDead.value }
         )
     }

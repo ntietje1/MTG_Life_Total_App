@@ -51,7 +51,7 @@ object PlayerSerializer : KSerializer<Player> {
             encodeIntElement(descriptor, 3, value.textColor.toArgb())
             encodeSerializableElement(descriptor, 4, NumberWithRecentChange.serializer(), value.lifeTotal)
             encodeIntElement(descriptor, 5, value.playerNum)
-            encodeBooleanElement(descriptor, 6, value.monarch)
+//            encodeBooleanElement(descriptor, 6, value.monarch)
             encodeSerializableElement(descriptor, 7, ListSerializer(NumberWithRecentChange.serializer()), value.commanderDamage)
             encodeSerializableElement(descriptor, 8, ListSerializer(Int.serializer()), value.counters)
             encodeBooleanElement(descriptor, 9, value.setDead)
@@ -101,7 +101,7 @@ object PlayerSerializer : KSerializer<Player> {
                 textColor = Color(textColor),
                 playerNum = playerNum,
                 name = name,
-                monarch = monarch,
+//                monarch = monarch,
                 commanderDamage = commanderDamage,
                 counters = counters,
                 setDead = setDead,
@@ -116,6 +116,7 @@ object PlayerSerializer : KSerializer<Player> {
 @Serializable(with = PlayerSerializer::class)
 data class Player(
     val id: Long = -1,
+    val gameId: Long = -1,
     val lifeTotal: NumberWithRecentChange = NumberWithRecentChange(-1, 0),
     val imageString: String? = null, // represents a local file name or scryfall url
     //TODO: make a PlayerBackground interface/sealed class that can be a local file, scryfall url, or a color
@@ -123,7 +124,6 @@ data class Player(
     val textColor: Color = Color.White,
     val playerNum: Int = -1,
     val name: String = "Placeholder",
-    val monarch: Boolean = false,
     val commanderDamage: List<NumberWithRecentChange> = List(MAX_PLAYERS * 2) { NumberWithRecentChange(0, 0) },
     val counters: List<Int> = List(CounterType.entries.size * 2) { 0 },
     val activeCounters: List<CounterType> = listOf(),

@@ -2,6 +2,7 @@ import kotlin.Boolean;
 
 CREATE TABLE player (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     image_string TEXT,
     color INTEGER NOT NULL,
@@ -9,7 +10,7 @@ CREATE TABLE player (
     player_num INTEGER NOT NULL,
     life_total INTEGER NOT NULL,
     life_total_recent_change INTEGER NOT NULL,
-    monarch INTEGER AS Boolean NOT NULL DEFAULT 0,
+--     monarch INTEGER AS Boolean NOT NULL DEFAULT 0,
     set_dead INTEGER AS Boolean NOT NULL DEFAULT 0,
     partner_mode INTEGER AS Boolean NOT NULL DEFAULT 0
 );
@@ -34,14 +35,34 @@ CREATE TABLE counter (
 
 -- Queries
 insertPlayer:
-INSERT OR REPLACE INTO player (
-    name, image_string, color, text_color, player_num, 
-    life_total, life_total_recent_change, monarch, set_dead, partner_mode
+INSERT INTO player (
+    game_id, name, image_string, color, text_color, player_num,
+    life_total, life_total_recent_change, set_dead, partner_mode
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+updatePlayer:
+UPDATE player SET
+    name = ?,
+    image_string = ?,
+    color = ?,
+    text_color = ?,
+    player_num = ?,
+    life_total = ?,
+    life_total_recent_change = ?,
+--     monarch = ?,
+    set_dead = ?,
+    partner_mode = ?
+WHERE id = ?;
+
 insertCommanderDamage:
-INSERT OR REPLACE INTO commander_damage (reciever_player_id, dealer_player_id, damage, recent_change)
+INSERT INTO commander_damage (reciever_player_id, dealer_player_id, damage, recent_change)
 VALUES (?, ?, ?, ?);
+
+updateCommanderDamage:
+UPDATE commander_damage SET
+    damage = ?,
+    recent_change = ?
+WHERE reciever_player_id = ? AND dealer_player_id = ?;
 
 insertCounter:
 INSERT OR REPLACE INTO counter (player_id, counter_type, value)

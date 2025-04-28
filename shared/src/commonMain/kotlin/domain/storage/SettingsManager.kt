@@ -29,17 +29,17 @@ interface ISettingsManager {
     val fastCoinFlip: StateFlow<Boolean>
     fun setFastCoinFlip(value: Boolean)
 
-    val numPlayers: StateFlow<Int>
-    fun setNumPlayers(value: Int)
+    val defaultNumPlayers: StateFlow<Int>
+    fun setDefaultNumPlayers(value: Int)
 
-    val alt4PlayerLayout: StateFlow<Boolean>
-    fun setAlt4PlayerLayout(value: Boolean)
+    val defaultAltPlayerLayout: StateFlow<Boolean>
+    fun setDefaultAltPlayerLayout(value: Boolean)
 
     val darkTheme: StateFlow<Boolean>
     fun setDarkTheme(value: Boolean)
 
-    val startingLife: StateFlow<Int>
-    fun setStartingLife(value: Int)
+    val defaultStartingLife: StateFlow<Int>
+    fun setDefaultStartingLife(value: Int)
 
     val tutorialSkip: StateFlow<Boolean>
     fun setTutorialSkip(value: Boolean)
@@ -55,9 +55,6 @@ interface ISettingsManager {
 
     val currentGameId: StateFlow<Long?>
     fun setCurrentGameId(value: Long)
-
-    fun loadPlayerStates(): List<Player>
-    fun savePlayerStates(players: List<Player>)
 
     fun savePlanechaseState(allPlanes: List<Card>, planarDeck: List<Card>, planarBackStack: List<Card>)
     fun loadPlanechaseState(): Triple<List<Card>, List<Card>, List<Card>>
@@ -117,15 +114,15 @@ class SettingsManager private constructor() : ISettingsManager {
     }
 
     private val _numPlayers = MutableStateFlow(settings.getInt("numPlayers", 4))
-    override var numPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
-    override fun setNumPlayers(value: Int) {
+    override var defaultNumPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
+    override fun setDefaultNumPlayers(value: Int) {
         settings.putInt("numPlayers", value)
         _numPlayers.value = value
     }
 
     private val _alt4PlayerLayout = MutableStateFlow(settings.getBoolean("alt4PlayerLayout", false))
-    override val alt4PlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
-    override fun setAlt4PlayerLayout(value: Boolean) {
+    override val defaultAltPlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
+    override fun setDefaultAltPlayerLayout(value: Boolean) {
         settings.putBoolean("alt4PlayerLayout", value)
         _alt4PlayerLayout.value = value
     }
@@ -138,8 +135,8 @@ class SettingsManager private constructor() : ISettingsManager {
     }
 
     private val _startingLife = MutableStateFlow(settings.getInt("startingLife", 40))
-    override val startingLife: StateFlow<Int> = _startingLife.asStateFlow()
-    override fun setStartingLife(value: Int) {
+    override val defaultStartingLife: StateFlow<Int> = _startingLife.asStateFlow()
+    override fun setDefaultStartingLife(value: Int) {
         settings.putInt("startingLife", value)
         _startingLife.value = value
     }
@@ -203,19 +200,19 @@ class SettingsManager private constructor() : ISettingsManager {
         return savedState?.let { Json.decodeFromString<GameTimerState>(it) }
     }
 
-    override fun loadPlayerStates(): List<Player> {
-        try {
-            val allPrefString = settings.getString("playerStates", "[]")
-            return Json.decodeFromString<List<Player>>(allPrefString)
-        } catch (e: Exception) {
-            return emptyList()
-        }
-    }
-
-    override fun savePlayerStates(players: List<Player>) {
-        val allPrefString = Json.encodeToString(players)
-        settings.putString("playerStates", allPrefString)
-    }
+//    override fun loadPlayerStates(): List<Player> {
+//        try {
+//            val allPrefString = settings.getString("playerStates", "[]")
+//            return Json.decodeFromString<List<Player>>(allPrefString)
+//        } catch (e: Exception) {
+//            return emptyList()
+//        }
+//    }
+//
+//    override fun savePlayerStates(players: List<Player>) {
+//        val allPrefString = Json.encodeToString(players)
+//        settings.putString("playerStates", allPrefString)
+//    }
 
     override fun savePlanechaseState(allPlanes: List<Card>, planarDeck: List<Card>, planarBackStack: List<Card>) {
         val allPlanesJson = Json.encodeToString(allPlanes)
