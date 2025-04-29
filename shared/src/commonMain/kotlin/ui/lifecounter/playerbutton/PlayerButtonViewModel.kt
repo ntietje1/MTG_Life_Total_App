@@ -106,7 +106,7 @@ open class PlayerButtonViewModel(
     }
 
     fun setFirstPlayer() {
-        timerManager.handleFirstPlayerSelection(index = state.value.player.playerNum - 1)
+        timerManager.handleFirstPlayerSelection(firstPlayerId = this.state.value.player.id)
     }
 
     fun setPlayerButtonState(buttonState: PBState) {

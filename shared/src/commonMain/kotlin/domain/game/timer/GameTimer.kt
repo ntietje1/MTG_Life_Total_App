@@ -16,9 +16,10 @@ class GameTimer(
     private var numPlayers: Int = 0
     private var isPlayerDead: ((Int) -> Boolean)? = null
 
-    fun initialize(playerCount: Int, deadCheck: (Int) -> Boolean) {
+    fun initialize(playerCount: Int, deadCheck: (Int) -> Boolean, initialState: GameTimerState) {
         numPlayers = playerCount
         isPlayerDead = deadCheck
+        _timerState.value = initialState
     }
 
     fun tick() {
@@ -98,5 +99,6 @@ class GameTimer(
 data class GameTimerState(
     val firstPlayer: Int? = null,
     val activePlayerIndex: Int? = null,
-    val turnTimer: TurnTimer? = null
+    val turnTimer: TurnTimer? = null,
+    val gameId: Long = -1L
 )

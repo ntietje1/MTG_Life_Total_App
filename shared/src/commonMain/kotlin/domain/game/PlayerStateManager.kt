@@ -86,3 +86,7 @@ class PlayerStateManager(
 fun List<PlayerButtonViewModel>.getPlayer(playerNum: Int): Player {
     return find { it.state.value.player.playerNum == playerNum }?.state?.value?.player ?: throw IllegalArgumentException("Player not found")
 }
+
+fun List<PlayerButtonViewModel>.getPlayerById(pid: Long): Player {
+    return find { it.state.value.player.id == pid }?.state?.value?.player ?: throw IllegalArgumentException("Player not found")
+}

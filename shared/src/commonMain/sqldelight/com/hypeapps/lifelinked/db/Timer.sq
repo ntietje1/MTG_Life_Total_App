@@ -1,0 +1,25 @@
+CREATE TABLE turntimer (
+    game_id INTEGER NOT NULL,
+    first_player_id INTEGER NOT NULL,
+    FOREIGN KEY (game_id) REFERENCES game(id),
+    FOREIGN KEY (first_player_id) REFERENCES player(id)
+);
+
+CREATE TABLE turn (
+    game_id INTEGER NOT NULL,
+    player_id INTEGER NOT NULL,
+    turn_number INTEGER NOT NULL,
+    start_timestamp INTEGER NOT NULL,
+    end_timestamp INTEGER NOT NULL,
+    FOREIGN KEY (game_id) REFERENCES game(id),
+    FOREIGN KEY (player_id) REFERENCES player(id)
+);
+
+insertTurnTimer:
+INSERT INTO turntimer (game_id, first_player_id)
+VALUES (?, ?);
+
+insertTurn:
+INSERT INTO turn (game_id, player_id, turn_number, start_timestamp, end_timestamp)
+VALUES (?, ?, ?, ?, ?);
+

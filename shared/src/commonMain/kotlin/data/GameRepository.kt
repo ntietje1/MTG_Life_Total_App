@@ -20,10 +20,9 @@ class GameRepository(
     private val playerAdapter: PlayerAdapter,
     private val gameWithPlayersAdapter: GameWithPlayerAdapter
 ) {
-    private val queries = database.playerQueries
 
     fun getAllPlayersAsFlow(): Flow<List<Player>> {
-        return queries.getAllPlayers()
+        return database.playerQueries.getAllPlayers()
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { players ->
@@ -51,7 +50,7 @@ class GameRepository(
 
     fun updatePlayer(player: Player): Long {
         try {
-            queries.updatePlayer( // Note: gameID is not updated
+            database.playerQueries.updatePlayer( // Note: gameID is not updated
                 id = player.id,
                 name = player.name,
                 image_string = player.imageString,
@@ -66,7 +65,7 @@ class GameRepository(
             )
 
             player.commanderDamage.forEachIndexed { index, damage ->
-                queries.updateCommanderDamage(
+                database.playerQueries.updateCommanderDamage(
                     reciever_player_id = player.id,
                     dealer_player_id = index.toLong(),
                     damage = damage.number.toLong(),
@@ -91,7 +90,7 @@ class GameRepository(
         var playerId: Long
         try {
 //            println("DEBUG - Inserting player: $player")
-            queries.insertPlayer(
+            database.playerQueries.insertPlayer(
                 game_id = player.gameId,
                 name = player.name,
                 image_string = player.imageString,
@@ -105,13 +104,13 @@ class GameRepository(
                 partner_mode = player.partnerMode
             )
 
-            playerId = queries.lastInsertRowId().executeAsOne()
+            playerId = database.playerQueries.lastInsertRowId().executeAsOne()
 //            println("DEBUG - Player inserted with ID: $playerId")
 
             // Insert commander damages
 //            println("DEBUG - Commander damages:")
             player.commanderDamage.forEachIndexed { index, damage ->
-                queries.insertCommanderDamage(
+                database.playerQueries.insertCommanderDamage(
                     reciever_player_id = playerId,
                     dealer_player_id = index.toLong(),
                     damage = damage.number.toLong(),
@@ -150,7 +149,7 @@ class GameRepository(
 
     suspend fun deleteAllPlayers() {
         withContext(Dispatchers.IO) {
-            queries.deleteAllPlayers()
+            database.playerQueries.deleteAllPlayers()
         }
     }
 
@@ -166,7 +165,6 @@ class GameRepository(
         println("GOT GAME 2 WITH MONARCH: ${game.monarchPid}")
         return GameWithPlayers(game, players)
     }
-
 
 
 //    fun getGameWithPlayersAsFlow(gameId: Long): Flow<GameWithPlayers> {
@@ -188,10 +186,10 @@ class GameRepository(
     fun insertGame(game: Game): Long {
         var gameId: Long
 //        withContext(Dispatchers.IO) {
-            database.gameQueries.insertGame(
-                num_players = game.numPlayers.toLong(),
-            )
-            gameId = database.gameQueries.lastInsertRowId().executeAsOne()
+        database.gameQueries.insertGame(
+            num_players = game.numPlayers.toLong(),
+        )
+        gameId = database.gameQueries.lastInsertRowId().executeAsOne()
 //        }
         return gameId
     }
@@ -223,36 +221,23 @@ class GameRepository(
     }
 
     fun updatePlayerSelectSeen(playerSelectSeen: Boolean, gameId: Long) {
-        println("GameRepository.updateAltPlayerLayout($playerSelectSeen, $gameId)")
+        println("GameRepository.updatePlayerSelectSeen($playerSelectSeen, $gameId)")
         database.gameQueries.updatePlayerSelectSeen(playerSelectSeen.toLong(), gameId)
     }
 
-//    fun updateGameWithPlayers(gameWithPlayers: GameWithPlayers) {
-//        val players = gameWithPlayers.players
-////        withContext(Dispatchers.IO) {
-//            println("GameRepository.updateGameWithPlayers($game)")
-//            database.gameQueries.updateGame(
-//                num_players = game.numPlayers.toLong(),
-//                end_timestamp = game.endTimestamp,
-//                winner_pid = game.winnerPid,
-//                monarch_pid = players.find { it.monarch }?.id,
-//                id = game.id
-//            )
-//            println("GameRepository.updateGameWithPlayers done")
-//
-////            database.gameQueries.removeAllGamePlayers(game.id)
-////            val gameWithplayers = getGameWithPlayers(game.id)
-////            println("GameRepository.updateGameWithPlayers removeAllGamePlayers: $gameWithplayers")
-////            println("SHOULD BE DELETED PLAYERS: ${gameWithplayers?.players}")
-//            players.forEach { player ->
-//                println("UPDATE GAME WITH PLAYERS: PLAYER: $player")
-//                val playerId = updatePlayer(player)
-////                database.gameQueries.insertGamePlayer(
-////                    game_id = game.id,
-////                    player_id = playerId
-////                )
-//            }
-//            println("GameRepository.updateGameWithPlayers insertGamePlayer done")
-//        }
-////    }
+    fun insertTimer(gameId: Long, firstPlayerId: Long) {
+        println("GameRepository.insertTimer($gameId, $firstPlayerId)")
+        database.timerQueries.insertTurnTimer(gameId, firstPlayerId)
+    }
+
+    fun insertTurn(gameId: Long, playerId: Long, turnNumber: Int, startTimeStamp: Long, endTimeStamp: Long) {
+        println("GameRepository.insertTurn($gameId, $playerId, $turnNumber, $startTimeStamp, $endTimeStamp)")
+        database.timerQueries.insertTurn(
+            game_id = gameId,
+            player_id = playerId,
+            turn_number = turnNumber.toLong(),
+            start_timestamp = startTimeStamp,
+            end_timestamp = endTimeStamp
+        )
+    }
 }

@@ -74,7 +74,7 @@ open class LifeCounterViewModel(
 
         viewModelScope.launch {
             registerCommanderListener()
-            timerManager.registerTimerStateObserver()
+            timerManager.registerTimerEnabledObserver()
         }
     }
 
@@ -150,10 +150,6 @@ open class LifeCounterViewModel(
         }
     }
 
-    fun setFirstPlayer(index: Int?) {
-        timerManager.handleFirstPlayerSelection(index)
-    }
-
     fun onNavigate(firstNavigation: Boolean) {
         if (firstNavigation) { //TODO: show a progress bar that says "loading game" or something
             viewModelScope.launch {
@@ -168,6 +164,9 @@ open class LifeCounterViewModel(
         } else {
             showLoadingScreen(false)
             setShowButtons(true)
+        }
+        viewModelScope.launch {
+            timerManager.registerTimerEnabledObserver() //TODO: not sure why this is necessary here
         }
     }
 

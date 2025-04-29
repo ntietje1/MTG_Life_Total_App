@@ -37,7 +37,7 @@ actual val platformModule = module {
     single { PlayerCustomizationManager(get()) }
     single { CommanderDamageManager(get()) }
     single { GameStateManager(get(), get()) }
-    single { TimerManager(get()) }
+    single { TimerManager(get(), get()) }
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
     viewModel { TutorialViewModel(get()) }
