@@ -1,5 +1,6 @@
 package ui.lifecounter
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.game.CommanderDamageManager
@@ -85,27 +86,24 @@ open class LifeCounterViewModel(
     }
 
     private fun generateNewGame(samePlayers: Boolean): GameWithPlayers {
-        val newGame = if (samePlayers) {
-            gameStateManager.newGame {
-                commanderManager.resetCommanderDamage(
-                    playerStateManager.resetPlayerState(
-                        playerButtonViewModels.value.getPlayer(it)
-                    )
-                )
+        return if (samePlayers) {
+            gameStateManager.newGame { newPlayerNum ->
+                playerButtonViewModels.value.getPlayer(newPlayerNum)
+                    .let { playerStateManager.resetPlayerState(it) }
+                    .let { commanderManager.resetCommanderDamage(it) }
             }
         } else {
-            gameStateManager.newGame {
-                playerCustomizationManager.resetPlayerPrefs(
-                    commanderManager.resetCommanderDamage(
-                        playerStateManager.resetPlayerState(
-                            playerStateManager.generatePlayer(playerNum = it)
-                        )
-                    )
-                )
+            val usedColors = mutableListOf<Color>()
+            gameStateManager.newGame { newPlayerNum ->
+                playerStateManager.generatePlayer(playerNum = newPlayerNum)
+                    .let { playerStateManager.resetPlayerState(it) }
+                    .let { commanderManager.resetCommanderDamage(it) }
+                    .let { playerCustomizationManager.resetPlayerPrefs(it, usedColors) }
+                    .also { createdPlayer -> usedColors.add(createdPlayer.color) }
             }
+        }.also { newGame ->
+            settingsManager.setCurrentGameId(newGame.game.id)
         }
-        settingsManager.setCurrentGameId(newGame.game.id)
-        return newGame
     }
 
     override fun onCleared() {
@@ -214,7 +212,6 @@ open class LifeCounterViewModel(
     }
 
     fun savePlayerPrefs() = playerCustomizationManager.saveAllPlayerPrefs()
-    fun resetAllPrefs() = playerCustomizationManager.resetAllPlayerPrefs()
 
     open fun setNumPlayers(value: Int) = gameStateManager.setNumPlayers(value)
     fun setAltPlayerLayout(value: Boolean) = gameStateManager.setAltPlayerLayout(value)

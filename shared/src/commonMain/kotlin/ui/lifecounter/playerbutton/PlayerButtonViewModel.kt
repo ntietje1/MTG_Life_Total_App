@@ -163,11 +163,6 @@ open class PlayerButtonViewModel(
         backstack.clear()
     }
 
-    fun resetPlayerPref() {
-        setPlayer(playerCustomizationManager.resetPlayerPrefs(state.value.player))
-        resetCustomizationMenuViewModel()
-    }
-
     fun savePlayerPref() {
         playerCustomizationManager.savePlayerPrefs(state.value.player)
     }
