@@ -15,7 +15,7 @@ import kotlin.coroutines.coroutineContext
 /**
  * Contains all LifeCounterViewModel timer related logic
  */
-class TimerManager(
+class TimerManager( //TODO: make the current timer player id observable state flow -> don't have to manually update viewmodels with it
     private val settingsManager: ISettingsManager,
     private val repository: GameRepository,
 ) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
@@ -36,25 +36,19 @@ class TimerManager(
     private fun loadCurrentTimerState(): GameTimerState {
         val currentGameId = requireNotNull(settingsManager.currentGameId.value)
         val savedTimerState = settingsManager.savedTimerState.value
-        println("SAVED TIMER STATE PREREQ: CurrentGameID: $currentGameId, SavedTimerState: ${savedTimerState?.gameId}")
         return if (savedTimerState == null || savedTimerState.gameId != currentGameId) {
-            println("CREATING NEW TIMER STATE")
             GameTimerState(gameId = currentGameId)
         } else {
-            println("USING PREVIOUS SAVED TIMER STATE: first player: ${savedTimerState.firstPlayer}")
             savedTimerState
         }
     }
 
-    fun moveTimer() {
+    private fun saveCurrentTurn() {
         val previousGameTimerLength = requireNotNull(gameTimer.timerState.value.turnTimer).seconds
         val previousPlayerIndex = requireNotNull(gameTimer.timerState.value.activePlayerIndex)
         val previousTurnNumber = requireNotNull(gameTimer.timerState.value.turnTimer).turn
         val currentGameId = requireNotNull(settingsManager.currentGameId.value)
         val previousPlayerId = requireAttached().value[previousPlayerIndex].state.value.player.id
-        gameTimer.moveTimer()
-        updateViewModelsWithTimer()
-        saveTimerState()
         val now = Clock.System.now().toEpochMilliseconds()
         repository.insertTurn(
             gameId = currentGameId,
@@ -65,11 +59,17 @@ class TimerManager(
         )
     }
 
+    fun moveTimer() {
+        saveCurrentTurn()
+        gameTimer.moveTimer()
+        updateViewModelsWithTimer()
+        saveTimerState()
+    }
+
     fun handleFirstPlayerSelection(firstPlayerId: Long) {
         val playerIndex = requireAttached().value.indexOfFirst { it.state.value.player.id == firstPlayerId }
         clearFirstPlayerSelectionState()
-        gameTimer.setFirstPlayer(playerIndex)
-        gameTimer.setTimerEnabled(true)
+        gameTimer.onFirstPlayerSelected(playerIndex)
         updateViewModelsWithTimer()
         saveTimerState()
         repository.insertTimer(
@@ -87,9 +87,7 @@ class TimerManager(
         }
     }
 
-    suspend fun onTimerEnabledChange(timerEnabled: Boolean) {
-        //TODO: save here
-        gameTimer.setTimerEnabled(timerEnabled)
+    suspend fun onTimerEnabledChange(timerEnabled: Boolean = settingsManager.turnTimer.value) {
         if (timerEnabled) {
             initializeGameTimer()
             if (gameTimer.timerState.value.firstPlayer == null) {
@@ -98,18 +96,8 @@ class TimerManager(
             startTimerLoop()
         } else {
             stopTimerLoop()
-//            reset()
         }
         updateViewModelsWithTimer()
-    }
-
-    fun reset() { //TODO: this may not be necessary any more
-        clearFirstPlayerSelectionState()
-        gameTimer.reset()
-//        initializeGameTimer()
-        if (settingsManager.turnTimer.value) {
-            promptForFirstPlayer()
-        }
     }
 
     private fun promptForFirstPlayer() {
@@ -122,7 +110,6 @@ class TimerManager(
         if (settingsManager.defaultNumPlayers.value == 1) {
             handleFirstPlayerSelection(0)
         }
-//        initializeGameTimer()
     }
 
     private fun initializeGameTimer() {
@@ -138,7 +125,7 @@ class TimerManager(
         val playerButtonViewModels = requireAttached().value
         val timerState = gameTimer.timerState.value
         playerButtonViewModels.forEachIndexed { index, viewModel ->
-            val shouldShowTimer = (index == timerState.activePlayerIndex)
+            val shouldShowTimer = (settingsManager.turnTimer.value && index == timerState.activePlayerIndex)
             viewModel.setTimer(if (shouldShowTimer) timerState.turnTimer else null)
         }
     }
@@ -158,7 +145,6 @@ class TimerManager(
     suspend fun registerTimerEnabledObserver() {
         // Observe timer enabled changes
         requireAttached()
-//        initializeGameTimer()
         observerJob = CoroutineScope(coroutineContext).launch {
             settingsManager.turnTimer.collect { turnTimerEnabled ->
                 onTimerEnabledChange(turnTimerEnabled)

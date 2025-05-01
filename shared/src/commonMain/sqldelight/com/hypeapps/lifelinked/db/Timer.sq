@@ -20,6 +20,6 @@ INSERT INTO turntimer (game_id, first_player_id)
 VALUES (?, ?);
 
 insertTurn:
-INSERT INTO turn (game_id, player_id, turn_number, start_timestamp, end_timestamp)
+INSERT OR REPLACE INTO turn (game_id, player_id, turn_number, start_timestamp, end_timestamp)
 VALUES (?, ?, ?, ?, ?);
 

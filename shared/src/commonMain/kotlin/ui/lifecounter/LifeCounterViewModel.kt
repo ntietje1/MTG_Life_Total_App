@@ -70,8 +70,6 @@ open class LifeCounterViewModel(
         generatePlayerButtonsViewModels(currentGameWithPlayers.players)
         observeGameState()
 
-//        println("USING GAME ID: ${gameState.value?.id}")
-
         viewModelScope.launch {
             registerCommanderListener()
             timerManager.registerTimerEnabledObserver()
@@ -166,7 +164,7 @@ open class LifeCounterViewModel(
             setShowButtons(true)
         }
         viewModelScope.launch {
-            timerManager.registerTimerEnabledObserver() //TODO: not sure why this is necessary here
+            timerManager.registerTimerEnabledObserver()
         }
     }
 
@@ -240,7 +238,7 @@ open class LifeCounterViewModel(
         resetCounters()
         planeChaseViewModel.onResetGame()
         viewModelScope.launch {
-            timerManager.reset()
+            timerManager.onTimerEnabledChange()
         }
         restartButtons()
     }

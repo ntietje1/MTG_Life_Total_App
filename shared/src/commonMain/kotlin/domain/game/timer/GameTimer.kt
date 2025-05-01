@@ -31,19 +31,12 @@ class GameTimer(
         }
     }
 
-    fun setFirstPlayer(index: Int?) {
+    private fun setFirstPlayer(index: Int) {
         _timerState.value = _timerState.value.copy(firstPlayer = index)
     }
 
-    fun setTimerEnabled(enabled: Boolean) {
-        if (enabled) {
-            initTimer()
-        } else {
-            reset()
-        }
-    }
-
-    private fun initTimer() {
+    fun onFirstPlayerSelected(firstPlayerIndex: Int) {
+        setFirstPlayer(firstPlayerIndex)
         if (_timerState.value.activePlayerIndex == null) {
             setActiveTimerIndex(_timerState.value.firstPlayer)
         }
@@ -90,9 +83,9 @@ class GameTimer(
         _timerState.value = _timerState.value.copy(activePlayerIndex = index)
     }
 
-    fun reset() {
-        _timerState.value = GameTimerState()
-    }
+//    fun reset() {
+//        _timerState.value = GameTimerState()
+//    }
 }
 
 @Serializable
