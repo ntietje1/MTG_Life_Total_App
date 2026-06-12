@@ -4,6 +4,12 @@ import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSUserDomainMask
+import platform.posix.fclose
+import platform.posix.fopen
+import platform.posix.fwrite
 
 actual class ImageManager: IImageManager {
     actual override fun getImagePath(fileName: String): String? {
@@ -25,15 +31,17 @@ actual class ImageManager: IImageManager {
 
         val destinationPath = "$documentsDir/$fileName"
 
-        val nsData = bytes.usePinned { pinned ->
-            NSData.create(bytes = pinned.addressOf(0), length = bytes.size.toULong())
+        val file = fopen(destinationPath, "wb")
+            ?: throw IllegalStateException("Failed to open image file for writing.")
+
+        val byteCount = bytes.size.toULong()
+        val written = bytes.usePinned { pinned ->
+            fwrite(pinned.addressOf(0), 1uL, byteCount, file)
         }
-
-        val image = UIImage.imageWithData(nsData)
-        val imageData = image?.let { UIImagePNGRepresentation(it) }
-
-        imageData?.writeToFile(destinationPath, atomically = true)
-            ?: throw IllegalStateException("Failed to write image data to file.")
+        fclose(file)
+        if (written != byteCount) {
+            throw IllegalStateException("Failed to write image data to file.")
+        }
 
         return fileName
     }

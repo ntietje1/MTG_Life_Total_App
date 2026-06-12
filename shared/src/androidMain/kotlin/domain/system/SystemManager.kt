@@ -28,6 +28,7 @@ actual class SystemManager {
         }
 
         @SuppressLint("ComposableNaming")
+        @Suppress("DEPRECATION")
         @Composable
         actual fun updateSystemBarsColors(isDarkTheme: Boolean) {
             val view = LocalView.current

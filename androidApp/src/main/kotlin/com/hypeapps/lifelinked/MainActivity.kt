@@ -30,6 +30,7 @@ class MainActivity : ComponentActivity() {
             window.decorView.setBackgroundColor(if (isSystemInDarkTheme()) Color.BLACK else Color.WHITE)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                @Suppress("DEPRECATION")
                 window.setDecorFitsSystemWindows(false)
                 window.insetsController?.let {
                     it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())

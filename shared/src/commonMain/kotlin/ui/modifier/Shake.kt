@@ -15,8 +15,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.IntOffset
-import kotlinx.datetime.Clock
 import kotlin.math.roundToInt
+import kotlin.time.Clock
 
 @Composable
 fun rememberShakeController(): ShakeController {

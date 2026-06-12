@@ -20,12 +20,12 @@ class ScryfallApi(private val client: HttpClient = HttpClient()) {
 
     suspend fun searchRulings(query: String): List<Ruling> {
         val response = searchScryfall(query)
-        return parseScryfallResponse(response)
+        return json.decodeFromString<RulingResponse>(response).data
     }
 
     suspend fun searchCards(query: String): List<Card> {
         val response = searchScryfall(query)
-        return parseScryfallResponse(response)
+        return json.decodeFromString<CardResponse>(response).data
     }
 
     private suspend fun searchScryfall(query: String): String = withContext(Dispatchers.IO) {
@@ -43,21 +43,6 @@ class ScryfallApi(private val client: HttpClient = HttpClient()) {
         }
     }
 
-    private inline fun <reified T> parseScryfallResponse(response: String): List<T> {
-        return when (T::class) {
-            Card::class -> {
-                val jsonResponse = json.decodeFromString<CardResponse>(response)
-                jsonResponse.data as List<T>
-            }
-
-            Ruling::class -> {
-                val jsonResponse = json.decodeFromString<RulingResponse>(response)
-                jsonResponse.data as List<T>
-            }
-
-            else -> throw IllegalArgumentException("Unsupported type parameter")
-        }
-    }
 }
 
 

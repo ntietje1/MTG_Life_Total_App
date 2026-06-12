@@ -15,7 +15,6 @@ import domain.storage.ISettingsManager
 import di.BackHandler
 import domain.system.SystemManager
 import model.VersionNumber
-import org.koin.compose.KoinContext
 import org.koin.compose.currentKoinScope
 import org.koin.compose.koinInject
 import theme.LifeLinkedTheme
@@ -37,92 +36,90 @@ private enum class LifeLinkedScreen(val route: String) {
 
 @Composable
 fun LifeLinkedApp() {
-    KoinContext {
-        val settingsManager: ISettingsManager by currentKoinScope().inject()
-        val keepScreenOn by settingsManager.keepScreenOn.collectAsState()
-        val darkTheme by settingsManager.darkTheme.collectAsState()
-        SystemManager.keepScreenOn(keepScreenOn)
-        LifeLinkedTheme(darkTheme = darkTheme) {
-            SystemManager.updateSystemBarsColors(true)
+    val settingsManager: ISettingsManager by currentKoinScope().inject()
+    val keepScreenOn by settingsManager.keepScreenOn.collectAsState()
+    val darkTheme by settingsManager.darkTheme.collectAsState()
+    SystemManager.keepScreenOn(keepScreenOn)
+    LifeLinkedTheme(darkTheme = darkTheme) {
+        SystemManager.updateSystemBarsColors(true)
 
-            val navController = rememberNavController()
-            val currentVersionNumber = koinInject<VersionNumber>()
-            fun getStartScreen(): String {
-                return if (!currentVersionNumber.isSame(VersionNumber(settingsManager.lastSplashScreenShown.value))) {
-                    LifeLinkedScreen.SPLASH.route
-                } else if (!settingsManager.autoSkip.value) {
-                    LifeLinkedScreen.PLAYER_SELECT.route
-                } else {
-                    LifeLinkedScreen.LIFE_COUNTER.route
-                }
+        val navController = rememberNavController()
+        val currentVersionNumber = koinInject<VersionNumber>()
+        fun getStartScreen(): String {
+            return if (!currentVersionNumber.isSame(VersionNumber(settingsManager.lastSplashScreenShown.value))) {
+                LifeLinkedScreen.SPLASH.route
+            } else if (!settingsManager.autoSkip.value) {
+                LifeLinkedScreen.PLAYER_SELECT.route
+            } else {
+                LifeLinkedScreen.LIFE_COUNTER.route
+            }
+        }
+
+        val backHandler: BackHandler by currentKoinScope().inject()
+        backHandler.attachNavigation(navController)
+
+        var allowChangeNumPlayers by remember { mutableStateOf(true) }
+        var firstLifeCounterNavigation by remember { mutableStateOf(true) }
+
+        NavHost(
+            navController = navController,
+            startDestination = getStartScreen()
+        ) {
+            composable(LifeLinkedScreen.SPLASH.route) {
+                SplashScreen(
+                    goToTutorial = {
+                        settingsManager.setLastSplashScreenShown(currentVersionNumber.value)
+                        navController.navigate(LifeLinkedScreen.TUTORIAL.route)
+                    },
+                    goToLifeCounter = {
+                        settingsManager.setLastSplashScreenShown(currentVersionNumber.value)
+                        navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
+                    }
+                )
+            }
+            composable(LifeLinkedScreen.TUTORIAL.route) {
+                val viewModel = koinViewModel<TutorialViewModel>()
+                TutorialScreen(
+                    viewModel = viewModel,
+                    onFinishTutorial = {
+                        settingsManager.setTutorialSkip(true)
+                        if (navController.currentBackStack.value.all {
+                                it.destination.route == null ||
+                                        !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route)
+                            }) {
+                            navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
+                        } else {
+                            navController.popBackStack()
+                        }
+                    }
+                )
             }
 
-            val backHandler: BackHandler by currentKoinScope().inject()
-            backHandler.attachNavigation(navController)
+            composable(LifeLinkedScreen.PLAYER_SELECT.route) {
+                val viewModel = koinViewModel<PlayerSelectViewModel>()
+                PlayerSelectScreen(
+                    viewModel = viewModel,
+                    allowChangeNumPlayers = allowChangeNumPlayers,
+                    goToLifeCounterScreen = {
+                        navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
+                    }
+                )
+            }
 
-            var allowChangeNumPlayers by remember { mutableStateOf(true) }
-            var firstLifeCounterNavigation by remember { mutableStateOf(true) }
-
-            NavHost(
-                navController = navController,
-                startDestination = getStartScreen()
-            ) {
-                composable(LifeLinkedScreen.SPLASH.route) {
-                    SplashScreen(
-                        goToTutorial = {
-                            settingsManager.setLastSplashScreenShown(currentVersionNumber.value)
-                            navController.navigate(LifeLinkedScreen.TUTORIAL.route)
-                        },
-                        goToLifeCounter = {
-                            settingsManager.setLastSplashScreenShown(currentVersionNumber.value)
-                            navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
-                        }
-                    )
-                }
-                composable(LifeLinkedScreen.TUTORIAL.route) {
-                    val viewModel = koinViewModel<TutorialViewModel>()
-                    TutorialScreen(
-                        viewModel = viewModel,
-                        onFinishTutorial = {
-                            settingsManager.setTutorialSkip(true)
-                            if (navController.currentBackStack.value.all {
-                                    it.destination.route == null ||
-                                            !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route)
-                                }) {
-                                navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
-                            } else {
-                                navController.popBackStack()
-                            }
-                        }
-                    )
-                }
-
-                composable(LifeLinkedScreen.PLAYER_SELECT.route) {
-                    val viewModel = koinViewModel<PlayerSelectViewModel>()
-                    PlayerSelectScreen(
-                        viewModel = viewModel,
-                        allowChangeNumPlayers = allowChangeNumPlayers,
-                        goToLifeCounterScreen = {
-                            navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
-                        }
-                    )
-                }
-
-                composable(LifeLinkedScreen.LIFE_COUNTER.route) {
-                    val viewModel = koinViewModel<LifeCounterViewModel>()
-                    LifeCounterScreen(
-                        viewModel = viewModel,
-                        goToPlayerSelectScreen = { changeNumPlayers ->
-                            allowChangeNumPlayers = changeNumPlayers
-                            navController.navigate(LifeLinkedScreen.PLAYER_SELECT.route)
-                            firstLifeCounterNavigation = false
-                        },
-                        goToTutorialScreen = {
-                            navController.navigate(LifeLinkedScreen.TUTORIAL.route)
-                        },
-                        firstNavigation = firstLifeCounterNavigation
-                    )
-                }
+            composable(LifeLinkedScreen.LIFE_COUNTER.route) {
+                val viewModel = koinViewModel<LifeCounterViewModel>()
+                LifeCounterScreen(
+                    viewModel = viewModel,
+                    goToPlayerSelectScreen = { changeNumPlayers ->
+                        allowChangeNumPlayers = changeNumPlayers
+                        navController.navigate(LifeLinkedScreen.PLAYER_SELECT.route)
+                        firstLifeCounterNavigation = false
+                    },
+                    goToTutorialScreen = {
+                        navController.navigate(LifeLinkedScreen.TUTORIAL.route)
+                    },
+                    firstNavigation = firstLifeCounterNavigation
+                )
             }
         }
     }

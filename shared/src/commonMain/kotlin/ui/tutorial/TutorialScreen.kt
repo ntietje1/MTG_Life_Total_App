@@ -26,9 +26,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -41,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.isOutOfBounds
@@ -53,6 +51,7 @@ import domain.system.NotificationManager
 import domain.system.SystemManager
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.back_icon_alt
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
@@ -328,7 +327,8 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
             }
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Go back"
+                imageVector = vectorResource(Res.drawable.back_icon_alt),
+                contentDescription = "Go back"
             )
         }
         Box(
@@ -366,7 +366,8 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
             }
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                modifier = Modifier.rotate(180f),
+                imageVector = vectorResource(Res.drawable.back_icon_alt),
                 contentDescription = "Go forward"
             )
         }
