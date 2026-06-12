@@ -1,0 +1,90 @@
+name: PR Validation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-validation-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android Build and Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Run Android checks
+        run: ./gradlew :androidApp:lintDebug :androidApp:testDebugUnitTest :androidApp:assembleDebug --no-daemon --warning-mode all
+
+      - name: Upload Android reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-reports
+          path: |
+            androidApp/build/reports/lint-results-debug.*
+            androidApp/build/reports/tests/**
+            androidApp/build/test-results/**
+          if-no-files-found: ignore
+
+      - name: Upload debug APK
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-debug-apk
+          path: androidApp/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
+
+  shared-ios:
+    name: Shared iOS Compile
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Run shared iOS checks
+        run: ./gradlew :shared:allTests :shared:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosArm64 --no-daemon --warning-mode all
+
+      - name: Upload shared reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: shared-ios-reports
+          path: |
+            shared/build/reports/tests/**
+            shared/build/test-results/**
+          if-no-files-found: ignore
