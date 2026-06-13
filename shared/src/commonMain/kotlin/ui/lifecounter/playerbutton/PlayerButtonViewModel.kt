@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.common.Backstack
 import domain.common.NumberWithRecentChange
-import domain.game.PlayerCustomizationManager
 import domain.game.timer.TurnTimer
 import domain.state.game.GameCommand
 import domain.state.game.GameSessionStore
@@ -31,8 +30,10 @@ open class PlayerButtonViewModel(
     private val profileRepository: PlayerProfileRepository,
     private val fileImageStore: IFileImageStore,
     protected val notificationManager: NotificationManager,
-    private val playerCustomizationManager: PlayerCustomizationManager,
     private val gameSessionStore: GameSessionStore,
+    private val resetPlayerPrefs: (Player) -> Player,
+    private val copyPlayerPrefs: (Player, Player) -> Player,
+    private val savePlayerPrefs: (Player) -> Unit,
     private val onFirstPlayerSelected: (Int) -> Unit,
     private val onMoveTimerRequested: () -> Unit
 ) : ViewModel() {
@@ -170,12 +171,12 @@ open class PlayerButtonViewModel(
     }
 
     fun resetPlayerPref() {
-        setPlayer(playerCustomizationManager.resetPlayerPrefs(state.value.player))
+        setPlayer(resetPlayerPrefs(state.value.player))
         resetCustomizationMenuViewModel()
     }
 
     fun savePlayerPref() {
-        playerCustomizationManager.savePlayerPrefs(state.value.player)
+        savePlayerPrefs(state.value.player)
     }
 
     fun getCounterValue(counterType: CounterType): Int {
@@ -199,7 +200,7 @@ open class PlayerButtonViewModel(
             delay(50)
             copyPrefs(player)
             resetCustomizationMenuViewModel()
-            playerCustomizationManager.savePlayerPrefs(state.value.player)
+            savePlayerPrefs(state.value.player)
         }
     }
 
@@ -272,7 +273,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun copyPrefs(other: Player) {
-        setPlayer(playerCustomizationManager.copyPlayerPrefs(state.value.player, other))
+        setPlayer(copyPlayerPrefs(state.value.player, other))
     }
 
     private val seatId get() = GameSessionUiMapper.seatIdForPlayerNumber(state.value.player.playerNum)

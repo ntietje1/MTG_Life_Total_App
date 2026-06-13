@@ -22,7 +22,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import domain.game.PlayerCustomizationManager
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
 import domain.state.profile.PlayerProfileRepository
@@ -139,15 +138,13 @@ fun TutorialPage5(
         preferencesRepository: PreferencesRepository,
         profileRepository: PlayerProfileRepository,
         fileImageStore: IFileImageStore,
-        notificationManager: NotificationManager,
-        customizationManager: PlayerCustomizationManager
+        notificationManager: NotificationManager
         ) : MockPlayerButtonViewModel(
             state = state,
         preferencesRepository = preferencesRepository,
         profileRepository = profileRepository,
         fileImageStore = fileImageStore,
-        notificationManager = notificationManager,
-        customizationManager = customizationManager
+        notificationManager = notificationManager
         ) {
             override fun onCommanderButtonClicked() {
                 this.notificationManager.showNotification("Commander damage disabled", 3000)
@@ -164,8 +161,7 @@ fun TutorialPage5(
         preferencesRepository = gameState.mockPreferencesRepository,
         profileRepository = gameState.mockProfileRepository,
         fileImageStore = gameState.mockFileImageStore,
-        notificationManager = this.notificationManager,
-        customizationManager = this.playerCustomizationManager
+        notificationManager = this.notificationManager
             )
         }
     }

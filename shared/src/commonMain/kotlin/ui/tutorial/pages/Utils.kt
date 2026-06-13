@@ -194,16 +194,17 @@ open class MockPlayerButtonViewModel(
     preferencesRepository: PreferencesRepository,
     profileRepository: PlayerProfileRepository,
     fileImageStore: IFileImageStore,
-    notificationManager: NotificationManager,
-    customizationManager: PlayerCustomizationManager
+    notificationManager: NotificationManager
 ) : PlayerButtonViewModel(
     initialState = state,
     preferencesRepository = preferencesRepository,
     profileRepository = profileRepository,
     fileImageStore = fileImageStore,
     notificationManager = notificationManager,
-    playerCustomizationManager = customizationManager,
     gameSessionStore = GameSessionStore(SavedGameRepository(InMemorySettings(), preferencesRepository)),
+    resetPlayerPrefs = { player -> player },
+    copyPlayerPrefs = { _, player -> player },
+    savePlayerPrefs = {},
     onFirstPlayerSelected = {},
     onMoveTimerRequested = {}
 )

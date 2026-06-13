@@ -22,7 +22,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import domain.game.PlayerCustomizationManager
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
 import domain.state.profile.PlayerProfileRepository
@@ -91,15 +90,13 @@ fun TutorialPage4(
         preferencesRepository: PreferencesRepository,
         profileRepository: PlayerProfileRepository,
         fileImageStore: IFileImageStore,
-        notificationManager: NotificationManager,
-        customizationManager: PlayerCustomizationManager
+        notificationManager: NotificationManager
         ) : MockPlayerButtonViewModel(
             state = state,
         preferencesRepository = preferencesRepository,
         profileRepository = profileRepository,
         fileImageStore = fileImageStore,
-        notificationManager = notificationManager,
-        customizationManager = customizationManager
+        notificationManager = notificationManager
         ) {
             inner class MockCustomizationViewModelPage4(
                 profileRepository: PlayerProfileRepository,
@@ -156,8 +153,7 @@ fun TutorialPage4(
         preferencesRepository = gameState.mockPreferencesRepository,
         profileRepository = gameState.mockProfileRepository,
         fileImageStore = gameState.mockFileImageStore,
-        notificationManager = this.notificationManager,
-        customizationManager = this.playerCustomizationManager
+        notificationManager = this.notificationManager
             )
         }
     }

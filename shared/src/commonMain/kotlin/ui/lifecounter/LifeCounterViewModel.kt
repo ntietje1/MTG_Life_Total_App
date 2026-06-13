@@ -167,8 +167,10 @@ open class LifeCounterViewModel(
             profileRepository = profileRepository,
             fileImageStore = fileImageStore,
             notificationManager = notificationManager,
-            playerCustomizationManager = playerCustomizationManager,
             gameSessionStore = gameSessionStore,
+            resetPlayerPrefs = playerCustomizationManager::resetPlayerPrefs,
+            copyPlayerPrefs = playerCustomizationManager::copyPlayerPrefs,
+            savePlayerPrefs = playerCustomizationManager::savePlayerPrefs,
             onFirstPlayerSelected = { index -> timerManager.handleFirstPlayerSelection(index) },
             onMoveTimerRequested = { timerManager.moveTimer() }
         )
