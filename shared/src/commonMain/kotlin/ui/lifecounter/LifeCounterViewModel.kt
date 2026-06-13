@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import domain.common.NumberWithRecentChange
 import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
+import domain.game.timer.TimerManagerHost
+import domain.game.timer.TurnTimer
 import domain.state.game.GameCommand
 import domain.state.game.GameSession
 import domain.state.game.GameSessionStore
@@ -36,7 +38,7 @@ open class LifeCounterViewModel(
     private val gameSessionStore: GameSessionStore,
     internal val timerManager: TimerManager,
     initialState: LifeCounterState = LifeCounterState(),
-) : ViewModel() {
+) : ViewModel(), TimerManagerHost {
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<LifeCounterState> = _state.asStateFlow()
 
@@ -49,7 +51,7 @@ open class LifeCounterViewModel(
 
     init {
         playerCustomizationManager.attach(playerButtonViewModels)
-        timerManager.attach(playerButtonViewModels)
+        timerManager.attach(this)
 
         generatePlayerButtonViewModels()
 
@@ -68,6 +70,32 @@ open class LifeCounterViewModel(
         savePlayerPrefs()
         playerCustomizationManager.detach()
         timerManager.detach()
+    }
+
+    override val playerCount: Int
+        get() = preferencesRepository.numPlayers.value
+
+    override fun isPlayerDead(index: Int): Boolean {
+        return playerButtonViewModels.value.getOrNull(index)?.isDead?.value ?: false
+    }
+
+    override fun promptForFirstPlayer() {
+        playerButtonViewModels.value.forEach { it.onFirstPlayerPrompt() }
+    }
+
+    override fun clearFirstPlayerPrompt() {
+        playerButtonViewModels.value.forEach { playerButtonViewModel ->
+            if (playerButtonViewModel.state.value.buttonState == PBState.SELECT_FIRST_PLAYER) {
+                playerButtonViewModel.popBackStack()
+            }
+        }
+    }
+
+    override fun showTimer(activePlayerIndex: Int?, timer: TurnTimer?) {
+        playerButtonViewModels.value.forEachIndexed { index, playerButtonViewModel ->
+            val shouldShowTimer = index == activePlayerIndex
+            playerButtonViewModel.setTimer(if (shouldShowTimer) timer else null)
+        }
     }
 
 

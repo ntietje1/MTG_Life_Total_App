@@ -1,14 +1,21 @@
 package domain.game.timer
 
-import domain.game.AttachableFlowManager
+import domain.game.AttachableManager
 import domain.storage.PreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ui.lifecounter.playerbutton.PBState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 import kotlin.coroutines.coroutineContext
+
+interface TimerManagerHost {
+    val playerCount: Int
+
+    fun isPlayerDead(index: Int): Boolean
+    fun promptForFirstPlayer()
+    fun clearFirstPlayerPrompt()
+    fun showTimer(activePlayerIndex: Int?, timer: TurnTimer?)
+}
 
 /**
  * Contains all LifeCounterViewModel timer related logic
@@ -16,7 +23,7 @@ import kotlin.coroutines.coroutineContext
 class TimerManager(
     private val timerStateRepository: TimerStateRepository,
     private val preferencesRepository: PreferencesRepository
-) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
+) : AttachableManager<TimerManagerHost>() {
 
     private var observerJob: Job? = null
     private val gameTimer: GameTimer = GameTimer(timerStateRepository.load() ?: GameTimerState())
@@ -31,7 +38,7 @@ class TimerManager(
     fun moveTimer() {
         requireAttached()
         gameTimer.moveTimer()
-        updateViewModelsWithTimer()
+        updateHostWithTimer()
         saveTimerState()
     }
 
@@ -40,17 +47,12 @@ class TimerManager(
         clearFirstPlayerSelectionState()
         gameTimer.setFirstPlayer(index)
         gameTimer.setTimerEnabled(true)
-        updateViewModelsWithTimer()
+        updateHostWithTimer()
         saveTimerState()
     }
 
     private fun clearFirstPlayerSelectionState() {
-        val playerButtonViewModels = requireAttached().value
-        playerButtonViewModels.forEach { viewModel ->
-            if (viewModel.state.value.buttonState == PBState.SELECT_FIRST_PLAYER) {
-                viewModel.popBackStack()
-            }
-        }
+        requireAttached().clearFirstPlayerPrompt()
     }
 
     suspend fun onTimerEnabledChange(timerEnabled: Boolean) {
@@ -64,7 +66,7 @@ class TimerManager(
             stopTimerLoop()
             reset()
         }
-        updateViewModelsWithTimer()
+        updateHostWithTimer()
     }
 
     fun reset() {
@@ -81,8 +83,8 @@ class TimerManager(
             println("WARNING: First player already selected")
             return
         }
-        val playerButtonViewModels = requireAttached().value
-        playerButtonViewModels.forEach { it.onFirstPlayerPrompt() }
+        val host = requireAttached()
+        host.promptForFirstPlayer()
         if (preferencesRepository.numPlayers.value == 1) {
             handleFirstPlayerSelection(0)
         }
@@ -90,20 +92,20 @@ class TimerManager(
     }
 
     private fun initializeGameTimer() {
-        val playerButtonViewModels = requireAttached().value
+        val host = requireAttached()
         gameTimer.initialize(
-            playerCount = preferencesRepository.numPlayers.value,
-            deadCheck = { index -> playerButtonViewModels[index].isDead.value }
+            playerCount = host.playerCount,
+            deadCheck = host::isPlayerDead
         )
     }
 
-    private fun updateViewModelsWithTimer() {
-        val playerButtonViewModels = requireAttached().value
+    private fun updateHostWithTimer() {
+        val host = requireAttached()
         val timerState = gameTimer.timerState.value
-        playerButtonViewModels.forEachIndexed { index, viewModel ->
-            val shouldShowTimer = (index == timerState.activePlayerIndex)
-            viewModel.setTimer(if (shouldShowTimer) timerState.turnTimer else null)
-        }
+        host.showTimer(
+            activePlayerIndex = timerState.activePlayerIndex,
+            timer = timerState.turnTimer
+        )
     }
 
     private suspend fun startTimerLoop() {
@@ -111,7 +113,7 @@ class TimerManager(
         timerJob = CoroutineScope(coroutineContext).launch {
             while (true) {
                 gameTimer.tick()
-                updateViewModelsWithTimer()
+                updateHostWithTimer()
                 delay(1000L)
                 saveTimerState()
             }
