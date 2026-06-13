@@ -3,6 +3,7 @@ package ui.lifecounter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.common.NumberWithRecentChange
+import domain.game.PlayerCustomizationHost
 import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
 import domain.game.timer.TimerManagerHost
@@ -38,7 +39,7 @@ open class LifeCounterViewModel(
     private val gameSessionStore: GameSessionStore,
     internal val timerManager: TimerManager,
     initialState: LifeCounterState = LifeCounterState(),
-) : ViewModel(), TimerManagerHost {
+) : ViewModel(), TimerManagerHost, PlayerCustomizationHost {
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<LifeCounterState> = _state.asStateFlow()
 
@@ -50,7 +51,7 @@ open class LifeCounterViewModel(
     val playerButtonViewModels: StateFlow<List<PlayerButtonViewModel>> = _playerButtonViewModels.asStateFlow()
 
     init {
-        playerCustomizationManager.attach(playerButtonViewModels)
+        playerCustomizationManager.attach(this)
         timerManager.attach(this)
 
         generatePlayerButtonViewModels()
@@ -75,6 +76,9 @@ open class LifeCounterViewModel(
     override val playerCount: Int
         get() = preferencesRepository.numPlayers.value
 
+    override val players: List<Player>
+        get() = playerButtonViewModels.value.map { it.state.value.player }
+
     override fun isPlayerDead(index: Int): Boolean {
         return playerButtonViewModels.value.getOrNull(index)?.isDead?.value ?: false
     }
@@ -96,6 +100,12 @@ open class LifeCounterViewModel(
             val shouldShowTimer = index == activePlayerIndex
             playerButtonViewModel.setTimer(if (shouldShowTimer) timer else null)
         }
+    }
+
+    override fun replacePlayer(player: Player) {
+        playerButtonViewModels.value
+            .firstOrNull { it.state.value.player.playerNum == player.playerNum }
+            ?.setPlayer(player)
     }
 
 

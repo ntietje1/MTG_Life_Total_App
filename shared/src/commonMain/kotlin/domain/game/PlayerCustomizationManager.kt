@@ -9,19 +9,22 @@ import domain.state.profile.PlayerProfile
 import domain.state.profile.PlayerProfileRepository
 import model.Player
 import model.Player.Companion.allPlayerColors
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
+
+interface PlayerCustomizationHost {
+    val players: List<Player>
+
+    fun replacePlayer(player: Player)
+}
 
 /**
  * Manages player customization operations
- * Attaches to PlayerButtonViewModels flow to get player color information
  */
 class PlayerCustomizationManager(
     private val profileRepository: PlayerProfileRepository
-) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
+) : AttachableManager<PlayerCustomizationHost>() {
 
     fun resetPlayerPrefs(player: Player): Player {
-        val playerButtonViewModels = requireAttached().value
-        val usedColors = playerButtonViewModels.map { it.state.value.player.color }
+        val usedColors = requireAttached().players.map { it.color }
         val newColor = allPlayerColors.filter { it !in usedColors }.random()
 
         return player.copy(
@@ -44,10 +47,7 @@ class PlayerCustomizationManager(
     }
 
     fun saveAllPlayerPrefs() {
-        val playerButtonViewModels = requireAttached().value
-        playerButtonViewModels.forEach {
-            savePlayerPrefs(it.state.value.player)
-        }
+        requireAttached().players.forEach(::savePlayerPrefs)
     }
 
     fun savePlayerPrefs(player: Player) {
@@ -55,10 +55,9 @@ class PlayerCustomizationManager(
     }
 
     fun resetAllPlayerPrefs() {
-        val playerButtonViewModels = requireAttached().value
-        playerButtonViewModels.forEach {
-            it.resetPlayerPref()
-            it.copyPrefs(it.state.value.player)
+        val host = requireAttached()
+        host.players.forEach { player ->
+            host.replacePlayer(resetPlayerPrefs(player))
         }
     }
 }
