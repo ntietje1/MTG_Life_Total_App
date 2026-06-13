@@ -172,8 +172,7 @@ open class LifeCounterViewModel(
     }
 
     private fun applyGameSession(session: GameSession) {
-        _state.value = GameSessionUiMapper.mapLifeCounterState(session, _state.value)
-        setMiddleButtonState(GameSessionUiMapper.mapMiddleButtonState(session))
+        _state.value = GameSessionUiMapper.mapLifeCounterUiState(session, _state.value, fileImageStore)
         val commanderDealerPlayer = session.commanderMode?.let { mode ->
             GameSessionUiMapper.mapPlayerButtonState(
                 session = session,

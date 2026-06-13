@@ -23,6 +23,51 @@ object GameSessionUiMapper {
         )
     }
 
+    fun mapLifeCounterUiState(
+        session: GameSession,
+        current: LifeCounterState,
+        fileImageStore: IFileImageStore
+    ): LifeCounterState {
+        return mapLifeCounterState(session, current).copy(
+            players = session.seats.map { seat ->
+                mapPlayerSeatUiState(
+                    session = session,
+                    seatId = seat.id,
+                    current = current.players.firstOrNull { player -> player.seatId == seat.id },
+                    fileImageStore = fileImageStore
+                )
+            },
+            middleButtonState = mapMiddleButtonState(session)
+        )
+    }
+
+    fun mapPlayerSeatUiState(
+        session: GameSession,
+        seatId: SeatId,
+        current: PlayerSeatUiState?,
+        fileImageStore: IFileImageStore
+    ): PlayerSeatUiState {
+        val seat = session.requireSeat(seatId)
+        val commanderDealerPlayer = session.commanderMode?.let { mode ->
+            session.requireSeat(mode.dealerSeatId)
+                .toPlayer(session, fileImageStore)
+                .copy(partnerMode = mode.partnerMode)
+        }
+        return PlayerSeatUiState(
+            seatId = seatId,
+            player = seat.toPlayer(session, fileImageStore),
+            buttonState = if (session.commanderMode != null) {
+                mapCommanderButtonState(session, seatId)
+            } else {
+                current?.buttonState ?: PBState.NORMAL
+            },
+            showCustomizeMenu = current?.showCustomizeMenu ?: false,
+            timer = current?.timer,
+            commanderState = commanderDealerPlayer?.let(ui.lifecounter.playerbutton.CommanderState::Active)
+                ?: ui.lifecounter.playerbutton.CommanderState.Inactive
+        )
+    }
+
     fun mapPlayerButtonState(
         session: GameSession,
         seatId: SeatId,

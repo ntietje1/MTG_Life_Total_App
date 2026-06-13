@@ -113,6 +113,47 @@ class GameSessionUiMapperTest {
     }
 
     @Test
+    fun mapsLifeCounterUiStateWithPlayerSeatSnapshots() {
+        val receiverSeatId = SeatId("seat-2")
+        val commander = CommanderDamageMatrix()
+            .changeDamage(SeatId("seat-1"), receiverSeatId, partner = false, delta = 7)
+        val session = testSession().copy(
+            commanderMode = domain.state.game.CommanderMode(SeatId("seat-1"), partnerMode = false),
+            monarchSeatId = receiverSeatId,
+            commander = commander,
+            seats = listOf(
+                testSession().requireSeat(SeatId("seat-1")),
+                testSession().requireSeat(receiverSeatId).copy(
+                    appearance = SeatAppearance(
+                        displayName = "Nissa",
+                        colors = PlayerColors(backgroundArgb = -15654349, textArgb = -12298906),
+                        background = PlayerBackground.LocalImage("nissa.png")
+                    ),
+                    life = TrackedInt(value = 24, recentChange = -3),
+                    counters = mapOf(CounterType.POISON to 2),
+                    activeCounters = setOf(CounterType.POISON)
+                )
+            )
+        )
+
+        val mapped = GameSessionUiMapper.mapLifeCounterUiState(
+            session = session,
+            current = LifeCounterState(),
+            fileImageStore = FakeFileImageStore(mapOf("nissa.png" to "file:///images/nissa.png"))
+        )
+
+        assertEquals(2, mapped.players.size)
+        assertEquals("P1", mapped.players[0].player.name)
+        assertEquals(PBState.COMMANDER_DEALER, mapped.players[0].buttonState)
+        assertEquals("Nissa", mapped.players[1].player.name)
+        assertEquals("file:///images/nissa.png", mapped.players[1].player.imageString)
+        assertEquals(NumberWithRecentChange(number = 24, recentChange = -3), mapped.players[1].player.lifeTotal)
+        assertEquals(true, mapped.players[1].player.monarch)
+        assertEquals(PBState.COMMANDER_RECEIVER, mapped.players[1].buttonState)
+        assertEquals(NumberWithRecentChange(number = 7, recentChange = 7), mapped.players[1].player.commanderDamage[0])
+    }
+
+    @Test
     fun mapsUiCommandsToDomainCounters() {
         assertEquals(SeatId("seat-3"), GameSessionUiMapper.seatIdForPlayerNumber(3))
         assertEquals(TableCounterType.WHITE_MANA, GameSessionUiMapper.tableCounterForIndex(0))
