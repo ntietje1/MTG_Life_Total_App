@@ -4,13 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.common.Backstack
 import domain.common.NumberWithRecentChange
-import domain.game.CommanderDamageManager
-import domain.game.CommanderState
-import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
 import domain.game.timer.TimerManager
 import domain.game.timer.TurnTimer
+import domain.state.game.GameCommand
+import domain.state.game.GameSessionStore
 import domain.storage.IImageManager
 import domain.storage.ISettingsManager
 import domain.system.NotificationManager
@@ -25,16 +23,15 @@ import kotlinx.coroutines.launch
 import model.Player
 import ui.dialog.customization.CustomizationViewModel
 import ui.lifecounter.CounterType
+import ui.lifecounter.GameSessionUiMapper
 
 open class PlayerButtonViewModel(
     initialState: PlayerButtonState,
     private val settingsManager: ISettingsManager,
     private val imageManager: IImageManager,
-    private val commanderManager: CommanderDamageManager,
     protected val notificationManager: NotificationManager,
-    private val playerStateManager: PlayerStateManager,
     private val playerCustomizationManager: PlayerCustomizationManager,
-    private val gameStateManager: GameStateManager,
+    private val gameSessionStore: GameSessionStore,
     private val timerManager: TimerManager
 ) : ViewModel() {
     private var _state = MutableStateFlow(initialState)
@@ -43,10 +40,12 @@ open class PlayerButtonViewModel(
     val isDead: StateFlow<Boolean> = combine(
         settingsManager.autoKo, state
     ) { autoKo, playerState ->
-        playerStateManager.isPlayerDead(playerState.player, autoKo)
+        playerState.player.setDead ||
+            (autoKo && (playerState.player.life <= 0 || playerState.player.commanderDamage.any { it.number >= 21 }))
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    val commanderState: StateFlow<CommanderState> = commanderManager.commanderState
+    private val _commanderState = MutableStateFlow<CommanderState>(CommanderState.Inactive)
+    val commanderState: StateFlow<CommanderState> = _commanderState.asStateFlow()
 
     private val backstack = Backstack()
 
@@ -62,35 +61,16 @@ open class PlayerButtonViewModel(
     open val customizationViewmodel: CustomizationViewModel?
         get() = _customizationViewmodel
 
-    init {
-        viewModelScope.launch {
-            playerStateManager.attachLifeTracker(
-                initialPlayer = state.value.player,
-                onUpdate = ::setLifeTotal
-            )
-
-            commanderManager.attachCommanderTrackers(
-                initialPlayer = state.value.player,
-                onUpdate = ::setCommanderDamage
-            )
-        }
-    }
-
-    private fun setLifeTotal(updatedPlayer: Player) {
-        setPlayer(state.value.player.copy(lifeTotal = updatedPlayer.lifeTotal))
-    }
-
-    private fun setCommanderDamage(updatedPlayer: Player) {
-        setPlayer(state.value.player.copy(commanderDamage = updatedPlayer.commanderDamage))
-    }
-
     internal fun setPlayer(player: Player) {
         _state.value = state.value.copy(player = player)
     }
 
+    internal fun setCommanderState(commanderState: CommanderState) {
+        _commanderState.value = commanderState
+    }
+
     open fun incrementLife(value: Int) {
-        playerStateManager.incrementLife(state.value.player, value)
-        gameStateManager.saveGameState()
+        dispatchGameCommand(GameCommand.ChangeLife(seatId, value))
     }
 
     fun setTimer(timer: TurnTimer?) {
@@ -114,17 +94,21 @@ open class PlayerButtonViewModel(
     }
 
     open fun onMonarchyButtonClicked(value: Boolean) {
-        gameStateManager.setMonarchy(state.value.player.playerNum, value)
+        dispatchGameCommand(
+            GameCommand.SetMonarch(
+                if (value) seatId else null
+            )
+        )
     }
 
     open fun onCommanderButtonClicked() {
         when (state.value.buttonState) {
             PBState.NORMAL -> {
-                commanderManager.setCurrentDealer(state.value.player)
+                dispatchGameCommand(GameCommand.SetCommanderDealer(seatId))
             }
 
             PBState.COMMANDER_DEALER -> {
-                commanderManager.setCurrentDealer(null)
+                dispatchGameCommand(GameCommand.SetCommanderDealer(null))
             }
 
             else -> {} // do nothing
@@ -141,10 +125,14 @@ open class PlayerButtonViewModel(
     }
 
     open fun onKOButtonClicked() {
-        setPlayer(playerStateManager.toggleSetDead(state.value.player))
+        dispatchGameCommand(
+            GameCommand.SetManualDeath(
+                seatId = seatId,
+                dead = !state.value.player.setDead
+            )
+        )
         closeSettingsMenu()
         backstack.clear()
-        gameStateManager.saveGameState()
     }
 
     open fun popBackStack() {
@@ -219,37 +207,58 @@ open class PlayerButtonViewModel(
     }
 
     fun togglePartnerMode(value: Boolean) {
-        setPlayer(commanderManager.togglePartnerMode(state.value.player, value))
-        gameStateManager.saveGameState()
+        dispatchGameCommand(GameCommand.SetCommanderPartnerMode(value))
     }
 
     fun incrementCounterValue(counterType: CounterType, value: Int) {
-        setPlayer(playerStateManager.incrementCounter(state.value.player, counterType, value))
-        gameStateManager.saveGameState()
+        dispatchGameCommand(
+            GameCommand.ChangeSeatCounter(
+                seatId = seatId,
+                counter = GameSessionUiMapper.domainCounterFor(counterType),
+                delta = value
+            )
+        )
     }
 
     fun setActiveCounter(counterType: CounterType, active: Boolean): Boolean {
-        setPlayer(playerStateManager.setActiveCounters(state.value.player, counterType, active))
-        gameStateManager.saveGameState()
-        return state.value.player.activeCounters.contains(counterType)
+        dispatchGameCommand(
+            GameCommand.SetSeatCounterActive(
+                seatId = seatId,
+                counter = GameSessionUiMapper.domainCounterFor(counterType),
+                active = active
+            )
+        )
+        return active
     }
 
     fun getCommanderDamage(partner: Boolean): NumberWithRecentChange {
-        return commanderManager.getCommanderDamage(state.value.player, partner)
+        return when (val state = commanderState.value) {
+            is CommanderState.Active -> this.state.value.player.commanderDamage[state.getDealerIndex(partner)]
+            CommanderState.Inactive -> NumberWithRecentChange(0, 0)
+        }
     }
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
-        commanderManager.incrementCommanderDamage(state.value.player, value, partner)
-        gameStateManager.saveGameState()
+        val commanderState = commanderState.value as? CommanderState.Active ?: return
+        dispatchGameCommand(
+            GameCommand.ChangeCommanderDamage(
+                dealerSeatId = GameSessionUiMapper.seatIdForPlayerNumber(commanderState.dealer.playerNum),
+                receiverSeatId = seatId,
+                partner = partner,
+                delta = value
+            )
+        )
     }
 
     open fun copyPrefs(other: Player) {
         setPlayer(playerCustomizationManager.copyPlayerPrefs(state.value.player, other))
     }
 
-    fun resetState() {
-        setPlayer(playerStateManager.resetPlayerState(state.value.player))
-        setPlayer(commanderManager.resetCommanderDamage(state.value.player))
-        gameStateManager.saveGameState()
+    private val seatId get() = GameSessionUiMapper.seatIdForPlayerNumber(state.value.player.playerNum)
+
+    private fun dispatchGameCommand(command: GameCommand) {
+        viewModelScope.launch {
+            gameSessionStore.dispatchLoaded(command)
+        }
     }
 }

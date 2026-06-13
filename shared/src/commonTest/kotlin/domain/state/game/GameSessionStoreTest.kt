@@ -3,7 +3,10 @@ package domain.state.game
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -23,6 +26,37 @@ class GameSessionStoreTest {
         assertEquals(1, repository.commits.size)
         assertEquals(0, repository.commits.single().expectedVersion)
         assertEquals(1, repository.commits.single().resultingSession.version)
+    }
+
+    @Test
+    fun dispatchLoadedLoadsTheActiveSessionWhenNeeded() = runTest {
+        val repository = FakeGameSessionRepository(testSession())
+        val store = GameSessionStore(repository)
+
+        store.dispatchLoaded(GameCommand.ChangeLife(firstSeatId, -3))
+
+        assertEquals(37, store.session.value?.requireSeat(firstSeatId)?.life?.value)
+        assertEquals(1, repository.commits.size)
+    }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun lifeRecentChangeClearsAfterDelay() = runTest {
+        val repository = FakeGameSessionRepository(testSession())
+        val store = GameSessionStore(
+            repository = repository,
+            transientScope = this,
+            recentChangeDelayMillis = 1_000L
+        )
+        store.loadActiveSession()
+
+        store.dispatch(GameCommand.ChangeLife(firstSeatId, -3))
+        advanceTimeBy(1_001L)
+        advanceUntilIdle()
+
+        assertEquals(37, store.session.value?.requireSeat(firstSeatId)?.life?.value)
+        assertEquals(0, store.session.value?.requireSeat(firstSeatId)?.life?.recentChange)
+        assertEquals(GameCommand.ClearLifeRecentChange(firstSeatId), repository.commits.last().command)
     }
 
     @Test

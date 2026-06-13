@@ -1,20 +1,30 @@
 package domain.state.game
 
+import domain.common.RecentChangeValue
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class GameSessionStore(
-    private val repository: GameSessionRepository
+    private val repository: GameSessionRepository,
+    private val transientScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    private val recentChangeDelayMillis: Long = RecentChangeValue.RECENT_CHANGE_DELAY
 ) {
     private val mutex = Mutex()
     private val mutableSession = MutableStateFlow<GameSession?>(null)
     private val effectChannel = Channel<GameEffect>(capacity = Channel.BUFFERED)
+    private val transientClearJobs = mutableMapOf<GameCommand, Job>()
 
     val session: StateFlow<GameSession?> = mutableSession.asStateFlow()
     val effects: Flow<GameEffect> = effectChannel.receiveAsFlow()
@@ -23,6 +33,13 @@ class GameSessionStore(
         val loaded = repository.loadActiveSession()
         mutableSession.value = loaded
         return loaded
+    }
+
+    suspend fun dispatchLoaded(command: GameCommand): GameReduction {
+        if (mutableSession.value == null) {
+            loadActiveSession()
+        }
+        return dispatch(command)
     }
 
     suspend fun dispatch(command: GameCommand): GameReduction {
@@ -51,8 +68,27 @@ class GameSessionStore(
                     )
                 }
             }
+            scheduleTransientClear(command)
 
             reduction
+        }
+    }
+
+    private fun scheduleTransientClear(command: GameCommand) {
+        val clearCommand = when (command) {
+            is GameCommand.ChangeLife -> GameCommand.ClearLifeRecentChange(command.seatId)
+            is GameCommand.ChangeCommanderDamage -> GameCommand.ClearCommanderDamageRecentChange(
+                dealerSeatId = command.dealerSeatId,
+                receiverSeatId = command.receiverSeatId,
+                partner = command.partner
+            )
+            else -> null
+        } ?: return
+
+        transientClearJobs.remove(clearCommand)?.cancel()
+        transientClearJobs[clearCommand] = transientScope.launch {
+            delay(recentChangeDelayMillis)
+            dispatch(clearCommand)
         }
     }
 }

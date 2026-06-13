@@ -88,7 +88,7 @@ object LocalGameSessionMapper {
             life = player.lifeTotal.toTrackedInt(),
             manualDeath = player.setDead,
             counters = domainCountersFromLegacy(player.counters),
-            activeCounters = player.activeCounters.mapNotNull(::toDomainCounter).toSet()
+            activeCounters = player.activeCounters.map(::toDomainCounter).toSet()
         )
     }
 
@@ -109,7 +109,7 @@ object LocalGameSessionMapper {
         return counters
     }
 
-    private fun toDomainCounter(counter: LegacyCounterType): CounterType? {
+    private fun toDomainCounter(counter: LegacyCounterType): CounterType {
         return when (counter) {
             LegacyCounterType.Poison -> CounterType.POISON
             LegacyCounterType.Experience -> CounterType.EXPERIENCE
@@ -118,7 +118,22 @@ object LocalGameSessionMapper {
             LegacyCounterType.CommanderTax2 -> CounterType.COMMANDER_TAX_SECONDARY
             LegacyCounterType.Ticket -> CounterType.TICKET
             LegacyCounterType.Acorn -> CounterType.ACORN
-            else -> null
+            LegacyCounterType.WhiteMana -> CounterType.WHITE_MANA
+            LegacyCounterType.BlueMana -> CounterType.BLUE_MANA
+            LegacyCounterType.BlackMana -> CounterType.BLACK_MANA
+            LegacyCounterType.RedMana -> CounterType.RED_MANA
+            LegacyCounterType.GreenMana -> CounterType.GREEN_MANA
+            LegacyCounterType.ColorlessMana -> CounterType.COLORLESS_MANA
+            LegacyCounterType.SnowMana -> CounterType.SNOW_MANA
+            LegacyCounterType.Chaos -> CounterType.CHAOS
+            LegacyCounterType.Planeswalker -> CounterType.PLANESWALKER
+            LegacyCounterType.D20 -> CounterType.D20
+            LegacyCounterType.Coin -> CounterType.COIN
+            LegacyCounterType.Bolt -> CounterType.BOLT
+            LegacyCounterType.Star -> CounterType.STAR
+            LegacyCounterType.Heart -> CounterType.HEART
+            LegacyCounterType.Shield -> CounterType.SHIELD
+            LegacyCounterType.Sword -> CounterType.SWORD
         }
     }
 
@@ -131,6 +146,22 @@ object LocalGameSessionMapper {
             CounterType.COMMANDER_TAX_SECONDARY -> LegacyCounterType.CommanderTax2
             CounterType.TICKET -> LegacyCounterType.Ticket
             CounterType.ACORN -> LegacyCounterType.Acorn
+            CounterType.WHITE_MANA -> LegacyCounterType.WhiteMana
+            CounterType.BLUE_MANA -> LegacyCounterType.BlueMana
+            CounterType.BLACK_MANA -> LegacyCounterType.BlackMana
+            CounterType.RED_MANA -> LegacyCounterType.RedMana
+            CounterType.GREEN_MANA -> LegacyCounterType.GreenMana
+            CounterType.COLORLESS_MANA -> LegacyCounterType.ColorlessMana
+            CounterType.SNOW_MANA -> LegacyCounterType.SnowMana
+            CounterType.CHAOS -> LegacyCounterType.Chaos
+            CounterType.PLANESWALKER -> LegacyCounterType.Planeswalker
+            CounterType.D20 -> LegacyCounterType.D20
+            CounterType.COIN -> LegacyCounterType.Coin
+            CounterType.BOLT -> LegacyCounterType.Bolt
+            CounterType.STAR -> LegacyCounterType.Star
+            CounterType.HEART -> LegacyCounterType.Heart
+            CounterType.SHIELD -> LegacyCounterType.Shield
+            CounterType.SWORD -> LegacyCounterType.Sword
         }
     }
 }

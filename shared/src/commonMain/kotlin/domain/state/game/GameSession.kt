@@ -10,6 +10,7 @@ data class GameSession(
     val rules: GameRules = GameRules(),
     val seats: List<GameSeat>,
     val commander: CommanderDamageMatrix = CommanderDamageMatrix(),
+    val commanderMode: CommanderMode? = null,
     val tableCounters: Map<TableCounterType, Int> = emptyMap(),
     val monarchSeatId: SeatId? = null,
     val dayNight: DayNight = DayNight.NONE,
@@ -63,6 +64,12 @@ data class GameRules(
 )
 
 @Serializable
+data class CommanderMode(
+    val dealerSeatId: SeatId,
+    val partnerMode: Boolean = false
+)
+
+@Serializable
 data class GameSeat(
     val id: SeatId,
     val appearance: SeatAppearance,
@@ -104,7 +111,11 @@ data class TrackedInt(
     val recentChange: Int = 0
 ) {
     fun change(delta: Int): TrackedInt {
-        return copy(value = value + delta, recentChange = delta)
+        return copy(value = value + delta, recentChange = recentChange + delta)
+    }
+
+    fun clearRecentChange(): TrackedInt {
+        return copy(recentChange = 0)
     }
 
     companion object {

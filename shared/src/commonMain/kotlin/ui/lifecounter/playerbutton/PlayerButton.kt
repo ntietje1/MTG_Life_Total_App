@@ -58,7 +58,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import domain.common.NumberWithRecentChange
-import domain.game.CommanderState
 import domain.game.timer.TurnTimer
 import domain.system.SystemManager
 import io.kamel.image.KamelImage

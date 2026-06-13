@@ -22,8 +22,14 @@ class LocalGameSessionMapperTest {
             textColor = Color(-12298906),
             playerNum = 2,
             name = "Nissa",
-            counters = List(LegacyCounterType.entries.size) { index -> if (index == 0) 3 else 0 },
-            activeCounters = listOf(LegacyCounterType.Poison),
+            counters = List(LegacyCounterType.entries.size) { index ->
+                when (index) {
+                    LegacyCounterType.Poison.ordinal -> 3
+                    LegacyCounterType.Coin.ordinal -> 2
+                    else -> 0
+                }
+            },
+            activeCounters = listOf(LegacyCounterType.Poison, LegacyCounterType.Coin),
             setDead = true
         )
 
@@ -42,7 +48,8 @@ class LocalGameSessionMapperTest {
         assertEquals(32, seat.life.value)
         assertEquals(-8, seat.life.recentChange)
         assertEquals(3, seat.counterValue(CounterType.POISON))
-        assertEquals(setOf(CounterType.POISON), seat.activeCounters)
+        assertEquals(2, seat.counterValue(CounterType.COIN))
+        assertEquals(setOf(CounterType.POISON, CounterType.COIN), seat.activeCounters)
         assertEquals(true, seat.manualDeath)
     }
 

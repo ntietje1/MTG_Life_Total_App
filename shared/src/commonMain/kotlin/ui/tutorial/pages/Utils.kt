@@ -24,12 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import domain.common.NumberWithRecentChange
-import domain.game.CommanderDamageManager
-import domain.game.GameStateManager
 import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
 import domain.game.timer.GameTimerState
 import domain.game.timer.TimerManager
+import domain.state.game.GameSessionStore
+import domain.state.legacy.LocalGameSessionRepository
 import domain.storage.IImageManager
 import domain.storage.ISettingsManager
 import domain.storage.SettingsManager
@@ -211,19 +210,14 @@ open class MockPlayerButtonViewModel(
     imageManager: IImageManager,
     notificationManager: NotificationManager,
     customizationManager: PlayerCustomizationManager,
-    playerStateManager: PlayerStateManager,
-    commanderDamageManager: CommanderDamageManager,
-    gameStateManager: GameStateManager,
     timerManager: TimerManager
 ) : PlayerButtonViewModel(
     initialState = state,
     settingsManager = settingsManager,
     imageManager = imageManager,
     notificationManager = notificationManager,
-    playerStateManager = playerStateManager,
     playerCustomizationManager = customizationManager,
-    commanderManager = commanderDamageManager,
-    gameStateManager = gameStateManager,
+    gameSessionStore = GameSessionStore(LocalGameSessionRepository(settingsManager)),
     timerManager = timerManager
 )
 
@@ -235,13 +229,11 @@ abstract class MockLifeCounterViewModel(
 ) : LifeCounterViewModel(
     initialState = lifeCounterState,
     settingsManager = settingsManager,
-    playerStateManager = PlayerStateManager(settingsManager),
-    commanderManager = CommanderDamageManager(notificationManager),
     imageManager = imageManager,
     notificationManager = notificationManager,
     planeChaseViewModel = PlaneChaseViewModel(settingsManager),
     playerCustomizationManager = PlayerCustomizationManager(settingsManager),
-    gameStateManager = GameStateManager(settingsManager),
+    gameSessionStore = GameSessionStore(LocalGameSessionRepository(settingsManager)),
     timerManager = TimerManager(settingsManager)
 )
 

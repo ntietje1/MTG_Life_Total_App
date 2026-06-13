@@ -105,6 +105,23 @@ class GameReducerTest {
     }
 
     @Test
+    fun repeatedLifeChangesAccumulateRecentChangeUntilCleared() {
+        val initial = testSession(startingLife = 40)
+
+        val changed = listOf(
+            GameCommand.ChangeLife(firstSeatId, -1),
+            GameCommand.ChangeLife(firstSeatId, -1),
+            GameCommand.ChangeLife(firstSeatId, 3)
+        ).fold(initial) { session, command -> reduceGame(session, command).session }
+        val cleared = reduceGame(changed, GameCommand.ClearLifeRecentChange(firstSeatId)).session
+
+        assertEquals(41, changed.requireSeat(firstSeatId).life.value)
+        assertEquals(1, changed.requireSeat(firstSeatId).life.recentChange)
+        assertEquals(41, cleared.requireSeat(firstSeatId).life.value)
+        assertEquals(0, cleared.requireSeat(firstSeatId).life.recentChange)
+    }
+
+    @Test
     fun manualDeathAndAutoDeathAreDomainQueries() {
         val initial = testSession(startingLife = 1)
 
@@ -157,6 +174,22 @@ class GameReducerTest {
     }
 
     @Test
+    fun tableCountersCanResetWithoutResettingSeats() {
+        val initial = testSession()
+        val changed = listOf(
+            GameCommand.ChangeLife(firstSeatId, -5),
+            GameCommand.ChangeTableCounter(TableCounterType.WHITE_MANA, 3),
+            GameCommand.ChangeTableCounter(TableCounterType.STORM, 2)
+        ).fold(initial) { session, command -> reduceGame(session, command).session }
+
+        val reset = reduceGame(changed, GameCommand.ResetTableCounters).session
+
+        assertEquals(35, reset.requireSeat(firstSeatId).life.value)
+        assertEquals(0, reset.tableCounterValue(TableCounterType.WHITE_MANA))
+        assertEquals(0, reset.tableCounterValue(TableCounterType.STORM))
+    }
+
+    @Test
     fun commanderDamageIsKeyedByDealerReceiverAndPartnerSide() {
         val initial = testSession()
 
@@ -181,6 +214,39 @@ class GameReducerTest {
 
         assertEquals(7, partnerDamage.commander.damage(firstSeatId, secondSeatId, partner = false).value)
         assertEquals(5, partnerDamage.commander.damage(firstSeatId, secondSeatId, partner = true).value)
+    }
+
+    @Test
+    fun commanderModeStoresDealerAndPartnerMode() {
+        val initial = testSession()
+
+        val active = reduceGame(initial, GameCommand.SetCommanderDealer(firstSeatId)).session
+        val partnered = reduceGame(active, GameCommand.SetCommanderPartnerMode(true)).session
+        val inactive = reduceGame(partnered, GameCommand.SetCommanderDealer(null)).session
+
+        assertEquals(CommanderMode(firstSeatId, partnerMode = false), active.commanderMode)
+        assertEquals(CommanderMode(firstSeatId, partnerMode = true), partnered.commanderMode)
+        assertEquals(null, inactive.commanderMode)
+    }
+
+    @Test
+    fun repeatedCommanderDamageChangesAccumulateRecentChangeUntilCleared() {
+        val initial = testSession()
+
+        val changed = listOf(
+            GameCommand.ChangeCommanderDamage(firstSeatId, secondSeatId, partner = false, delta = 3),
+            GameCommand.ChangeCommanderDamage(firstSeatId, secondSeatId, partner = false, delta = 4),
+            GameCommand.ChangeCommanderDamage(firstSeatId, secondSeatId, partner = false, delta = -2)
+        ).fold(initial) { session, command -> reduceGame(session, command).session }
+        val cleared = reduceGame(
+            changed,
+            GameCommand.ClearCommanderDamageRecentChange(firstSeatId, secondSeatId, partner = false)
+        ).session
+
+        assertEquals(5, changed.commander.damage(firstSeatId, secondSeatId, partner = false).value)
+        assertEquals(5, changed.commander.damage(firstSeatId, secondSeatId, partner = false).recentChange)
+        assertEquals(5, cleared.commander.damage(firstSeatId, secondSeatId, partner = false).value)
+        assertEquals(0, cleared.commander.damage(firstSeatId, secondSeatId, partner = false).recentChange)
     }
 
     @Test
@@ -227,6 +293,7 @@ class GameReducerTest {
         assertFalse(resetSeat.manualDeath)
         assertEquals(originalAppearance, resetSeat.appearance)
         assertEquals(null, reset.monarchSeatId)
+        assertEquals(null, reset.commanderMode)
         assertEquals(DayNight.NONE, reset.dayNight)
         assertEquals(0, resetSeat.counterValue(CounterType.ENERGY))
         assertEquals(0, reset.commander.damage(secondSeatId, firstSeatId, partner = false).value)

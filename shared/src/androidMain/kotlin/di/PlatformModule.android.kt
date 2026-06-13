@@ -4,13 +4,9 @@ import domain.storage.IImageManager
 import domain.storage.ISettingsManager
 import domain.storage.ImageManager
 import domain.storage.SettingsManager
-import domain.game.GameStateManager
-import domain.game.CommanderDamageManager
 import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
 import domain.game.timer.TimerManager
 import domain.system.NotificationManager
-import domain.system.SystemManager
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
@@ -30,10 +26,7 @@ actual val platformModule = module {
     single { NotificationManager(get()) }
     single<ISettingsManager> { SettingsManager.instance }
     single<IImageManager> { ImageManager(get()) }
-    single { PlayerStateManager(get()) }
     single { PlayerCustomizationManager(get()) }
-    single { CommanderDamageManager(get()) }
-    single { GameStateManager(get()) }
     single { TimerManager(get()) }
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
@@ -42,13 +35,11 @@ actual val platformModule = module {
     viewModel { 
         LifeCounterViewModel(
             settingsManager = get(),
-            playerStateManager = get(),
-            commanderManager = get(), 
             imageManager = get(),
             notificationManager = get(),
             playerCustomizationManager = get(),
             planeChaseViewModel = get(),
-            gameStateManager = get(),
+            gameSessionStore = get(),
             timerManager = get()
         ) 
     }

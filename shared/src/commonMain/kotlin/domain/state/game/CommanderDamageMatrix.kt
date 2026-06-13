@@ -23,12 +23,23 @@ data class CommanderDamageMatrix(
         val key = CommanderDamageKey(dealerSeatId, receiverSeatId, partner)
         val current = damage[key] ?: TrackedInt.Zero
         val nextValue = (current.value + delta).coerceIn(CommanderDamageMinimum, CommanderDamageMaximum)
+        val actualDelta = nextValue - current.value
         val nextDamage = if (nextValue == CommanderDamageMinimum) {
             damage - key
         } else {
-            damage + (key to TrackedInt(value = nextValue, recentChange = nextValue - current.value))
+            damage + (key to TrackedInt(value = nextValue, recentChange = current.recentChange + actualDelta))
         }
         return copy(damage = nextDamage)
+    }
+
+    fun clearRecentChange(
+        dealerSeatId: SeatId,
+        receiverSeatId: SeatId,
+        partner: Boolean
+    ): CommanderDamageMatrix {
+        val key = CommanderDamageKey(dealerSeatId, receiverSeatId, partner)
+        val current = damage[key] ?: return this
+        return copy(damage = damage + (key to current.clearRecentChange()))
     }
 
     fun hasLethalDamage(receiverSeatId: SeatId): Boolean {
