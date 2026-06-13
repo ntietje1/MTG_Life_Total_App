@@ -23,7 +23,7 @@ actual val platformModule = module {
     single<IFileImageStore> { FileImageStore() }
     single { PlayerCustomizationManager(get()) }
     single { TimerManager(timerStateRepository = get(), preferencesRepository = get()) }
-    single { PlaneChaseViewModel(get()) }
+    single { PlaneChaseViewModel(planechaseRepository = get(), scryfallApi = get()) }
     single { CoinFlipViewModel(get()) }
     single { TutorialViewModel() }
     single { PlayerSelectViewModel(get()) }
@@ -39,7 +39,7 @@ actual val platformModule = module {
     )  }
     single { PatchNotesViewModel(patchNotesRepository = get(), preferencesRepository = get()) }
     single { StartingLifeViewModel(get()) }
-    single { ScryfallSearchViewModel() }
+    single { ScryfallSearchViewModel(get()) }
     single { ColorDialogViewModel() }
     single { GifDialogViewModel(get()) }
     single { DiceRollViewModel() }

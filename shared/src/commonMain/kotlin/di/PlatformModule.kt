@@ -8,6 +8,7 @@ import domain.api.GifSearchClient
 import domain.api.KlipyApiKey
 import domain.api.KlipyGifClient
 import domain.api.LifeLinkedApiConfig
+import domain.api.ScryfallApi
 import domain.state.profile.PlayerProfileRepository
 import domain.state.planechase.PlanechaseRepository
 import domain.storage.PreferencesRepository
@@ -29,6 +30,7 @@ val sharedModule = module {
     single { GameSessionStore(get<GameSessionRepository>()) }
     single { KlipyApiKey(LifeLinkedApiConfig.KLIPY_API_KEY) }
     single<GifSearchClient> { KlipyGifClient(apiKey = get()) }
+    single { ScryfallApi() }
     single { BackHandler() }
     single { VersionNumber.current }
 }

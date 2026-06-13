@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import domain.common.NumberWithRecentChange
+import domain.api.ScryfallApi
 import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
 import domain.game.timer.TimerStateRepository
@@ -219,7 +220,11 @@ abstract class MockLifeCounterViewModel(
     profileRepository = profileRepository,
     fileImageStore = fileImageStore,
     notificationManager = notificationManager,
-    planeChaseViewModel = PlaneChaseViewModel(PlanechaseRepository(InMemorySettings())),
+    planeChaseViewModel = PlaneChaseViewModel(
+        planechaseRepository = PlanechaseRepository(InMemorySettings()),
+        scryfallApi = ScryfallApi(requestDelayMillis = 0),
+        initialPlaneSearchEnabled = false
+    ),
     playerCustomizationManager = PlayerCustomizationManager(profileRepository),
     gameSessionStore = GameSessionStore(SavedGameRepository(InMemorySettings(), preferencesRepository)),
     timerManager = TimerManager(TimerStateRepository(InMemorySettings()), preferencesRepository)

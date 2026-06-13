@@ -161,7 +161,6 @@ fun ScryfallDialogContent(
                                 focusManager.clearFocus()
                                 viewModel.setRulingCard(null)
                                 viewModel.searchCards(state.textFieldValue.text) {
-                                    println("scrolling to $scrollPosition")
                                     listState.scrollToItem(scrollPosition)
                                 }
                             }
@@ -175,7 +174,6 @@ fun ScryfallDialogContent(
                                 viewModel.incrementBackStackDiff(-1)
                                 focusManager.clearFocus()
                                 viewModel.searchCards(state.textFieldValue.text) {
-                                    println("scrolling to $scrollPosition")
                                     listState.scrollToItem(scrollPosition)
                                 }
                             }

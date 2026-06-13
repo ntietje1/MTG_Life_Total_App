@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -32,7 +31,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import theme.LocalDimensions
@@ -85,7 +83,7 @@ fun GifDialogContent(
                     .clip(RoundedCornerShape(15))
                     .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)),
                 query = state.textFieldValue,
-                label = "Search GIFs",
+                label = "Search KLIPY",
                 onQueryChange = viewModel::setTextFieldValue,
                 searchInProgress = state.isSearchInProgress
             ) {
@@ -105,18 +103,18 @@ fun GifDialogContent(
                 }, horizontalArrangement = Arrangement.Center,
                 state = listState
             ) {
-                item(
-                    key = "klipy-attribution",
-                    span = { GridItemSpan(maxLineSpan) }
-                ) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth().padding(top = padding / 2),
-                        text = "GIFs via Klipy",
-                        color = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
-                        fontSize = dimensions.textSmall.scaledSp,
-                        textAlign = TextAlign.Center
-                    )
-                }
+//                item(
+//                    key = "klipy-attribution",
+//                    span = { GridItemSpan(maxLineSpan) }
+//                ) {
+//                    Text(
+//                        modifier = Modifier.fillMaxWidth().padding(top = padding / 2),
+//                        text = "GIFs via Klipy",
+//                        color = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
+//                        fontSize = dimensions.textSmall.scaledSp,
+//                        textAlign = TextAlign.Center
+//                    )
+//                }
                 items(
                     items = state.gifResults,
                     key = { it.id }

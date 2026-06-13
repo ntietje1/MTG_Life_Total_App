@@ -6,6 +6,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.api.ScryfallApi
+import domain.api.ScryfallResult
 import domain.state.planechase.PlanechaseRepository
 import domain.state.planechase.PlanechaseSnapshot
 import model.card.Card
@@ -15,20 +16,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PlaneChaseViewModel(
-    private val planechaseRepository: PlanechaseRepository
+    private val planechaseRepository: PlanechaseRepository,
+    private val scryfallApi: ScryfallApi,
+    private val initialPlaneSearchEnabled: Boolean = true
 ): ViewModel() {
 
     private val _state = MutableStateFlow(PlaneChaseState())
     val state: StateFlow<PlaneChaseState> = _state.asStateFlow()
 
-    private val scryfallApi = ScryfallApi()
-
     init {
         loadState()
-        searchPlanes { result ->
-            if (result.isNotEmpty()) {
-                _state.value = _state.value.copy(allPlanes = result)
-                persistState()
+        if (initialPlaneSearchEnabled) {
+            searchPlanes { result ->
+                if (result.isNotEmpty()) {
+                    _state.value = _state.value.copy(allPlanes = result)
+                    persistState()
+                }
             }
         }
     }
@@ -149,7 +152,10 @@ class PlaneChaseViewModel(
     }
 
     private suspend fun search(qry: String = state.value.query.text): List<Card> {
-        return scryfallApi.searchCards("(t:plane or t:phenomenon) $qry")
+        return when (val result = scryfallApi.searchCards("(t:plane or t:phenomenon) $qry")) {
+            is ScryfallResult.Failure -> emptyList()
+            is ScryfallResult.Success -> result.value.cards
+        }
     }
 
     fun searchPlanes(qry: String = state.value.query.text, onSearchResult: (List<Card>) -> Unit) {
