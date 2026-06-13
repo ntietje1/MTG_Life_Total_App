@@ -71,6 +71,33 @@ open class PlayerButtonViewModel(
         _commanderState.value = commanderState
     }
 
+    fun onAction(action: PlayerButtonAction) {
+        when (action) {
+            PlayerButtonAction.IncrementLife -> incrementLife(1)
+            PlayerButtonAction.DecrementLife -> incrementLife(-1)
+            is PlayerButtonAction.IncrementCommanderDamage -> incrementCommanderDamage(value = 1, partner = action.partner)
+            is PlayerButtonAction.DecrementCommanderDamage -> incrementCommanderDamage(value = -1, partner = action.partner)
+            is PlayerButtonAction.SetMonarch -> onMonarchyButtonClicked(action.monarch)
+            is PlayerButtonAction.SetManualDeath -> {
+                dispatchPlayerButtonAction(action)
+                closeSettingsMenu()
+                backstack.clear()
+            }
+            is PlayerButtonAction.SetCommanderPartnerMode -> togglePartnerMode(action.enabled)
+            is PlayerButtonAction.ChangeCounter -> incrementCounterValue(action.counter, action.delta)
+            is PlayerButtonAction.SetCounterActive -> setActiveCounter(action.counter, action.active)
+            PlayerButtonAction.ToggleCommanderDealer -> onCommanderButtonClicked()
+            PlayerButtonAction.ToggleSettings -> onSettingsButtonClicked()
+            PlayerButtonAction.PopBackStack -> popBackStack()
+            PlayerButtonAction.OpenCounters -> onCountersButtonClicked()
+            PlayerButtonAction.OpenCounterSelection -> onAddCounterButtonClicked()
+            PlayerButtonAction.OpenCustomization -> onShowCustomizeMenu(true)
+            PlayerButtonAction.CloseCustomization -> onShowCustomizeMenu(false)
+            PlayerButtonAction.SelectFirstPlayer -> setFirstPlayer()
+            PlayerButtonAction.MoveTimer -> onMoveTimer()
+        }
+    }
+
     open fun incrementLife(value: Int) {
         when (value) {
             1 -> dispatchPlayerButtonAction(PlayerButtonAction.IncrementLife)

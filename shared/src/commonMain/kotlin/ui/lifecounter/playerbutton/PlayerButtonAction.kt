@@ -2,6 +2,7 @@ package ui.lifecounter.playerbutton
 
 import domain.state.game.GameCommand
 import domain.state.game.SeatId
+import ui.lifecounter.CounterType
 import ui.lifecounter.GameSessionUiMapper
 
 sealed interface PlayerButtonAction {
@@ -11,6 +12,18 @@ sealed interface PlayerButtonAction {
     data class DecrementCommanderDamage(val partner: Boolean) : PlayerButtonAction
     data class SetMonarch(val monarch: Boolean) : PlayerButtonAction
     data class SetManualDeath(val dead: Boolean) : PlayerButtonAction
+    data class SetCommanderPartnerMode(val enabled: Boolean) : PlayerButtonAction
+    data class ChangeCounter(val counter: CounterType, val delta: Int) : PlayerButtonAction
+    data class SetCounterActive(val counter: CounterType, val active: Boolean) : PlayerButtonAction
+    data object ToggleCommanderDealer : PlayerButtonAction
+    data object ToggleSettings : PlayerButtonAction
+    data object PopBackStack : PlayerButtonAction
+    data object OpenCounters : PlayerButtonAction
+    data object OpenCounterSelection : PlayerButtonAction
+    data object OpenCustomization : PlayerButtonAction
+    data object CloseCustomization : PlayerButtonAction
+    data object SelectFirstPlayer : PlayerButtonAction
+    data object MoveTimer : PlayerButtonAction
 }
 
 fun PlayerButtonAction.toGameCommands(
@@ -46,6 +59,36 @@ fun PlayerButtonAction.toGameCommands(
                 dead = dead
             )
         )
+
+        is PlayerButtonAction.SetCommanderPartnerMode -> listOf(
+            GameCommand.SetCommanderPartnerMode(partnerMode = enabled)
+        )
+
+        is PlayerButtonAction.ChangeCounter -> listOf(
+            GameCommand.ChangeSeatCounter(
+                seatId = seatId,
+                counter = GameSessionUiMapper.domainCounterFor(counter),
+                delta = delta
+            )
+        )
+
+        is PlayerButtonAction.SetCounterActive -> listOf(
+            GameCommand.SetSeatCounterActive(
+                seatId = seatId,
+                counter = GameSessionUiMapper.domainCounterFor(counter),
+                active = active
+            )
+        )
+
+        PlayerButtonAction.ToggleCommanderDealer,
+        PlayerButtonAction.ToggleSettings,
+        PlayerButtonAction.PopBackStack,
+        PlayerButtonAction.OpenCounters,
+        PlayerButtonAction.OpenCounterSelection,
+        PlayerButtonAction.OpenCustomization,
+        PlayerButtonAction.CloseCustomization,
+        PlayerButtonAction.SelectFirstPlayer,
+        PlayerButtonAction.MoveTimer -> emptyList()
     }
 }
 

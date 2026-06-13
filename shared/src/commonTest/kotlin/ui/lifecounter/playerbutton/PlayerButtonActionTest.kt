@@ -2,8 +2,10 @@ package ui.lifecounter.playerbutton
 
 import domain.state.game.GameCommand
 import domain.state.game.SeatId
+import domain.state.game.CounterType as DomainCounterType
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import ui.lifecounter.CounterType as UiCounterType
 
 class PlayerButtonActionTest {
     private val seatId = SeatId("seat-2")
@@ -60,5 +62,40 @@ class PlayerButtonActionTest {
             listOf(GameCommand.SetManualDeath(seatId, true)),
             PlayerButtonAction.SetManualDeath(true).toGameCommands(seatId)
         )
+    }
+
+    @Test
+    fun mapsCounterAndPartnerModeActionsToGameCommands() {
+        assertEquals(
+            listOf(GameCommand.SetCommanderPartnerMode(partnerMode = true)),
+            PlayerButtonAction.SetCommanderPartnerMode(enabled = true).toGameCommands(seatId)
+        )
+        assertEquals(
+            listOf(
+                GameCommand.ChangeSeatCounter(
+                    seatId = seatId,
+                    counter = DomainCounterType.POISON,
+                    delta = 1
+                )
+            ),
+            PlayerButtonAction.ChangeCounter(UiCounterType.Poison, 1).toGameCommands(seatId)
+        )
+        assertEquals(
+            listOf(
+                GameCommand.SetSeatCounterActive(
+                    seatId = seatId,
+                    counter = DomainCounterType.ENERGY,
+                    active = true
+                )
+            ),
+            PlayerButtonAction.SetCounterActive(UiCounterType.Energy, true).toGameCommands(seatId)
+        )
+    }
+
+    @Test
+    fun uiOnlyActionsDoNotProduceGameCommands() {
+        assertEquals(emptyList(), PlayerButtonAction.ToggleSettings.toGameCommands(seatId))
+        assertEquals(emptyList(), PlayerButtonAction.OpenCustomization.toGameCommands(seatId))
+        assertEquals(emptyList(), PlayerButtonAction.SelectFirstPlayer.toGameCommands(seatId))
     }
 }

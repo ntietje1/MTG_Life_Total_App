@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import domain.common.NumberWithRecentChange
 import domain.game.timer.TurnTimer
 import domain.system.SystemManager
 import lifelinked.shared.generated.resources.Res
@@ -69,6 +70,7 @@ import theme.defaultTextStyle
 import theme.scaledSp
 import theme.textShadowStyle
 import ui.components.SettingsButton
+import ui.dialog.customization.CustomizationViewModel
 import ui.dialog.customization.PlayerCustomizationDialog
 import ui.lifecounter.CounterType
 import ui.modifier.VerticalRotation
@@ -78,14 +80,16 @@ import ui.modifier.rotateVertically
 @Composable
 fun PlayerButton(
     modifier: Modifier = Modifier,
-    viewModel: PlayerButtonViewModel,
+    state: PlayerButtonState,
+    isDead: Boolean,
+    commanderState: CommanderState,
+    backButtonVisible: Boolean,
+    customizationViewModel: CustomizationViewModel?,
+    onAction: (PlayerButtonAction) -> Unit,
     rotation: Float = 0f,
     turnTimerModifier: Modifier,
     setBlurBackground: (Boolean) -> Unit,
 ) {
-    val state by viewModel.state.collectAsState()
-    val isDead by viewModel.isDead.collectAsState()
-    val commanderState by viewModel.commanderState.collectAsState()
     val currentDealerIsPartnered = (commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
     val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
@@ -100,8 +104,6 @@ fun PlayerButton(
             state.buttonState !in listOf(PBState.COMMANDER_DEALER, PBState.COMMANDER_RECEIVER, PBState.SELECT_FIRST_PLAYER)
         }
     }
-
-    val backButtonVisible by viewModel.showBackButton.collectAsState()
 
     fun generateSizes(maxWidth: Dp, maxHeight: Dp): Triple<Dp, Dp, Float> {
         val settingsButtonSize = if (maxHeight / 2 * 3 < maxWidth) {
@@ -124,11 +126,11 @@ fun PlayerButton(
     }
 
     if (state.showCustomizeMenu) {
-        viewModel.customizationViewmodel?.let { customizationViewModel ->
+        customizationViewModel?.let { customizationViewModel ->
             PlayerCustomizationDialog(
                 modifier = Modifier.fillMaxSize(),
                 onDismiss = {
-                    viewModel.onShowCustomizeMenu(false)
+                    onAction(PlayerButtonAction.CloseCustomization)
                 },
                 viewModel = customizationViewModel
             )
@@ -224,10 +226,10 @@ fun PlayerButton(
                     when (state.buttonState) {
                         PBState.NORMAL -> {
                             LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
-                                viewModel.incrementLife(1)
+                                onAction(PlayerButtonAction.IncrementLife)
                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             }, onDecrementLife = {
-                                viewModel.incrementLife(-1)
+                                onAction(PlayerButtonAction.DecrementLife)
                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             })
                         }
@@ -235,30 +237,18 @@ fun PlayerButton(
                         PBState.COMMANDER_RECEIVER -> {
                             Row(Modifier.fillMaxSize()) {
                                 LifeChangeButtons(Modifier.then(if (currentDealerIsPartnered) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()), onIncrementLife = {
-                                    viewModel.incrementCommanderDamage(
-                                        value = 1,
-                                        partner = false
-                                    )
+                                    onAction(PlayerButtonAction.IncrementCommanderDamage(partner = false))
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 }, onDecrementLife = {
-                                    viewModel.incrementCommanderDamage(
-                                        value = -1,
-                                        partner = false
-                                    )
+                                    onAction(PlayerButtonAction.DecrementCommanderDamage(partner = false))
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 })
                                 if (currentDealerIsPartnered) {
                                     LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
-                                        viewModel.incrementCommanderDamage(
-                                            value = 1,
-                                            partner = true
-                                        )
+                                        onAction(PlayerButtonAction.IncrementCommanderDamage(partner = true))
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     }, onDecrementLife = {
-                                        viewModel.incrementCommanderDamage(
-                                            value = -1,
-                                            partner = true
-                                        )
+                                        onAction(PlayerButtonAction.DecrementCommanderDamage(partner = true))
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     })
                                 }
@@ -326,7 +316,7 @@ fun PlayerButton(
                             PBState.SELECT_FIRST_PLAYER -> {
                                 Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
                                     detectTapGestures(onPress = {
-                                        viewModel.setFirstPlayer()
+                                        onAction(PlayerButtonAction.SelectFirstPlayer)
                                     })
                                 }) {
                                     Column(
@@ -358,10 +348,12 @@ fun PlayerButton(
                                         modifier = playerInfoModifier.fillMaxSize(),
                                         name = state.player.name,
                                         textColor = state.player.textColor,
-                                        firstValue = viewModel.getCommanderDamage(partner = false),
-                                        secondValue = if (currentDealerIsPartnered) viewModel.getCommanderDamage(
-                                            partner = true
-                                        ) else null,
+                                        firstValue = commanderDamageValue(state, commanderState, partner = false),
+                                        secondValue = if (currentDealerIsPartnered) {
+                                            commanderDamageValue(state, commanderState, partner = true)
+                                        } else {
+                                            null
+                                        },
                                     )
                                 }
                             }
@@ -389,7 +381,7 @@ fun PlayerButton(
                                         backgroundColor = Color.Transparent,
                                         mainColor = state.player.textColor,
                                         onPress = {
-                                            viewModel.togglePartnerMode(!state.player.partnerMode)
+                                            onAction(PlayerButtonAction.SetCommanderPartnerMode(!state.player.partnerMode))
                                         })
                                     Text(
                                         modifier = Modifier.wrapContentSize(unbounded = true),
@@ -412,7 +404,7 @@ fun PlayerButton(
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.monarchy_icon, text = "Monarchy"
-                                            ) { viewModel.onMonarchyButtonClicked(!state.player.monarch) }
+                                            ) { onAction(PlayerButtonAction.SetMonarch(!state.player.monarch)) }
                                         }
                                         item {
                                             FormattedSettingsButton(
@@ -423,21 +415,21 @@ fun PlayerButton(
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.mana_icon, text = "Counters"
                                             ) {
-                                                viewModel.onCountersButtonClicked()
+                                                onAction(PlayerButtonAction.OpenCounters)
                                             }
                                         }
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.pencil_icon, text = "Customize"
                                             ) {
-                                                viewModel.onShowCustomizeMenu(true)
+                                                onAction(PlayerButtonAction.OpenCustomization)
                                             }
                                         }
                                         item {
                                             FormattedSettingsButton(
                                                 modifier = settingsButtonModifier, imageResource = Res.drawable.skull_icon, text = "KO Player"
                                             ) {
-                                                viewModel.onKOButtonClicked()
+                                                onAction(PlayerButtonAction.SetManualDeath(!state.player.setDead))
                                             }
                                         }
                                         item {
@@ -465,14 +457,10 @@ fun PlayerButton(
                                                         .fillMaxHeight()
                                                         .aspectRatio(0.70f)
                                                         .then(if (index == 0) Modifier.padding(start = padding) else Modifier),
-                                                    textColor = state.player.textColor, iconResource = counterType.resource, value = viewModel.getCounterValue(counterType), onIncrement = {
-                                                        viewModel.incrementCounterValue(
-                                                            counterType, 1
-                                                        )
+                                                    textColor = state.player.textColor, iconResource = counterType.resource, value = state.player.counters[counterType.ordinal], onIncrement = {
+                                                        onAction(PlayerButtonAction.ChangeCounter(counterType, 1))
                                                     }, onDecrement = {
-                                                        viewModel.incrementCounterValue(
-                                                            counterType, -1
-                                                        )
+                                                        onAction(PlayerButtonAction.ChangeCounter(counterType, -1))
                                                     })
                                             }
                                             item {
@@ -484,7 +472,7 @@ fun PlayerButton(
                                                     ),
                                                     textColor = state.player.textColor,
                                                 ) {
-                                                    viewModel.onAddCounterButtonClicked()
+                                                    onAction(PlayerButtonAction.OpenCounterSelection)
                                                 }
                                             }
                                         }
@@ -517,7 +505,8 @@ fun PlayerButton(
                                                         }
                                                     ).pointerInput(Unit) {
                                                         detectTapGestures {
-                                                            selected = viewModel.setActiveCounter(counterType, true)
+                                                            selected = true
+                                                            onAction(PlayerButtonAction.SetCounterActive(counterType, true))
                                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                                         }
                                                     }) {
@@ -553,7 +542,7 @@ fun PlayerButton(
                         mainColor = state.player.textColor,
                         visible = backButtonVisible,
                         imageVector = vectorResource(Res.drawable.back_icon),
-                        onPress = viewModel::popBackStack
+                        onPress = { onAction(PlayerButtonAction.PopBackStack) }
                     )
                 }
 
@@ -565,7 +554,7 @@ fun PlayerButton(
                             bottom = commanderStateMargin,
                         ), visible = commanderButtonVisible, iconResource = Res.drawable.commander_solid_icon, color = state.player.textColor, size = smallButtonSize
                     ) {
-                        viewModel.onCommanderButtonClicked()
+                        onAction(PlayerButtonAction.ToggleCommanderDealer)
                     }
                 }
 
@@ -592,7 +581,7 @@ fun PlayerButton(
                             end = settingsStateMargin, bottom = settingsStateMargin
                         ), visible = settingsButtonVisible, iconResource = Res.drawable.settings_icon, color = state.player.textColor, size = smallButtonSize
                     ) {
-                        viewModel.onSettingsButtonClicked()
+                        onAction(PlayerButtonAction.ToggleSettings)
                     }
                 }
 
@@ -628,6 +617,17 @@ fun PlayerButton(
                 }
             }
         }
+    }
+}
+
+private fun commanderDamageValue(
+    state: PlayerButtonState,
+    commanderState: CommanderState,
+    partner: Boolean
+): NumberWithRecentChange {
+    return when (commanderState) {
+        is CommanderState.Active -> state.player.commanderDamage[commanderState.getDealerIndex(partner)]
+        CommanderState.Inactive -> NumberWithRecentChange(0, 0)
     }
 }
 

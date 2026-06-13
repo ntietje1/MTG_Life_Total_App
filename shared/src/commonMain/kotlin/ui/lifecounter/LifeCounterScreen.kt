@@ -54,6 +54,7 @@ import theme.blendWith
 import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialog
 import ui.lifecounter.playerbutton.PlayerButton
+import ui.lifecounter.playerbutton.PlayerButtonAction
 import ui.modifier.routePointerChangesTo
 
 @Composable
@@ -136,7 +137,11 @@ fun LifeCounterScreen(
                             val rotation = remember(Unit) { placement.angle }
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
                             val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
-                            val timerColor = playerButtonViewModel.state.value.player.textColor
+                            val playerButtonState by playerButtonViewModel.state.collectAsState()
+                            val playerIsDead by playerButtonViewModel.isDead.collectAsState()
+                            val commanderState by playerButtonViewModel.commanderState.collectAsState()
+                            val showBackButton by playerButtonViewModel.showBackButton.collectAsState()
+                            val timerColor = playerButtonState.player.textColor
                             AnimatedPlayerButton(modifier = Modifier.padding(dimensions.paddingTiny),
                                 visible = state.showButtons,
                                 rotation = placement.angle,
@@ -147,7 +152,7 @@ fun LifeCounterScreen(
                                         modifier = Modifier.size(width, height),
                                         turnTimerModifier = Modifier.align(placement.timerAlignment).pointerInput(Unit) {
                                             routePointerChangesTo(onDown = {
-                                                playerButtonViewModel.onMoveTimer()
+                                                playerButtonViewModel.onAction(PlayerButtonAction.MoveTimer)
                                             })
                                         }.then(
                                             when (placement.timerAlignment) {
@@ -162,7 +167,12 @@ fun LifeCounterScreen(
                                                 else -> Modifier
                                             }
                                         ),
-                                        viewModel = playerButtonViewModel,
+                                        state = playerButtonState,
+                                        isDead = playerIsDead,
+                                        commanderState = commanderState,
+                                        backButtonVisible = showBackButton,
+                                        customizationViewModel = playerButtonViewModel.customizationViewmodel,
+                                        onAction = playerButtonViewModel::onAction,
                                         rotation = rotation,
                                         setBlurBackground = { viewModel.setBlurBackground(it) },
                                     )
