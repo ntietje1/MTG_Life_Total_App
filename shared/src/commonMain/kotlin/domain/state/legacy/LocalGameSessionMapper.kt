@@ -1,6 +1,5 @@
 package domain.state.legacy
 
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import domain.common.NumberWithRecentChange
 import domain.state.game.CounterType
@@ -33,28 +32,6 @@ object LocalGameSessionMapper {
             rules = rules,
             seats = validPlayers.map(::legacyPlayerToSeat)
         )
-    }
-
-    fun toLegacyPlayers(session: GameSession): List<Player> {
-        return session.seats.map { seat ->
-            val playerNumber = seat.id.value.removePrefix("seat-").toIntOrNull() ?: 1
-            Player(
-                lifeTotal = seat.life.toLegacyNumberWithRecentChange(),
-                imageString = when (val background = seat.appearance.background) {
-                    is PlayerBackground.LocalImage -> background.fileName
-                    is PlayerBackground.ProviderImage -> background.url
-                    is PlayerBackground.CardArt -> background.url
-                    PlayerBackground.None -> null
-                },
-                color = Color(seat.appearance.colors.backgroundArgb),
-                textColor = Color(seat.appearance.colors.textArgb),
-                playerNum = playerNumber,
-                name = seat.appearance.displayName,
-                counters = legacyCountersFromSeat(seat),
-                activeCounters = seat.activeCounters.map(::toLegacyCounter),
-                setDead = seat.manualDeath
-            )
-        }
     }
 
     private fun hasValidPlayers(players: List<Player>): Boolean {
@@ -98,15 +75,6 @@ object LocalGameSessionMapper {
             val value = counters.getOrNull(legacyCounter.ordinal) ?: 0
             if (value == 0) null else counter to value
         }.toMap()
-    }
-
-    private fun legacyCountersFromSeat(seat: GameSeat): List<Int> {
-        val counters = MutableList(LegacyCounterType.entries.size) { 0 }
-        seat.counters.forEach { (counter, value) ->
-            val legacyCounter = toLegacyCounter(counter)
-            counters[legacyCounter.ordinal] = value
-        }
-        return counters
     }
 
     private fun toDomainCounter(counter: LegacyCounterType): CounterType {
@@ -168,8 +136,4 @@ object LocalGameSessionMapper {
 
 fun NumberWithRecentChange.toTrackedInt(): TrackedInt {
     return TrackedInt(value = number, recentChange = recentChange)
-}
-
-fun TrackedInt.toLegacyNumberWithRecentChange(): NumberWithRecentChange {
-    return NumberWithRecentChange(number = value, recentChange = recentChange)
 }

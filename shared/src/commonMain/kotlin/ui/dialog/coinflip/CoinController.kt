@@ -1,6 +1,6 @@
 package ui.dialog.coinflip
 
-import domain.storage.SettingsManager
+import domain.storage.PreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import ui.flippable.FlipAnimationType
@@ -8,7 +8,7 @@ import ui.flippable.FlippableController
 import kotlin.random.Random
 
 class CoinController(
-    private val settingsManager: SettingsManager,
+    private val preferencesRepository: PreferencesRepository,
 ) {
     companion object {
         private var animationCorrectionFactor = 1.0f
@@ -32,7 +32,7 @@ class CoinController(
 
     val flipController = FlippableController()
 
-    private var durations = generateFlipDurations(settingsManager.fastCoinFlip.value, Random.nextBoolean())
+    private var durations = generateFlipDurations(preferencesRepository.fastCoinFlip.value, Random.nextBoolean())
 
     var flipAnimationType: FlipAnimationType = FlipAnimationType.VERTICAL_ANTI_CLOCKWISE
     private var flipIndex: Int = 0
@@ -77,11 +77,11 @@ class CoinController(
         flipAnimationType = FlipAnimationType.VERTICAL_CLOCKWISE
         if (nextResult == null) {
             flipIndex = 0
-            durations = generateFlipDurations(settingsManager.fastCoinFlip.value, Random.nextBoolean())
+            durations = generateFlipDurations(preferencesRepository.fastCoinFlip.value, Random.nextBoolean())
         } else if (currentFace != nextResult) {
-            durations = generateFlipDurations(settingsManager.fastCoinFlip.value, true)
+            durations = generateFlipDurations(preferencesRepository.fastCoinFlip.value, true)
         } else {
-            durations = generateFlipDurations(settingsManager.fastCoinFlip.value, false)
+            durations = generateFlipDurations(preferencesRepository.fastCoinFlip.value, false)
         }
     }
 

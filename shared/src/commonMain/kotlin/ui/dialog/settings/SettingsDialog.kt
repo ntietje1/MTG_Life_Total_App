@@ -39,7 +39,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import di.Platform
-import domain.storage.SettingsManager
+import domain.storage.PreferencesRepository
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.change_name_icon
 import lifelinked.shared.generated.resources.coffee_icon
@@ -72,9 +72,9 @@ fun SettingsDialogContent(
     goToPatchNotes: () -> Unit,
     addGoToSettingsToBackStack: () -> Unit,
     goToTutorialScreen: () -> Unit,
-    toggleKeepScreenOn: () -> Unit,
+    setKeepScreenOn: (Boolean) -> Unit,
     updateTurnTimerEnabled: (Boolean) -> Unit,
-    settingsManager: SettingsManager = koinInject(),
+    preferencesRepository: PreferencesRepository = koinInject(),
     platform: Platform = koinInject(),
     version: VersionNumber = koinInject()
 ) {
@@ -104,48 +104,46 @@ fun SettingsDialogContent(
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Fast Coin Flip",
-                        initialState = settingsManager.fastCoinFlip.value,
-                        toggle = { settingsManager.setFastCoinFlip(it) },
+                        initialState = preferencesRepository.fastCoinFlip.value,
+                        toggle = { preferencesRepository.setFastCoinFlip(it) },
                         icon = vectorResource(Res.drawable.coin_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Disable Camera Roll",
-                        initialState = settingsManager.cameraRollDisabled.value,
-                        toggle = { settingsManager.setCameraRollDisabled(it) },
+                        initialState = preferencesRepository.cameraRollDisabled.value,
+                        toggle = { preferencesRepository.setCameraRollDisabled(it) },
                         icon = vectorResource(Res.drawable.invisible_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Auto KO",
-                        initialState = settingsManager.autoKo.value,
-                        toggle = { settingsManager.setAutoKo(it) },
+                        initialState = preferencesRepository.autoKo.value,
+                        toggle = { preferencesRepository.setAutoKo(it) },
                         icon = vectorResource(Res.drawable.skull_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Auto Skip Player Select",
-                        initialState = settingsManager.autoSkip.value,
-                        toggle = { settingsManager.setAutoSkip(it) },
+                        initialState = preferencesRepository.autoSkip.value,
+                        toggle = { preferencesRepository.setAutoSkip(it) },
                         icon = vectorResource(Res.drawable.player_select_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Keep Screen On",
-                        initialState = settingsManager.keepScreenOn.value,
+                        initialState = preferencesRepository.keepScreenOn.value,
                         toggle = {
-                            toggleKeepScreenOn()
-                            settingsManager.setKeepScreenOn(it)
+                            setKeepScreenOn(it)
                         },
                         icon = vectorResource(Res.drawable.sun_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Turn Timer",
-                        initialState = settingsManager.turnTimer.value,
+                        initialState = preferencesRepository.turnTimer.value,
                         toggle = {
-                            settingsManager.setTurnTimer(it)
-//                            settingsManager.turnTimer = it
+                            preferencesRepository.setTurnTimer(it)
                             updateTurnTimerEnabled(it)
                         },
                         icon = vectorResource(Res.drawable.timer_icon)
@@ -237,7 +235,7 @@ fun SettingsDialogContent(
                 }
             }
 
-            if (settingsManager.devMode.value && false) {
+            if (preferencesRepository.devMode.value && false) {
                 item {
                     SettingsDialogHeader(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),

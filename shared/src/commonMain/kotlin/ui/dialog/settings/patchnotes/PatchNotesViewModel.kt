@@ -1,7 +1,7 @@
 package ui.dialog.settings.patchnotes
 
 import androidx.lifecycle.ViewModel
-import domain.storage.SettingsManager
+import domain.storage.PreferencesRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
 
 class PatchNotesViewModel(
-    private val settingsManager: SettingsManager
+    private val patchNotesRepository: PatchNotesRepository,
+    private val preferencesRepository: PreferencesRepository
 ): ViewModel() {
     private val _state = MutableStateFlow(PatchNotesState())
     val state: StateFlow<PatchNotesState> = _state.asStateFlow()
@@ -22,37 +23,31 @@ class PatchNotesViewModel(
 
     suspend fun getPatchNotes(): Pair<List<PatchNotesItem>, List<String>>? {
         if (state.value.patchNotes.isEmpty()) {
-            try {
-                val currentPatchNotesJson = settingsManager.patchNotes.value
-                if (currentPatchNotesJson.isNotEmpty()) {
-                    val currentPatchNotesResponse = Json.decodeFromString<PatchNotesResponse>(currentPatchNotesJson)
-                    val currentPatchNotes = currentPatchNotesResponse.patchNotes
-                    val currentInProgress = currentPatchNotesResponse.inProgress
-                    _state.value = _state.value.copy(patchNotes = currentPatchNotes, inProgress = currentInProgress)
-                }
-            } catch (e: Exception) {
-                println("Error loading patch notes from cache: $e")
-            }
+            patchNotesRepository.load()?.let(::applyPatchNotes)
             try {
                 val response: HttpResponse = client.get(patchnotesUrl)
-                val patchNotesJson = response.bodyAsText()
-                settingsManager.setPatchNotes(patchNotesJson)
-                val patchNotesResponse = Json.decodeFromString<PatchNotesResponse>(patchNotesJson)
-                val patchNotes = patchNotesResponse.patchNotes
-                val inProgress = patchNotesResponse.inProgress
-                _state.value = _state.value.copy(patchNotes = patchNotes, inProgress = inProgress)
+                val patchNotesResponse = Json.decodeFromString<PatchNotesResponse>(response.bodyAsText())
+                patchNotesRepository.save(patchNotesResponse)
+                applyPatchNotes(patchNotesResponse)
             } catch (e: Exception) {
-                return null
+                if (state.value.patchNotes.isEmpty() && state.value.inProgress.isEmpty()) return null
             }
         }
         return Pair(state.value.patchNotes, state.value.inProgress)
     }
 
+    private fun applyPatchNotes(response: PatchNotesResponse) {
+        _state.value = _state.value.copy(
+            patchNotes = response.patchNotes,
+            inProgress = response.inProgress
+        )
+    }
+
     fun onSecretPatchNotesClick(): Boolean? {
         _state.value = _state.value.copy(secretPatchNotesClicks = state.value.secretPatchNotesClicks + 1)
         if (state.value.secretPatchNotesClicks > 0 && state.value.secretPatchNotesClicks % 5 == 0) {
-            settingsManager.setDevMode(!settingsManager.devMode.value)
-            return settingsManager.devMode.value
+            preferencesRepository.setDevMode(!preferencesRepository.devMode.value)
+            return preferencesRepository.devMode.value
         }
         return null
     }

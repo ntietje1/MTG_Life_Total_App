@@ -1,7 +1,12 @@
 package domain.game
 
 import androidx.compose.ui.graphics.Color
-import domain.storage.ISettingsManager
+import androidx.compose.ui.graphics.toArgb
+import domain.state.game.PlayerProfileId
+import domain.state.profile.PlayerBackground
+import domain.state.profile.PlayerColors
+import domain.state.profile.PlayerProfile
+import domain.state.profile.PlayerProfileRepository
 import model.Player
 import model.Player.Companion.allPlayerColors
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
@@ -11,7 +16,7 @@ import ui.lifecounter.playerbutton.PlayerButtonViewModel
  * Attaches to PlayerButtonViewModels flow to get player color information
  */
 class PlayerCustomizationManager(
-    private val settingsManager: ISettingsManager
+    private val profileRepository: PlayerProfileRepository
 ) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
 
     fun resetPlayerPrefs(player: Player): Player {
@@ -23,6 +28,7 @@ class PlayerCustomizationManager(
             name = "P${player.playerNum}",
             textColor = Color.White,
             imageString = null,
+            background = PlayerBackground.None,
             color = newColor
         )
     }
@@ -30,6 +36,7 @@ class PlayerCustomizationManager(
     fun copyPlayerPrefs(target: Player, source: Player): Player {
         return target.copy(
             imageString = source.imageString,
+            background = source.background,
             color = source.color,
             textColor = source.textColor,
             name = source.name
@@ -44,7 +51,7 @@ class PlayerCustomizationManager(
     }
 
     fun savePlayerPrefs(player: Player) {
-        settingsManager.savePlayerPref(player)
+        profileRepository.saveProfile(player.toProfile())
     }
 
     fun resetAllPlayerPrefs() {
@@ -54,4 +61,20 @@ class PlayerCustomizationManager(
             it.copyPrefs(it.state.value.player)
         }
     }
-} 
+}
+
+private fun Player.toProfile(): PlayerProfile {
+    return PlayerProfile(
+        id = PlayerProfileId(name),
+        displayName = name,
+        colors = PlayerColors(
+            backgroundArgb = color.toArgb(),
+            textArgb = textColor.toArgb()
+        ),
+        background = if (background == PlayerBackground.None) {
+            imageString?.let(PlayerBackground::LocalImage) ?: PlayerBackground.None
+        } else {
+            background
+        }
+    )
+}

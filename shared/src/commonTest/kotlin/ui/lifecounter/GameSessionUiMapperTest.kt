@@ -14,6 +14,7 @@ import domain.state.game.TableCounterType
 import domain.state.game.TrackedInt
 import domain.state.profile.PlayerBackground
 import domain.state.profile.PlayerColors
+import domain.storage.IFileImageStore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import ui.lifecounter.playerbutton.PBState
@@ -83,14 +84,19 @@ class GameSessionUiMapperTest {
             showCustomizeMenu = true
         )
 
-        val mapped = GameSessionUiMapper.mapPlayerButtonState(session, receiverSeatId, previous)
+        val mapped = GameSessionUiMapper.mapPlayerButtonState(
+            session = session,
+            seatId = receiverSeatId,
+            current = previous,
+            fileImageStore = FakeFileImageStore(mapOf("nissa.png" to "file:///images/nissa.png"))
+        )
         val player = mapped.player
 
         assertEquals(PBState.SETTINGS, mapped.buttonState)
         assertEquals(true, mapped.showCustomizeMenu)
         assertEquals(2, player.playerNum)
         assertEquals("Nissa", player.name)
-        assertEquals("nissa.png", player.imageString)
+        assertEquals("file:///images/nissa.png", player.imageString)
         assertEquals(Color(-15654349), player.color)
         assertEquals(Color(-12298906), player.textColor)
         assertEquals(NumberWithRecentChange(number = 24, recentChange = -3), player.lifeTotal)
@@ -140,6 +146,18 @@ class GameSessionUiMapperTest {
             )
         )
     }
+}
+
+private class FakeFileImageStore(
+    private val localUris: Map<String, String> = emptyMap()
+) : IFileImageStore {
+    override suspend fun saveImage(bytes: ByteArray): String = "local-image"
+
+    override fun localImageUri(imageId: String): String? {
+        return localUris[imageId]
+    }
+
+    override fun deleteImage(imageId: String) = Unit
 }
 
 private fun CounterType.toUiCounter(): ui.lifecounter.CounterType {

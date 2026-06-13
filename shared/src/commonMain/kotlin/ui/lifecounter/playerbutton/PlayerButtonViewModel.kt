@@ -9,8 +9,9 @@ import domain.game.timer.TimerManager
 import domain.game.timer.TurnTimer
 import domain.state.game.GameCommand
 import domain.state.game.GameSessionStore
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
+import domain.state.profile.PlayerProfileRepository
+import domain.storage.IFileImageStore
+import domain.storage.PreferencesRepository
 import domain.system.NotificationManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,8 +28,9 @@ import ui.lifecounter.GameSessionUiMapper
 
 open class PlayerButtonViewModel(
     initialState: PlayerButtonState,
-    private val settingsManager: ISettingsManager,
-    private val imageManager: IImageManager,
+    private val preferencesRepository: PreferencesRepository,
+    private val profileRepository: PlayerProfileRepository,
+    private val fileImageStore: IFileImageStore,
     protected val notificationManager: NotificationManager,
     private val playerCustomizationManager: PlayerCustomizationManager,
     private val gameSessionStore: GameSessionStore,
@@ -38,7 +40,7 @@ open class PlayerButtonViewModel(
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
 
     val isDead: StateFlow<Boolean> = combine(
-        settingsManager.autoKo, state
+        preferencesRepository.autoKo, state
     ) { autoKo, playerState ->
         playerState.player.setDead ||
             (autoKo && (playerState.player.life <= 0 || playerState.player.commanderDamage.any { it.number >= 21 }))
@@ -161,8 +163,9 @@ open class PlayerButtonViewModel(
     private fun resetCustomizationMenuViewModel() {
         _customizationViewmodel = CustomizationViewModel(
             initialPlayer = state.value.player,
-            imageManager = imageManager,
-            settingsManager = settingsManager,
+            fileImageStore = fileImageStore,
+            profileRepository = profileRepository,
+            preferencesRepository = preferencesRepository,
         )
     }
 

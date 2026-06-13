@@ -2,16 +2,20 @@ package ui.dialog.startinglife
 
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
-import domain.storage.SettingsManager
+import domain.storage.PreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class StartingLifeViewModel(
-    private val settingsManager: SettingsManager
+    private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(StartingLifeState())
+    private val _state = MutableStateFlow(
+        StartingLifeState(
+            textFieldValue = TextFieldValue(preferencesRepository.startingLife.value.toString())
+        )
+    )
     val state: StateFlow<StartingLifeState> = _state.asStateFlow()
 
     fun setTextFieldValue(textFieldValue: TextFieldValue) {
@@ -19,7 +23,7 @@ class StartingLifeViewModel(
     }
 
     fun setStartingLife(life: Int) {
-        settingsManager.setStartingLife(life)
+        preferencesRepository.setStartingLife(life)
     }
 
     fun parseStartingLife(): Int? {

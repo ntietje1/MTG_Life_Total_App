@@ -8,8 +8,9 @@ import domain.game.timer.TimerManager
 import domain.state.game.GameCommand
 import domain.state.game.GameSession
 import domain.state.game.GameSessionStore
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
+import domain.state.profile.PlayerProfileRepository
+import domain.storage.IFileImageStore
+import domain.storage.PreferencesRepository
 import domain.system.NotificationManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,8 +27,9 @@ import ui.lifecounter.playerbutton.PlayerButtonState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 open class LifeCounterViewModel(
-    private val settingsManager: ISettingsManager,
-    private val imageManager: IImageManager,
+    private val preferencesRepository: PreferencesRepository,
+    private val profileRepository: PlayerProfileRepository,
+    private val fileImageStore: IFileImageStore,
     protected val notificationManager: NotificationManager,
     internal val playerCustomizationManager: PlayerCustomizationManager,
     private val planeChaseViewModel: PlaneChaseViewModel,
@@ -38,9 +40,9 @@ open class LifeCounterViewModel(
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<LifeCounterState> = _state.asStateFlow()
 
-    val numPlayers: StateFlow<Int> = settingsManager.numPlayers
-    val alt4PlayerLayout: StateFlow<Boolean> = settingsManager.alt4PlayerLayout
-    val turnTimerEnabled: StateFlow<Boolean> = settingsManager.turnTimer
+    val numPlayers: StateFlow<Int> = preferencesRepository.numPlayers
+    val alt4PlayerLayout: StateFlow<Boolean> = preferencesRepository.alt4PlayerLayout
+    val turnTimerEnabled: StateFlow<Boolean> = preferencesRepository.turnTimer
 
     private val _playerButtonViewModels = MutableStateFlow<List<PlayerButtonViewModel>>(emptyList())
     val playerButtonViewModels: StateFlow<List<PlayerButtonViewModel>> = _playerButtonViewModels.asStateFlow()
@@ -71,20 +73,14 @@ open class LifeCounterViewModel(
 
     // Generate viewmodels for all players and update the viewmodel list flow
     private fun generatePlayerButtonViewModels() {
-        val savedPlayers = settingsManager.loadPlayerStates().toMutableList()
-        _playerButtonViewModels.value = savedPlayers.map { generatePlayerButtonViewModel(it) }.toMutableList()
-        while (savedPlayers.size < MAX_PLAYERS) {
-            val newPlayer = playerCustomizationManager.resetPlayerPrefs(
-                generatePlayer(playerNum = savedPlayers.size + 1)
-            )
-            savedPlayers += newPlayer
-            _playerButtonViewModels.value += generatePlayerButtonViewModel(newPlayer)
+        _playerButtonViewModels.value = (1..MAX_PLAYERS).map { playerNum ->
+            generatePlayerButtonViewModel(generatePlayer(playerNum))
         }
     }
 
     private fun generatePlayer(playerNum: Int): Player {
         return Player(
-            lifeTotal = NumberWithRecentChange(settingsManager.startingLife.value, 0),
+            lifeTotal = NumberWithRecentChange(preferencesRepository.startingLife.value, 0),
             name = "P$playerNum",
             playerNum = playerNum
         )
@@ -101,7 +97,6 @@ open class LifeCounterViewModel(
     }
 
     fun onNavigate(firstNavigation: Boolean) {
-        if (settingsManager.loadPlayerStates().isEmpty()) generatePlayerButtonViewModels()
         if (firstNavigation) {
             viewModelScope.launch {
                 showLoadingScreen(true)
@@ -130,8 +125,9 @@ open class LifeCounterViewModel(
     open fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
         return PlayerButtonViewModel(
             initialState = PlayerButtonState(player),
-            settingsManager = settingsManager,
-            imageManager = imageManager,
+            preferencesRepository = preferencesRepository,
+            profileRepository = profileRepository,
+            fileImageStore = fileImageStore,
             notificationManager = notificationManager,
             playerCustomizationManager = playerCustomizationManager,
             gameSessionStore = gameSessionStore,
@@ -162,7 +158,8 @@ open class LifeCounterViewModel(
             GameSessionUiMapper.mapPlayerButtonState(
                 session = session,
                 seatId = mode.dealerSeatId,
-                current = PlayerButtonState(Player(playerNum = mode.dealerSeatId.value.removePrefix("seat-").toInt()))
+                current = PlayerButtonState(Player(playerNum = mode.dealerSeatId.value.removePrefix("seat-").toInt())),
+                fileImageStore = fileImageStore
             ).player.copy(partnerMode = mode.partnerMode)
         }
         playerButtonViewModels.value.forEach { playerButtonViewModel ->
@@ -173,7 +170,8 @@ open class LifeCounterViewModel(
                 val mappedState = GameSessionUiMapper.mapPlayerButtonState(
                     session = session,
                     seatId = seatId,
-                    current = playerButtonViewModel.state.value
+                    current = playerButtonViewModel.state.value,
+                    fileImageStore = fileImageStore
                 )
                 playerButtonViewModel.setPlayer(mappedState.player)
                 when {
@@ -208,7 +206,7 @@ open class LifeCounterViewModel(
 
     open fun setNumPlayers(value: Int) {
         if (value < 1 || value > MAX_PLAYERS) throw IllegalArgumentException("Invalid number of players")
-        settingsManager.setNumPlayers(value)
+        preferencesRepository.setNumPlayers(value)
     }
 
     private fun restartButtons() {
@@ -230,15 +228,15 @@ open class LifeCounterViewModel(
     }
 
     fun toggleKeepScreenOn(value: Boolean? = null) {
-        settingsManager.setKeepScreenOn(value ?: !settingsManager.keepScreenOn.value)
+        preferencesRepository.setKeepScreenOn(value ?: !preferencesRepository.keepScreenOn.value)
     }
 
     open fun toggleDarkTheme(value: Boolean? = null) {
-        settingsManager.setDarkTheme(value ?: !settingsManager.darkTheme.value)
+        preferencesRepository.setDarkTheme(value ?: !preferencesRepository.darkTheme.value)
     }
 
     fun setAlt4PlayerLayout(value: Boolean) {
-        settingsManager.setAlt4PlayerLayout(value)
+        preferencesRepository.setAlt4PlayerLayout(value)
     }
 
     fun setShowButtons(value: Boolean) {

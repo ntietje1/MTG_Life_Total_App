@@ -11,7 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import domain.storage.ISettingsManager
+import domain.storage.PreferencesRepository
 import di.BackHandler
 import domain.system.SystemManager
 import model.VersionNumber
@@ -36,9 +36,9 @@ private enum class LifeLinkedScreen(val route: String) {
 
 @Composable
 fun LifeLinkedApp() {
-    val settingsManager: ISettingsManager by currentKoinScope().inject()
-    val keepScreenOn by settingsManager.keepScreenOn.collectAsState()
-    val darkTheme by settingsManager.darkTheme.collectAsState()
+    val preferencesRepository: PreferencesRepository by currentKoinScope().inject()
+    val keepScreenOn by preferencesRepository.keepScreenOn.collectAsState()
+    val darkTheme by preferencesRepository.darkTheme.collectAsState()
     SystemManager.keepScreenOn(keepScreenOn)
     LifeLinkedTheme(darkTheme = darkTheme) {
         SystemManager.updateSystemBarsColors(true)
@@ -46,9 +46,9 @@ fun LifeLinkedApp() {
         val navController = rememberNavController()
         val currentVersionNumber = koinInject<VersionNumber>()
         fun getStartScreen(): String {
-            return if (!currentVersionNumber.isSame(VersionNumber(settingsManager.lastSplashScreenShown.value))) {
+            return if (!currentVersionNumber.isSame(VersionNumber(preferencesRepository.lastSplashScreenShown.value))) {
                 LifeLinkedScreen.SPLASH.route
-            } else if (!settingsManager.autoSkip.value) {
+            } else if (!preferencesRepository.autoSkip.value) {
                 LifeLinkedScreen.PLAYER_SELECT.route
             } else {
                 LifeLinkedScreen.LIFE_COUNTER.route
@@ -68,11 +68,11 @@ fun LifeLinkedApp() {
             composable(LifeLinkedScreen.SPLASH.route) {
                 SplashScreen(
                     goToTutorial = {
-                        settingsManager.setLastSplashScreenShown(currentVersionNumber.value)
+                        preferencesRepository.setLastSplashScreenShown(currentVersionNumber.value)
                         navController.navigate(LifeLinkedScreen.TUTORIAL.route)
                     },
                     goToLifeCounter = {
-                        settingsManager.setLastSplashScreenShown(currentVersionNumber.value)
+                        preferencesRepository.setLastSplashScreenShown(currentVersionNumber.value)
                         navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
                     }
                 )
@@ -82,7 +82,7 @@ fun LifeLinkedApp() {
                 TutorialScreen(
                     viewModel = viewModel,
                     onFinishTutorial = {
-                        settingsManager.setTutorialSkip(true)
+                        preferencesRepository.setTutorialSkip(true)
                         if (navController.currentBackStack.value.all {
                                 it.destination.route == null ||
                                         !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route)

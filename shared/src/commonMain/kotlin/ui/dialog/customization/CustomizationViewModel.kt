@@ -5,8 +5,13 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
+import domain.storage.IFileImageStore
+import domain.storage.PreferencesRepository
+import domain.storage.displayUri
+import domain.state.game.PlayerProfileId
+import domain.state.profile.PlayerBackground
+import domain.state.profile.PlayerProfile
+import domain.state.profile.PlayerProfileRepository
 import model.Player
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,24 +21,29 @@ import kotlinx.coroutines.launch
 
 open class CustomizationViewModel(
     private val initialPlayer: Player,
-    val imageManager: IImageManager,
-    val settingsManager: ISettingsManager
+    private val fileImageStore: IFileImageStore,
+    private val profileRepository: PlayerProfileRepository,
+    val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(CustomizationDialogState(initialPlayer))
     val state: StateFlow<CustomizationDialogState> = _state.asStateFlow()
 
     fun revertChanges() {
         setPlayer(initialPlayer)
-        initialPlayer.imageString?.let { onChangeImage(it) }
+        val imageUri = when (initialPlayer.background) {
+            PlayerBackground.None -> initialPlayer.imageString?.let { fileImageStore.localImageUri(it) ?: it }
+            else -> initialPlayer.background.displayUri(fileImageStore)
+        }
+        setPlayerBackground(
+            background = initialPlayer.background,
+            imageUri = imageUri
+        )
         setChangeWasMade(false)
     }
 
     fun onImageFileSelected(file: ByteArray) {
-        var copiedUri = ""
         viewModelScope.launch {
-            copiedUri = imageManager.copyImageToLocalStorage(file, state.value.player.name)
-        }.invokeOnCompletion {
-            onChangeImage(copiedUri)
+            setBackground(PlayerBackground.LocalImage(fileImageStore.saveImage(file)))
         }
     }
 
@@ -44,20 +54,12 @@ open class CustomizationViewModel(
 
     fun onChangeImage(uri: String) {
         viewModelScope.launch {
-            setImageUri(null)
-            delay(50)
-            setImageUri(
-                when {
-                    uri.startsWith("http") -> uri
-                    uri.startsWith("/data/") -> "file://$uri"
-                    else -> imageManager.getImagePath(uri)
-                }
-            )
+            setBackground(PlayerBackground.ProviderImage(uri))
         }
     }
 
     fun onChangeBackgroundColor(color: Color) {
-        setImageUri(null)
+        setPlayerBackground(background = PlayerBackground.None, imageUri = null)
         setBackgroundColor(color)
     }
 
@@ -65,9 +67,15 @@ open class CustomizationViewModel(
         setTextColor(color)
     }
 
-    private fun setImageUri(uri: String?) {
+    private suspend fun setBackground(background: PlayerBackground) {
+        setPlayerBackground(background = background, imageUri = null)
+        delay(50)
+        setPlayerBackground(background = background, imageUri = background.displayUri(fileImageStore))
+    }
+
+    private fun setPlayerBackground(background: PlayerBackground, imageUri: String?) {
         setChangeWasMade(true)
-        setPlayer(state.value.player.copy(imageString = uri))
+        setPlayer(state.value.player.copy(imageString = imageUri, background = background))
     }
 
     private fun setBackgroundColor(color: Color) {
@@ -101,5 +109,32 @@ open class CustomizationViewModel(
 
     fun setCustomizeMenuState(menuState: CustomizationMenuState) {
         _state.value = state.value.copy(customizationMenuState = menuState)
+    }
+
+    fun loadPlayerPrefs(): List<Player> {
+        val currentDefaultName = "P${state.value.player.playerNum}"
+        return profileRepository.loadProfiles()
+            .map { it.toPlayer(state.value.player.playerNum) }
+            .sortedBy { player -> if (player.name == currentDefaultName) 0 else 1 }
+    }
+
+    fun deletePlayerPref(player: Player) {
+        profileRepository.deleteProfile(PlayerProfileId(player.name))
+    }
+
+    private fun PlayerProfile.toPlayer(playerNum: Int): Player {
+        return Player(
+            playerNum = playerNum,
+            name = displayName,
+            color = Color(colors.backgroundArgb),
+            textColor = Color(colors.textArgb),
+            background = background,
+            imageString = when (val value = background) {
+                PlayerBackground.None -> null
+                is PlayerBackground.LocalImage -> value.displayUri(fileImageStore)
+                is PlayerBackground.ProviderImage -> value.url
+                is PlayerBackground.CardArt -> value.url
+            }
+        )
     }
 }

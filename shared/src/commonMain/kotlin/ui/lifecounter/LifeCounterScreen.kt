@@ -81,7 +81,7 @@ fun LifeCounterScreen(
             onDismiss = { viewModel.setMiddleButtonDialogState(null) },
             viewModel = viewModel,
             toggleTheme = { viewModel.toggleDarkTheme() },
-            toggleKeepScreenOn = { viewModel.toggleKeepScreenOn() },
+            setKeepScreenOn = { viewModel.toggleKeepScreenOn(it) },
             goToPlayerSelectScreen = { changeNumPlayers ->
                 viewModel.setShowButtons(false)
                 goToPlayerSelectScreen(changeNumPlayers)

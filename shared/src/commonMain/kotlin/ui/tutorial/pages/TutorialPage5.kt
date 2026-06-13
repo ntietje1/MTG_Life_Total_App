@@ -24,8 +24,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
+import domain.storage.IFileImageStore
+import domain.storage.PreferencesRepository
+import domain.state.profile.PlayerProfileRepository
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.down_arrow_icon
@@ -61,11 +62,12 @@ fun TutorialPage5(
 
     class MockLifeCounterViewModelPage5(
         lifeCounterState: LifeCounterState,
-        settingsManager: ISettingsManager,
-        imageManager: IImageManager,
+        preferencesRepository: PreferencesRepository,
+        profileRepository: PlayerProfileRepository,
+        fileImageStore: IFileImageStore,
         notificationManager: NotificationManager
     ) : MockLifeCounterViewModel(
-        lifeCounterState, settingsManager, imageManager, notificationManager
+        lifeCounterState, preferencesRepository, profileRepository, fileImageStore, notificationManager
     ) {
         private fun checkStepOneOrTwoComplete() {
             when {
@@ -135,18 +137,20 @@ fun TutorialPage5(
 
         inner class MockPlayerButtonViewModelPage5(
             state: PlayerButtonState,
-            settingsManager: ISettingsManager,
-            imageManager: IImageManager,
-            notificationManager: NotificationManager,
-            customizationManager: PlayerCustomizationManager,
-            timerManager: TimerManager
+        preferencesRepository: PreferencesRepository,
+        profileRepository: PlayerProfileRepository,
+        fileImageStore: IFileImageStore,
+        notificationManager: NotificationManager,
+        customizationManager: PlayerCustomizationManager,
+        timerManager: TimerManager
         ) : MockPlayerButtonViewModel(
             state = state,
-            settingsManager = settingsManager,
-            imageManager = imageManager,
-            notificationManager = notificationManager,
-            customizationManager = customizationManager,
-            timerManager = timerManager
+        preferencesRepository = preferencesRepository,
+        profileRepository = profileRepository,
+        fileImageStore = fileImageStore,
+        notificationManager = notificationManager,
+        customizationManager = customizationManager,
+        timerManager = timerManager
         ) {
             override fun onCommanderButtonClicked() {
                 this.notificationManager.showNotification("Commander damage disabled", 3000)
@@ -160,11 +164,12 @@ fun TutorialPage5(
         override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
             return MockPlayerButtonViewModelPage5(
                 state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
-                settingsManager = gameState.mockSettingsManager,
-                imageManager = gameState.mockImageManager,
-                notificationManager = this.notificationManager,
-                customizationManager = this.playerCustomizationManager,
-                timerManager = this.timerManager
+        preferencesRepository = gameState.mockPreferencesRepository,
+        profileRepository = gameState.mockProfileRepository,
+        fileImageStore = gameState.mockFileImageStore,
+        notificationManager = this.notificationManager,
+        customizationManager = this.playerCustomizationManager,
+        timerManager = this.timerManager
             )
         }
     }
@@ -172,9 +177,10 @@ fun TutorialPage5(
     val lifeCounterViewModel = remember {
         MockLifeCounterViewModelPage5(
             lifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-            settingsManager = gameState.mockSettingsManager,
-            imageManager = gameState.mockImageManager,
-            notificationManager = notificationManager,
+        preferencesRepository = gameState.mockPreferencesRepository,
+        profileRepository = gameState.mockProfileRepository,
+        fileImageStore = gameState.mockFileImageStore,
+        notificationManager = notificationManager,
         )
     }
 

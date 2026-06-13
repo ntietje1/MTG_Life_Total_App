@@ -5,8 +5,9 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.storage.ISettingsManager
 import domain.api.ScryfallApi
+import domain.state.planechase.PlanechaseRepository
+import domain.state.planechase.PlanechaseSnapshot
 import model.card.Card
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PlaneChaseViewModel(
-    private val settingsManager: ISettingsManager
+    private val planechaseRepository: PlanechaseRepository
 ): ViewModel() {
 
     private val _state = MutableStateFlow(PlaneChaseState())
@@ -23,11 +24,11 @@ class PlaneChaseViewModel(
     private val scryfallApi = ScryfallApi()
 
     init {
-        loadPlanechaseState()
+        loadState()
         searchPlanes { result ->
             if (result.isNotEmpty()) {
                 _state.value = _state.value.copy(allPlanes = result)
-                savePlanechaseState()
+                persistState()
             }
         }
     }
@@ -39,19 +40,19 @@ class PlaneChaseViewModel(
     fun onResetGame() {
         _state.value = _state.value.copy(planarBackStack = mutableStateListOf())
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
-    private fun savePlanechaseState() {
-        settingsManager.savePlanechaseState(
+    private fun persistState() {
+        planechaseRepository.save(PlanechaseSnapshot(
             allPlanes = state.value.allPlanes,
             planarDeck = state.value.planarDeck,
             planarBackStack = state.value.planarBackStack
-        )
+        ))
     }
 
-    private fun loadPlanechaseState() {
-        val (all, deck, back) = settingsManager.loadPlanechaseState()
+    private fun loadState() {
+        val (all, deck, back) = planechaseRepository.load()
         _state.value = _state.value.copy(
             allPlanes = all.toMutableStateList(),
             planarDeck = deck.toMutableStateList(),
@@ -98,14 +99,14 @@ class PlaneChaseViewModel(
         addToTopDeck(card)
         clearBackStack()
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
     fun deselectPlane(card: Card) {
         removeFromDeck(card)
         clearBackStack()
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
     fun addAllPlanarDeck(cards: List<Card>) {
@@ -114,7 +115,7 @@ class PlaneChaseViewModel(
         }
         clearBackStack()
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
     fun removeAllPlanarDeck(cards: List<Card>) {
@@ -123,14 +124,14 @@ class PlaneChaseViewModel(
         }
         clearBackStack()
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
     fun backPlane() {
         if (_state.value.planarDeck.isNotEmpty()) {
             val card = popBackStack()
             card?.let { addToTopDeck(card) }
-            savePlanechaseState()
+            persistState()
         }
     }
 
@@ -141,7 +142,7 @@ class PlaneChaseViewModel(
                 pushBackStack(card)
                 addToBottomDeck(card)
             }
-            savePlanechaseState()
+            persistState()
             return card
         }
         return null

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Card(
     @SerialName("name") val name: String,
+    @SerialName("id") val id: String = name,
     @SerialName("oracle_text") val oracleText: String? = null,
     @SerialName("image_uris") val imageUris: ImageUris? = null,
     @SerialName("card_faces") val cardFaces: List<CardFace>? = null,

@@ -100,7 +100,7 @@ fun PlayerCustomizationDialog(
     })
 
     if (state.showCameraWarning) {
-        if (viewModel.settingsManager.cameraRollDisabled.value) {
+        if (viewModel.preferencesRepository.cameraRollDisabled.value) {
             WarningDialog(title = "Info", message = "Camera roll access is disabled. Enable in settings.", optionOneEnabled = false, optionTwoEnabled = true, onDismiss = {
                 viewModel.showCameraWarning(false)
             })
@@ -297,9 +297,7 @@ fun PlayerCustomizationDialog(
     }, Pair(state.customizationMenuState == CustomizationMenuState.LOAD_PLAYER) {
         val playerList = remember {
             mutableStateListOf<Player>().apply {
-                addAll(viewModel.settingsManager.loadPlayerPrefs().filter { it.name == "P${state.player.playerNum}" })
-                addAll(viewModel.settingsManager.loadPlayerPrefs().filter { !it.isDefaultOrEmptyName() })
-//                addAll(viewModel.settingsManager.loadPlayerPrefs())
+                addAll(viewModel.loadPlayerPrefs())
             }
         }
         LoadPlayerDialogContent(playerList = playerList, onPlayerSelected = { player ->
@@ -310,7 +308,7 @@ fun PlayerCustomizationDialog(
         }, onPlayerDeleted = { player ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             playerList.remove(player)
-            viewModel.settingsManager.deletePlayerPref(player)
+            viewModel.deletePlayerPref(player)
             notificationManager.showNotification("Deleted ${player.name} Successfully", 3000)
         })
     }, Pair(state.customizationMenuState == CustomizationMenuState.SCRYFALL_SEARCH) {

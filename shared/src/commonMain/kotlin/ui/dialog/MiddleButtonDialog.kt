@@ -90,7 +90,7 @@ fun MiddleButtonDialog(
     dialogState: MiddleButtonDialogState,
     setDialogState: (MiddleButtonDialogState) -> Unit,
     toggleTheme: () -> Unit,
-    toggleKeepScreenOn: () -> Unit,
+    setKeepScreenOn: (Boolean) -> Unit,
     goToPlayerSelectScreen: (Boolean) -> Unit,
     triggerEnterAnimation: () -> Unit,
     setNumPlayers: (Int) -> Unit,
@@ -200,7 +200,7 @@ fun MiddleButtonDialog(
                         goToTutorialScreen()
                     },
                     updateTurnTimerEnabled = updateTurnTimerEnabled,
-                    toggleKeepScreenOn = toggleKeepScreenOn
+                    setKeepScreenOn = setKeepScreenOn
                 )
             }, Pair(
                 dialogState == MiddleButtonDialogState.PatchNotes

@@ -1,13 +1,13 @@
 package ui.playerselect
 
 import androidx.lifecycle.ViewModel
-import domain.storage.SettingsManager
+import domain.storage.PreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class PlayerSelectViewModel(
-    private val settingsManager: SettingsManager
+    private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlayerSelectState())
@@ -19,9 +19,7 @@ class PlayerSelectViewModel(
 
     fun setNumPlayers(allowChangeNumPlayers: Boolean, numPlayers: Int) {
         if (allowChangeNumPlayers) {
-            println("SETTING NUMBER OF PLAYERS: $numPlayers")
-            settingsManager.setNumPlayers(numPlayers)
-            println("SUCCESSFULLY SET NUM PLAYERS: ${settingsManager.numPlayers}")
+            preferencesRepository.setNumPlayers(numPlayers)
         }
     }
 }

@@ -1,9 +1,7 @@
 package di
 
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
-import domain.storage.ImageManager
-import domain.storage.SettingsManager
+import domain.storage.FileImageStore
+import domain.storage.IFileImageStore
 import domain.game.PlayerCustomizationManager
 import domain.game.timer.TimerManager
 import domain.system.NotificationManager
@@ -24,18 +22,18 @@ import ui.tutorial.TutorialViewModel
 actual val platformModule = module {
     single { platform }
     single { NotificationManager(get()) }
-    single<ISettingsManager> { SettingsManager.instance }
-    single<IImageManager> { ImageManager(get()) }
+    single<IFileImageStore> { FileImageStore(get()) }
     single { PlayerCustomizationManager(get()) }
-    single { TimerManager(get()) }
+    single { TimerManager(timerStateRepository = get(), preferencesRepository = get()) }
     single { PlaneChaseViewModel(get()) }
     single { CoinFlipViewModel(get()) }
-    viewModel { TutorialViewModel(get()) }
+    viewModel { TutorialViewModel() }
     viewModel { PlayerSelectViewModel(get()) }
     viewModel { 
         LifeCounterViewModel(
-            settingsManager = get(),
-            imageManager = get(),
+            preferencesRepository = get(),
+            profileRepository = get(),
+            fileImageStore = get(),
             notificationManager = get(),
             playerCustomizationManager = get(),
             planeChaseViewModel = get(),
@@ -43,7 +41,7 @@ actual val platformModule = module {
             timerManager = get()
         ) 
     }
-    viewModel { PatchNotesViewModel(get()) }
+    viewModel { PatchNotesViewModel(patchNotesRepository = get(), preferencesRepository = get()) }
     viewModel { StartingLifeViewModel(get()) }
     single { ScryfallSearchViewModel() }
     single { ColorDialogViewModel() }

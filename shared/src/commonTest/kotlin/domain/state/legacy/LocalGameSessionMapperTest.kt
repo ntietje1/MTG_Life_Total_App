@@ -54,34 +54,6 @@ class LocalGameSessionMapperTest {
     }
 
     @Test
-    fun mapsGameSessionBackToTemporaryLegacyPlayers() {
-        val session = LocalGameSessionMapper.fromLegacyOrFresh(
-            id = GameSessionId("game-1"),
-            rules = GameRules(startingLife = 40),
-            legacyPlayers = listOf(Player(playerNum = 1, name = "Ajani")),
-            fallbackSeatCount = 1
-        )
-        val changed = session.copy(
-            seats = listOf(
-                session.requireSeat(SeatId("seat-1")).copy(
-                    life = NumberWithRecentChange(25, -15).toTrackedInt(),
-                    counters = mapOf(CounterType.ENERGY to 4),
-                    activeCounters = setOf(CounterType.ENERGY)
-                )
-            )
-        )
-
-        val legacyPlayers = LocalGameSessionMapper.toLegacyPlayers(changed)
-
-        assertEquals(1, legacyPlayers.size)
-        assertEquals("Ajani", legacyPlayers.single().name)
-        assertEquals(25, legacyPlayers.single().lifeTotal.number)
-        assertEquals(-15, legacyPlayers.single().lifeTotal.recentChange)
-        assertEquals(4, legacyPlayers.single().counters[LegacyCounterType.Energy.ordinal])
-        assertEquals(listOf(LegacyCounterType.Energy), legacyPlayers.single().activeCounters)
-    }
-
-    @Test
     fun invalidLegacyStateFallsBackToFreshSession() {
         val session = LocalGameSessionMapper.fromLegacyOrFresh(
             id = GameSessionId("game-1"),

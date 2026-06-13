@@ -25,19 +25,17 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import domain.common.NumberWithRecentChange
 import domain.game.PlayerCustomizationManager
-import domain.game.timer.GameTimerState
 import domain.game.timer.TimerManager
+import domain.game.timer.TimerStateRepository
+import domain.state.game.SavedGameRepository
 import domain.state.game.GameSessionStore
-import domain.state.legacy.LocalGameSessionRepository
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
-import domain.storage.SettingsManager
+import domain.state.profile.PlayerProfileRepository
+import domain.state.planechase.PlanechaseRepository
+import domain.storage.IFileImageStore
+import domain.storage.PreferencesRepository
 import domain.system.NotificationManager
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.russhwolf.settings.Settings
 import model.Player
-import model.card.Card
 import theme.PlayerColor2
 import theme.PlayerColor5
 import theme.PlayerColor6
@@ -52,189 +50,179 @@ import ui.lifecounter.LifeCounterViewModel
 import ui.lifecounter.playerbutton.PlayerButtonState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
-class MockSettingsManager(
-    autoKo: Boolean = SettingsManager.instance.autoKo.value,
-    autoSkip: Boolean = SettingsManager.instance.autoSkip.value,
-    keepScreenOn: Boolean = SettingsManager.instance.keepScreenOn.value,
-    cameraRollDisabled: Boolean = SettingsManager.instance.cameraRollDisabled.value,
-    fastCoinFlip: Boolean = SettingsManager.instance.fastCoinFlip.value,
-    numPlayers: Int = SettingsManager.instance.numPlayers.value,
-    alt4PlayerLayout: Boolean = SettingsManager.instance.alt4PlayerLayout.value,
-    darkTheme: Boolean = SettingsManager.instance.darkTheme.value,
-    startingLife: Int = SettingsManager.instance.startingLife.value,
-    tutorialSkip: Boolean = SettingsManager.instance.tutorialSkip.value,
-    lastSplashScreenShown: String = SettingsManager.instance.lastSplashScreenShown.value,
-    turnTimer: Boolean = SettingsManager.instance.turnTimer.value,
-    devMode: Boolean = SettingsManager.instance.devMode.value,
-    patchNotes: String = SettingsManager.instance.patchNotes.value,
-    private var playerStates: List<Player> = emptyList(),
-    private var allPlanes: List<Card> = emptyList(),
-    private var planarDeck: List<Card> = emptyList(),
-    private var planarBackStack: List<Card> = emptyList(),
-    private val playerPrefs: ArrayList<Player> = arrayListOf()
-) : ISettingsManager {
-    private val _autoKo = MutableStateFlow(autoKo)
-    override val autoKo: StateFlow<Boolean> = _autoKo.asStateFlow()
-    override fun setAutoKo(value: Boolean) {
-        _autoKo.value = value
+class MockFileImageStore : IFileImageStore {
+    override suspend fun saveImage(bytes: ByteArray): String {
+        return "tutorial-image"
     }
 
-    private val _autoSkip = MutableStateFlow(autoSkip)
-    override val autoSkip: StateFlow<Boolean> = _autoSkip.asStateFlow()
-    override fun setAutoSkip(value: Boolean) {
-        _autoSkip.value = value
+    override fun localImageUri(imageId: String): String? {
+        return null
     }
 
-    private val _keepScreenOn = MutableStateFlow(keepScreenOn)
-    override val keepScreenOn: StateFlow<Boolean> = _keepScreenOn.asStateFlow()
-    override fun setKeepScreenOn(value: Boolean) {
-        _keepScreenOn.value = value
-    }
+    override fun deleteImage(imageId: String) = Unit
+}
 
-    private val _cameraRollDisabled = MutableStateFlow(cameraRollDisabled)
-    override val cameraRollDisabled: StateFlow<Boolean> = _cameraRollDisabled.asStateFlow()
-    override fun setCameraRollDisabled(value: Boolean) {
-        _cameraRollDisabled.value = value
-    }
-
-    private val _fastCoinFlip = MutableStateFlow(fastCoinFlip)
-    override val fastCoinFlip: StateFlow<Boolean> = _fastCoinFlip.asStateFlow()
-    override fun setFastCoinFlip(value: Boolean) {
-        _fastCoinFlip.value = value
-    }
-
-    private val _numPlayers = MutableStateFlow(numPlayers)
-    override val numPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
-    override fun setNumPlayers(value: Int) {
-        _numPlayers.value = value
-    }
-
-    private val _alt4PlayerLayout = MutableStateFlow(alt4PlayerLayout)
-    override val alt4PlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
-    override fun setAlt4PlayerLayout(value: Boolean) {
-        _alt4PlayerLayout.value = value
-    }
-
-    private val _darkTheme = MutableStateFlow(darkTheme)
-    override val darkTheme: StateFlow<Boolean> = _darkTheme.asStateFlow()
-    override fun setDarkTheme(value: Boolean) {
-        _darkTheme.value = value
-    }
-
-    private val _startingLife = MutableStateFlow(startingLife)
-    override val startingLife: StateFlow<Int> = _startingLife.asStateFlow()
-    override fun setStartingLife(value: Int) {
-        _startingLife.value = value
-    }
-
-    private val _tutorialSkip = MutableStateFlow(tutorialSkip)
-    override val tutorialSkip: StateFlow<Boolean> = _tutorialSkip.asStateFlow()
-    override fun setTutorialSkip(value: Boolean) {
-        _tutorialSkip.value = value
-    }
-
-    private val _lastSplashScreenShown = MutableStateFlow(lastSplashScreenShown)
-    override val lastSplashScreenShown: StateFlow<String> = _lastSplashScreenShown.asStateFlow()
-    override fun setLastSplashScreenShown(value: String) {
-        _lastSplashScreenShown.value = value
-    }
-
-    private val _turnTimer = MutableStateFlow(turnTimer)
-    override val turnTimer: StateFlow<Boolean> = _turnTimer.asStateFlow()
-    override fun setTurnTimer(value: Boolean) {
-        _turnTimer.value = value
-    }
-
-    private val _devMode = MutableStateFlow(devMode)
-    override val devMode: StateFlow<Boolean> = _devMode.asStateFlow()
-    override fun setDevMode(value: Boolean) {
-        _devMode.value = value
-    }
-
-    private val _patchNotes = MutableStateFlow(patchNotes)
-    override val patchNotes: StateFlow<String> = _patchNotes.asStateFlow()
-    override fun setPatchNotes(value: String) {
-        _patchNotes.value = value
-    }
-
-    private val _savedTimerState: MutableStateFlow<GameTimerState?> = MutableStateFlow(null)
-    override val savedTimerState: StateFlow<GameTimerState?> = _savedTimerState.asStateFlow()
-    override fun setSavedTimerState(value: GameTimerState?) {
-        _savedTimerState.value = value
-    }
-
-    override fun loadPlayerStates(): List<Player> {
-        return playerStates
-    }
-
-    override fun savePlayerStates(players: List<Player>) {
-        playerStates = players
-    }
-
-    override fun savePlanechaseState(allPlanes: List<Card>, planarDeck: List<Card>, planarBackStack: List<Card>) {
-        this.allPlanes = allPlanes
-        this.planarDeck = planarDeck
-        this.planarBackStack = planarBackStack
-    }
-
-    override fun loadPlanechaseState(): Triple<List<Card>, List<Card>, List<Card>> {
-        return Triple(allPlanes, planarDeck, planarBackStack)
-    }
-
-    override fun savePlayerPref(player: Player) {
-        playerPrefs.add(player)
-    }
-
-    override fun deletePlayerPref(player: Player) {
-        playerPrefs.remove(player)
-    }
-
-    override fun loadPlayerPrefs(): ArrayList<Player> {
-        return playerPrefs
+fun mockPreferencesRepository(
+    autoKo: Boolean = true,
+    autoSkip: Boolean = false,
+    keepScreenOn: Boolean = false,
+    cameraRollDisabled: Boolean = false,
+    fastCoinFlip: Boolean = false,
+    numPlayers: Int = 4,
+    alt4PlayerLayout: Boolean = false,
+    darkTheme: Boolean = true,
+    startingLife: Int = 40,
+    tutorialSkip: Boolean = false,
+    lastSplashScreenShown: String = "0.0.0",
+    turnTimer: Boolean = false,
+    devMode: Boolean = false
+): PreferencesRepository {
+    return PreferencesRepository(InMemorySettings()).also { preferences ->
+        preferences.setAutoKo(autoKo)
+        preferences.setAutoSkip(autoSkip)
+        preferences.setKeepScreenOn(keepScreenOn)
+        preferences.setCameraRollDisabled(cameraRollDisabled)
+        preferences.setFastCoinFlip(fastCoinFlip)
+        preferences.setNumPlayers(numPlayers)
+        preferences.setAlt4PlayerLayout(alt4PlayerLayout)
+        preferences.setDarkTheme(darkTheme)
+        preferences.setStartingLife(startingLife)
+        preferences.setTutorialSkip(tutorialSkip)
+        preferences.setLastSplashScreenShown(lastSplashScreenShown)
+        preferences.setTurnTimer(turnTimer)
+        preferences.setDevMode(devMode)
     }
 }
 
-class MockImageManager : IImageManager {
-    override suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
-        return fileName
+private class InMemorySettings : Settings {
+    private val values = mutableMapOf<String, Any>()
+
+    override val keys: Set<String>
+        get() = values.keys
+
+    override val size: Int
+        get() = values.size
+
+    override fun clear() {
+        values.clear()
     }
 
-    override fun getImagePath(fileName: String): String? {
-        return null
+    override fun remove(key: String) {
+        values.remove(key)
+    }
+
+    override fun hasKey(key: String): Boolean {
+        return values.containsKey(key)
+    }
+
+    override fun putInt(key: String, value: Int) {
+        values[key] = value
+    }
+
+    override fun getInt(key: String, defaultValue: Int): Int {
+        return getIntOrNull(key) ?: defaultValue
+    }
+
+    override fun getIntOrNull(key: String): Int? {
+        return values[key] as? Int
+    }
+
+    override fun putLong(key: String, value: Long) {
+        values[key] = value
+    }
+
+    override fun getLong(key: String, defaultValue: Long): Long {
+        return getLongOrNull(key) ?: defaultValue
+    }
+
+    override fun getLongOrNull(key: String): Long? {
+        return values[key] as? Long
+    }
+
+    override fun putString(key: String, value: String) {
+        values[key] = value
+    }
+
+    override fun getString(key: String, defaultValue: String): String {
+        return getStringOrNull(key) ?: defaultValue
+    }
+
+    override fun getStringOrNull(key: String): String? {
+        return values[key] as? String
+    }
+
+    override fun putFloat(key: String, value: Float) {
+        values[key] = value
+    }
+
+    override fun getFloat(key: String, defaultValue: Float): Float {
+        return getFloatOrNull(key) ?: defaultValue
+    }
+
+    override fun getFloatOrNull(key: String): Float? {
+        return values[key] as? Float
+    }
+
+    override fun putDouble(key: String, value: Double) {
+        values[key] = value
+    }
+
+    override fun getDouble(key: String, defaultValue: Double): Double {
+        return getDoubleOrNull(key) ?: defaultValue
+    }
+
+    override fun getDoubleOrNull(key: String): Double? {
+        return values[key] as? Double
+    }
+
+    override fun putBoolean(key: String, value: Boolean) {
+        values[key] = value
+    }
+
+    override fun getBoolean(key: String, defaultValue: Boolean): Boolean {
+        return getBooleanOrNull(key) ?: defaultValue
+    }
+
+    override fun getBooleanOrNull(key: String): Boolean? {
+        return values[key] as? Boolean
     }
 }
 
 open class MockPlayerButtonViewModel(
     state: PlayerButtonState,
-    settingsManager: ISettingsManager,
-    imageManager: IImageManager,
+    preferencesRepository: PreferencesRepository,
+    profileRepository: PlayerProfileRepository,
+    fileImageStore: IFileImageStore,
     notificationManager: NotificationManager,
     customizationManager: PlayerCustomizationManager,
     timerManager: TimerManager
 ) : PlayerButtonViewModel(
     initialState = state,
-    settingsManager = settingsManager,
-    imageManager = imageManager,
+    preferencesRepository = preferencesRepository,
+    profileRepository = profileRepository,
+    fileImageStore = fileImageStore,
     notificationManager = notificationManager,
     playerCustomizationManager = customizationManager,
-    gameSessionStore = GameSessionStore(LocalGameSessionRepository(settingsManager)),
+    gameSessionStore = GameSessionStore(SavedGameRepository(InMemorySettings(), preferencesRepository)),
     timerManager = timerManager
 )
 
 abstract class MockLifeCounterViewModel(
     lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-    settingsManager: ISettingsManager,
-    imageManager: IImageManager,
+    preferencesRepository: PreferencesRepository,
+    profileRepository: PlayerProfileRepository,
+    fileImageStore: IFileImageStore,
     notificationManager: NotificationManager
 ) : LifeCounterViewModel(
     initialState = lifeCounterState,
-    settingsManager = settingsManager,
-    imageManager = imageManager,
+    preferencesRepository = preferencesRepository,
+    profileRepository = profileRepository,
+    fileImageStore = fileImageStore,
     notificationManager = notificationManager,
-    planeChaseViewModel = PlaneChaseViewModel(settingsManager),
-    playerCustomizationManager = PlayerCustomizationManager(settingsManager),
-    gameSessionStore = GameSessionStore(LocalGameSessionRepository(settingsManager)),
-    timerManager = TimerManager(settingsManager)
+    planeChaseViewModel = PlaneChaseViewModel(PlanechaseRepository(InMemorySettings())),
+    playerCustomizationManager = PlayerCustomizationManager(profileRepository),
+    gameSessionStore = GameSessionStore(SavedGameRepository(InMemorySettings(), preferencesRepository)),
+    timerManager = TimerManager(TimerStateRepository(InMemorySettings()), preferencesRepository)
 )
 
 @Composable
@@ -314,15 +302,17 @@ data class MockGameState(
                 lifeTotal = NumberWithRecentChange(40, 0), name = "Player 6", color = PlayerColor8, playerNum = 6
             )
         ),
-    ), val lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false), val mockSettingsManager: ISettingsManager = MockSettingsManager(
+    ),
+    val lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
+    val mockPreferencesRepository: PreferencesRepository = mockPreferencesRepository(
         autoKo = false,
         numPlayers = 4,
         alt4PlayerLayout = false,
         startingLife = 40,
-        turnTimer = false,
-        playerStates = playerStates.map { it.player },
-        planarDeck = emptyList(),
-        planarBackStack = emptyList(),
-        playerPrefs = arrayListOf()
-    ), val mockImageManager: IImageManager = MockImageManager()
+        turnTimer = false
+    ),
+    val mockProfileRepository: PlayerProfileRepository = PlayerProfileRepository(
+        InMemorySettings()
+    ),
+    val mockFileImageStore: IFileImageStore = MockFileImageStore()
 )

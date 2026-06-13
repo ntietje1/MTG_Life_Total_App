@@ -3,6 +3,7 @@ package model
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import domain.common.NumberWithRecentChange
+import domain.state.profile.PlayerBackground
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -116,8 +117,8 @@ object PlayerSerializer : KSerializer<Player> {
 @Serializable(with = PlayerSerializer::class)
 data class Player(
     val lifeTotal: NumberWithRecentChange = NumberWithRecentChange(-1, 0),
-    val imageString: String? = null, // represents a local file name or scryfall url
-    //TODO: make a PlayerBackground interface/sealed class that can be a local file, scryfall url, or a color
+    val imageString: String? = null,
+    val background: PlayerBackground = PlayerBackground.None,
     val color: Color = Color.LightGray,
     val textColor: Color = Color.White,
     val playerNum: Int = -1,

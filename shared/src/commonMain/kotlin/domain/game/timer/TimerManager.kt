@@ -1,11 +1,10 @@
 package domain.game.timer
 
 import domain.game.AttachableFlowManager
-import domain.storage.ISettingsManager
+import domain.storage.PreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
@@ -15,14 +14,12 @@ import kotlin.coroutines.coroutineContext
  * Contains all LifeCounterViewModel timer related logic
  */
 class TimerManager(
-    private val settingsManager: ISettingsManager
+    private val timerStateRepository: TimerStateRepository,
+    private val preferencesRepository: PreferencesRepository
 ) : AttachableFlowManager<List<PlayerButtonViewModel>>() {
 
     private var observerJob: Job? = null
-    private val observerRegistered: Boolean
-        get() = observerJob != null
-
-    private val gameTimer: GameTimer = GameTimer(settingsManager.savedTimerState.value ?: GameTimerState())
+    private val gameTimer: GameTimer = GameTimer(timerStateRepository.load() ?: GameTimerState())
     private var timerJob: Job? = null
 
     override fun detach() {
@@ -74,7 +71,7 @@ class TimerManager(
         clearFirstPlayerSelectionState()
         gameTimer.reset()
         initializeGameTimer()
-        if (settingsManager.turnTimer.value) {
+        if (preferencesRepository.turnTimer.value) {
             promptForFirstPlayer()
         }
     }
@@ -86,7 +83,7 @@ class TimerManager(
         }
         val playerButtonViewModels = requireAttached().value
         playerButtonViewModels.forEach { it.onFirstPlayerPrompt() }
-        if (settingsManager.numPlayers.value == 1) {
+        if (preferencesRepository.numPlayers.value == 1) {
             handleFirstPlayerSelection(0)
         }
         initializeGameTimer()
@@ -94,9 +91,8 @@ class TimerManager(
 
     private fun initializeGameTimer() {
         val playerButtonViewModels = requireAttached().value
-        println("playerbutonviewmodels: $playerButtonViewModels")
         gameTimer.initialize(
-            playerCount = settingsManager.numPlayers.value,
+            playerCount = preferencesRepository.numPlayers.value,
             deadCheck = { index -> playerButtonViewModels[index].isDead.value }
         )
     }
@@ -127,7 +123,7 @@ class TimerManager(
         requireAttached()
         initializeGameTimer()
         observerJob = CoroutineScope(coroutineContext).launch {
-            settingsManager.turnTimer.collect { turnTimerEnabled ->
+            preferencesRepository.turnTimer.collect { turnTimerEnabled ->
                 onTimerEnabledChange(turnTimerEnabled)
             }
         }
@@ -144,6 +140,6 @@ class TimerManager(
     }
 
     private fun saveTimerState() {
-        settingsManager.setSavedTimerState(gameTimer.timerState.value)
+        timerStateRepository.save(gameTimer.timerState.value)
     }
-} 
+}

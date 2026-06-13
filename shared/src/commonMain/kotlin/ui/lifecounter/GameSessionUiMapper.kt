@@ -8,7 +8,8 @@ import domain.state.game.GameSession
 import domain.state.game.SeatId
 import domain.state.game.TableCounterType
 import domain.state.game.TrackedInt
-import domain.state.profile.PlayerBackground
+import domain.storage.IFileImageStore
+import domain.storage.displayUri
 import model.Player
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonState
@@ -25,11 +26,12 @@ object GameSessionUiMapper {
     fun mapPlayerButtonState(
         session: GameSession,
         seatId: SeatId,
-        current: PlayerButtonState
+        current: PlayerButtonState,
+        fileImageStore: IFileImageStore
     ): PlayerButtonState {
         val seat = session.requireSeat(seatId)
         return current.copy(
-            player = seat.toPlayer(session)
+            player = seat.toPlayer(session, fileImageStore)
         )
     }
 
@@ -104,10 +106,11 @@ object GameSessionUiMapper {
         }
     }
 
-    private fun GameSeat.toPlayer(session: GameSession): Player {
+    private fun GameSeat.toPlayer(session: GameSession, fileImageStore: IFileImageStore): Player {
         return Player(
             lifeTotal = life.toNumberWithRecentChange(),
-            imageString = appearance.background.toImageString(),
+            imageString = appearance.background.displayUri(fileImageStore),
+            background = appearance.background,
             color = Color(appearance.colors.backgroundArgb),
             textColor = Color(appearance.colors.textArgb),
             playerNum = id.toPlayerNumber(),
@@ -182,15 +185,6 @@ object GameSessionUiMapper {
 
     private fun TrackedInt.toNumberWithRecentChange(): NumberWithRecentChange {
         return NumberWithRecentChange(number = value, recentChange = recentChange)
-    }
-
-    private fun PlayerBackground.toImageString(): String? {
-        return when (this) {
-            is PlayerBackground.LocalImage -> fileName
-            is PlayerBackground.ProviderImage -> url
-            is PlayerBackground.CardArt -> url
-            PlayerBackground.None -> null
-        }
     }
 
     private fun SeatId.toPlayerNumber(): Int {

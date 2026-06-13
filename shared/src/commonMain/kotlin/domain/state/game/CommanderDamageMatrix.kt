@@ -10,6 +10,10 @@ private const val CommanderDamageLethal = 21
 data class CommanderDamageMatrix(
     private val damage: Map<CommanderDamageKey, TrackedInt> = emptyMap()
 ) {
+    fun entries(): Map<CommanderDamageKey, TrackedInt> {
+        return damage
+    }
+
     fun damage(dealerSeatId: SeatId, receiverSeatId: SeatId, partner: Boolean): TrackedInt {
         return damage[CommanderDamageKey(dealerSeatId, receiverSeatId, partner)] ?: TrackedInt.Zero
     }
