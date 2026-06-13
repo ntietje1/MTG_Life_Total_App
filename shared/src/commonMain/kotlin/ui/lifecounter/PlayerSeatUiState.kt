@@ -12,5 +12,7 @@ data class PlayerSeatUiState(
     val buttonState: PBState = PBState.NORMAL,
     val showCustomizeMenu: Boolean = false,
     val timer: TurnTimer? = null,
-    val commanderState: CommanderState = CommanderState.Inactive
+    val commanderState: CommanderState = CommanderState.Inactive,
+    val isDead: Boolean = false,
+    val backButtonVisible: Boolean = false
 )

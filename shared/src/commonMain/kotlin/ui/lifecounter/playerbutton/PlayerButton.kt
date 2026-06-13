@@ -82,8 +82,6 @@ import ui.modifier.rotateVertically
 fun PlayerButton(
     modifier: Modifier = Modifier,
     state: PlayerSeatUiState,
-    isDead: Boolean,
-    backButtonVisible: Boolean,
     customizationViewModel: CustomizationViewModel?,
     onAction: (PlayerButtonAction) -> Unit,
     rotation: Float = 0f,
@@ -198,7 +196,7 @@ fun PlayerButton(
         ) {
             BoxWithConstraints(
                 modifier = modifier.then(
-                    if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked && !isDead) {
+                    if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked && !state.isDead) {
                         Modifier.bounceClick(
                             initialBounceFactor = 3.5f, bounceAmount = 0.005f, bounceDuration = 60L, repeatEnabled = true
                         )
@@ -215,7 +213,7 @@ fun PlayerButton(
                     state = state.buttonState,
                     imageUri = state.player.imageString,
                     color = state.player.color,
-                    isDead = isDead,
+                    isDead = state.isDead,
                 )
 
                 val smallButtonSize = remember(Unit) { (maxWidth / 15f) + (maxHeight / 10f) }
@@ -301,7 +299,7 @@ fun PlayerButton(
 
                         when (state.buttonState) {
                             PBState.NORMAL -> {
-                                if (isDead) {
+                                if (state.isDead) {
                                     Skull(playerInfoModifier)
                                 } else {
                                     LifeNumber(
@@ -341,7 +339,7 @@ fun PlayerButton(
                             }
 
                             PBState.COMMANDER_RECEIVER -> {
-                                if (isDead) {
+                                if (state.isDead) {
                                     Skull(playerInfoModifier)
                                 } else {
                                     CommanderDamageNumber(
@@ -540,7 +538,7 @@ fun PlayerButton(
                         ),
                         backgroundColor = Color.Transparent,
                         mainColor = state.player.textColor,
-                        visible = backButtonVisible,
+                        visible = state.backButtonVisible,
                         imageVector = vectorResource(Res.drawable.back_icon),
                         onPress = { onAction(PlayerButtonAction.PopBackStack) }
                     )
@@ -562,7 +560,7 @@ fun PlayerButton(
                 fun BackButtonOrCommanderButton(modifier: Modifier = Modifier) {
                     if (commanderButtonVisible) {
                         CommanderStateButton(modifier)
-                    } else if (backButtonVisible) {
+                    } else if (state.backButtonVisible) {
                         BackButton(modifier)
                     } else {
                         PlayerStateButton(
