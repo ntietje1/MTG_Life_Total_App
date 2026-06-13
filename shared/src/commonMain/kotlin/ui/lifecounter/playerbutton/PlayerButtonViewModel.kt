@@ -72,7 +72,11 @@ open class PlayerButtonViewModel(
     }
 
     open fun incrementLife(value: Int) {
-        dispatchGameCommand(GameCommand.ChangeLife(seatId, value))
+        when (value) {
+            1 -> dispatchPlayerButtonAction(PlayerButtonAction.IncrementLife)
+            -1 -> dispatchPlayerButtonAction(PlayerButtonAction.DecrementLife)
+            else -> dispatchGameCommand(GameCommand.ChangeLife(seatId, value))
+        }
     }
 
     fun setTimer(timer: TurnTimer?) {
@@ -96,11 +100,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun onMonarchyButtonClicked(value: Boolean) {
-        dispatchGameCommand(
-            GameCommand.SetMonarch(
-                if (value) seatId else null
-            )
-        )
+        dispatchPlayerButtonAction(PlayerButtonAction.SetMonarch(value))
     }
 
     open fun onCommanderButtonClicked() {
@@ -127,12 +127,7 @@ open class PlayerButtonViewModel(
     }
 
     open fun onKOButtonClicked() {
-        dispatchGameCommand(
-            GameCommand.SetManualDeath(
-                seatId = seatId,
-                dead = !state.value.player.setDead
-            )
-        )
+        dispatchPlayerButtonAction(PlayerButtonAction.SetManualDeath(!state.value.player.setDead))
         closeSettingsMenu()
         backstack.clear()
     }
@@ -242,15 +237,11 @@ open class PlayerButtonViewModel(
     }
 
     open fun incrementCommanderDamage(value: Int, partner: Boolean) {
-        val commanderState = commanderState.value as? CommanderState.Active ?: return
-        dispatchGameCommand(
-            GameCommand.ChangeCommanderDamage(
-                dealerSeatId = GameSessionUiMapper.seatIdForPlayerNumber(commanderState.dealer.playerNum),
-                receiverSeatId = seatId,
-                partner = partner,
-                delta = value
-            )
-        )
+        when (value) {
+            1 -> dispatchPlayerButtonAction(PlayerButtonAction.IncrementCommanderDamage(partner))
+            -1 -> dispatchPlayerButtonAction(PlayerButtonAction.DecrementCommanderDamage(partner))
+            else -> dispatchCommanderDamage(value = value, partner = partner)
+        }
     }
 
     open fun copyPrefs(other: Player) {
@@ -258,6 +249,23 @@ open class PlayerButtonViewModel(
     }
 
     private val seatId get() = GameSessionUiMapper.seatIdForPlayerNumber(state.value.player.playerNum)
+
+    private fun dispatchPlayerButtonAction(action: PlayerButtonAction) {
+        action.toGameCommand(seatId = seatId, commanderState = commanderState.value)
+            ?.let(::dispatchGameCommand)
+    }
+
+    private fun dispatchCommanderDamage(value: Int, partner: Boolean) {
+        val activeCommander = commanderState.value as? CommanderState.Active ?: return
+        dispatchGameCommand(
+            GameCommand.ChangeCommanderDamage(
+                dealerSeatId = GameSessionUiMapper.seatIdForPlayerNumber(activeCommander.dealer.playerNum),
+                receiverSeatId = seatId,
+                partner = partner,
+                delta = value
+            )
+        )
+    }
 
     private fun dispatchGameCommand(command: GameCommand) {
         viewModelScope.launch {
