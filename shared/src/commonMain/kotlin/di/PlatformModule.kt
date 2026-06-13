@@ -4,6 +4,10 @@ import domain.state.game.GameSessionRepository
 import domain.state.game.GameSessionStore
 import domain.state.game.SavedGameRepository
 import domain.game.timer.TimerStateRepository
+import domain.api.GifSearchClient
+import domain.api.KlipyApiKey
+import domain.api.KlipyGifClient
+import domain.api.LifeLinkedApiConfig
 import domain.state.profile.PlayerProfileRepository
 import domain.state.planechase.PlanechaseRepository
 import domain.storage.PreferencesRepository
@@ -23,6 +27,8 @@ val sharedModule = module {
     single { TimerStateRepository(Settings()) }
     single { PatchNotesRepository(Settings()) }
     single { GameSessionStore(get<GameSessionRepository>()) }
+    single { KlipyApiKey(LifeLinkedApiConfig.KLIPY_API_KEY) }
+    single<GifSearchClient> { KlipyGifClient(apiKey = get()) }
     single { BackHandler() }
     single { VersionNumber.current }
 }

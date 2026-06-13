@@ -1,11 +1,11 @@
 package ui.dialog.gif
 
 import androidx.compose.ui.text.input.TextFieldValue
-import domain.api.MediaFormat
+import domain.api.GifAsset
 
 data class GifDialogState(
     val textFieldValue: TextFieldValue = TextFieldValue(""),
-    val gifResults: Set<MediaFormat> = setOf(),
+    val gifResults: List<GifAsset> = emptyList(),
     val isSearchInProgress: Boolean = false,
     val additionalSearchInProgress: Boolean = false,
     val scrollPosition: Int = 0,

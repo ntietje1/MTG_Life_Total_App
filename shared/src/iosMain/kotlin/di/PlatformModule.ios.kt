@@ -41,7 +41,7 @@ actual val platformModule = module {
     single { StartingLifeViewModel(get()) }
     single { ScryfallSearchViewModel() }
     single { ColorDialogViewModel() }
-    single { GifDialogViewModel() }
+    single { GifDialogViewModel(get()) }
     single { DiceRollViewModel() }
 }
 
