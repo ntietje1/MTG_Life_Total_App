@@ -4,6 +4,9 @@ import model.card.Card
 import model.card.CardResponse
 import model.card.Ruling
 import model.card.RulingResponse
+import model.card.CardSummary
+import model.card.RulingSummary
+import model.card.toSummary
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -34,7 +37,7 @@ class ScryfallApi(
     private val requestMutex = Mutex()
     private var lastRequest: TimeMark? = null
 
-    suspend fun searchRulings(query: String): ScryfallResult<List<Ruling>> {
+    suspend fun searchRulings(query: String): ScryfallResult<List<RulingSummary>> {
         return when (val response = requestScryfall(query)) {
             is ScryfallResult.Failure -> response
             is ScryfallResult.Success -> decodeRulings(response.value)
@@ -108,7 +111,7 @@ class ScryfallApi(
             val decoded = json.decodeFromString<CardResponse>(response)
             ScryfallResult.Success(
                 ScryfallPage(
-                    cards = decoded.data,
+                    cards = decoded.data.map(Card::toSummary),
                     nextPageUrl = decoded.nextPage
                 )
             )
@@ -119,9 +122,9 @@ class ScryfallApi(
         }
     }
 
-    private fun decodeRulings(response: String): ScryfallResult<List<Ruling>> {
+    private fun decodeRulings(response: String): ScryfallResult<List<RulingSummary>> {
         return try {
-            ScryfallResult.Success(json.decodeFromString<RulingResponse>(response).data)
+            ScryfallResult.Success(json.decodeFromString<RulingResponse>(response).data.map(Ruling::toSummary))
         } catch (_: SerializationException) {
             ScryfallResult.Failure(ScryfallFailure.MALFORMED_RESPONSE)
         } catch (_: IllegalArgumentException) {
@@ -135,7 +138,7 @@ private const val SCRYFALL_API_BASE = "https://api.scryfall.com/"
 private const val SCRYFALL_USER_AGENT = "LifeLinked/1.9.0 MTG life counter"
 
 data class ScryfallPage(
-    val cards: List<Card>,
+    val cards: List<CardSummary>,
     val nextPageUrl: String?
 )
 

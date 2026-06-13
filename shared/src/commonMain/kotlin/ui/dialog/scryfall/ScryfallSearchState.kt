@@ -1,15 +1,15 @@
 package ui.dialog.scryfall
 
 import androidx.compose.ui.text.input.TextFieldValue
-import model.card.Card
-import model.card.Ruling
+import model.card.CardSummary
+import model.card.RulingSummary
 
 data class ScryfallSearchState(
     val textFieldValue: TextFieldValue = TextFieldValue(""),
-    val cardResults: List<Card> = listOf(),
-    val rulingsResults: List<Ruling> = listOf(),
+    val cardResults: List<CardSummary> = listOf(),
+    val rulingsResults: List<RulingSummary> = listOf(),
     val lastSearchWasError: Boolean = false,
-    val rulingCard: Card? = null,
+    val rulingCard: CardSummary? = null,
     val backStackDiff: Int = 0,
     val printingsButtonEnabled: Boolean = true,
     val isSearchInProgress: Boolean = false,

@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.api.ScryfallApi
 import domain.api.ScryfallResult
-import model.card.Card
-import model.card.Ruling
+import model.card.CardSummary
+import model.card.RulingSummary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -81,11 +81,11 @@ class ScryfallSearchViewModel(
         _state.value = _state.value.copy(textFieldValue = textFieldValue)
     }
 
-    private fun setCardResults(cardResults: List<Card>) {
+    private fun setCardResults(cardResults: List<CardSummary>) {
         _state.value = _state.value.copy(cardResults = cardResults)
     }
 
-    private fun setRulingsResults(rulingsResults: List<Ruling>) {
+    private fun setRulingsResults(rulingsResults: List<RulingSummary>) {
         _state.value = _state.value.copy(rulingsResults = rulingsResults)
     }
 
@@ -93,7 +93,7 @@ class ScryfallSearchViewModel(
         _state.value = _state.value.copy(lastSearchWasError = lastSearchWasError)
     }
 
-    fun setRulingCard(rulingCard: Card?) {
+    fun setRulingCard(rulingCard: CardSummary?) {
         _state.value = _state.value.copy(rulingCard = rulingCard)
     }
 

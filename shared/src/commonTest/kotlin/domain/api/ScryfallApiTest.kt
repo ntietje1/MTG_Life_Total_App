@@ -66,6 +66,30 @@ class ScryfallApiTest {
     }
 
     @Test
+    fun searchCardsReturnsEmptyPageForEmptySuccessfulResponse() = runTest {
+        val client = HttpClient(MockEngine {
+            respond(
+                content = """
+                    {
+                      "object": "list",
+                      "total_cards": 0,
+                      "has_more": false,
+                      "data": []
+                    }
+                """.trimIndent(),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        })
+
+        val result = ScryfallApi(client = client, requestDelayMillis = 0).searchCards("missing")
+
+        val page = assertIs<ScryfallResult.Success<ScryfallPage>>(result).value
+        assertEquals(emptyList(), page.cards)
+        assertEquals(null, page.nextPageUrl)
+    }
+
+    @Test
     fun rejectsNonScryfallAbsoluteUrls() = runTest {
         var requestCount = 0
         val client = HttpClient(MockEngine {
@@ -158,6 +182,9 @@ class ScryfallApiTest {
         val rulings = assertIs<ScryfallResult.Success<List<*>>>(result).value
         assertEquals("/cards/abc/rulings", requestedPath)
         assertEquals(1, rulings.size)
+        val ruling = assertIs<model.card.RulingSummary>(rulings.single())
+        assertEquals("A ruling.", ruling.comment)
+        assertEquals("2024-01-01", ruling.publishedAt)
     }
 
     private fun cardSearchResponse(): String = """

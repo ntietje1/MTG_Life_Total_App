@@ -9,7 +9,7 @@ import domain.api.ScryfallApi
 import domain.api.ScryfallResult
 import domain.state.planechase.PlanechaseRepository
 import domain.state.planechase.PlanechaseSnapshot
-import model.card.Card
+import model.card.CardSummary
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -63,16 +63,16 @@ class PlaneChaseViewModel(
         )
     }
 
-    private fun removeFromDeck(card: Card) {
+    private fun removeFromDeck(card: CardSummary) {
         _state.value.planarDeck.remove(card)
     }
 
-    private fun addToTopDeck(card: Card) {
+    private fun addToTopDeck(card: CardSummary) {
         removeFromDeck(card)
         _state.value.planarDeck.add(card)
     }
 
-    private fun addToBottomDeck(card: Card) {
+    private fun addToBottomDeck(card: CardSummary) {
         removeFromDeck(card)
         _state.value.planarDeck.add(0, card)
     }
@@ -81,38 +81,38 @@ class PlaneChaseViewModel(
         _state.value.planarBackStack.clear()
     }
 
-    private fun popDeck(): Card? {
+    private fun popDeck(): CardSummary? {
         val card = _state.value.planarDeck.lastOrNull()
         if (card != null) { removeFromDeck(card) }
         return card
     }
 
 
-    private fun pushBackStack(value: Card) {
+    private fun pushBackStack(value: CardSummary) {
        _state.value.planarBackStack.add(value)
     }
 
-    private fun popBackStack(): Card? {
+    private fun popBackStack(): CardSummary? {
         val card = _state.value.planarBackStack.lastOrNull()
         if (card != null) { _state.value.planarBackStack.removeLast() }
         return card
     }
 
-    fun selectPlane(card: Card) {
+    fun selectPlane(card: CardSummary) {
         addToTopDeck(card)
         clearBackStack()
         shuffleDeck()
         persistState()
     }
 
-    fun deselectPlane(card: Card) {
+    fun deselectPlane(card: CardSummary) {
         removeFromDeck(card)
         clearBackStack()
         shuffleDeck()
         persistState()
     }
 
-    fun addAllPlanarDeck(cards: List<Card>) {
+    fun addAllPlanarDeck(cards: List<CardSummary>) {
         cards.forEach{
             addToTopDeck(it)
         }
@@ -121,7 +121,7 @@ class PlaneChaseViewModel(
         persistState()
     }
 
-    fun removeAllPlanarDeck(cards: List<Card>) {
+    fun removeAllPlanarDeck(cards: List<CardSummary>) {
         cards.forEach {
             removeFromDeck(it)
         }
@@ -138,7 +138,7 @@ class PlaneChaseViewModel(
         }
     }
 
-    fun planeswalk(): Card? {
+    fun planeswalk(): CardSummary? {
         if (state.value.planarDeck.isNotEmpty()) {
             val card = popDeck()
             card?.let {
@@ -151,14 +151,14 @@ class PlaneChaseViewModel(
         return null
     }
 
-    private suspend fun search(qry: String = state.value.query.text): List<Card> {
+    private suspend fun search(qry: String = state.value.query.text): List<CardSummary> {
         return when (val result = scryfallApi.searchCards("(t:plane or t:phenomenon) $qry")) {
             is ScryfallResult.Failure -> emptyList()
-            is ScryfallResult.Success -> result.value.cards
+            is ScryfallResult.Success -> result.value.cards.filter { card -> card.art != null }
         }
     }
 
-    fun searchPlanes(qry: String = state.value.query.text, onSearchResult: (List<Card>) -> Unit) {
+    fun searchPlanes(qry: String = state.value.query.text, onSearchResult: (List<CardSummary>) -> Unit) {
         setSearchInProgress(true)
         viewModelScope.launch {
             val resultCards = search(qry)
@@ -176,7 +176,7 @@ class PlaneChaseViewModel(
         _state.value = _state.value.copy(searchInProgress = value)
     }
 
-    private fun setSearchedPlanes(value: List<Card>) {
+    private fun setSearchedPlanes(value: List<CardSummary>) {
         _state.value = _state.value.copy(searchedPlanes = value)
     }
 

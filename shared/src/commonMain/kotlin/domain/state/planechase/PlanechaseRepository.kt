@@ -5,12 +5,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import model.card.Card
-import model.card.ImageUris
+import model.card.CardArt
+import model.card.CardSummary
+import model.card.toSummary
 
 data class PlanechaseSnapshot(
-    val allPlanes: List<Card> = emptyList(),
-    val planarDeck: List<Card> = emptyList(),
-    val planarBackStack: List<Card> = emptyList()
+    val allPlanes: List<CardSummary> = emptyList(),
+    val planarDeck: List<CardSummary> = emptyList(),
+    val planarBackStack: List<CardSummary> = emptyList()
 )
 
 class PlanechaseRepository(
@@ -44,9 +46,9 @@ class PlanechaseRepository(
 
         return try {
             val snapshot = PlanechaseSnapshot(
-                allPlanes = JsonFormat.decodeFromString(settings.getString("allPlanes", "[]")),
-                planarDeck = JsonFormat.decodeFromString(settings.getString("planarDeck", "[]")),
-                planarBackStack = JsonFormat.decodeFromString(settings.getString("planarBackStack", "[]"))
+                allPlanes = JsonFormat.decodeFromString<List<Card>>(settings.getString("allPlanes", "[]")).map(Card::toSummary),
+                planarDeck = JsonFormat.decodeFromString<List<Card>>(settings.getString("planarDeck", "[]")).map(Card::toSummary),
+                planarBackStack = JsonFormat.decodeFromString<List<Card>>(settings.getString("planarBackStack", "[]")).map(Card::toSummary)
             )
             save(snapshot)
             LegacyKeys.forEach(settings::remove)
@@ -93,9 +95,9 @@ private data class PlanechaseStateDto(
 
         fun fromDomain(snapshot: PlanechaseSnapshot): PlanechaseStateDto {
             return PlanechaseStateDto(
-                allPlanes = snapshot.allPlanes.map(PlanechaseCardDto::fromDomain),
-                planarDeck = snapshot.planarDeck.map(PlanechaseCardDto::fromDomain),
-                planarBackStack = snapshot.planarBackStack.map(PlanechaseCardDto::fromDomain)
+                allPlanes = snapshot.allPlanes.mapNotNull(PlanechaseCardDto::fromDomain),
+                planarDeck = snapshot.planarDeck.mapNotNull(PlanechaseCardDto::fromDomain),
+                planarBackStack = snapshot.planarBackStack.mapNotNull(PlanechaseCardDto::fromDomain)
             )
         }
     }
@@ -106,31 +108,31 @@ private data class PlanechaseCardDto(
     val id: String,
     val name: String,
     val oracleText: String? = null,
-    val imageUris: ImageUris,
+    val imageUris: CardArt,
     val artist: String,
     val setName: String,
     val rulingsUri: String? = null
 ) {
-    fun toDomain(): Card {
-        return Card(
-            name = name,
+    fun toDomain(): CardSummary {
+        return CardSummary(
             id = id,
+            name = name,
             oracleText = oracleText,
-            imageUris = imageUris,
+            art = imageUris,
             artist = artist,
             setName = setName,
-            printsSearchUri = "",
             rulingsUri = rulingsUri
         )
     }
 
     companion object {
-        fun fromDomain(card: Card): PlanechaseCardDto {
+        fun fromDomain(card: CardSummary): PlanechaseCardDto? {
+            val art = card.art ?: return null
             return PlanechaseCardDto(
                 id = card.id,
                 name = card.name,
                 oracleText = card.oracleText,
-                imageUris = card.getUris(),
+                imageUris = art,
                 artist = card.artist,
                 setName = card.setName,
                 rulingsUri = card.rulingsUri

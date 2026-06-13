@@ -183,7 +183,8 @@ fun PlaneChaseDialogContent( //TODO: add animations
             )
             Spacer(Modifier.height(dimensions.paddingTiny).weight(0.01f))
             val card = state.planarDeck.lastOrNull()
-            if (card == null) {
+            val cardArt = card?.art
+            if (cardArt == null) {
                 EmptyDeckPlaceholder(
                     Modifier
                         .fillMaxHeight()
@@ -204,8 +205,8 @@ fun PlaneChaseDialogContent( //TODO: add animations
                                 rotated = !rotated
                             })
                         },
-                    smallImageUri = card.getUris().normal,
-                    largeImageUri = card.getUris().large,
+                    smallImageUri = cardArt.normal,
+                    largeImageUri = cardArt.large,
                     allowEnlarge = false,
                     allowRotate = true,
                 )
@@ -358,25 +359,26 @@ fun ChoosePlanesDialogContent(
                 verticalArrangement = Arrangement.SpaceAround,
             ) {
                 items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
-                    val uris = card.getUris()
-                    SelectableEnlargeableCardImage(
-                        modifier = Modifier.width(maxWidth / 2),
-                        largeImageUri = uris.large,
-                        normalImageUri = uris.normal,
-                        onTap = {
-                            if (!state.planarDeck.contains(card)) {
-                                viewModel.selectPlane(card)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            } else {
-                                viewModel.deselectPlane(card)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            }
-                        },
-                        onPress = focusManager::clearFocus,
-                        allowSelection = true,
-                        allowRotate = true,
-                        selected = card in state.planarDeck
-                    )
+                    card.art?.let { art ->
+                        SelectableEnlargeableCardImage(
+                            modifier = Modifier.width(maxWidth / 2),
+                            largeImageUri = art.large,
+                            normalImageUri = art.normal,
+                            onTap = {
+                                if (!state.planarDeck.contains(card)) {
+                                    viewModel.selectPlane(card)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                } else {
+                                    viewModel.deselectPlane(card)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
+                            },
+                            onPress = focusManager::clearFocus,
+                            allowSelection = true,
+                            allowRotate = true,
+                            selected = card in state.planarDeck
+                        )
+                    }
                 }
             }
             Row(

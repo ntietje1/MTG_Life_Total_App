@@ -3,7 +3,9 @@ package domain.state.planechase
 import domain.storage.TestSettings
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import model.card.CardSummary
 import model.card.Card
+import model.card.CardArt
 import model.card.ImageUris
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,19 +31,20 @@ class PlanechaseRepositoryTest {
 
         val savedJson = settings.getString(PlanechaseRepository.StateKey, "")
         assertFalse(savedJson.contains("prints_search_uri"))
+        assertFalse(savedJson.contains("card_faces"))
         val loaded = repository.load()
         assertEquals(listOf("all"), loaded.allPlanes.map { it.id })
         assertEquals(listOf("deck"), loaded.planarDeck.map { it.id })
         assertEquals(listOf("back"), loaded.planarBackStack.map { it.id })
-        assertEquals("https://example.com/all-normal.jpg", loaded.allPlanes.single().getUris().normal)
+        assertEquals("https://example.com/all-normal.jpg", loaded.allPlanes.single().art?.normal)
     }
 
     @Test
     fun migratesLegacyThreeKeyPlanechaseState() {
         val settings = TestSettings()
-        val allPlanes = listOf(testCard("all"))
-        val deck = listOf(testCard("deck"))
-        val backStack = listOf(testCard("back"))
+        val allPlanes = listOf(legacyCard("all"))
+        val deck = listOf(legacyCard("deck"))
+        val backStack = listOf(legacyCard("back"))
         settings.putString("allPlanes", Json.encodeToString(allPlanes))
         settings.putString("planarDeck", Json.encodeToString(deck))
         settings.putString("planarBackStack", Json.encodeToString(backStack))
@@ -71,7 +74,25 @@ class PlanechaseRepositoryTest {
     }
 }
 
-private fun testCard(id: String): Card {
+private fun testCard(id: String): CardSummary {
+    return CardSummary(
+        id = id,
+        name = "Plane $id",
+        oracleText = "When you planeswalk.",
+        art = CardArt(
+            small = "https://example.com/$id-small.jpg",
+            normal = "https://example.com/$id-normal.jpg",
+            large = "https://example.com/$id-large.jpg",
+            artCrop = "https://example.com/$id-art.jpg"
+        ),
+        artist = "Artist",
+        setName = "Set",
+        printsSearchUri = "https://api.scryfall.com/cards/search?q=$id",
+        rulingsUri = "https://api.scryfall.com/cards/$id/rulings"
+    )
+}
+
+private fun legacyCard(id: String): Card {
     return Card(
         id = id,
         name = "Plane $id",
