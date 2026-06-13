@@ -19,6 +19,7 @@ kotlin {
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         androidResources.enable = true
+        withHostTestBuilder {}.configure {}
 
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
@@ -84,6 +85,10 @@ kotlin {
             implementation(libs.multiplatform.settings.no.arg)
 
             implementation(libs.kamel.image.default)
+        }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

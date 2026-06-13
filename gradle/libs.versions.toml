@@ -31,6 +31,7 @@ androidx-lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecyc
 kamel-image-default = { module = "media.kamel:kamel-image-default", version.ref = "kamelImageDefault" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "compose-navigation" }
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
