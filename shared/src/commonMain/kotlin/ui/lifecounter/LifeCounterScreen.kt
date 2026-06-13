@@ -53,7 +53,6 @@ import theme.LocalDimensions
 import theme.blendWith
 import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialog
-import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.playerbutton.PlayerButton
 import ui.modifier.routePointerChangesTo
 
@@ -71,14 +70,15 @@ fun LifeCounterScreen(
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
     val dimensions = LocalDimensions.current
 
-    if (state.middleButtonDialogState != null) {
+    state.currentModal?.let { modal ->
         MiddleButtonDialog(
-            dialogState = state.middleButtonDialogState!!,
-            setDialogState = { viewModel.setMiddleButtonDialogState(it) },
+            dialogState = modal,
+            setDialogState = viewModel::openModal,
             modifier = Modifier.onGloballyPositioned { _ ->
-                viewModel.setBlurBackground(state.middleButtonDialogState != null)
+                viewModel.setBlurBackground(state.isModalOpen)
             },
-            onDismiss = { viewModel.setMiddleButtonDialogState(null) },
+            onDismiss = viewModel::closeModal,
+            onBack = viewModel::goBackInModal,
             viewModel = viewModel,
             toggleTheme = { viewModel.toggleDarkTheme() },
             setKeepScreenOn = { viewModel.toggleKeepScreenOn(it) },
@@ -90,7 +90,7 @@ fun LifeCounterScreen(
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
-                    viewModel.setMiddleButtonDialogState(null)
+                    viewModel.closeModal()
                     viewModel.setShowButtons(false)
                     delay(10)
                     viewModel.setShowButtons(true)
@@ -106,7 +106,7 @@ fun LifeCounterScreen(
     }
 
     LaunchedEffect(state.middleButtonDialogState) {
-        viewModel.setBlurBackground(state.middleButtonDialogState != null)
+        viewModel.setBlurBackground(state.isModalOpen)
     }
 
     BoxWithConstraints(
@@ -181,7 +181,7 @@ fun LifeCounterScreen(
                         AnimatedMiddleButton(
                             modifier = Modifier.fillMaxSize(),
                             onMiddleButtonClick = {
-                                viewModel.setMiddleButtonDialogState(MiddleButtonDialogState.Default)
+                                viewModel.openModal(LifeCounterModal.Default)
                             },
                             visible = state.showButtons
                         )

@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -76,11 +77,10 @@ import ui.dialog.settings.SettingsDialogContent
 import ui.dialog.settings.patchnotes.PatchNotesDialogContent
 import ui.dialog.startinglife.StartingLifeDialogContent
 import ui.lifecounter.DayNightState
+import ui.lifecounter.LifeCounterModal
 import ui.lifecounter.LifeCounterViewModel
 
-enum class MiddleButtonDialogState {
-    Default, CoinFlip, CoinFlipTutorial, PlayerNumber, FourPlayerLayout, StartingLife, DiceRoll, Counter, Settings, Scryfall, PatchNotes, AboutMe, PlaneChase, PlanarDeck, PlanarTutorial
-}
+typealias MiddleButtonDialogState = LifeCounterModal
 
 @Composable
 fun MiddleButtonDialog(
@@ -89,6 +89,7 @@ fun MiddleButtonDialog(
     viewModel: LifeCounterViewModel,
     dialogState: MiddleButtonDialogState,
     setDialogState: (MiddleButtonDialogState) -> Unit,
+    onBack: () -> Unit,
     toggleTheme: () -> Unit,
     setKeepScreenOn: (Boolean) -> Unit,
     goToPlayerSelectScreen: (Boolean) -> Unit,
@@ -97,13 +98,25 @@ fun MiddleButtonDialog(
     setAlt4PlayerLayout: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     updateTurnTimerEnabled: (Boolean) -> Unit,
-    backHandler: BackHandler = koinInject()
 ) {
 
     val state by viewModel.state.collectAsState()
     val haptic = LocalHapticFeedback.current
     var showResetDialog by remember { mutableStateOf(false) }
     var showChooseFirstPlayerDialog by remember { mutableStateOf(false) }
+    val nestedBackActions = remember { mutableStateListOf<() -> Unit>() }
+
+    fun addNestedBackAction(action: () -> Unit) {
+        nestedBackActions.add(action)
+    }
+
+    fun handleBack() {
+        if (nestedBackActions.isNotEmpty()) {
+            nestedBackActions.removeLast().invoke()
+        } else {
+            onBack()
+        }
+    }
 
     BoxWithConstraints(
         modifier = modifier
@@ -127,12 +140,11 @@ fun MiddleButtonDialog(
             }
         }
 
-        AnimatedGridDialog(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, backHandler = backHandler, pages = listOf(
+        AnimatedGridDialog(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, onBack = ::handleBack, pages = listOf(
             Pair(
                 dialogState == MiddleButtonDialogState.CoinFlip
             ) {
                 CoinFlipDialogContent(modifier = modifier, goToCoinFlipTutorial = {
-                    backHandler.push { setDialogState(MiddleButtonDialogState.CoinFlip) }
                     setDialogState(MiddleButtonDialogState.CoinFlipTutorial)
                 })
             }, Pair(
@@ -183,7 +195,7 @@ fun MiddleButtonDialog(
                     modifier = Modifier.fillMaxSize(),
                     selectButtonEnabled = false,
                     rulingsButtonEnabled = true,
-                    addToBackStack = { _, block -> backHandler.push(block) },
+                    addToBackStack = { _, block -> addNestedBackAction(block) },
                     onImageSelected = {},
                     viewModel = koinInject()
                 )
@@ -194,7 +206,7 @@ fun MiddleButtonDialog(
                     Modifier.fillMaxSize(),
                     goToPatchNotes = { setDialogState(MiddleButtonDialogState.PatchNotes) },
                     goToAboutMe = { setDialogState(MiddleButtonDialogState.AboutMe) },
-                    addGoToSettingsToBackStack = { backHandler.push { setDialogState(MiddleButtonDialogState.Settings) } },
+                    addGoToSettingsToBackStack = {},
                     goToTutorialScreen = {
                         onDismiss()
                         goToTutorialScreen()
@@ -220,19 +232,17 @@ fun MiddleButtonDialog(
                 PlaneChaseDialogContent(
                     modifier = Modifier.fillMaxSize(),
                     goToPlanechaseTutorial = {
-                        backHandler.push { setDialogState(MiddleButtonDialogState.PlaneChase) }
                         setDialogState(MiddleButtonDialogState.PlanarTutorial)
                     },
                     goToChoosePlanes = {
                         setDialogState(MiddleButtonDialogState.PlanarDeck)
-                        backHandler.push { setDialogState(MiddleButtonDialogState.PlaneChase) }
                     },
                 )
             }, Pair(
                 dialogState == MiddleButtonDialogState.PlanarDeck
             ) {
                 ChoosePlanesDialogContent(
-                    modifier = Modifier.fillMaxSize(), addToBackStack = backHandler::push, popBackStack = backHandler::pop
+                    modifier = Modifier.fillMaxSize(), addToBackStack = ::addNestedBackAction, popBackStack = ::handleBack
                 )
             }, Pair(
                 dialogState == MiddleButtonDialogState.PlanarTutorial
@@ -257,7 +267,6 @@ fun MiddleButtonDialog(
                     }, {
                         SettingsButton(modifier = buttonModifier, imageVector = vectorResource(Res.drawable.heart_solid_icon), text = "Starting Life", shadowEnabled = false, onPress = {
                             setDialogState(MiddleButtonDialogState.StartingLife)
-                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(
@@ -272,22 +281,18 @@ fun MiddleButtonDialog(
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.player_count_icon), text = "Player Number", shadowEnabled = false, onPress = {
                             setDialogState(MiddleButtonDialogState.PlayerNumber)
-                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.mana_icon), text = "Mana & Storm", shadowEnabled = false, onPress = {
                             setDialogState(MiddleButtonDialogState.Counter)
-                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.die_icon), text = "Dice roll", shadowEnabled = false, onPress = {
                             setDialogState(MiddleButtonDialogState.DiceRoll)
-                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.coin_icon), text = "Coin Flip", shadowEnabled = false, onPress = {
                             setDialogState(MiddleButtonDialogState.CoinFlip)
-                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = when (state.dayNight) {
@@ -307,17 +312,14 @@ fun MiddleButtonDialog(
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.search_icon), text = "Card Search", shadowEnabled = false, onPress = {
                             setDialogState(MiddleButtonDialogState.Scryfall)
-                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.planeswalker_icon), text = "Planechase", shadowEnabled = false, onPress = {
                             setDialogState(MiddleButtonDialogState.PlaneChase)
-                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     }, {
                         SettingsButton(buttonModifier, imageVector = vectorResource(Res.drawable.settings_icon_small), text = "Settings", shadowEnabled = false, onPress = {
                             setDialogState(MiddleButtonDialogState.Settings)
-                            backHandler.push { setDialogState(MiddleButtonDialogState.Default) }
                         })
                     })
                 )
@@ -386,12 +388,16 @@ fun MiddleButtonDialog(
 
 @Composable
 fun AnimatedGridDialog(
-    modifier: Modifier = Modifier, onDismiss: () -> Unit, backHandler: BackHandler = koinInject(), pages: List<Pair<Boolean, @Composable () -> Unit>>
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    backHandler: BackHandler? = koinInject(),
+    onBack: (() -> Unit)? = null,
+    pages: List<Pair<Boolean, @Composable () -> Unit>>
 ) {
     val dimensions = LocalDimensions.current
 
     LaunchedEffect(Unit) {
-        backHandler.push { onDismiss() }
+        backHandler?.push { onDismiss() }
     }
 
     val duration = (450 / SystemManager.getAnimationCorrectionFactor()).toInt()
@@ -445,8 +451,11 @@ fun AnimatedGridDialog(
         onDismiss = {
             onDismiss()
         }, content = dialogContent, onBack = {
-            backHandler.pop()
-//        backStack.removeLast().invoke()
+            if (onBack != null) {
+                onBack()
+            } else {
+                backHandler?.pop()
+            }
         })
 }
 

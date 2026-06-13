@@ -143,8 +143,28 @@ open class LifeCounterViewModel(
         playerCustomizationManager.resetAllPlayerPrefs()
     }
 
+    fun openModal(value: LifeCounterModal) {
+        _state.value = _state.value.copy(modalStack = _state.value.modalStack.open(value))
+    }
+
+    fun replaceModal(value: LifeCounterModal) {
+        _state.value = _state.value.copy(modalStack = _state.value.modalStack.replace(value))
+    }
+
+    fun closeModal() {
+        _state.value = _state.value.copy(modalStack = LifeCounterModalStack.Empty)
+    }
+
+    fun goBackInModal() {
+        _state.value = _state.value.copy(modalStack = _state.value.modalStack.goBack())
+    }
+
     open fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
-        _state.value = _state.value.copy(middleButtonDialogState = value)
+        if (value == null) {
+            closeModal()
+        } else {
+            replaceModal(value)
+        }
     }
 
     private fun setAllButtonStates(pbState: PBState) {
