@@ -6,7 +6,6 @@ import domain.common.Backstack
 import domain.common.NumberWithRecentChange
 import domain.game.timer.TurnTimer
 import domain.state.game.GameCommand
-import domain.state.game.GameSessionStore
 import domain.state.profile.PlayerProfileRepository
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
@@ -30,7 +29,7 @@ open class PlayerButtonViewModel(
     private val profileRepository: PlayerProfileRepository,
     private val fileImageStore: IFileImageStore,
     protected val notificationManager: NotificationManager,
-    private val gameSessionStore: GameSessionStore,
+    private val dispatchGameCommand: (GameCommand) -> Unit,
     private val resetPlayerPrefs: (Player) -> Player,
     private val copyPlayerPrefs: (Player, Player) -> Player,
     private val savePlayerPrefs: (Player) -> Unit,
@@ -280,7 +279,7 @@ open class PlayerButtonViewModel(
 
     private fun dispatchPlayerButtonAction(action: PlayerButtonAction) {
         action.toGameCommands(seatId = seatId, commanderState = commanderState.value)
-            .forEach(::dispatchGameCommand)
+            .forEach { command -> dispatchGameCommand(command) }
     }
 
     private fun dispatchCommanderDamage(value: Int, partner: Boolean) {
@@ -295,9 +294,4 @@ open class PlayerButtonViewModel(
         )
     }
 
-    private fun dispatchGameCommand(command: GameCommand) {
-        viewModelScope.launch {
-            gameSessionStore.dispatchLoaded(command)
-        }
-    }
 }

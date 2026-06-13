@@ -201,7 +201,7 @@ open class MockPlayerButtonViewModel(
     profileRepository = profileRepository,
     fileImageStore = fileImageStore,
     notificationManager = notificationManager,
-    gameSessionStore = GameSessionStore(SavedGameRepository(InMemorySettings(), preferencesRepository)),
+    dispatchGameCommand = {},
     resetPlayerPrefs = { player -> player },
     copyPlayerPrefs = { _, player -> player },
     savePlayerPrefs = {},
