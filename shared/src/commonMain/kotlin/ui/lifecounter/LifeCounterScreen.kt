@@ -53,6 +53,7 @@ import theme.LocalDimensions
 import theme.blendWith
 import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialog
+import ui.lifecounter.playerbutton.CommanderState
 import ui.lifecounter.playerbutton.PlayerButton
 import ui.lifecounter.playerbutton.PlayerButtonAction
 import ui.modifier.routePointerChangesTo
@@ -138,16 +139,16 @@ fun LifeCounterScreen(
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
                             val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
                             val playerButtonState by playerButtonViewModel.state.collectAsState()
-                            val commanderState by playerButtonViewModel.commanderState.collectAsState()
                             val showBackButton by playerButtonViewModel.showBackButton.collectAsState()
+                            val parentSeatState = state.players.getOrNull(placement.index)
                             val playerSeatState = PlayerSeatUiState(
                                 seatId = GameSessionUiMapper.seatIdForPlayerNumber(playerButtonState.player.playerNum),
                                 player = playerButtonState.player,
                                 buttonState = playerButtonState.buttonState,
                                 showCustomizeMenu = playerButtonState.showCustomizeMenu,
                                 timer = playerButtonState.timer,
-                                commanderState = commanderState,
-                                isDead = state.players.getOrNull(placement.index)?.isDead ?: false,
+                                commanderState = parentSeatState?.commanderState ?: CommanderState.Inactive,
+                                isDead = parentSeatState?.isDead ?: false,
                                 backButtonVisible = showBackButton
                             )
                             val timerColor = playerButtonState.player.textColor
