@@ -45,9 +45,7 @@ open class PlayerButtonViewModel(
     val showBackButton: StateFlow<Boolean> = combine(
         backstack.isEmpty, state
     ) { isEmpty, state ->
-        state.buttonState !in listOf(
-            PBState.SELECT_FIRST_PLAYER, PBState.COMMANDER_RECEIVER, PBState.COMMANDER_DEALER
-        ) && !isEmpty
+        state.showsBackButton(backStackIsEmpty = isEmpty)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     private var _customizationViewmodel: CustomizationViewModel? = null

@@ -10,6 +10,14 @@ data class PlayerButtonState(
     val timer: TurnTimer? = null
 )
 
+fun PlayerButtonState.showsBackButton(backStackIsEmpty: Boolean): Boolean {
+    return buttonState !in setOf(
+        PBState.SELECT_FIRST_PLAYER,
+        PBState.COMMANDER_RECEIVER,
+        PBState.COMMANDER_DEALER
+    ) && !backStackIsEmpty
+}
+
 enum class PBState {
     NORMAL,
     COMMANDER_DEALER,
