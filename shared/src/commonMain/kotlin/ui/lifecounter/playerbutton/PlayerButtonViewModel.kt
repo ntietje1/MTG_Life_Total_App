@@ -9,7 +9,6 @@ import domain.state.game.GameCommand
 import domain.state.profile.PlayerProfileRepository
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
-import domain.system.NotificationManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,7 +27,6 @@ open class PlayerButtonViewModel(
     private val preferencesRepository: PreferencesRepository,
     private val profileRepository: PlayerProfileRepository,
     private val fileImageStore: IFileImageStore,
-    protected val notificationManager: NotificationManager,
     private val dispatchGameCommand: (GameCommand) -> Unit,
     private val resetPlayerPrefs: (Player) -> Player,
     private val copyPlayerPrefs: (Player, Player) -> Player,

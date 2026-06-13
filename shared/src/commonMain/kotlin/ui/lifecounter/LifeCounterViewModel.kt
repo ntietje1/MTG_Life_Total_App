@@ -166,7 +166,6 @@ open class LifeCounterViewModel(
             preferencesRepository = preferencesRepository,
             profileRepository = profileRepository,
             fileImageStore = fileImageStore,
-            notificationManager = notificationManager,
             dispatchGameCommand = ::dispatchGameCommand,
             resetPlayerPrefs = playerCustomizationManager::resetPlayerPrefs,
             copyPlayerPrefs = playerCustomizationManager::copyPlayerPrefs,

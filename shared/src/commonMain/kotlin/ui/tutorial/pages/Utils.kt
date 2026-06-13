@@ -194,13 +194,12 @@ open class MockPlayerButtonViewModel(
     preferencesRepository: PreferencesRepository,
     profileRepository: PlayerProfileRepository,
     fileImageStore: IFileImageStore,
-    notificationManager: NotificationManager
+    protected val notificationManager: NotificationManager
 ) : PlayerButtonViewModel(
     initialState = state,
     preferencesRepository = preferencesRepository,
     profileRepository = profileRepository,
     fileImageStore = fileImageStore,
-    notificationManager = notificationManager,
     dispatchGameCommand = {},
     resetPlayerPrefs = { player -> player },
     copyPlayerPrefs = { _, player -> player },
