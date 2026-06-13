@@ -139,7 +139,8 @@ class GameSessionUiMapperTest {
         val mapped = GameSessionUiMapper.mapLifeCounterUiState(
             session = session,
             current = LifeCounterState(),
-            fileImageStore = FakeFileImageStore(mapOf("nissa.png" to "file:///images/nissa.png"))
+            fileImageStore = FakeFileImageStore(mapOf("nissa.png" to "file:///images/nissa.png")),
+            autoKo = true
         )
 
         assertEquals(2, mapped.players.size)
@@ -151,6 +152,30 @@ class GameSessionUiMapperTest {
         assertEquals(true, mapped.players[1].player.monarch)
         assertEquals(PBState.COMMANDER_RECEIVER, mapped.players[1].buttonState)
         assertEquals(NumberWithRecentChange(number = 7, recentChange = 7), mapped.players[1].player.commanderDamage[0])
+    }
+
+    @Test
+    fun mapsSeatDeathFromDomainRules() {
+        val receiverSeatId = SeatId("seat-2")
+        val commander = CommanderDamageMatrix()
+            .changeDamage(SeatId("seat-1"), receiverSeatId, partner = false, delta = 21)
+        val session = testSession().copy(commander = commander)
+
+        val autoKoMapped = GameSessionUiMapper.mapLifeCounterUiState(
+            session = session,
+            current = LifeCounterState(),
+            fileImageStore = FakeFileImageStore(),
+            autoKo = true
+        )
+        val manualOnlyMapped = GameSessionUiMapper.mapLifeCounterUiState(
+            session = session,
+            current = LifeCounterState(),
+            fileImageStore = FakeFileImageStore(),
+            autoKo = false
+        )
+
+        assertEquals(true, autoKoMapped.players[1].isDead)
+        assertEquals(false, manualOnlyMapped.players[1].isDead)
     }
 
     @Test

@@ -37,13 +37,6 @@ open class PlayerButtonViewModel(
     private var _state = MutableStateFlow(initialState)
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
 
-    val isDead: StateFlow<Boolean> = combine(
-        preferencesRepository.autoKo, state
-    ) { autoKo, playerState ->
-        playerState.player.setDead ||
-            (autoKo && (playerState.player.life <= 0 || playerState.player.commanderDamage.any { it.number >= 21 }))
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
-
     private val _commanderState = MutableStateFlow<CommanderState>(CommanderState.Inactive)
     val commanderState: StateFlow<CommanderState> = _commanderState.asStateFlow()
 

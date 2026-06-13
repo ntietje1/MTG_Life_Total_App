@@ -80,7 +80,7 @@ open class LifeCounterViewModel(
         get() = playerButtonViewModels.value.map { it.state.value.player }
 
     override fun isPlayerDead(index: Int): Boolean {
-        return playerButtonViewModels.value.getOrNull(index)?.isDead?.value ?: false
+        return state.value.players.getOrNull(index)?.isDead ?: false
     }
 
     override fun promptForFirstPlayer() {
@@ -212,7 +212,12 @@ open class LifeCounterViewModel(
     }
 
     private fun applyGameSession(session: GameSession) {
-        _state.value = GameSessionUiMapper.mapLifeCounterUiState(session, _state.value, fileImageStore)
+        _state.value = GameSessionUiMapper.mapLifeCounterUiState(
+            session = session,
+            current = _state.value,
+            fileImageStore = fileImageStore,
+            autoKo = preferencesRepository.autoKo.value
+        )
         val commanderDealerPlayer = session.commanderMode?.let { mode ->
             GameSessionUiMapper.mapPlayerButtonState(
                 session = session,

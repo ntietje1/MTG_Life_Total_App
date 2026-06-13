@@ -26,7 +26,8 @@ object GameSessionUiMapper {
     fun mapLifeCounterUiState(
         session: GameSession,
         current: LifeCounterState,
-        fileImageStore: IFileImageStore
+        fileImageStore: IFileImageStore,
+        autoKo: Boolean
     ): LifeCounterState {
         return mapLifeCounterState(session, current).copy(
             players = session.seats.map { seat ->
@@ -34,7 +35,8 @@ object GameSessionUiMapper {
                     session = session,
                     seatId = seat.id,
                     current = current.players.firstOrNull { player -> player.seatId == seat.id },
-                    fileImageStore = fileImageStore
+                    fileImageStore = fileImageStore,
+                    autoKo = autoKo
                 )
             },
             middleButtonState = mapMiddleButtonState(session)
@@ -45,7 +47,8 @@ object GameSessionUiMapper {
         session: GameSession,
         seatId: SeatId,
         current: PlayerSeatUiState?,
-        fileImageStore: IFileImageStore
+        fileImageStore: IFileImageStore,
+        autoKo: Boolean
     ): PlayerSeatUiState {
         val seat = session.requireSeat(seatId)
         val commanderDealerPlayer = session.commanderMode?.let { mode ->
@@ -65,7 +68,7 @@ object GameSessionUiMapper {
             timer = current?.timer,
             commanderState = commanderDealerPlayer?.let(ui.lifecounter.playerbutton.CommanderState::Active)
                 ?: ui.lifecounter.playerbutton.CommanderState.Inactive,
-            isDead = current?.isDead ?: seat.manualDeath,
+            isDead = seat.isDead(autoKo = autoKo, commander = session.commander),
             backButtonVisible = current?.backButtonVisible ?: false
         )
     }

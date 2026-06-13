@@ -138,7 +138,6 @@ fun LifeCounterScreen(
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
                             val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
                             val playerButtonState by playerButtonViewModel.state.collectAsState()
-                            val playerIsDead by playerButtonViewModel.isDead.collectAsState()
                             val commanderState by playerButtonViewModel.commanderState.collectAsState()
                             val showBackButton by playerButtonViewModel.showBackButton.collectAsState()
                             val playerSeatState = PlayerSeatUiState(
@@ -148,7 +147,7 @@ fun LifeCounterScreen(
                                 showCustomizeMenu = playerButtonState.showCustomizeMenu,
                                 timer = playerButtonState.timer,
                                 commanderState = commanderState,
-                                isDead = playerIsDead,
+                                isDead = state.players.getOrNull(placement.index)?.isDead ?: false,
                                 backButtonVisible = showBackButton
                             )
                             val timerColor = playerButtonState.player.textColor
