@@ -73,6 +73,7 @@ import ui.components.SettingsButton
 import ui.dialog.customization.CustomizationViewModel
 import ui.dialog.customization.PlayerCustomizationDialog
 import ui.lifecounter.CounterType
+import ui.lifecounter.PlayerSeatUiState
 import ui.modifier.VerticalRotation
 import ui.modifier.bounceClick
 import ui.modifier.rotateVertically
@@ -80,9 +81,8 @@ import ui.modifier.rotateVertically
 @Composable
 fun PlayerButton(
     modifier: Modifier = Modifier,
-    state: PlayerButtonState,
+    state: PlayerSeatUiState,
     isDead: Boolean,
-    commanderState: CommanderState,
     backButtonVisible: Boolean,
     customizationViewModel: CustomizationViewModel?,
     onAction: (PlayerButtonAction) -> Unit,
@@ -90,7 +90,7 @@ fun PlayerButton(
     turnTimerModifier: Modifier,
     setBlurBackground: (Boolean) -> Unit,
 ) {
-    val currentDealerIsPartnered = (commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
+    val currentDealerIsPartnered = (state.commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
     val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
 
@@ -348,9 +348,9 @@ fun PlayerButton(
                                         modifier = playerInfoModifier.fillMaxSize(),
                                         name = state.player.name,
                                         textColor = state.player.textColor,
-                                        firstValue = commanderDamageValue(state, commanderState, partner = false),
+                                        firstValue = commanderDamageValue(state, partner = false),
                                         secondValue = if (currentDealerIsPartnered) {
-                                            commanderDamageValue(state, commanderState, partner = true)
+                                            commanderDamageValue(state, partner = true)
                                         } else {
                                             null
                                         },
@@ -621,11 +621,10 @@ fun PlayerButton(
 }
 
 private fun commanderDamageValue(
-    state: PlayerButtonState,
-    commanderState: CommanderState,
+    state: PlayerSeatUiState,
     partner: Boolean
 ): NumberWithRecentChange {
-    return when (commanderState) {
+    return when (val commanderState = state.commanderState) {
         is CommanderState.Active -> state.player.commanderDamage[commanderState.getDealerIndex(partner)]
         CommanderState.Inactive -> NumberWithRecentChange(0, 0)
     }

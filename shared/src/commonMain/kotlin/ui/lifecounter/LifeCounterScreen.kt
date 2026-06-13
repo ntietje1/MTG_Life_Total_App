@@ -141,6 +141,14 @@ fun LifeCounterScreen(
                             val playerIsDead by playerButtonViewModel.isDead.collectAsState()
                             val commanderState by playerButtonViewModel.commanderState.collectAsState()
                             val showBackButton by playerButtonViewModel.showBackButton.collectAsState()
+                            val playerSeatState = PlayerSeatUiState(
+                                seatId = GameSessionUiMapper.seatIdForPlayerNumber(playerButtonState.player.playerNum),
+                                player = playerButtonState.player,
+                                buttonState = playerButtonState.buttonState,
+                                showCustomizeMenu = playerButtonState.showCustomizeMenu,
+                                timer = playerButtonState.timer,
+                                commanderState = commanderState
+                            )
                             val timerColor = playerButtonState.player.textColor
                             AnimatedPlayerButton(modifier = Modifier.padding(dimensions.paddingTiny),
                                 visible = state.showButtons,
@@ -167,9 +175,8 @@ fun LifeCounterScreen(
                                                 else -> Modifier
                                             }
                                         ),
-                                        state = playerButtonState,
+                                        state = playerSeatState,
                                         isDead = playerIsDead,
-                                        commanderState = commanderState,
                                         backButtonVisible = showBackButton,
                                         customizationViewModel = playerButtonViewModel.customizationViewmodel,
                                         onAction = playerButtonViewModel::onAction,
