@@ -144,12 +144,16 @@ fun PlayerButton(
         setBlurBackground(dialogStates.any { it })
     }
 
-    if (state.showCustomizeMenu && viewModel.customizationViewmodel != null) {
-        PlayerCustomizationDialog(
-            modifier = Modifier.fillMaxSize(), onDismiss = {
-                viewModel.onShowCustomizeMenu(false)
-            }, viewModel = viewModel.customizationViewmodel!!
-        )
+    if (state.showCustomizeMenu) {
+        viewModel.customizationViewmodel?.let { customizationViewModel ->
+            PlayerCustomizationDialog(
+                modifier = Modifier.fillMaxSize(),
+                onDismiss = {
+                    viewModel.onShowCustomizeMenu(false)
+                },
+                viewModel = customizationViewModel
+            )
+        }
     }
 
     var timerTextSize by remember(Unit) { mutableStateOf(15) }
@@ -634,13 +638,14 @@ fun PlayerButton(
                         }
                     }
                 }
-                if (state.timer != null && state.buttonState == PBState.NORMAL) {
+                val timer = state.timer
+                if (timer != null && state.buttonState == PBState.NORMAL) {
                     Timer(modifier = turnTimerModifier.then(Modifier.pointerInput(Unit) {
                         detectTapGestures(onPress = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             timerJustClicked = true
                         })
-                    }), timer = state.timer!!)
+                    }), timer = timer)
                 }
             }
         }
