@@ -251,8 +251,8 @@ open class PlayerButtonViewModel(
     private val seatId get() = GameSessionUiMapper.seatIdForPlayerNumber(state.value.player.playerNum)
 
     private fun dispatchPlayerButtonAction(action: PlayerButtonAction) {
-        action.toGameCommand(seatId = seatId, commanderState = commanderState.value)
-            ?.let(::dispatchGameCommand)
+        action.toGameCommands(seatId = seatId, commanderState = commanderState.value)
+            .forEach(::dispatchGameCommand)
     }
 
     private fun dispatchCommanderDamage(value: Int, partner: Boolean) {

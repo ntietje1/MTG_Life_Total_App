@@ -256,14 +256,12 @@ fun PlayerButton(
                                         value = 1,
                                         partner = false
                                     )
-                                    viewModel.incrementLife(-1)
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 }, onDecrementLife = {
                                     viewModel.incrementCommanderDamage(
                                         value = -1,
                                         partner = false
                                     )
-                                    viewModel.incrementLife(1)
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 })
                                 if (currentDealerIsPartnered) {
@@ -272,14 +270,12 @@ fun PlayerButton(
                                             value = 1,
                                             partner = true
                                         )
-                                        viewModel.incrementLife(-1)
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     }, onDecrementLife = {
                                         viewModel.incrementCommanderDamage(
                                             value = -1,
                                             partner = true
                                         )
-                                        viewModel.incrementLife(1)
                                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     })
                                 }

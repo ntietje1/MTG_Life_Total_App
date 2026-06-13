@@ -13,34 +13,38 @@ sealed interface PlayerButtonAction {
     data class SetManualDeath(val dead: Boolean) : PlayerButtonAction
 }
 
-fun PlayerButtonAction.toGameCommand(
+fun PlayerButtonAction.toGameCommands(
     seatId: SeatId,
     commanderState: CommanderState = CommanderState.Inactive
-): GameCommand? {
+): List<GameCommand> {
     return when (this) {
-        PlayerButtonAction.IncrementLife -> GameCommand.ChangeLife(seatId = seatId, delta = 1)
-        PlayerButtonAction.DecrementLife -> GameCommand.ChangeLife(seatId = seatId, delta = -1)
+        PlayerButtonAction.IncrementLife -> listOf(GameCommand.ChangeLife(seatId = seatId, delta = 1))
+        PlayerButtonAction.DecrementLife -> listOf(GameCommand.ChangeLife(seatId = seatId, delta = -1))
         is PlayerButtonAction.IncrementCommanderDamage -> commanderDamageCommand(
             receiverSeatId = seatId,
             commanderState = commanderState,
             partner = partner,
             delta = 1
-        )
+        )?.let { command -> listOf(command, GameCommand.ChangeLife(seatId = seatId, delta = -1)) } ?: emptyList()
 
         is PlayerButtonAction.DecrementCommanderDamage -> commanderDamageCommand(
             receiverSeatId = seatId,
             commanderState = commanderState,
             partner = partner,
             delta = -1
+        )?.let { command -> listOf(command, GameCommand.ChangeLife(seatId = seatId, delta = 1)) } ?: emptyList()
+
+        is PlayerButtonAction.SetMonarch -> listOf(
+            GameCommand.SetMonarch(
+                seatId = if (monarch) seatId else null
+            )
         )
 
-        is PlayerButtonAction.SetMonarch -> GameCommand.SetMonarch(
-            seatId = if (monarch) seatId else null
-        )
-
-        is PlayerButtonAction.SetManualDeath -> GameCommand.SetManualDeath(
-            seatId = seatId,
-            dead = dead
+        is PlayerButtonAction.SetManualDeath -> listOf(
+            GameCommand.SetManualDeath(
+                seatId = seatId,
+                dead = dead
+            )
         )
     }
 }
