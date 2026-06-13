@@ -169,7 +169,8 @@ open class LifeCounterViewModel(
             notificationManager = notificationManager,
             playerCustomizationManager = playerCustomizationManager,
             gameSessionStore = gameSessionStore,
-            timerManager = timerManager
+            onFirstPlayerSelected = { index -> timerManager.handleFirstPlayerSelection(index) },
+            onMoveTimerRequested = { timerManager.moveTimer() }
         )
     }
 

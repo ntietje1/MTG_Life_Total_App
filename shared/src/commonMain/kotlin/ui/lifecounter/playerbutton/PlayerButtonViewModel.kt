@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import domain.common.Backstack
 import domain.common.NumberWithRecentChange
 import domain.game.PlayerCustomizationManager
-import domain.game.timer.TimerManager
 import domain.game.timer.TurnTimer
 import domain.state.game.GameCommand
 import domain.state.game.GameSessionStore
@@ -34,7 +33,8 @@ open class PlayerButtonViewModel(
     protected val notificationManager: NotificationManager,
     private val playerCustomizationManager: PlayerCustomizationManager,
     private val gameSessionStore: GameSessionStore,
-    private val timerManager: TimerManager
+    private val onFirstPlayerSelected: (Int) -> Unit,
+    private val onMoveTimerRequested: () -> Unit
 ) : ViewModel() {
     private var _state = MutableStateFlow(initialState)
     val state: StateFlow<PlayerButtonState> = _state.asStateFlow()
@@ -111,7 +111,7 @@ open class PlayerButtonViewModel(
     }
 
     fun setFirstPlayer() {
-        timerManager.handleFirstPlayerSelection(index = state.value.player.playerNum - 1)
+        onFirstPlayerSelected(state.value.player.playerNum - 1)
     }
 
     fun setPlayerButtonState(buttonState: PBState) {
@@ -123,7 +123,7 @@ open class PlayerButtonViewModel(
     }
 
     fun onMoveTimer() {
-        timerManager.moveTimer()
+        onMoveTimerRequested()
     }
 
     open fun onMonarchyButtonClicked(value: Boolean) {

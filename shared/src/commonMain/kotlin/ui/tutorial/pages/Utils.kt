@@ -195,8 +195,7 @@ open class MockPlayerButtonViewModel(
     profileRepository: PlayerProfileRepository,
     fileImageStore: IFileImageStore,
     notificationManager: NotificationManager,
-    customizationManager: PlayerCustomizationManager,
-    timerManager: TimerManager
+    customizationManager: PlayerCustomizationManager
 ) : PlayerButtonViewModel(
     initialState = state,
     preferencesRepository = preferencesRepository,
@@ -205,7 +204,8 @@ open class MockPlayerButtonViewModel(
     notificationManager = notificationManager,
     playerCustomizationManager = customizationManager,
     gameSessionStore = GameSessionStore(SavedGameRepository(InMemorySettings(), preferencesRepository)),
-    timerManager = timerManager
+    onFirstPlayerSelected = {},
+    onMoveTimerRequested = {}
 )
 
 abstract class MockLifeCounterViewModel(

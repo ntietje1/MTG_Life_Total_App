@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import domain.game.PlayerCustomizationManager
-import domain.game.timer.TimerManager
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
 import domain.state.profile.PlayerProfileRepository
@@ -70,16 +69,14 @@ fun TutorialPage1(
         profileRepository: PlayerProfileRepository,
         fileImageStore: IFileImageStore,
         notificationManager: NotificationManager,
-        customizationManager: PlayerCustomizationManager,
-        timerManager: TimerManager
+        customizationManager: PlayerCustomizationManager
         ) : MockPlayerButtonViewModel(
             state = state,
         preferencesRepository = preferencesRepository,
         profileRepository = profileRepository,
         fileImageStore = fileImageStore,
         notificationManager = notificationManager,
-        customizationManager = customizationManager,
-        timerManager = timerManager
+        customizationManager = customizationManager
         ) {
 
             private fun checkComplete() {
@@ -112,8 +109,7 @@ fun TutorialPage1(
         profileRepository = gameState.mockProfileRepository,
         fileImageStore = gameState.mockFileImageStore,
         notificationManager = this.notificationManager,
-        customizationManager = this.playerCustomizationManager,
-        timerManager = this.timerManager
+        customizationManager = this.playerCustomizationManager
             )
         }
     }
