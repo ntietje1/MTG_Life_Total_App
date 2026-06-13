@@ -26,14 +26,6 @@ import ui.splash.SplashScreen
 import ui.tutorial.TutorialScreen
 import ui.tutorial.TutorialViewModel
 
-
-private enum class LifeLinkedScreen(val route: String) {
-    PLAYER_SELECT("player_select"),
-    LIFE_COUNTER("life_counter"),
-    TUTORIAL("tutorial"),
-    SPLASH("splash")
-}
-
 @Composable
 fun LifeLinkedApp() {
     val preferencesRepository: PreferencesRepository by currentKoinScope().inject()
@@ -45,15 +37,11 @@ fun LifeLinkedApp() {
 
         val navController = rememberNavController()
         val currentVersionNumber = koinInject<VersionNumber>()
-        fun getStartScreen(): String {
-            return if (!currentVersionNumber.isSame(VersionNumber(preferencesRepository.lastSplashScreenShown.value))) {
-                LifeLinkedScreen.SPLASH.route
-            } else if (!preferencesRepository.autoSkip.value) {
-                LifeLinkedScreen.PLAYER_SELECT.route
-            } else {
-                LifeLinkedScreen.LIFE_COUNTER.route
-            }
-        }
+        val startRoute = startupDestination(
+            currentVersion = currentVersionNumber,
+            lastSplashScreenShown = preferencesRepository.lastSplashScreenShown.value,
+            autoSkip = preferencesRepository.autoSkip.value
+        )
 
         val backHandler: BackHandler by currentKoinScope().inject()
         backHandler.attachNavigation(navController)
@@ -63,31 +51,30 @@ fun LifeLinkedApp() {
 
         NavHost(
             navController = navController,
-            startDestination = getStartScreen()
+            startDestination = startRoute.route
         ) {
-            composable(LifeLinkedScreen.SPLASH.route) {
+            composable(LifeLinkedRoute.Splash.route) {
                 SplashScreen(
                     goToTutorial = {
                         preferencesRepository.setLastSplashScreenShown(currentVersionNumber.value)
-                        navController.navigate(LifeLinkedScreen.TUTORIAL.route)
+                        navController.navigate(LifeLinkedRoute.Tutorial.route)
                     },
                     goToLifeCounter = {
                         preferencesRepository.setLastSplashScreenShown(currentVersionNumber.value)
-                        navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
+                        navController.navigate(LifeLinkedRoute.LifeCounter.route)
                     }
                 )
             }
-            composable(LifeLinkedScreen.TUTORIAL.route) {
+            composable(LifeLinkedRoute.Tutorial.route) {
                 val viewModel = koinViewModel<TutorialViewModel>()
                 TutorialScreen(
                     viewModel = viewModel,
                     onFinishTutorial = {
                         preferencesRepository.setTutorialSkip(true)
                         if (navController.currentBackStack.value.all {
-                                it.destination.route == null ||
-                                        !it.destination.route!!.contains(LifeLinkedScreen.PLAYER_SELECT.route)
+                                it.destination.route != LifeLinkedRoute.PlayerSelect.route
                             }) {
-                            navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
+                            navController.navigate(LifeLinkedRoute.LifeCounter.route)
                         } else {
                             navController.popBackStack()
                         }
@@ -95,28 +82,28 @@ fun LifeLinkedApp() {
                 )
             }
 
-            composable(LifeLinkedScreen.PLAYER_SELECT.route) {
+            composable(LifeLinkedRoute.PlayerSelect.route) {
                 val viewModel = koinViewModel<PlayerSelectViewModel>()
                 PlayerSelectScreen(
                     viewModel = viewModel,
                     allowChangeNumPlayers = allowChangeNumPlayers,
                     goToLifeCounterScreen = {
-                        navController.navigate(LifeLinkedScreen.LIFE_COUNTER.route)
+                        navController.navigate(LifeLinkedRoute.LifeCounter.route)
                     }
                 )
             }
 
-            composable(LifeLinkedScreen.LIFE_COUNTER.route) {
+            composable(LifeLinkedRoute.LifeCounter.route) {
                 val viewModel = koinViewModel<LifeCounterViewModel>()
                 LifeCounterScreen(
                     viewModel = viewModel,
                     goToPlayerSelectScreen = { changeNumPlayers ->
                         allowChangeNumPlayers = changeNumPlayers
-                        navController.navigate(LifeLinkedScreen.PLAYER_SELECT.route)
+                        navController.navigate(LifeLinkedRoute.PlayerSelect.route)
                         firstLifeCounterNavigation = false
                     },
                     goToTutorialScreen = {
-                        navController.navigate(LifeLinkedScreen.TUTORIAL.route)
+                        navController.navigate(LifeLinkedRoute.Tutorial.route)
                     },
                     firstNavigation = firstLifeCounterNavigation
                 )
