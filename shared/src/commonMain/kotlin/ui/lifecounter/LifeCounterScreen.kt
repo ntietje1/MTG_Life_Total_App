@@ -146,7 +146,7 @@ fun LifeCounterScreen(
                                 player = playerButtonState.player,
                                 buttonState = playerButtonState.buttonState,
                                 showCustomizeMenu = playerButtonState.showCustomizeMenu,
-                                timer = playerButtonState.timer,
+                                timer = parentSeatState?.timer,
                                 commanderState = parentSeatState?.commanderState ?: CommanderState.Inactive,
                                 isDead = parentSeatState?.isDead ?: false,
                                 backButtonVisible = showBackButton

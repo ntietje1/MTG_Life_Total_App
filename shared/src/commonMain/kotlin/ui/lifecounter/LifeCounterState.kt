@@ -1,5 +1,6 @@
 package ui.lifecounter
 
+import domain.game.timer.TurnTimer
 import ui.dialog.COUNTER_DIALOG_ENTRIES
 
 data class LifeCounterState(
@@ -26,4 +27,12 @@ enum class MiddleButtonState {
 
 enum class DayNightState {
     NONE, DAY, NIGHT
+}
+
+fun LifeCounterState.showTimer(activePlayerIndex: Int?, timer: TurnTimer?): LifeCounterState {
+    return copy(
+        players = players.mapIndexed { index, player ->
+            player.copy(timer = if (index == activePlayerIndex) timer else null)
+        }
+    )
 }

@@ -1,13 +1,11 @@
 package ui.lifecounter.playerbutton
 
 import model.Player
-import domain.game.timer.TurnTimer
 
 data class PlayerButtonState(
     val player: Player,
     val buttonState: PBState = PBState.NORMAL,
-    val showCustomizeMenu: Boolean = false,
-    val timer: TurnTimer? = null
+    val showCustomizeMenu: Boolean = false
 )
 
 fun PlayerButtonState.showsBackButton(backStackIsEmpty: Boolean): Boolean {

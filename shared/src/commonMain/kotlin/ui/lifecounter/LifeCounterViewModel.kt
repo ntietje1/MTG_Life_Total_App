@@ -96,10 +96,7 @@ open class LifeCounterViewModel(
     }
 
     override fun showTimer(activePlayerIndex: Int?, timer: TurnTimer?) {
-        playerButtonViewModels.value.forEachIndexed { index, playerButtonViewModel ->
-            val shouldShowTimer = index == activePlayerIndex
-            playerButtonViewModel.setTimer(if (shouldShowTimer) timer else null)
-        }
+        _state.value = _state.value.showTimer(activePlayerIndex = activePlayerIndex, timer = timer)
     }
 
     override fun replacePlayer(player: Player) {

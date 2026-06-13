@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import domain.common.Backstack
 import domain.common.NumberWithRecentChange
-import domain.game.timer.TurnTimer
 import domain.state.game.GameCommand
 import domain.state.profile.PlayerProfileRepository
 import domain.storage.IFileImageStore
@@ -93,10 +92,6 @@ open class PlayerButtonViewModel(
             -1 -> dispatchPlayerButtonAction(PlayerButtonAction.DecrementLife)
             else -> dispatchGameCommand(GameCommand.ChangeLife(seatId, value))
         }
-    }
-
-    fun setTimer(timer: TurnTimer?) {
-        _state.value = state.value.copy(timer = timer)
     }
 
     fun setFirstPlayer() {
