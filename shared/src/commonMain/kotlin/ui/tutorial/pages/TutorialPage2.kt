@@ -31,7 +31,6 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.commander_solid_icon
 import lifelinked.shared.generated.resources.down_arrow_icon
 import lifelinked.shared.generated.resources.sword_icon
-import model.Player
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
@@ -42,8 +41,6 @@ import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonAction
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 
 @Composable
@@ -97,63 +94,11 @@ fun TutorialPage2(
                 else -> Unit
             }
         }
-
-        inner class MockPlayerButtonViewModelPage2(
-            state: PlayerButtonState,
-        preferencesRepository: PreferencesRepository,
-        profileRepository: PlayerProfileRepository,
-        fileImageStore: IFileImageStore,
-        notificationManager: NotificationManager
-        ) : MockPlayerButtonViewModel(
-            state = state,
-        preferencesRepository = preferencesRepository,
-        profileRepository = profileRepository,
-        fileImageStore = fileImageStore,
-        notificationManager = notificationManager
-        ) {
-
-            private fun checkComplete() {
-                if (state.value.player.commanderDamage.any { it.number >= 21 }) {
-                    onComplete()
-                    complete = true
-                }
-            }
-
-            override fun onCommanderButtonClicked() {
-                super.onCommanderButtonClicked()
-                checkStepOneComplete()
-            }
-
-            override fun popBackStack() {
-                super.popBackStack()
-                checkStepOneComplete()
-            }
-
-            override fun incrementCommanderDamage(value: Int, partner: Boolean) {
-                super.incrementCommanderDamage(value, partner)
-                checkComplete()
-            }
-
-
-            override fun onSettingsButtonClicked() {
-                this.notificationManager.showNotification("Settings disabled", 3000)
-            }
-        }
-
-        override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-            return MockPlayerButtonViewModelPage2(
-                state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
-        preferencesRepository = gameState.mockPreferencesRepository,
-        profileRepository = gameState.mockProfileRepository,
-        fileImageStore = gameState.mockFileImageStore,
-        notificationManager = this.notificationManager
-            )
-        }
     }
 
     val lifeCounterViewModel = remember {
         MockLifeCounterViewModelPage2(
-            lifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
+            lifeCounterState = gameState.lifeCounterState,
         preferencesRepository = gameState.mockPreferencesRepository,
         profileRepository = gameState.mockProfileRepository,
         fileImageStore = gameState.mockFileImageStore,

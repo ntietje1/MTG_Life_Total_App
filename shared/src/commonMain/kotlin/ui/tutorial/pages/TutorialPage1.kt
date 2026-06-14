@@ -25,7 +25,6 @@ import domain.state.profile.PlayerProfileRepository
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.sword_icon
-import model.Player
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
@@ -35,8 +34,6 @@ import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PlayerButtonAction
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 
 @Composable
@@ -82,57 +79,10 @@ fun TutorialPage1(
         }
 
         private fun checkComplete() {
-            if (playerButtonViewModels.value.any { it.state.value.player.life == 20 }) {
+            if (state.value.players.any { it.player.life == 20 }) {
                 onComplete()
                 complete = true
             }
-        }
-
-        inner class MockPlayerButtonViewModelPage1(
-            state: PlayerButtonState,
-        preferencesRepository: PreferencesRepository,
-        profileRepository: PlayerProfileRepository,
-        fileImageStore: IFileImageStore,
-        notificationManager: NotificationManager
-        ) : MockPlayerButtonViewModel(
-            state = state,
-        preferencesRepository = preferencesRepository,
-        profileRepository = profileRepository,
-        fileImageStore = fileImageStore,
-        notificationManager = notificationManager
-        ) {
-
-            private fun checkComplete() {
-                if (state.value.player.life == 20) {
-                    onComplete()
-                    complete = true
-                }
-            }
-
-            override fun incrementLife(value: Int) {
-                super.incrementLife(value)
-                if (value < 0) {
-                    checkComplete()
-                }
-            }
-
-            override fun onCommanderButtonClicked() {
-                this.notificationManager.showNotification("Commander damage disabled", 3000)
-            }
-
-            override fun onSettingsButtonClicked() {
-                this.notificationManager.showNotification("Settings disabled", 3000)
-            }
-        }
-
-        override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-            return MockPlayerButtonViewModelPage1(
-                state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
-        preferencesRepository = gameState.mockPreferencesRepository,
-        profileRepository = gameState.mockProfileRepository,
-        fileImageStore = gameState.mockFileImageStore,
-        notificationManager = this.notificationManager
-            )
         }
     }
 

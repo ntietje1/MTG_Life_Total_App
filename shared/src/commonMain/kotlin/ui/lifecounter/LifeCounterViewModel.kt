@@ -29,8 +29,6 @@ import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.playerbutton.CommanderState
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonAction
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 import ui.lifecounter.playerbutton.toGameCommands
 
 open class LifeCounterViewModel(
@@ -51,15 +49,13 @@ open class LifeCounterViewModel(
     val alt4PlayerLayout: StateFlow<Boolean> = preferencesRepository.alt4PlayerLayout
     val turnTimerEnabled: StateFlow<Boolean> = preferencesRepository.turnTimer
 
-    private val _playerButtonViewModels = MutableStateFlow<List<PlayerButtonViewModel>>(emptyList())
-    val playerButtonViewModels: StateFlow<List<PlayerButtonViewModel>> = _playerButtonViewModels.asStateFlow()
     private val customizationViewModels = mutableMapOf<SeatId, CustomizationViewModel>()
 
     init {
         playerCustomizationManager.attach(this)
         timerManager.attach(this)
 
-        generatePlayerButtonViewModels()
+        initializePlayerSeats()
 
         viewModelScope.launch {
             timerManager.registerTimerStateObserver()
@@ -102,26 +98,20 @@ open class LifeCounterViewModel(
 
     override fun replacePlayer(player: Player) {
         _state.value = _state.value.replacePlayer(player)
-        playerButtonViewModels.value
-            .firstOrNull { it.state.value.player.playerNum == player.playerNum }
-            ?.setPlayer(player)
     }
 
 
-    // Generate viewmodels for all players and update the viewmodel list flow
-    private fun generatePlayerButtonViewModels() {
-        val players = (1..MAX_PLAYERS).map(::generatePlayer)
-        _playerButtonViewModels.value = players.map(::generatePlayerButtonViewModel)
-        if (_state.value.players.isEmpty()) {
-            _state.value = _state.value.copy(
-                players = players.map { player ->
-                    PlayerSeatUiState(
-                        seatId = GameSessionUiMapper.seatIdForPlayerNumber(player.playerNum),
-                        player = player
-                    )
-                }
-            )
-        }
+    private fun initializePlayerSeats() {
+        if (_state.value.players.isNotEmpty()) return
+        _state.value = _state.value.copy(
+            players = (1..MAX_PLAYERS).map { playerNumber ->
+                val player = generatePlayer(playerNumber)
+                PlayerSeatUiState(
+                    seatId = GameSessionUiMapper.seatIdForPlayerNumber(player.playerNum),
+                    player = player
+                )
+            }
+        )
     }
 
     private fun generatePlayer(playerNum: Int): Player {
@@ -202,22 +192,6 @@ open class LifeCounterViewModel(
         return customizationViewModels[seatId]
     }
 
-    // Return a viewmodel for a player button
-    open fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-        return PlayerButtonViewModel(
-            initialState = PlayerButtonState(player),
-            preferencesRepository = preferencesRepository,
-            profileRepository = profileRepository,
-            fileImageStore = fileImageStore,
-            dispatchGameCommand = ::dispatchGameCommand,
-            resetPlayerPrefs = playerCustomizationManager::resetPlayerPrefs,
-            copyPlayerPrefs = playerCustomizationManager::copyPlayerPrefs,
-            savePlayerPrefs = playerCustomizationManager::savePlayerPrefs,
-            onFirstPlayerSelected = { index -> timerManager.handleFirstPlayerSelection(index) },
-            onMoveTimerRequested = { timerManager.moveTimer() }
-        )
-    }
-
     fun savePlayerPrefs() {
         playerCustomizationManager.saveAllPlayerPrefs()
     }
@@ -261,44 +235,6 @@ open class LifeCounterViewModel(
             fileImageStore = fileImageStore,
             autoKo = preferencesRepository.autoKo.value
         )
-        val commanderDealerPlayer = session.commanderMode?.let { mode ->
-            GameSessionUiMapper.mapPlayerButtonState(
-                session = session,
-                seatId = mode.dealerSeatId,
-                current = PlayerButtonState(Player(playerNum = mode.dealerSeatId.value.removePrefix("seat-").toInt())),
-                fileImageStore = fileImageStore
-            ).player.copy(partnerMode = mode.partnerMode)
-        }
-        playerButtonViewModels.value.forEach { playerButtonViewModel ->
-            val seatId = GameSessionUiMapper.seatIdForPlayerNumber(
-                playerButtonViewModel.state.value.player.playerNum
-            )
-            if (session.seats.any { seat -> seat.id == seatId }) {
-                val mappedState = GameSessionUiMapper.mapPlayerButtonState(
-                    session = session,
-                    seatId = seatId,
-                    current = playerButtonViewModel.state.value,
-                    fileImageStore = fileImageStore
-                )
-                playerButtonViewModel.setPlayer(mappedState.player)
-                when {
-                    session.commanderMode != null -> {
-                        playerButtonViewModel.setPlayerButtonState(
-                            GameSessionUiMapper.mapCommanderButtonState(session, seatId)
-                        )
-                    }
-                    playerButtonViewModel.state.value.buttonState in listOf(
-                        PBState.COMMANDER_DEALER,
-                        PBState.COMMANDER_RECEIVER
-                    ) -> {
-                        playerButtonViewModel.setPlayerButtonState(PBState.NORMAL)
-                    }
-                }
-                playerButtonViewModel.setCommanderState(
-                    commanderDealerPlayer?.let(CommanderState::Active) ?: CommanderState.Inactive
-                )
-            }
-        }
     }
 
     private fun dispatchGameCommand(command: GameCommand) {

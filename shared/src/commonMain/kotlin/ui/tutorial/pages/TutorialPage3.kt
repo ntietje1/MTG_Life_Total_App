@@ -31,7 +31,6 @@ import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.down_arrow_icon
 import lifelinked.shared.generated.resources.monarchy_icon
 import lifelinked.shared.generated.resources.settings_icon
-import model.Player
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
@@ -42,8 +41,6 @@ import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonAction
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 
 @Composable
@@ -104,69 +101,11 @@ fun TutorialPage3(
                 }
             }
         }
-
-        inner class MockPlayerButtonViewModelPage3(
-            state: PlayerButtonState,
-        preferencesRepository: PreferencesRepository,
-        profileRepository: PlayerProfileRepository,
-        fileImageStore: IFileImageStore,
-        notificationManager: NotificationManager
-        ) : MockPlayerButtonViewModel(
-            state = state,
-        preferencesRepository = preferencesRepository,
-        profileRepository = profileRepository,
-        fileImageStore = fileImageStore,
-        notificationManager = notificationManager
-        ) {
-
-            private fun checkComplete() {
-                if (state.value.player.monarch) {
-                    onComplete()
-                    complete = true
-                }
-            }
-
-            override fun onCommanderButtonClicked() {
-                this.notificationManager.showNotification("Commander damage disabled", 3000)
-            }
-
-            override fun onSettingsButtonClicked() {
-                super.onSettingsButtonClicked()
-                checkStepOneComplete()
-            }
-
-            override fun onMonarchyButtonClicked(value: Boolean) {
-                super.onMonarchyButtonClicked(value)
-                checkComplete()
-            }
-
-            override fun onKOButtonClicked() {
-                this.notificationManager.showNotification("Auto KO disabled", 3000)
-            }
-
-            override fun onShowCustomizeMenu(value: Boolean) {
-                this.notificationManager.showNotification("Customize menu disabled", 3000)
-            }
-
-            override fun onCountersButtonClicked() {
-                this.notificationManager.showNotification("Counters disabled", 3000)
-            }
-        }
-
-        override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-            return MockPlayerButtonViewModelPage3(
-                state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
-        preferencesRepository = gameState.mockPreferencesRepository,
-        profileRepository = gameState.mockProfileRepository,
-        fileImageStore = gameState.mockFileImageStore,
-        notificationManager = this.notificationManager
-            )
-        }
     }
 
     val lifeCounterViewModel = remember {
         MockLifeCounterViewModelPage3(
-            lifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
+            lifeCounterState = gameState.lifeCounterState,
         preferencesRepository = gameState.mockPreferencesRepository,
         profileRepository = gameState.mockProfileRepository,
         fileImageStore = gameState.mockFileImageStore,

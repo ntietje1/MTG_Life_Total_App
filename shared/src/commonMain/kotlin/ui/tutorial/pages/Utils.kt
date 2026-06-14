@@ -46,10 +46,10 @@ import theme.PlayerColor9
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.dialog.planechase.PlaneChaseViewModel
+import ui.lifecounter.GameSessionUiMapper
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.LifeCounterViewModel
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import ui.lifecounter.PlayerSeatUiState
 
 class MockFileImageStore : IFileImageStore {
     override suspend fun saveImage(bytes: ByteArray): String {
@@ -189,25 +189,6 @@ private class InMemorySettings : Settings {
     }
 }
 
-open class MockPlayerButtonViewModel(
-    state: PlayerButtonState,
-    preferencesRepository: PreferencesRepository,
-    profileRepository: PlayerProfileRepository,
-    fileImageStore: IFileImageStore,
-    protected val notificationManager: NotificationManager
-) : PlayerButtonViewModel(
-    initialState = state,
-    preferencesRepository = preferencesRepository,
-    profileRepository = profileRepository,
-    fileImageStore = fileImageStore,
-    dispatchGameCommand = {},
-    resetPlayerPrefs = { player -> player },
-    copyPlayerPrefs = { _, player -> player },
-    savePlayerPrefs = {},
-    onFirstPlayerSelected = {},
-    onMoveTimerRequested = {}
-)
-
 abstract class MockLifeCounterViewModel(
     lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
     preferencesRepository: PreferencesRepository,
@@ -276,39 +257,36 @@ fun TutorialOverlayScreen(
 }
 
 data class MockGameState(
-    val playerStates: List<PlayerButtonState> = listOf(
-        PlayerButtonState(
-            player = Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 1", color = PlayerColor7, playerNum = 1
-            )
+    val players: List<Player> = listOf(
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 1", color = PlayerColor7, playerNum = 1
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 2", color = PlayerColor2, playerNum = 2
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 2", color = PlayerColor2, playerNum = 2
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 3", color = PlayerColor5, playerNum = 3
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 3", color = PlayerColor5, playerNum = 3
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 4", color = PlayerColor6, playerNum = 4
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 4", color = PlayerColor6, playerNum = 4
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 5", color = PlayerColor9, playerNum = 5
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 5", color = PlayerColor9, playerNum = 5
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 6", color = PlayerColor8, playerNum = 6
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 6", color = PlayerColor8, playerNum = 6
         ),
     ),
-    val lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
+    val lifeCounterState: LifeCounterState = LifeCounterState(
+        showButtons = true,
+        showLoadingScreen = false,
+        players = players.map { player ->
+            PlayerSeatUiState(
+                seatId = GameSessionUiMapper.seatIdForPlayerNumber(player.playerNum),
+                player = player
+            )
+        }
+    ),
     val mockPreferencesRepository: PreferencesRepository = mockPreferencesRepository(
         autoKo = false,
         numPlayers = 4,

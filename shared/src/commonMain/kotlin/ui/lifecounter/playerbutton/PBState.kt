@@ -1,17 +1,5 @@
 package ui.lifecounter.playerbutton
 
-import model.Player
-
-data class PlayerButtonState(
-    val player: Player,
-    val buttonState: PBState = PBState.NORMAL,
-    val showCustomizeMenu: Boolean = false
-)
-
-fun PlayerButtonState.showsBackButton(backStackIsEmpty: Boolean): Boolean {
-    return buttonState.showsBackButton(backStackIsEmpty)
-}
-
 fun PBState.showsBackButton(backStackIsEmpty: Boolean): Boolean {
     return this !in setOf(
         PBState.SELECT_FIRST_PLAYER,

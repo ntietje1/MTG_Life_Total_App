@@ -18,7 +18,6 @@ import domain.storage.IFileImageStore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import ui.lifecounter.playerbutton.PBState
-import ui.lifecounter.playerbutton.PlayerButtonState
 
 class GameSessionUiMapperTest {
     @Test
@@ -55,7 +54,7 @@ class GameSessionUiMapperTest {
     }
 
     @Test
-    fun mapsSeatStateToExistingPlayerButtonState() {
+    fun mapsSeatStateToExistingPlayerSeatState() {
         val receiverSeatId = SeatId("seat-2")
         val commander = CommanderDamageMatrix()
             .changeDamage(SeatId("seat-1"), receiverSeatId, partner = false, delta = 11)
@@ -78,17 +77,19 @@ class GameSessionUiMapperTest {
                 )
             )
         )
-        val previous = PlayerButtonState(
+        val previous = PlayerSeatUiState(
+            seatId = receiverSeatId,
             player = model.Player(playerNum = 2),
             buttonState = PBState.SETTINGS,
             showCustomizeMenu = true
         )
 
-        val mapped = GameSessionUiMapper.mapPlayerButtonState(
+        val mapped = GameSessionUiMapper.mapPlayerSeatUiState(
             session = session,
             seatId = receiverSeatId,
             current = previous,
-            fileImageStore = FakeFileImageStore(mapOf("nissa.png" to "file:///images/nissa.png"))
+            fileImageStore = FakeFileImageStore(mapOf("nissa.png" to "file:///images/nissa.png")),
+            autoKo = true
         )
         val player = mapped.player
 

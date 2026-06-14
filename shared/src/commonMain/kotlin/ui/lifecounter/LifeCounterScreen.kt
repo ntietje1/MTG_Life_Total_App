@@ -53,7 +53,6 @@ import theme.LocalDimensions
 import theme.blendWith
 import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialog
-import ui.lifecounter.playerbutton.CommanderState
 import ui.lifecounter.playerbutton.PlayerButton
 import ui.lifecounter.playerbutton.PlayerButtonAction
 import ui.modifier.routePointerChangesTo
@@ -137,22 +136,9 @@ fun LifeCounterScreen(
                             val height = remember(Unit) { placement.height - dimensions.paddingTiny * 4 }
                             val rotation = remember(Unit) { placement.angle }
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
-                            val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
-                            val playerButtonState by playerButtonViewModel.state.collectAsState()
-                            val parentSeatState = state.players.getOrNull(placement.index)
-                            val seatId = parentSeatState?.seatId
-                                ?: GameSessionUiMapper.seatIdForPlayerNumber(playerButtonState.player.playerNum)
-                            val playerSeatState = PlayerSeatUiState(
-                                seatId = seatId,
-                                player = playerButtonState.player,
-                                buttonState = parentSeatState?.buttonState ?: playerButtonState.buttonState,
-                                showCustomizeMenu = parentSeatState?.showCustomizeMenu ?: false,
-                                timer = parentSeatState?.timer,
-                                commanderState = parentSeatState?.commanderState ?: CommanderState.Inactive,
-                                isDead = parentSeatState?.isDead ?: false,
-                                backButtonVisible = parentSeatState?.backButtonVisible ?: false
-                            )
-                            val timerColor = playerButtonState.player.textColor
+                            val playerSeatState = state.players.getOrNull(placement.index) ?: return@items
+                            val seatId = playerSeatState.seatId
+                            val timerColor = playerSeatState.player.textColor
                             AnimatedPlayerButton(modifier = Modifier.padding(dimensions.paddingTiny),
                                 visible = state.showButtons,
                                 rotation = placement.angle,

@@ -32,7 +32,7 @@ class PlayerCustomizationManagerTest {
     }
 
     @Test
-    fun resetsPlayerPrefsUsingHostPlayerColorsWithoutPlayerButtonViewModels() {
+    fun resetsPlayerPrefsUsingHostPlayerColors() {
         val repository = PlayerProfileRepository(
             settings = TestSettings()
         )

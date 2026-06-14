@@ -132,7 +132,7 @@ fun TutorialPage4(
 
     val lifeCounterViewModel = remember {
         MockLifeCounterViewModelPage4(
-            lifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
+            lifeCounterState = gameState.lifeCounterState,
         preferencesRepository = gameState.mockPreferencesRepository,
         profileRepository = gameState.mockProfileRepository,
         fileImageStore = gameState.mockFileImageStore,
