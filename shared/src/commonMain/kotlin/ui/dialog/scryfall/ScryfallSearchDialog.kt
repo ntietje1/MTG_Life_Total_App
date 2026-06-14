@@ -55,7 +55,6 @@ import theme.halfAlpha
 import theme.scaledSp
 import ui.components.EnlargeableCardImage
 import ui.components.SearchTextField
-import ui.dialog.SettingsDialog
 
 @Composable
 fun ScryfallDialogContent(
