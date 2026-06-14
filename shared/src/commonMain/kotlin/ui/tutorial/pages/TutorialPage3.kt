@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import domain.state.game.SeatId
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
 import domain.state.profile.PlayerProfileRepository
@@ -40,6 +41,7 @@ import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
+import ui.lifecounter.playerbutton.PlayerButtonAction
 import ui.lifecounter.playerbutton.PlayerButtonState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
@@ -71,7 +73,36 @@ fun TutorialPage3(
         }
 
         private fun checkStepOneComplete() {
-            stepOneComplete = playerButtonViewModels.value.any { it.state.value.buttonState == PBState.SETTINGS }
+            stepOneComplete = state.value.players.any { it.buttonState == PBState.SETTINGS }
+        }
+
+        private fun checkComplete() {
+            if (state.value.players.any { it.player.monarch }) {
+                onComplete()
+                complete = true
+            }
+        }
+
+        override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
+            when (action) {
+                PlayerButtonAction.ToggleCommanderDealer -> {
+                    notificationManager.showNotification("Commander damage disabled", 3000)
+                }
+                is PlayerButtonAction.SetManualDeath -> {
+                    notificationManager.showNotification("Auto KO disabled", 3000)
+                }
+                PlayerButtonAction.OpenCustomization -> {
+                    notificationManager.showNotification("Customize menu disabled", 3000)
+                }
+                PlayerButtonAction.OpenCounters -> {
+                    notificationManager.showNotification("Counters disabled", 3000)
+                }
+                else -> {
+                    super.onPlayerButtonAction(seatId, action)
+                    if (action == PlayerButtonAction.ToggleSettings) checkStepOneComplete()
+                    if (action is PlayerButtonAction.SetMonarch) checkComplete()
+                }
+            }
         }
 
         inner class MockPlayerButtonViewModelPage3(

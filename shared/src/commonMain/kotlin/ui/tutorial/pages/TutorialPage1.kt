@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import domain.state.game.SeatId
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
 import domain.state.profile.PlayerProfileRepository
@@ -33,6 +34,7 @@ import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
+import ui.lifecounter.playerbutton.PlayerButtonAction
 import ui.lifecounter.playerbutton.PlayerButtonState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
@@ -60,6 +62,30 @@ fun TutorialPage1(
     ) {
         override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
             this.notificationManager.showNotification("Settings menu disabled", 3000)
+        }
+
+        override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
+            when (action) {
+                PlayerButtonAction.ToggleCommanderDealer -> {
+                    notificationManager.showNotification("Commander damage disabled", 3000)
+                }
+                PlayerButtonAction.ToggleSettings -> {
+                    notificationManager.showNotification("Settings disabled", 3000)
+                }
+                else -> {
+                    super.onPlayerButtonAction(seatId, action)
+                    if (action == PlayerButtonAction.DecrementLife) {
+                        checkComplete()
+                    }
+                }
+            }
+        }
+
+        private fun checkComplete() {
+            if (playerButtonViewModels.value.any { it.state.value.player.life == 20 }) {
+                onComplete()
+                complete = true
+            }
         }
 
         inner class MockPlayerButtonViewModelPage1(

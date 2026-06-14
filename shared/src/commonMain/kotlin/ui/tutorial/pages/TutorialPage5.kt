@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import domain.state.game.SeatId
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
 import domain.state.profile.PlayerProfileRepository
@@ -39,6 +40,7 @@ import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
+import ui.lifecounter.playerbutton.PlayerButtonAction
 import ui.lifecounter.playerbutton.PlayerButtonState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
@@ -131,6 +133,18 @@ fun TutorialPage5(
             super.setNumPlayers(value)
             complete = true
             onComplete()
+        }
+
+        override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
+            when (action) {
+                PlayerButtonAction.ToggleCommanderDealer -> {
+                    notificationManager.showNotification("Commander damage disabled", 3000)
+                }
+                PlayerButtonAction.ToggleSettings -> {
+                    notificationManager.showNotification("Settings disabled", 3000)
+                }
+                else -> super.onPlayerButtonAction(seatId, action)
+            }
         }
 
         inner class MockPlayerButtonViewModelPage5(

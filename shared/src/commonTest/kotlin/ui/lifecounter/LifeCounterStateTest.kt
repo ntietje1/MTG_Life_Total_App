@@ -90,6 +90,19 @@ class LifeCounterStateTest {
         assertTrue(cleared.players.all { it.buttonBackStack.isEmpty() })
     }
 
+    @Test
+    fun setsAllPlayerButtonStatesAndClearsBackStacks() {
+        val state = stateWithSeats(2)
+            .openPlayerSettings(SeatId("seat-1"))
+            .openPlayerSettings(SeatId("seat-2"))
+
+        val updated = state.setAllPlayerButtonStates(PBState.NORMAL)
+
+        assertEquals(listOf(PBState.NORMAL, PBState.NORMAL), updated.players.map { it.buttonState })
+        assertTrue(updated.players.all { it.buttonBackStack.isEmpty() })
+        assertTrue(updated.players.none { it.backButtonVisible })
+    }
+
     private fun stateWithSeats(count: Int): LifeCounterState {
         return LifeCounterState(
             players = (1..count).map { playerNumber ->

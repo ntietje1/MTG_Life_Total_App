@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import domain.state.game.SeatId
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
 import domain.state.profile.PlayerProfileRepository
@@ -40,6 +41,7 @@ import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
+import ui.lifecounter.playerbutton.PlayerButtonAction
 import ui.lifecounter.playerbutton.PlayerButtonState
 import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
@@ -71,7 +73,29 @@ fun TutorialPage2(
         }
 
         private fun checkStepOneComplete() {
-            stepOneComplete = playerButtonViewModels.value.any { it.state.value.buttonState == PBState.COMMANDER_DEALER }
+            stepOneComplete = state.value.players.any { it.buttonState == PBState.COMMANDER_DEALER }
+        }
+
+        private fun checkComplete() {
+            if (state.value.players.any { player -> player.player.commanderDamage.any { it.number >= 21 } }) {
+                onComplete()
+                complete = true
+            }
+        }
+
+        override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
+            if (action == PlayerButtonAction.ToggleSettings) {
+                notificationManager.showNotification("Settings disabled", 3000)
+                return
+            }
+            super.onPlayerButtonAction(seatId, action)
+            when (action) {
+                PlayerButtonAction.ToggleCommanderDealer,
+                PlayerButtonAction.PopBackStack -> checkStepOneComplete()
+                is PlayerButtonAction.IncrementCommanderDamage,
+                is PlayerButtonAction.DecrementCommanderDamage -> checkComplete()
+                else -> Unit
+            }
         }
 
         inner class MockPlayerButtonViewModelPage2(

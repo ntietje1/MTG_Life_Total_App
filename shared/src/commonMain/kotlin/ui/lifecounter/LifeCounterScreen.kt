@@ -139,17 +139,18 @@ fun LifeCounterScreen(
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
                             val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
                             val playerButtonState by playerButtonViewModel.state.collectAsState()
-                            val showBackButton by playerButtonViewModel.showBackButton.collectAsState()
                             val parentSeatState = state.players.getOrNull(placement.index)
+                            val seatId = parentSeatState?.seatId
+                                ?: GameSessionUiMapper.seatIdForPlayerNumber(playerButtonState.player.playerNum)
                             val playerSeatState = PlayerSeatUiState(
-                                seatId = GameSessionUiMapper.seatIdForPlayerNumber(playerButtonState.player.playerNum),
+                                seatId = seatId,
                                 player = playerButtonState.player,
-                                buttonState = playerButtonState.buttonState,
+                                buttonState = parentSeatState?.buttonState ?: playerButtonState.buttonState,
                                 showCustomizeMenu = playerButtonState.showCustomizeMenu,
                                 timer = parentSeatState?.timer,
                                 commanderState = parentSeatState?.commanderState ?: CommanderState.Inactive,
                                 isDead = parentSeatState?.isDead ?: false,
-                                backButtonVisible = showBackButton
+                                backButtonVisible = parentSeatState?.backButtonVisible ?: false
                             )
                             val timerColor = playerButtonState.player.textColor
                             AnimatedPlayerButton(modifier = Modifier.padding(dimensions.paddingTiny),
@@ -162,7 +163,7 @@ fun LifeCounterScreen(
                                         modifier = Modifier.size(width, height),
                                         turnTimerModifier = Modifier.align(placement.timerAlignment).pointerInput(Unit) {
                                             routePointerChangesTo(onDown = {
-                                                playerButtonViewModel.onAction(PlayerButtonAction.MoveTimer)
+                                                viewModel.onPlayerButtonAction(seatId, PlayerButtonAction.MoveTimer)
                                             })
                                         }.then(
                                             when (placement.timerAlignment) {
@@ -179,7 +180,7 @@ fun LifeCounterScreen(
                                         ),
                                         state = playerSeatState,
                                         customizationViewModel = playerButtonViewModel.customizationViewmodel,
-                                        onAction = playerButtonViewModel::onAction,
+                                        onAction = { action -> viewModel.onPlayerButtonAction(seatId, action) },
                                         rotation = rotation,
                                         setBlurBackground = { viewModel.setBlurBackground(it) },
                                     )

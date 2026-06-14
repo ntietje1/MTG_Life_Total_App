@@ -100,6 +100,15 @@ fun LifeCounterState.clearFirstPlayerPrompt(): LifeCounterState {
         .fold(this) { current, player -> current.popPlayerButtonBackStack(player.seatId) }
 }
 
+fun LifeCounterState.setAllPlayerButtonStates(buttonState: PBState): LifeCounterState {
+    return copy(
+        players = players.map { player ->
+            player.withButtonState(buttonState = buttonState, buttonBackStack = emptyList())
+                .copy(showCustomizeMenu = false)
+        }
+    )
+}
+
 private fun LifeCounterState.pushPlayerButtonState(seatId: SeatId, buttonState: PBState): LifeCounterState {
     return updatePlayer(seatId) { player ->
         player.withButtonState(
