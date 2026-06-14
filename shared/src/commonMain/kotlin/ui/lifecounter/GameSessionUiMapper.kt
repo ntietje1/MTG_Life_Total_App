@@ -13,6 +13,7 @@ import domain.storage.displayUri
 import model.Player
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonState
+import ui.lifecounter.playerbutton.showsBackButton
 import domain.state.game.CounterType as DomainCounterType
 
 object GameSessionUiMapper {
@@ -56,20 +57,27 @@ object GameSessionUiMapper {
                 .toPlayer(session, fileImageStore)
                 .copy(partnerMode = mode.partnerMode)
         }
+        val buttonState = if (session.commanderMode != null) {
+            mapCommanderButtonState(session, seatId)
+        } else {
+            current?.buttonState ?: PBState.NORMAL
+        }
+        val buttonBackStack = if (session.commanderMode != null) {
+            emptyList()
+        } else {
+            current?.buttonBackStack ?: emptyList()
+        }
         return PlayerSeatUiState(
             seatId = seatId,
             player = seat.toPlayer(session, fileImageStore),
-            buttonState = if (session.commanderMode != null) {
-                mapCommanderButtonState(session, seatId)
-            } else {
-                current?.buttonState ?: PBState.NORMAL
-            },
+            buttonState = buttonState,
+            buttonBackStack = buttonBackStack,
             showCustomizeMenu = current?.showCustomizeMenu ?: false,
             timer = current?.timer,
             commanderState = commanderDealerPlayer?.let(ui.lifecounter.playerbutton.CommanderState::Active)
                 ?: ui.lifecounter.playerbutton.CommanderState.Inactive,
             isDead = seat.isDead(autoKo = autoKo, commander = session.commander),
-            backButtonVisible = current?.backButtonVisible ?: false
+            backButtonVisible = buttonState.showsBackButton(backStackIsEmpty = buttonBackStack.isEmpty())
         )
     }
 

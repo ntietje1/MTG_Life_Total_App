@@ -10,6 +10,7 @@ data class PlayerSeatUiState(
     val seatId: SeatId,
     val player: Player,
     val buttonState: PBState = PBState.NORMAL,
+    val buttonBackStack: List<PBState> = emptyList(),
     val showCustomizeMenu: Boolean = false,
     val timer: TurnTimer? = null,
     val commanderState: CommanderState = CommanderState.Inactive,

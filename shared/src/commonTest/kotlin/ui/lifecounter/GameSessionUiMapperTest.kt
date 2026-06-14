@@ -155,6 +155,33 @@ class GameSessionUiMapperTest {
     }
 
     @Test
+    fun preservesSeatNavigationStateWhenMappingSession() {
+        val seatId = SeatId("seat-1")
+        val current = LifeCounterState(
+            players = listOf(
+                PlayerSeatUiState(
+                    seatId = seatId,
+                    player = model.Player(playerNum = 1),
+                    buttonState = PBState.COUNTERS_VIEW,
+                    buttonBackStack = listOf(PBState.NORMAL, PBState.SETTINGS),
+                    backButtonVisible = true
+                )
+            )
+        )
+
+        val mapped = GameSessionUiMapper.mapLifeCounterUiState(
+            session = testSession(),
+            current = current,
+            fileImageStore = FakeFileImageStore(),
+            autoKo = true
+        )
+
+        assertEquals(PBState.COUNTERS_VIEW, mapped.players.first().buttonState)
+        assertEquals(listOf(PBState.NORMAL, PBState.SETTINGS), mapped.players.first().buttonBackStack)
+        assertEquals(true, mapped.players.first().backButtonVisible)
+    }
+
+    @Test
     fun mapsSeatDeathFromDomainRules() {
         val receiverSeatId = SeatId("seat-2")
         val commander = CommanderDamageMatrix()

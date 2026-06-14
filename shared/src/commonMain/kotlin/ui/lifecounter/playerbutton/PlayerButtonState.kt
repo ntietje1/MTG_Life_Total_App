@@ -9,7 +9,11 @@ data class PlayerButtonState(
 )
 
 fun PlayerButtonState.showsBackButton(backStackIsEmpty: Boolean): Boolean {
-    return buttonState !in setOf(
+    return buttonState.showsBackButton(backStackIsEmpty)
+}
+
+fun PBState.showsBackButton(backStackIsEmpty: Boolean): Boolean {
+    return this !in setOf(
         PBState.SELECT_FIRST_PLAYER,
         PBState.COMMANDER_RECEIVER,
         PBState.COMMANDER_DEALER
