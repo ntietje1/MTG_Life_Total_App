@@ -6,21 +6,20 @@ import model.Player
 
 data class CustomizationDialogState(
     val player: Player,
-    val customizationMenuState: CustomizationMenuState = CustomizationMenuState.DEFAULT,
+    val routeStack: List<CustomizationRoute> = listOf(CustomizationRoute.Default),
     val showCameraWarning: Boolean = false,
-    val showResetPrefsDialog: Boolean = false,
-    val showBackgroundColorPicker: Boolean = false,
-    val showTextColorPicker: Boolean = false,
     val changeNameTextField: TextFieldValue = TextFieldValue(player.name, selection = TextRange(player.name.length)),
     val changeWasMade: Boolean = false,
     val colorChangeWasMade: Boolean = false
-)
+) {
+    val currentRoute: CustomizationRoute get() = routeStack.last()
+}
 
-enum class CustomizationMenuState {
-    DEFAULT,
-    LOAD_PLAYER,
-    SCRYFALL_SEARCH,
-    BACKGROUND_COLOR_PICKER,
-    ACCENT_COLOR_PICKER,
-    GIF_SEARCH
+enum class CustomizationRoute {
+    Default,
+    LoadPlayer,
+    ScryfallSearch,
+    BackgroundColorPicker,
+    AccentColorPicker,
+    GifSearch
 }

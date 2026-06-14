@@ -12,7 +12,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import domain.storage.PreferencesRepository
-import di.BackHandler
 import domain.system.SystemManager
 import model.VersionNumber
 import org.koin.compose.currentKoinScope
@@ -42,9 +41,6 @@ fun LifeLinkedApp() {
             lastSplashScreenShown = preferencesRepository.lastSplashScreenShown.value,
             autoSkip = preferencesRepository.autoSkip.value
         )
-
-        val backHandler: BackHandler by currentKoinScope().inject()
-        backHandler.attachNavigation(navController)
 
         var allowChangeNumPlayers by remember { mutableStateOf(true) }
         var firstLifeCounterNavigation by remember { mutableStateOf(true) }

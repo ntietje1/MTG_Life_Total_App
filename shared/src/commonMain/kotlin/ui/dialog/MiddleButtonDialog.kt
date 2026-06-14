@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -31,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import di.BackHandler
 import domain.system.SystemManager
 import org.koin.compose.koinInject
 import theme.LocalDimensions
@@ -247,15 +245,10 @@ fun MiddleButtonDialog(
 fun AnimatedGridDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    backHandler: BackHandler? = koinInject(),
     onBack: (() -> Unit)? = null,
     pages: List<Pair<Boolean, @Composable () -> Unit>>
 ) {
     val dimensions = LocalDimensions.current
-
-    LaunchedEffect(Unit) {
-        backHandler?.push { onDismiss() }
-    }
 
     val duration = (450 / SystemManager.getAnimationCorrectionFactor()).toInt()
 
@@ -313,7 +306,7 @@ fun AnimatedGridDialog(
             if (onBack != null) {
                 onBack()
             } else {
-                backHandler?.pop()
+                onDismiss()
             }
         })
 }

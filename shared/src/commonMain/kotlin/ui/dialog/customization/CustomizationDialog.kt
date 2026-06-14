@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
-import di.BackHandler
 import domain.common.NumberWithRecentChange
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
@@ -81,15 +80,44 @@ fun PlayerCustomizationDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     viewModel: CustomizationViewModel,
-    backHandler: BackHandler = koinInject(),
     notificationManager: NotificationManager = koinInject(),
 ) {
     val state by viewModel.state.collectAsState()
     val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
+    val scryfallBackActions = remember { mutableStateListOf<() -> Unit>() }
+
+    fun notifyColorChange(route: CustomizationRoute) {
+        when (route) {
+            CustomizationRoute.BackgroundColorPicker -> {
+                if (state.colorChangeWasMade) notificationManager.showNotification("Background color modified")
+                viewModel.setColorChangeWasMade(false)
+            }
+            CustomizationRoute.AccentColorPicker -> {
+                if (state.colorChangeWasMade) notificationManager.showNotification("Text color modified")
+                viewModel.setColorChangeWasMade(false)
+            }
+            else -> Unit
+        }
+    }
+
+    fun goBackInCustomization(): Boolean {
+        if (scryfallBackActions.isNotEmpty()) {
+            scryfallBackActions.removeLast().invoke()
+            return true
+        }
+        val route = state.currentRoute
+        val didGoBack = viewModel.goBack()
+        if (didGoBack) notifyColorChange(route)
+        return didGoBack
+    }
+
+    fun handleDialogBack() {
+        if (!goBackInCustomization()) onDismiss()
+    }
 
     LaunchedEffect(Unit) {
-        viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
+        viewModel.resetRouteStack()
     }
 
     val singleImagePicker = rememberImagePickerLauncher(selectionMode = SelectionMode.Single, scope = rememberCoroutineScope(), onResult = { byteArrays ->
@@ -124,7 +152,7 @@ fun PlayerCustomizationDialog(
     AnimatedGridDialog(modifier = modifier, onDismiss = {
         onDismiss()
         if (state.changeWasMade) notificationManager.showNotification("Changes saved successfully", 3000)
-    }, backHandler = backHandler, pages = listOf(Pair(state.customizationMenuState == CustomizationMenuState.DEFAULT) {
+    }, onBack = ::handleDialogBack, pages = listOf(Pair(state.currentRoute == CustomizationRoute.Default) {
         BoxWithConstraints(modifier = modifier) {
             val padding = remember(Unit) { maxHeight / 40f }
             val textFieldHeight = remember(Unit) { maxWidth / 9f + 30.dp }
@@ -180,8 +208,7 @@ fun PlayerCustomizationDialog(
                         modifier = Modifier.fillMaxWidth().height(textFieldHeight).clip(RoundedCornerShape(8))
                             .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(8)).pointerInput(Unit) {
                                 detectTapGestures(onPress = {
-                                    viewModel.setCustomizeMenuState(CustomizationMenuState.LOAD_PLAYER)
-                                    backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
+                                    viewModel.openRoute(CustomizationRoute.LoadPlayer)
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 })
                             },
@@ -223,16 +250,14 @@ fun PlayerCustomizationDialog(
                                 imageResource = Res.drawable.gif_icon,
                                 text = "Gif",
                             ) {
-                                viewModel.setCustomizeMenuState(CustomizationMenuState.GIF_SEARCH)
-                                backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
+                                viewModel.openRoute(CustomizationRoute.GifSearch)
                             }
                         }
                         item {
                             FormattedSettingsButton(
                                 imageResource = Res.drawable.search_icon, text = "Search Image"
                             ) {
-                                viewModel.setCustomizeMenuState(CustomizationMenuState.SCRYFALL_SEARCH)
-                                backHandler.push { viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT) }
+                                viewModel.openRoute(CustomizationRoute.ScryfallSearch)
                             }
                         }
                         item {
@@ -246,24 +271,14 @@ fun PlayerCustomizationDialog(
                             FormattedSettingsButton(
                                 imageResource = Res.drawable.color_picker_icon, text = "Background Color"
                             ) {
-                                viewModel.setCustomizeMenuState(CustomizationMenuState.BACKGROUND_COLOR_PICKER)
-                                backHandler.push {
-                                    viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
-                                    if (state.colorChangeWasMade) notificationManager.showNotification("Background color modified")
-                                    viewModel.setColorChangeWasMade(false)
-                                }
+                                viewModel.openRoute(CustomizationRoute.BackgroundColorPicker)
                             }
                         }
                         item {
                             FormattedSettingsButton(
                                 imageResource = Res.drawable.text_icon, text = "Text Color"
                             ) {
-                                viewModel.setCustomizeMenuState(CustomizationMenuState.ACCENT_COLOR_PICKER)
-                                backHandler.push {
-                                    viewModel.setCustomizeMenuState(CustomizationMenuState.DEFAULT)
-                                    if (state.colorChangeWasMade) notificationManager.showNotification("Text color modified")
-                                    viewModel.setColorChangeWasMade(false)
-                                }
+                                viewModel.openRoute(CustomizationRoute.AccentColorPicker)
                             }
                         }
                         item {
@@ -294,7 +309,7 @@ fun PlayerCustomizationDialog(
                 Spacer(modifier = Modifier.weight(0.15f))
             }
         }
-    }, Pair(state.customizationMenuState == CustomizationMenuState.LOAD_PLAYER) {
+    }, Pair(state.currentRoute == CustomizationRoute.LoadPlayer) {
         val playerList = remember {
             mutableStateListOf<Player>().apply {
                 addAll(viewModel.loadPlayerPrefs())
@@ -303,7 +318,7 @@ fun PlayerCustomizationDialog(
         LoadPlayerDialogContent(playerList = playerList, onPlayerSelected = { player ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             viewModel.setPlayer(player)
-            backHandler.pop()
+            viewModel.goBack()
             notificationManager.showNotification("Selected ${player.name} Successfully", 3000)
         }, onPlayerDeleted = { player ->
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -311,20 +326,16 @@ fun PlayerCustomizationDialog(
             viewModel.deletePlayerPref(player)
             notificationManager.showNotification("Deleted ${player.name} Successfully", 3000)
         })
-    }, Pair(state.customizationMenuState == CustomizationMenuState.SCRYFALL_SEARCH) {
-        val scryfallBackStack = remember { mutableListOf("Main") }
-        ScryfallDialogContent(modifier = Modifier.fillMaxSize(), addToBackStack = { label, block ->
-            backHandler.push(block)
-            scryfallBackStack.add(label)
+    }, Pair(state.currentRoute == CustomizationRoute.ScryfallSearch) {
+        ScryfallDialogContent(modifier = Modifier.fillMaxSize(), addToBackStack = { _, block ->
+            scryfallBackActions.add(block)
         }, selectButtonEnabled = true, printingsButtonEnabled = true, rulingsButtonEnabled = false, onImageSelected = {
             notificationManager.showNotification("Selected Image Successfully", 3000)
             viewModel.onChangeImage(it)
-            while (scryfallBackStack.isNotEmpty()) {
-                backHandler.pop()
-                scryfallBackStack.removeLast()
-            }
+            scryfallBackActions.clear()
+            viewModel.resetRouteStack()
         })
-    }, Pair(state.customizationMenuState == CustomizationMenuState.BACKGROUND_COLOR_PICKER) {
+    }, Pair(state.currentRoute == CustomizationRoute.BackgroundColorPicker) {
         val colorViewModel = remember { ColorDialogViewModel() }
         val initialColor by remember(Unit) { mutableStateOf(state.player.color) }
         ColorPickerDialogContent(
@@ -334,7 +345,7 @@ fun PlayerCustomizationDialog(
                 state.player.copy(color = it)
             }, viewModel = colorViewModel
         )
-    }, Pair(state.customizationMenuState == CustomizationMenuState.ACCENT_COLOR_PICKER) {
+    }, Pair(state.currentRoute == CustomizationRoute.AccentColorPicker) {
         val colorViewModel = remember { ColorDialogViewModel() }
         val initialColor by remember(Unit) { mutableStateOf(state.player.textColor) }
         ColorPickerDialogContent(
@@ -344,11 +355,11 @@ fun PlayerCustomizationDialog(
                 state.player.copy(textColor = it)
             }, viewModel = colorViewModel
         )
-    }, Pair(state.customizationMenuState == CustomizationMenuState.GIF_SEARCH) {
+    }, Pair(state.currentRoute == CustomizationRoute.GifSearch) {
         GifDialogContent(modifier = Modifier.fillMaxSize(), onGifSelected = {
             notificationManager.showNotification("Selected Gif Successfully", 3000)
             viewModel.onChangeImage(it)
-            backHandler.pop()
+            viewModel.goBack()
         })
     }))
 }

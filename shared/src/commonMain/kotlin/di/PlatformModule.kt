@@ -31,7 +31,6 @@ val sharedModule = module {
     single { KlipyApiKey(LifeLinkedApiConfig.KLIPY_API_KEY) }
     single<GifSearchClient> { KlipyGifClient(apiKey = get()) }
     single { ScryfallApi() }
-    single { BackHandler() }
     single { VersionNumber.current }
 }
 

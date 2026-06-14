@@ -107,8 +107,18 @@ open class CustomizationViewModel(
         if (value.text != state.value.player.name) setPlayer(state.value.player.copy(name = value.text))
     }
 
-    fun setCustomizeMenuState(menuState: CustomizationMenuState) {
-        _state.value = state.value.copy(customizationMenuState = menuState)
+    fun resetRouteStack() {
+        _state.value = state.value.copy(routeStack = listOf(CustomizationRoute.Default))
+    }
+
+    fun openRoute(route: CustomizationRoute) {
+        _state.value = state.value.copy(routeStack = state.value.routeStack + route)
+    }
+
+    fun goBack(): Boolean {
+        if (state.value.routeStack.size <= 1) return false
+        _state.value = state.value.copy(routeStack = state.value.routeStack.dropLast(1))
+        return true
     }
 
     fun loadPlayerPrefs(): List<Player> {

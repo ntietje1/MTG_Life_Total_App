@@ -1,7 +1,6 @@
 package com.hypeapps.lifelinked
 
 
-import di.BackHandler
 import app.LifeLinkedApp
 import android.graphics.Color
 import android.os.Build
@@ -11,15 +10,11 @@ import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
-import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
-import org.koin.android.ext.android.inject
 
 
 class MainActivity : ComponentActivity() {
-    private val backHandler: BackHandler by inject()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -46,24 +41,6 @@ class MainActivity : ComponentActivity() {
                         // Hide the nav bar and status bar
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_FULLSCREEN)
-            }
-
-//            fun generateCallback (): () -> Unit {
-//                return {
-//                    println("back button pressed!!")
-//                    backHandler.pop()
-//                }
-//            }
-
-            this.onBackPressedDispatcher.addCallback(this) {
-                println("back button pressed!1")
-//                this.isEnabled = false
-                backHandler.pop()
-//                this.handleOnBackPressed()
-//                this.remove()
-//                onBackPressedDispatcher.addCallback(this@MainActivity) {
-//                    generateCallback().invoke()
-//                }
             }
 
             LifeLinkedApp()
