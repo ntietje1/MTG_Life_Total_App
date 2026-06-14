@@ -43,8 +43,6 @@ import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonAction
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
 
 
 @Composable
@@ -64,9 +62,9 @@ fun TutorialPage4(
 
     class MockLifeCounterViewModelPage4(
         lifeCounterState: LifeCounterState,
-        preferencesRepository: PreferencesRepository,
-        profileRepository: PlayerProfileRepository,
-        fileImageStore: IFileImageStore,
+        private val preferencesRepository: PreferencesRepository,
+        private val profileRepository: PlayerProfileRepository,
+        private val fileImageStore: IFileImageStore,
         notificationManager: NotificationManager
     ) : MockLifeCounterViewModel(
         lifeCounterState, preferencesRepository, profileRepository, fileImageStore, notificationManager
@@ -80,7 +78,7 @@ fun TutorialPage4(
         }
 
         private fun checkStepTwoComplete() {
-            stepTwoComplete = playerButtonViewModels.value.any { it.state.value.showCustomizeMenu }
+            stepTwoComplete = state.value.players.any { it.showCustomizeMenu }
             setBlurUI(stepTwoComplete)
             if (stepTwoComplete) {
                 notificationManager.showNotification("Next: Change the appearance of the player", 3000)
@@ -109,76 +107,26 @@ fun TutorialPage4(
             }
         }
 
-        inner class MockPlayerButtonViewModelPage4(
-            state: PlayerButtonState,
-        preferencesRepository: PreferencesRepository,
-        profileRepository: PlayerProfileRepository,
-        fileImageStore: IFileImageStore,
-        notificationManager: NotificationManager
-        ) : MockPlayerButtonViewModel(
-            state = state,
-        preferencesRepository = preferencesRepository,
-        profileRepository = profileRepository,
-        fileImageStore = fileImageStore,
-        notificationManager = notificationManager
-        ) {
-            inner class MockCustomizationViewModelPage4(
-                profileRepository: PlayerProfileRepository,
-        preferencesRepository: PreferencesRepository,
-        fileImageStore: IFileImageStore
-            ) : CustomizationViewModel(
-                initialPlayer = this.state.value.player,
-        profileRepository = profileRepository,
-        preferencesRepository = preferencesRepository,
-        fileImageStore = fileImageStore,
-            ) {
-                override fun setPlayer(player: Player) {
-                    super.setPlayer(player)
-                    complete = true
-                    onComplete()
-                }
-            }
-
-            private val customizationViewModel = MockCustomizationViewModelPage4(profileRepository, preferencesRepository, fileImageStore)
-
-            override val customizationViewmodel: CustomizationViewModel
-                get() = customizationViewModel
-
-            override fun onCommanderButtonClicked() {
-                this.notificationManager.showNotification("Commander damage disabled", 3000)
-            }
-
-            override fun onSettingsButtonClicked() {
-                super.onSettingsButtonClicked()
-                checkStepOneComplete()
-            }
-
-            override fun onMonarchyButtonClicked(value: Boolean) {
-                this.notificationManager.showNotification("Monarchy disabled", 3000)
-            }
-
-            override fun onKOButtonClicked() {
-                this.notificationManager.showNotification("Auto KO disabled", 3000)
-            }
-
-            override fun onShowCustomizeMenu(value: Boolean) {
-                super.onShowCustomizeMenu(value)
-                checkStepTwoComplete()
-            }
-
-            override fun onCountersButtonClicked() {
-                this.notificationManager.showNotification("Counters disabled", 3000)
-            }
+        override fun createCustomizationViewModel(
+            seatId: SeatId,
+            player: Player
+        ): CustomizationViewModel {
+            return MockCustomizationViewModelPage4(player)
         }
 
-        override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-            return MockPlayerButtonViewModelPage4(
-                state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
-        preferencesRepository = gameState.mockPreferencesRepository,
-        profileRepository = gameState.mockProfileRepository,
-        fileImageStore = gameState.mockFileImageStore,
-        notificationManager = this.notificationManager
-            )
+        inner class MockCustomizationViewModelPage4(
+            initialPlayer: Player
+        ) : CustomizationViewModel(
+            initialPlayer = initialPlayer,
+            profileRepository = profileRepository,
+            preferencesRepository = preferencesRepository,
+            fileImageStore = fileImageStore,
+        ) {
+            override fun setPlayer(player: Player) {
+                super.setPlayer(player)
+                complete = true
+                onComplete()
+            }
         }
     }
 

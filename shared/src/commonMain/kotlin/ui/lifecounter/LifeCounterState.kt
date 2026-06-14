@@ -2,6 +2,7 @@ package ui.lifecounter
 
 import domain.game.timer.TurnTimer
 import domain.state.game.SeatId
+import model.Player
 import ui.dialog.COUNTER_DIALOG_ENTRIES
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.showsBackButton
@@ -105,6 +106,26 @@ fun LifeCounterState.setAllPlayerButtonStates(buttonState: PBState): LifeCounter
         players = players.map { player ->
             player.withButtonState(buttonState = buttonState, buttonBackStack = emptyList())
                 .copy(showCustomizeMenu = false)
+        }
+    )
+}
+
+fun LifeCounterState.openPlayerCustomization(seatId: SeatId): LifeCounterState {
+    return updatePlayer(seatId) { player -> player.copy(showCustomizeMenu = true) }
+}
+
+fun LifeCounterState.closePlayerCustomization(seatId: SeatId): LifeCounterState {
+    return closePlayerMenu(seatId)
+}
+
+fun LifeCounterState.replacePlayer(player: Player): LifeCounterState {
+    return copy(
+        players = players.map { seat ->
+            if (seat.player.playerNum == player.playerNum) {
+                seat.copy(player = player)
+            } else {
+                seat
+            }
         }
     )
 }

@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
 import ui.dialog.MiddleButtonDialogState
+import ui.dialog.customization.CustomizationViewModel
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.playerbutton.CommanderState
 import ui.lifecounter.playerbutton.PBState
@@ -52,6 +53,7 @@ open class LifeCounterViewModel(
 
     private val _playerButtonViewModels = MutableStateFlow<List<PlayerButtonViewModel>>(emptyList())
     val playerButtonViewModels: StateFlow<List<PlayerButtonViewModel>> = _playerButtonViewModels.asStateFlow()
+    private val customizationViewModels = mutableMapOf<SeatId, CustomizationViewModel>()
 
     init {
         playerCustomizationManager.attach(this)
@@ -80,7 +82,7 @@ open class LifeCounterViewModel(
         get() = preferencesRepository.numPlayers.value
 
     override val players: List<Player>
-        get() = playerButtonViewModels.value.map { it.state.value.player }
+        get() = state.value.players.map { it.player }
 
     override fun isPlayerDead(index: Int): Boolean {
         return state.value.players.getOrNull(index)?.isDead ?: false
@@ -99,6 +101,7 @@ open class LifeCounterViewModel(
     }
 
     override fun replacePlayer(player: Player) {
+        _state.value = _state.value.replacePlayer(player)
         playerButtonViewModels.value
             .firstOrNull { it.state.value.player.playerNum == player.playerNum }
             ?.setPlayer(player)
@@ -190,11 +193,13 @@ open class LifeCounterViewModel(
                 timerManager.moveTimer()
             }
             PlayerButtonAction.OpenCustomization,
-            PlayerButtonAction.CloseCustomization -> {
-                playerButtonViewModelFor(seatId)?.onAction(action)
-            }
+            PlayerButtonAction.CloseCustomization -> onPlayerCustomizationAction(seatId, action)
             else -> dispatchPlayerButtonAction(seatId, action)
         }
+    }
+
+    open fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel? {
+        return customizationViewModels[seatId]
     }
 
     // Return a viewmodel for a player button
@@ -318,10 +323,49 @@ open class LifeCounterViewModel(
         }
     }
 
-    private fun playerButtonViewModelFor(seatId: SeatId): PlayerButtonViewModel? {
-        return playerButtonViewModels.value.firstOrNull { playerButtonViewModel ->
-            GameSessionUiMapper.seatIdForPlayerNumber(playerButtonViewModel.state.value.player.playerNum) == seatId
+    private fun onPlayerCustomizationAction(seatId: SeatId, action: PlayerButtonAction) {
+        when (action) {
+            PlayerButtonAction.OpenCustomization -> {
+                ensureCustomizationViewModel(seatId)
+                _state.value = _state.value.openPlayerCustomization(seatId)
+            }
+            PlayerButtonAction.CloseCustomization -> applyCustomization(seatId)
+            else -> Unit
         }
+    }
+
+    private fun ensureCustomizationViewModel(seatId: SeatId): CustomizationViewModel {
+        return customizationViewModels.getOrPut(seatId) {
+            createCustomizationViewModel(seatId = seatId, player = requirePlayer(seatId))
+        }
+    }
+
+    protected open fun createCustomizationViewModel(seatId: SeatId, player: Player): CustomizationViewModel {
+        return CustomizationViewModel(
+            initialPlayer = player,
+            fileImageStore = fileImageStore,
+            profileRepository = profileRepository,
+            preferencesRepository = preferencesRepository,
+        )
+    }
+
+    private fun applyCustomization(seatId: SeatId) {
+        val customizationViewModel = customizationViewModels[seatId] ?: return
+        val player = customizationViewModel.state.value.player
+        viewModelScope.launch {
+            replacePlayer(playerCustomizationManager.copyPlayerPrefs(requirePlayer(seatId), player.copy(imageString = null)))
+            delay(50)
+            replacePlayer(playerCustomizationManager.copyPlayerPrefs(requirePlayer(seatId), player))
+            customizationViewModels[seatId] = createCustomizationViewModel(seatId, requirePlayer(seatId))
+            playerCustomizationManager.savePlayerPrefs(requirePlayer(seatId))
+        }
+        _state.value = _state.value.closePlayerCustomization(seatId)
+    }
+
+    private fun requirePlayer(seatId: SeatId): Player {
+        return requireNotNull(state.value.players.firstOrNull { it.seatId == seatId }) {
+            "Missing player for ${seatId.value}"
+        }.player
     }
 
     private fun SeatId.toPlayerIndex(): Int {

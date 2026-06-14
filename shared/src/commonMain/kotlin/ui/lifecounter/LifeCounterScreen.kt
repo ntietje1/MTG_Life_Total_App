@@ -146,7 +146,7 @@ fun LifeCounterScreen(
                                 seatId = seatId,
                                 player = playerButtonState.player,
                                 buttonState = parentSeatState?.buttonState ?: playerButtonState.buttonState,
-                                showCustomizeMenu = playerButtonState.showCustomizeMenu,
+                                showCustomizeMenu = parentSeatState?.showCustomizeMenu ?: false,
                                 timer = parentSeatState?.timer,
                                 commanderState = parentSeatState?.commanderState ?: CommanderState.Inactive,
                                 isDead = parentSeatState?.isDead ?: false,
@@ -179,7 +179,7 @@ fun LifeCounterScreen(
                                             }
                                         ),
                                         state = playerSeatState,
-                                        customizationViewModel = playerButtonViewModel.customizationViewmodel,
+                                        customizationViewModel = viewModel.customizationViewModelFor(seatId),
                                         onAction = { action -> viewModel.onPlayerButtonAction(seatId, action) },
                                         rotation = rotation,
                                         setBlurBackground = { viewModel.setBlurBackground(it) },

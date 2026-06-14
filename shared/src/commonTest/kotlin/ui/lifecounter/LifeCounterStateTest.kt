@@ -103,6 +103,31 @@ class LifeCounterStateTest {
         assertTrue(updated.players.none { it.backButtonVisible })
     }
 
+    @Test
+    fun opensAndClosesPlayerCustomizationState() {
+        val seatId = SeatId("seat-1")
+        val state = stateWithSeats(1).openPlayerSettings(seatId)
+
+        val opened = state.openPlayerCustomization(seatId)
+        val closed = opened.closePlayerCustomization(seatId)
+
+        assertTrue(opened.players.single().showCustomizeMenu)
+        assertFalse(closed.players.single().showCustomizeMenu)
+        assertEquals(PBState.NORMAL, closed.players.single().buttonState)
+        assertTrue(closed.players.single().buttonBackStack.isEmpty())
+    }
+
+    @Test
+    fun replacesPlayerByPlayerNumber() {
+        val state = stateWithSeats(2)
+        val replacement = Player(playerNum = 2, name = "Nissa")
+
+        val updated = state.replacePlayer(replacement)
+
+        assertEquals("Placeholder", updated.players[0].player.name)
+        assertEquals("Nissa", updated.players[1].player.name)
+    }
+
     private fun stateWithSeats(count: Int): LifeCounterState {
         return LifeCounterState(
             players = (1..count).map { playerNumber ->
