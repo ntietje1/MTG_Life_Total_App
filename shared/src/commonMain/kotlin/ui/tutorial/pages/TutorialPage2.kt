@@ -36,7 +36,7 @@ import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.components.SettingsButton
-import ui.dialog.MiddleButtonDialogState
+import ui.lifecounter.LifeCounterModal
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
@@ -65,8 +65,8 @@ fun TutorialPage2(
     ) : MockLifeCounterViewModel(
         lifeCounterState, preferencesRepository, profileRepository, fileImageStore, notificationManager
     ) {
-        override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
-            this.notificationManager.showNotification("Settings menu disabled", 3000)
+        override fun openModal(value: LifeCounterModal) {
+            showNotification("Settings menu disabled", 3000)
         }
 
         private fun checkStepOneComplete() {
@@ -82,7 +82,7 @@ fun TutorialPage2(
 
         override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
             if (action == PlayerButtonAction.ToggleSettings) {
-                notificationManager.showNotification("Settings disabled", 3000)
+                showNotification("Settings disabled", 3000)
                 return
             }
             super.onPlayerButtonAction(seatId, action)

@@ -60,7 +60,7 @@ import ui.modifier.routePointerChangesTo
 @Composable
 fun LifeCounterScreen(
     modifier: Modifier = Modifier.fillMaxSize(),
-    viewModel: LifeCounterViewModel,
+    viewModel: LifeCounterScreenController,
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     firstNavigation: Boolean,
@@ -106,7 +106,7 @@ fun LifeCounterScreen(
         viewModel.onNavigate(firstNavigation)
     }
 
-    LaunchedEffect(state.middleButtonDialogState) {
+    LaunchedEffect(state.currentModal) {
         viewModel.setBlurBackground(state.isModalOpen)
     }
 

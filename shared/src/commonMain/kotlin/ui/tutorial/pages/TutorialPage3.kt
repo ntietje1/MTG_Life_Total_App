@@ -36,7 +36,7 @@ import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.components.SettingsButton
-import ui.dialog.MiddleButtonDialogState
+import ui.lifecounter.LifeCounterModal
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
@@ -65,8 +65,8 @@ fun TutorialPage3(
     ) : MockLifeCounterViewModel(
         lifeCounterState, preferencesRepository, profileRepository, fileImageStore, notificationManager
     ) {
-        override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
-            this.notificationManager.showNotification("Settings menu disabled", 3000)
+        override fun openModal(value: LifeCounterModal) {
+            showNotification("Settings menu disabled", 3000)
         }
 
         private fun checkStepOneComplete() {
@@ -83,16 +83,16 @@ fun TutorialPage3(
         override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
             when (action) {
                 PlayerButtonAction.ToggleCommanderDealer -> {
-                    notificationManager.showNotification("Commander damage disabled", 3000)
+                    showNotification("Commander damage disabled", 3000)
                 }
                 is PlayerButtonAction.SetManualDeath -> {
-                    notificationManager.showNotification("Auto KO disabled", 3000)
+                    showNotification("Auto KO disabled", 3000)
                 }
                 PlayerButtonAction.OpenCustomization -> {
-                    notificationManager.showNotification("Customize menu disabled", 3000)
+                    showNotification("Customize menu disabled", 3000)
                 }
                 PlayerButtonAction.OpenCounters -> {
-                    notificationManager.showNotification("Counters disabled", 3000)
+                    showNotification("Counters disabled", 3000)
                 }
                 else -> {
                     super.onPlayerButtonAction(seatId, action)

@@ -20,9 +20,6 @@ data class LifeCounterState(
 ) {
     val currentModal: LifeCounterModal? get() = modalStack.current
     val isModalOpen: Boolean get() = currentModal != null
-
-    // Temporary bridge for tutorial pages while Phase 6 removes child view-model mocks.
-    val middleButtonDialogState: LifeCounterModal? get() = currentModal
 }
 
 enum class MiddleButtonState {

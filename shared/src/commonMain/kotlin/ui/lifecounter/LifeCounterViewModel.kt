@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
-import ui.dialog.MiddleButtonDialogState
 import ui.dialog.customization.CustomizationViewModel
 import ui.dialog.planechase.PlaneChaseViewModel
 import ui.lifecounter.playerbutton.CommanderState
@@ -41,13 +40,13 @@ open class LifeCounterViewModel(
     private val gameSessionStore: GameSessionStore,
     internal val timerManager: TimerManager,
     initialState: LifeCounterState = LifeCounterState(),
-) : ViewModel(), TimerManagerHost, PlayerCustomizationHost {
+) : ViewModel(), TimerManagerHost, PlayerCustomizationHost, LifeCounterScreenController {
     private val _state = MutableStateFlow(initialState)
-    val state: StateFlow<LifeCounterState> = _state.asStateFlow()
+    override val state: StateFlow<LifeCounterState> = _state.asStateFlow()
 
-    val numPlayers: StateFlow<Int> = preferencesRepository.numPlayers
-    val alt4PlayerLayout: StateFlow<Boolean> = preferencesRepository.alt4PlayerLayout
-    val turnTimerEnabled: StateFlow<Boolean> = preferencesRepository.turnTimer
+    override val numPlayers: StateFlow<Int> = preferencesRepository.numPlayers
+    override val alt4PlayerLayout: StateFlow<Boolean> = preferencesRepository.alt4PlayerLayout
+    override val turnTimerEnabled: StateFlow<Boolean> = preferencesRepository.turnTimer
 
     private val customizationViewModels = mutableMapOf<SeatId, CustomizationViewModel>()
 
@@ -122,7 +121,7 @@ open class LifeCounterViewModel(
         )
     }
 
-    fun setTimerEnabled(value: Boolean) {
+    override fun setTimerEnabled(value: Boolean) {
         viewModelScope.launch {
             timerManager.onTimerEnabledChange(value)
         }
@@ -132,7 +131,7 @@ open class LifeCounterViewModel(
         timerManager.handleFirstPlayerSelection(index)
     }
 
-    fun onNavigate(firstNavigation: Boolean) {
+    override fun onNavigate(firstNavigation: Boolean) {
         if (firstNavigation) {
             viewModelScope.launch {
                 showLoadingScreen(true)
@@ -153,11 +152,11 @@ open class LifeCounterViewModel(
         _state.value = _state.value.copy(middleButtonState = value)
     }
 
-    fun onCommanderDealerButtonClicked() {
+    override fun onCommanderDealerButtonClicked() {
         dispatchGameCommand(GameCommand.SetCommanderDealer(null))
     }
 
-    open fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
+    override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
         when (action) {
             PlayerButtonAction.ToggleSettings -> {
                 _state.value = _state.value.openPlayerSettings(seatId)
@@ -188,40 +187,28 @@ open class LifeCounterViewModel(
         }
     }
 
-    open fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel? {
+    override fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel? {
         return customizationViewModels[seatId]
     }
 
-    fun savePlayerPrefs() {
+    override fun savePlayerPrefs() {
         playerCustomizationManager.saveAllPlayerPrefs()
     }
 
-    fun resetAllPrefs() {
+    override fun resetAllPrefs() {
         playerCustomizationManager.resetAllPlayerPrefs()
     }
 
-    fun openModal(value: LifeCounterModal) {
+    override fun openModal(value: LifeCounterModal) {
         _state.value = _state.value.copy(modalStack = _state.value.modalStack.open(value))
     }
 
-    fun replaceModal(value: LifeCounterModal) {
-        _state.value = _state.value.copy(modalStack = _state.value.modalStack.replace(value))
-    }
-
-    fun closeModal() {
+    override fun closeModal() {
         _state.value = _state.value.copy(modalStack = LifeCounterModalStack.Empty)
     }
 
-    fun goBackInModal() {
+    override fun goBackInModal() {
         _state.value = _state.value.copy(modalStack = _state.value.modalStack.goBack())
-    }
-
-    open fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
-        if (value == null) {
-            closeModal()
-        } else {
-            replaceModal(value)
-        }
     }
 
     private fun setAllButtonStates(pbState: PBState) {
@@ -312,7 +299,7 @@ open class LifeCounterViewModel(
         _state.value = _state.value.copy(showLoadingScreen = value)
     }
 
-    open fun setNumPlayers(value: Int) {
+    override fun setNumPlayers(value: Int) {
         if (value < 1 || value > MAX_PLAYERS) throw IllegalArgumentException("Invalid number of players")
         preferencesRepository.setNumPlayers(value)
     }
@@ -325,7 +312,7 @@ open class LifeCounterViewModel(
         }
     }
 
-    fun resetGameState() {
+    override fun resetGameState() {
         dispatchGameCommand(GameCommand.ResetGame)
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
@@ -335,31 +322,31 @@ open class LifeCounterViewModel(
         restartButtons()
     }
 
-    fun toggleKeepScreenOn(value: Boolean? = null) {
+    override fun toggleKeepScreenOn(value: Boolean?) {
         preferencesRepository.setKeepScreenOn(value ?: !preferencesRepository.keepScreenOn.value)
     }
 
-    open fun toggleDarkTheme(value: Boolean? = null) {
+    override fun toggleDarkTheme(value: Boolean?) {
         preferencesRepository.setDarkTheme(value ?: !preferencesRepository.darkTheme.value)
     }
 
-    fun setAlt4PlayerLayout(value: Boolean) {
+    override fun setAlt4PlayerLayout(value: Boolean) {
         preferencesRepository.setAlt4PlayerLayout(value)
     }
 
-    fun setShowButtons(value: Boolean) {
+    override fun setShowButtons(value: Boolean) {
         _state.value = _state.value.copy(showButtons = value)
     }
 
-    fun setBlurBackground(value: Boolean) {
+    override fun setBlurBackground(value: Boolean) {
         _state.value = _state.value.copy(blurBackground = value)
     }
 
-    fun setDayNight(value: DayNightState) {
+    override fun setDayNight(value: DayNightState) {
         _state.value = _state.value.copy(dayNight = value)
     }
 
-    fun incrementCounter(index: Int, value: Int) {
+    override fun incrementCounter(index: Int, value: Int) {
         dispatchGameCommand(
             GameCommand.ChangeTableCounter(
                 counter = GameSessionUiMapper.tableCounterForIndex(index),
@@ -368,11 +355,11 @@ open class LifeCounterViewModel(
         )
     }
 
-    fun resetCounters() {
+    override fun resetCounters() {
         dispatchGameCommand(GameCommand.ResetTableCounters)
     }
 
-    fun toggleDayNight() {
+    override fun toggleDayNight() {
         dispatchGameCommand(GameCommand.ToggleDayNight)
     }
 }

@@ -51,17 +51,15 @@ import ui.dialog.settings.patchnotes.PatchNotesDialogContent
 import ui.dialog.startinglife.StartingLifeDialogContent
 import ui.lifecounter.DayNightState
 import ui.lifecounter.LifeCounterModal
-import ui.lifecounter.LifeCounterViewModel
-
-typealias MiddleButtonDialogState = LifeCounterModal
+import ui.lifecounter.LifeCounterScreenController
 
 @Composable
 fun MiddleButtonDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    viewModel: LifeCounterViewModel,
-    dialogState: MiddleButtonDialogState,
-    setDialogState: (MiddleButtonDialogState) -> Unit,
+    viewModel: LifeCounterScreenController,
+    dialogState: LifeCounterModal,
+    setDialogState: (LifeCounterModal) -> Unit,
     onBack: () -> Unit,
     toggleTheme: () -> Unit,
     setKeepScreenOn: (Boolean) -> Unit,
@@ -91,19 +89,19 @@ fun MiddleButtonDialog(
 
     AnimatedGridDialog(modifier = modifier.fillMaxSize(), onDismiss = onDismiss, onBack = ::handleBack, pages = listOf(
             Pair(
-                dialogState == MiddleButtonDialogState.CoinFlip
+                dialogState == LifeCounterModal.CoinFlip
             ) {
                 CoinFlipDialogContent(modifier = modifier, goToCoinFlipTutorial = {
-                    setDialogState(MiddleButtonDialogState.CoinFlipTutorial)
+                    setDialogState(LifeCounterModal.CoinFlipTutorial)
                 })
             }, Pair(
-                dialogState == MiddleButtonDialogState.CoinFlipTutorial
+                dialogState == LifeCounterModal.CoinFlipTutorial
             ) {
                 CoinFlipTutorialContent(
                     modifier = modifier
                 )
             }, Pair(
-                dialogState == MiddleButtonDialogState.PlayerNumber
+                dialogState == LifeCounterModal.PlayerNumber
             ) {
                 PlayerNumberDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
@@ -112,9 +110,9 @@ fun MiddleButtonDialog(
                 }, resetPlayers = {
                     viewModel.resetGameState()
                     triggerEnterAnimation()
-                }, show4PlayerDialog = { setDialogState(MiddleButtonDialogState.FourPlayerLayout) })
+                }, show4PlayerDialog = { setDialogState(LifeCounterModal.FourPlayerLayout) })
             }, Pair(
-                dialogState == MiddleButtonDialogState.FourPlayerLayout
+                dialogState == LifeCounterModal.FourPlayerLayout
             ) {
                 FourPlayerLayoutContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, setPlayerNum = {
                     setNumPlayers(it)
@@ -122,24 +120,24 @@ fun MiddleButtonDialog(
                     triggerEnterAnimation()
                 }, setAlt4PlayerLayout = { setAlt4PlayerLayout(it) })
             }, Pair(
-                dialogState == MiddleButtonDialogState.StartingLife
+                dialogState == LifeCounterModal.StartingLife
             ) {
                 StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, resetGameState = {
                     viewModel.resetGameState()
                     triggerEnterAnimation()
                 })
             }, Pair(
-                dialogState == MiddleButtonDialogState.DiceRoll
+                dialogState == LifeCounterModal.DiceRoll
             ) {
                 DiceRollDialogContent(Modifier.fillMaxSize())
             }, Pair(
-                dialogState == MiddleButtonDialogState.Counter
+                dialogState == LifeCounterModal.Counter
             ) {
                 CounterDialogContent(modifier = Modifier.fillMaxSize(),
                     counters = state.counters,
                     incrementCounter = { index, value -> viewModel.incrementCounter(index, value) },
                     resetCounters = { viewModel.resetCounters() })
-            }, Pair(dialogState == MiddleButtonDialogState.Scryfall) {
+            }, Pair(dialogState == LifeCounterModal.Scryfall) {
                 ScryfallDialogContent(
                     modifier = Modifier.fillMaxSize(),
                     selectButtonEnabled = false,
@@ -149,12 +147,12 @@ fun MiddleButtonDialog(
                     viewModel = koinInject()
                 )
             }, Pair(
-                dialogState == MiddleButtonDialogState.Settings
+                dialogState == LifeCounterModal.Settings
             ) {
                 SettingsDialogContent(
                     Modifier.fillMaxSize(),
-                    goToPatchNotes = { setDialogState(MiddleButtonDialogState.PatchNotes) },
-                    goToAboutMe = { setDialogState(MiddleButtonDialogState.AboutMe) },
+                    goToPatchNotes = { setDialogState(LifeCounterModal.PatchNotes) },
+                    goToAboutMe = { setDialogState(LifeCounterModal.AboutMe) },
                     addGoToSettingsToBackStack = {},
                     goToTutorialScreen = {
                         onDismiss()
@@ -164,42 +162,42 @@ fun MiddleButtonDialog(
                     setKeepScreenOn = setKeepScreenOn
                 )
             }, Pair(
-                dialogState == MiddleButtonDialogState.PatchNotes
+                dialogState == LifeCounterModal.PatchNotes
             ) {
                 PatchNotesDialogContent(
                     Modifier.fillMaxSize()
                 )
             }, Pair(
-                dialogState == MiddleButtonDialogState.AboutMe
+                dialogState == LifeCounterModal.AboutMe
             ) {
                 AboutMeDialogContent(
                     Modifier.fillMaxSize()
                 )
             }, Pair(
-                dialogState == MiddleButtonDialogState.PlaneChase
+                dialogState == LifeCounterModal.PlaneChase
             ) {
                 PlaneChaseDialogContent(
                     modifier = Modifier.fillMaxSize(),
                     goToPlanechaseTutorial = {
-                        setDialogState(MiddleButtonDialogState.PlanarTutorial)
+                        setDialogState(LifeCounterModal.PlanarTutorial)
                     },
                     goToChoosePlanes = {
-                        setDialogState(MiddleButtonDialogState.PlanarDeck)
+                        setDialogState(LifeCounterModal.PlanarDeck)
                     },
                 )
             }, Pair(
-                dialogState == MiddleButtonDialogState.PlanarDeck
+                dialogState == LifeCounterModal.PlanarDeck
             ) {
                 ChoosePlanesDialogContent(
                     modifier = Modifier.fillMaxSize(), addToBackStack = ::addNestedBackAction, popBackStack = ::handleBack
                 )
             }, Pair(
-                dialogState == MiddleButtonDialogState.PlanarTutorial
+                dialogState == LifeCounterModal.PlanarTutorial
             ) {
                 PlanechaseTutorialContent(
                     modifier = Modifier.fillMaxSize()
                 )
-            }, Pair(dialogState == MiddleButtonDialogState.Default) {
+            }, Pair(dialogState == LifeCounterModal.Default) {
                 MiddleButtonMenuDialog(
                     modifier = Modifier.fillMaxSize(),
                     dayNightState = state.dayNight,
@@ -209,17 +207,17 @@ fun MiddleButtonDialog(
                         onDismiss()
                     },
                     onResetGame = { showResetDialog = true },
-                    onStartingLife = { setDialogState(MiddleButtonDialogState.StartingLife) },
+                    onStartingLife = { setDialogState(LifeCounterModal.StartingLife) },
                     onToggleTheme = toggleTheme,
-                    onPlayerNumber = { setDialogState(MiddleButtonDialogState.PlayerNumber) },
-                    onCounters = { setDialogState(MiddleButtonDialogState.Counter) },
-                    onDiceRoll = { setDialogState(MiddleButtonDialogState.DiceRoll) },
-                    onCoinFlip = { setDialogState(MiddleButtonDialogState.CoinFlip) },
+                    onPlayerNumber = { setDialogState(LifeCounterModal.PlayerNumber) },
+                    onCounters = { setDialogState(LifeCounterModal.Counter) },
+                    onDiceRoll = { setDialogState(LifeCounterModal.DiceRoll) },
+                    onCoinFlip = { setDialogState(LifeCounterModal.CoinFlip) },
                     onToggleDayNight = { viewModel.toggleDayNight() },
                     onClearDayNight = { viewModel.setDayNight(DayNightState.NONE) },
-                    onCardSearch = { setDialogState(MiddleButtonDialogState.Scryfall) },
-                    onPlanechase = { setDialogState(MiddleButtonDialogState.PlaneChase) },
-                    onSettings = { setDialogState(MiddleButtonDialogState.Settings) }
+                    onCardSearch = { setDialogState(LifeCounterModal.Scryfall) },
+                    onPlanechase = { setDialogState(LifeCounterModal.PlaneChase) },
+                    onSettings = { setDialogState(LifeCounterModal.Settings) }
                 )
             })
         )

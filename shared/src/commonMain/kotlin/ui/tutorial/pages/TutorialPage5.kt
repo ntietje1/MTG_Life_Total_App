@@ -36,7 +36,7 @@ import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.components.SettingsButton
-import ui.dialog.MiddleButtonDialogState
+import ui.lifecounter.LifeCounterModal
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PlayerButtonAction
@@ -68,60 +68,60 @@ fun TutorialPage5(
     ) {
         private fun checkStepOneOrTwoComplete() {
             when {
-                state.value.middleButtonDialogState in listOf(MiddleButtonDialogState.PlayerNumber, MiddleButtonDialogState.FourPlayerLayout) -> {
+                state.value.currentModal in listOf(LifeCounterModal.PlayerNumber, LifeCounterModal.FourPlayerLayout) -> {
                     stepTwoComplete = true
-                    notificationManager.showNotification("Next: Change the number of players", 3000)
+                    showNotification("Next: Change the number of players", 3000)
                 }
 
-                state.value.middleButtonDialogState != null -> {
+                state.value.currentModal != null -> {
                     stepOneComplete = true
-                    notificationManager.showNotification("Next: Navigate to the player number menu", 3000)
+                    showNotification("Next: Navigate to the player number menu", 3000)
                 }
             }
         }
 
         override fun toggleDarkTheme(value: Boolean?) {
-            notificationManager.showNotification("Changing theme disabled", 3000)
+            showNotification("Changing theme disabled", 3000)
         }
 
-        override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
-            setBlurUI(value != null)
+        override fun openModal(value: LifeCounterModal) {
+            setBlurUI(true)
             when (value) {
-                MiddleButtonDialogState.PlayerNumber, MiddleButtonDialogState.FourPlayerLayout, MiddleButtonDialogState.Default, null -> {
-                    super.setMiddleButtonDialogState(value)
+                LifeCounterModal.PlayerNumber, LifeCounterModal.FourPlayerLayout, LifeCounterModal.Default -> {
+                    super.openModal(value)
                     checkStepOneOrTwoComplete()
                 }
 
-                MiddleButtonDialogState.Counter -> {
-                    notificationManager.showNotification("Counters menu disabled", 3000)
+                LifeCounterModal.Counter -> {
+                    showNotification("Counters menu disabled", 3000)
                 }
 
-                MiddleButtonDialogState.Settings -> {
-                    notificationManager.showNotification("Settings menu disabled", 3000)
+                LifeCounterModal.Settings -> {
+                    showNotification("Settings menu disabled", 3000)
                 }
 
-                MiddleButtonDialogState.StartingLife -> {
-                    notificationManager.showNotification("Starting life menu disabled", 3000)
+                LifeCounterModal.StartingLife -> {
+                    showNotification("Starting life menu disabled", 3000)
                 }
 
-                MiddleButtonDialogState.CoinFlip -> {
-                    notificationManager.showNotification("Coin flip menu disabled", 3000)
+                LifeCounterModal.CoinFlip -> {
+                    showNotification("Coin flip menu disabled", 3000)
                 }
 
-                MiddleButtonDialogState.DiceRoll -> {
-                    notificationManager.showNotification("Dice roll menu disabled", 3000)
+                LifeCounterModal.DiceRoll -> {
+                    showNotification("Dice roll menu disabled", 3000)
                 }
 
-                MiddleButtonDialogState.Scryfall -> {
-                    notificationManager.showNotification("Scryfall menu disabled", 3000)
+                LifeCounterModal.Scryfall -> {
+                    showNotification("Scryfall menu disabled", 3000)
                 }
 
-                MiddleButtonDialogState.PlaneChase -> {
-                    notificationManager.showNotification("Planar deck menu disabled", 3000)
+                LifeCounterModal.PlaneChase -> {
+                    showNotification("Planar deck menu disabled", 3000)
                 }
 
                 else -> {
-                    notificationManager.showNotification("Menu disabled", 3000)
+                    showNotification("Menu disabled", 3000)
                 }
             }
         }
@@ -135,10 +135,10 @@ fun TutorialPage5(
         override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
             when (action) {
                 PlayerButtonAction.ToggleCommanderDealer -> {
-                    notificationManager.showNotification("Commander damage disabled", 3000)
+                    showNotification("Commander damage disabled", 3000)
                 }
                 PlayerButtonAction.ToggleSettings -> {
-                    notificationManager.showNotification("Settings disabled", 3000)
+                    showNotification("Settings disabled", 3000)
                 }
                 else -> super.onPlayerButtonAction(seatId, action)
             }
