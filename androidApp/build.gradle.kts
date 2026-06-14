@@ -16,6 +16,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 18
         versionName = "1.9.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     packaging {
@@ -57,4 +58,9 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
 
     debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.test.manifest)
+
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.compose.ui.test.junit4)
 }

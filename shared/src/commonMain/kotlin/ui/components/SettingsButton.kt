@@ -34,6 +34,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -59,6 +62,7 @@ fun SettingsButton(
     visible: Boolean = true,
     shadowEnabled: Boolean = true,
     hapticEnabled: Boolean = true,
+    contentDescription: String? = null,
     onPress: () -> Unit = {},
     onTap: () -> Unit = {},
     onLongPress: () -> Unit = {},
@@ -76,29 +80,43 @@ fun SettingsButton(
     }
     val haptic = LocalHapticFeedback.current
 
-    BoxWithConstraints(modifier = modifier
-        .alpha(if (visible) 1f else 0f)
-        .aspectRatio(1.0f)
-        .clip(shape)
-        .background(backgroundColor)
-        .then(if (enabled && visible) {
-            Modifier.pointerInput(Unit) {
-                detectTapGestures(onPress = {
-                    onPress()
-                    if (hapticEnabled) {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+    val semanticsModifier = when {
+        !visible -> Modifier.clearAndSetSemantics {}
+        contentDescription != null -> Modifier.semantics(mergeDescendants = true) {
+            this.contentDescription = contentDescription
+        }
+
+        else -> Modifier
+    }
+
+    BoxWithConstraints(
+        modifier = modifier
+            .alpha(if (visible) 1f else 0f)
+            .aspectRatio(1.0f)
+            .clip(shape)
+            .background(backgroundColor)
+            .then(semanticsModifier)
+            .then(
+                if (enabled && visible) {
+                    Modifier.pointerInput(Unit) {
+                        detectTapGestures(onPress = {
+                            onPress()
+                            if (hapticEnabled) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                        }, onTap = {
+                            onTap()
+                        }, onLongPress = {
+                            onLongPress()
+                        }, onDoubleTap = {
+                            onDoubleTap()
+                        })
                     }
-                }, onTap = {
-                    onTap()
-                }, onLongPress = {
-                    onLongPress()
-                }, onDoubleTap = {
-                    onDoubleTap()
-                })
-            }
-        } else {
-            Modifier
-        })) {
+                } else {
+                    Modifier
+                }
+            )
+    ) {
         val fontSize = remember(Unit) { (maxWidth / 9f).value }
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -113,7 +131,7 @@ fun SettingsButton(
                 ImageWithShadow(
                     modifier = Modifier.fillMaxSize(),
                     imageVector = imageVector,
-                    contentDescription = "settings button image",
+                    contentDescription = null,
                     colorFilter = matrix?.let { ColorFilter.colorMatrix(matrix) },
                     shadowColor = generateShadow(),
                     shadowEnabled = shadowEnabled
@@ -156,7 +174,7 @@ fun ImageWithShadow(
         if (shadowEnabled) {
             Image(
                 imageVector = imageVector,
-                contentDescription = "Shadow",
+                contentDescription = null,
                 alignment = alignment,
                 contentScale = contentScale,
                 alpha = shadowAlpha,

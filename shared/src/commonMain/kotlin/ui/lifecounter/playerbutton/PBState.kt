@@ -8,6 +8,16 @@ fun PBState.showsBackButton(backStackIsEmpty: Boolean): Boolean {
     ) && !backStackIsEmpty
 }
 
+fun PBState.showsCommanderButton(): Boolean {
+    return this == PBState.NORMAL || this == PBState.COMMANDER_DEALER
+}
+
+fun PBState.showsSettingsButton(): Boolean {
+    return this != PBState.COMMANDER_DEALER &&
+        this != PBState.COMMANDER_RECEIVER &&
+        this != PBState.SELECT_FIRST_PLAYER
+}
+
 enum class PBState {
     NORMAL,
     COMMANDER_DEALER,

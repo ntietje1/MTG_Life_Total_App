@@ -3,6 +3,7 @@ package domain.game
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import domain.state.game.PlayerProfileId
+import domain.state.game.SeatAppearance
 import domain.state.profile.PlayerBackground
 import domain.state.profile.PlayerColors
 import domain.state.profile.PlayerProfile
@@ -12,8 +13,6 @@ import model.Player.Companion.allPlayerColors
 
 interface PlayerCustomizationHost {
     val players: List<Player>
-
-    fun replacePlayer(player: Player)
 }
 
 /**
@@ -54,11 +53,12 @@ class PlayerCustomizationManager(
         profileRepository.saveProfile(player.toProfile())
     }
 
-    fun resetAllPlayerPrefs() {
-        val host = requireAttached()
-        host.players.forEach { player ->
-            host.replacePlayer(resetPlayerPrefs(player))
-        }
+    fun seatAppearanceFor(player: Player): SeatAppearance {
+        return player.toProfile().toSeatAppearance()
+    }
+
+    fun resetAllPlayerPrefs(): List<Player> {
+        return requireAttached().players.map(::resetPlayerPrefs)
     }
 }
 

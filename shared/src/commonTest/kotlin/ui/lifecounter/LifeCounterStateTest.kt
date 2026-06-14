@@ -117,17 +117,6 @@ class LifeCounterStateTest {
         assertTrue(closed.players.single().buttonBackStack.isEmpty())
     }
 
-    @Test
-    fun replacesPlayerByPlayerNumber() {
-        val state = stateWithSeats(2)
-        val replacement = Player(playerNum = 2, name = "Nissa")
-
-        val updated = state.replacePlayer(replacement)
-
-        assertEquals("Placeholder", updated.players[0].player.name)
-        assertEquals("Nissa", updated.players[1].player.name)
-    }
-
     private fun stateWithSeats(count: Int): LifeCounterState {
         return LifeCounterState(
             players = (1..count).map { playerNumber ->

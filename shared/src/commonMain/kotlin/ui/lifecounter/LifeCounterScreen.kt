@@ -38,6 +38,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -326,7 +328,9 @@ fun AnimatedMiddleButton(
         }
     }
 
-    Box(modifier = modifier.background(
+    Box(modifier = modifier.semantics {
+        contentDescription = "Open life counter menu"
+    }.background(
         color = MaterialTheme.colorScheme.background, shape = CircleShape
     ).rotate(animatableAngle.value).graphicsLayer {
         scaleX = animatableScale.value
@@ -380,6 +384,7 @@ fun AnimatedExitButton(
             enabled = true,
             shadowEnabled = true,
             hapticEnabled = true,
+            contentDescription = "Exit commander mode",
             onPress = {
                 onPress()
             },

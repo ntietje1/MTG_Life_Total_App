@@ -59,7 +59,7 @@ object GameSessionUiMapper {
         val buttonState = if (session.commanderMode != null) {
             mapCommanderButtonState(session, seatId)
         } else {
-            current?.buttonState ?: PBState.NORMAL
+            (current?.buttonState ?: PBState.NORMAL).withoutCommanderMode()
         }
         val buttonBackStack = if (session.commanderMode != null) {
             emptyList()
@@ -94,6 +94,15 @@ object GameSessionUiMapper {
             PBState.COMMANDER_DEALER
         } else {
             PBState.COMMANDER_RECEIVER
+        }
+    }
+
+    private fun PBState.withoutCommanderMode(): PBState {
+        return when (this) {
+            PBState.COMMANDER_DEALER,
+            PBState.COMMANDER_RECEIVER -> PBState.NORMAL
+
+            else -> this
         }
     }
 

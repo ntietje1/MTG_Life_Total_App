@@ -54,7 +54,4 @@ class PlayerCustomizationManagerTest {
 
 private class FakePlayerCustomizationHost(
     override val players: List<Player>
-) : PlayerCustomizationHost {
-    override fun replacePlayer(player: Player) {
-    }
-}
+) : PlayerCustomizationHost

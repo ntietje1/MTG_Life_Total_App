@@ -115,18 +115,6 @@ fun LifeCounterState.closePlayerCustomization(seatId: SeatId): LifeCounterState 
     return closePlayerMenu(seatId)
 }
 
-fun LifeCounterState.replacePlayer(player: Player): LifeCounterState {
-    return copy(
-        players = players.map { seat ->
-            if (seat.player.playerNum == player.playerNum) {
-                seat.copy(player = player)
-            } else {
-                seat
-            }
-        }
-    )
-}
-
 private fun LifeCounterState.pushPlayerButtonState(seatId: SeatId, buttonState: PBState): LifeCounterState {
     return updatePlayer(seatId) { player ->
         player.withButtonState(

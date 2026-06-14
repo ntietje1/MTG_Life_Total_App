@@ -95,11 +95,6 @@ open class LifeCounterViewModel(
         _state.value = _state.value.showTimer(activePlayerIndex = activePlayerIndex, timer = timer)
     }
 
-    override fun replacePlayer(player: Player) {
-        _state.value = _state.value.replacePlayer(player)
-    }
-
-
     private fun initializePlayerSeats() {
         if (_state.value.players.isNotEmpty()) return
         _state.value = _state.value.copy(
@@ -148,10 +143,6 @@ open class LifeCounterViewModel(
         }
     }
 
-    private fun setMiddleButtonState(value: MiddleButtonState) {
-        _state.value = _state.value.copy(middleButtonState = value)
-    }
-
     override fun onCommanderDealerButtonClicked() {
         dispatchGameCommand(GameCommand.SetCommanderDealer(null))
     }
@@ -196,7 +187,20 @@ open class LifeCounterViewModel(
     }
 
     override fun resetAllPrefs() {
-        playerCustomizationManager.resetAllPlayerPrefs()
+        val resetPlayers = playerCustomizationManager.resetAllPlayerPrefs()
+        viewModelScope.launch {
+            resetPlayers.forEach { player ->
+                val seatId = GameSessionUiMapper.seatIdForPlayerNumber(player.playerNum)
+                dispatchGameCommandNow(
+                    GameCommand.SetSeatAppearance(
+                        seatId = seatId,
+                        appearance = playerCustomizationManager.seatAppearanceFor(player)
+                    )
+                )
+                playerCustomizationManager.savePlayerPrefs(player)
+                customizationViewModels[seatId] = createCustomizationViewModel(seatId, player)
+            }
+        }
     }
 
     override fun openModal(value: LifeCounterModal) {
@@ -226,8 +230,12 @@ open class LifeCounterViewModel(
 
     private fun dispatchGameCommand(command: GameCommand) {
         viewModelScope.launch {
-            gameSessionStore.dispatchLoaded(command)
+            dispatchGameCommandNow(command)
         }
+    }
+
+    private suspend fun dispatchGameCommandNow(command: GameCommand) {
+        gameSessionStore.dispatchLoaded(command)
     }
 
     private fun dispatchPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
@@ -274,13 +282,16 @@ open class LifeCounterViewModel(
 
     private fun applyCustomization(seatId: SeatId) {
         val customizationViewModel = customizationViewModels[seatId] ?: return
-        val player = customizationViewModel.state.value.player
+        val player = playerCustomizationManager.copyPlayerPrefs(requirePlayer(seatId), customizationViewModel.state.value.player)
         viewModelScope.launch {
-            replacePlayer(playerCustomizationManager.copyPlayerPrefs(requirePlayer(seatId), player.copy(imageString = null)))
-            delay(50)
-            replacePlayer(playerCustomizationManager.copyPlayerPrefs(requirePlayer(seatId), player))
-            customizationViewModels[seatId] = createCustomizationViewModel(seatId, requirePlayer(seatId))
-            playerCustomizationManager.savePlayerPrefs(requirePlayer(seatId))
+            dispatchGameCommandNow(
+                GameCommand.SetSeatAppearance(
+                    seatId = seatId,
+                    appearance = playerCustomizationManager.seatAppearanceFor(player)
+                )
+            )
+            playerCustomizationManager.savePlayerPrefs(player)
+            customizationViewModels[seatId] = createCustomizationViewModel(seatId, player)
         }
         _state.value = _state.value.closePlayerCustomization(seatId)
     }

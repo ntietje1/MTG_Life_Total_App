@@ -183,6 +183,34 @@ class GameSessionUiMapperTest {
     }
 
     @Test
+    fun clearsStaleCommanderButtonStateWhenCommanderModeEnds() {
+        val current = LifeCounterState(
+            players = listOf(
+                PlayerSeatUiState(
+                    seatId = SeatId("seat-1"),
+                    player = model.Player(playerNum = 1),
+                    buttonState = PBState.COMMANDER_DEALER
+                ),
+                PlayerSeatUiState(
+                    seatId = SeatId("seat-2"),
+                    player = model.Player(playerNum = 2),
+                    buttonState = PBState.COMMANDER_RECEIVER
+                )
+            )
+        )
+
+        val mapped = GameSessionUiMapper.mapLifeCounterUiState(
+            session = testSession(),
+            current = current,
+            fileImageStore = FakeFileImageStore(),
+            autoKo = true
+        )
+
+        assertEquals(PBState.NORMAL, mapped.players[0].buttonState)
+        assertEquals(PBState.NORMAL, mapped.players[1].buttonState)
+    }
+
+    @Test
     fun mapsSeatDeathFromDomainRules() {
         val receiverSeatId = SeatId("seat-2")
         val commander = CommanderDamageMatrix()

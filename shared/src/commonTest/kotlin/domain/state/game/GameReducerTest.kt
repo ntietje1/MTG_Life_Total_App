@@ -37,6 +37,28 @@ class GameReducerTest {
     }
 
     @Test
+    fun seatAppearanceChangesStayInTheGameSessionAcrossLaterStateChanges() {
+        val initial = testSession(startingLife = 40)
+        val editedAppearance = SeatAppearance(
+            displayName = "Edited P1",
+            colors = PlayerColors(backgroundArgb = -16777216, textArgb = -1118482),
+            background = PlayerBackground.ProviderImage("https://images.example/edited.gif"),
+            sourceProfileId = PlayerProfileId("Edited P1")
+        )
+
+        val customized = reduceGame(
+            initial,
+            GameCommand.SetSeatAppearance(firstSeatId, editedAppearance)
+        ).session
+        val lifeChanged = reduceGame(customized, GameCommand.ChangeLife(firstSeatId, -3)).session
+        val reset = reduceGame(lifeChanged, GameCommand.ResetGame).session
+
+        assertEquals(editedAppearance, customized.requireSeat(firstSeatId).appearance)
+        assertEquals(editedAppearance, lifeChanged.requireSeat(firstSeatId).appearance)
+        assertEquals(editedAppearance, reset.requireSeat(firstSeatId).appearance)
+    }
+
+    @Test
     fun newSessionCreatesOneToSixSeatsWithStartingLife() {
         val session = GameSession.newGame(
             id = GameSessionId("game-1"),

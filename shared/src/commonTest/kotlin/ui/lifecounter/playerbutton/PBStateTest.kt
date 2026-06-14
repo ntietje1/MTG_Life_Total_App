@@ -17,4 +17,16 @@ class PBStateTest {
         assertFalse(PBState.COMMANDER_RECEIVER.showsBackButton(backStackIsEmpty = false))
         assertFalse(PBState.COMMANDER_DEALER.showsBackButton(backStackIsEmpty = false))
     }
+
+    @Test
+    fun commanderAndSettingsButtonsFollowCurrentButtonState() {
+        assertTrue(PBState.NORMAL.showsCommanderButton())
+        assertTrue(PBState.COMMANDER_DEALER.showsCommanderButton())
+        assertFalse(PBState.COMMANDER_RECEIVER.showsCommanderButton())
+
+        assertTrue(PBState.NORMAL.showsSettingsButton())
+        assertFalse(PBState.COMMANDER_DEALER.showsSettingsButton())
+        assertFalse(PBState.COMMANDER_RECEIVER.showsSettingsButton())
+        assertFalse(PBState.SELECT_FIRST_PLAYER.showsSettingsButton())
+    }
 }

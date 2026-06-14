@@ -157,6 +157,7 @@ fun PlayerStateButton(
     visible: Boolean,
     iconResource: DrawableResource,
     color: Color,
+    contentDescription: String? = null,
     onPress: () -> Unit,
 ) {
     SettingsButton(
@@ -165,6 +166,7 @@ fun PlayerStateButton(
         mainColor = color,
         imageVector = vectorResource(iconResource),
         visible = visible,
+        contentDescription = contentDescription,
         onPress = onPress
     )
 }

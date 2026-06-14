@@ -16,6 +16,7 @@ fun reduceGame(
             is GameCommand.SetCommanderPartnerMode -> state.setCommanderPartnerMode(command)
             is GameCommand.SetManualDeath -> state.setManualDeath(command)
             is GameCommand.SetMonarch -> state.setMonarch(command)
+            is GameCommand.SetSeatAppearance -> state.setSeatAppearance(command)
             is GameCommand.SetSeatCounterActive -> state.setSeatCounterActive(command)
             GameCommand.ResetGame -> state.resetGame()
             GameCommand.ResetTableCounters -> state.resetTableCounters()
@@ -39,6 +40,12 @@ private fun GameSession.clearLifeRecentChange(command: GameCommand.ClearLifeRece
 private fun GameSession.setManualDeath(command: GameCommand.SetManualDeath): GameSession {
     return updateSeat(command.seatId) { seat ->
         seat.copy(manualDeath = command.dead)
+    }.incrementVersion()
+}
+
+private fun GameSession.setSeatAppearance(command: GameCommand.SetSeatAppearance): GameSession {
+    return updateSeat(command.seatId) { seat ->
+        seat.copy(appearance = command.appearance)
     }.incrementVersion()
 }
 

@@ -31,7 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,17 +90,8 @@ fun PlayerButton(
     val currentDealerIsPartnered = (state.commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
     val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
-
-    val commanderButtonVisible by remember {
-        derivedStateOf {
-            state.buttonState in listOf(PBState.NORMAL, PBState.COMMANDER_DEALER)
-        }
-    }
-    val settingsButtonVisible by remember {
-        derivedStateOf {
-            state.buttonState !in listOf(PBState.COMMANDER_DEALER, PBState.COMMANDER_RECEIVER, PBState.SELECT_FIRST_PLAYER)
-        }
-    }
+    val commanderButtonVisible = state.buttonState.showsCommanderButton()
+    val settingsButtonVisible = state.buttonState.showsSettingsButton()
 
     fun generateSizes(maxWidth: Dp, maxHeight: Dp): Triple<Dp, Dp, Float> {
         val settingsButtonSize = if (maxHeight / 2 * 3 < maxWidth) {
@@ -272,7 +262,7 @@ fun PlayerButton(
                         backgroundColor = Color.Transparent,
                         mainColor = state.player.textColor,
                         imageVector = vectorResource(Res.drawable.skull_icon),
-                        enabled = false
+                        enabled = false,
                     )
                 }
 
@@ -540,17 +530,28 @@ fun PlayerButton(
                         mainColor = state.player.textColor,
                         visible = state.backButtonVisible,
                         imageVector = vectorResource(Res.drawable.back_icon),
+                        contentDescription = "P${state.player.playerNum} back",
                         onPress = { onAction(PlayerButtonAction.PopBackStack) }
                     )
                 }
 
                 @Composable
                 fun CommanderStateButton(modifier: Modifier = Modifier) {
+                    val description = if (state.buttonState == PBState.COMMANDER_DEALER) {
+                        "P${state.player.playerNum} is commander dealer"
+                    } else {
+                        "P${state.player.playerNum} commander mode"
+                    }
                     PlayerStateButton(
                         modifier = modifier.padding(
                             start = commanderStateMargin,
                             bottom = commanderStateMargin,
-                        ), visible = commanderButtonVisible, iconResource = Res.drawable.commander_solid_icon, color = state.player.textColor, size = smallButtonSize
+                        ),
+                        visible = commanderButtonVisible,
+                        iconResource = Res.drawable.commander_solid_icon,
+                        color = state.player.textColor,
+                        size = smallButtonSize,
+                        contentDescription = description,
                     ) {
                         onAction(PlayerButtonAction.ToggleCommanderDealer)
                     }
@@ -577,7 +578,12 @@ fun PlayerButton(
                     PlayerStateButton(
                         modifier = modifier.padding(
                             end = settingsStateMargin, bottom = settingsStateMargin
-                        ), visible = settingsButtonVisible, iconResource = Res.drawable.settings_icon, color = state.player.textColor, size = smallButtonSize
+                        ),
+                        visible = settingsButtonVisible,
+                        iconResource = Res.drawable.settings_icon,
+                        color = state.player.textColor,
+                        size = smallButtonSize,
+                        contentDescription = "P${state.player.playerNum} settings",
                     ) {
                         onAction(PlayerButtonAction.ToggleSettings)
                     }
