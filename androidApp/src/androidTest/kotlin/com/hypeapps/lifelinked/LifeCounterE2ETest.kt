@@ -60,10 +60,17 @@ class LifeCounterE2ETest {
         val version = koin.get<VersionNumber>()
         preferences.setLastSplashScreenShown(version.value)
         preferences.setTutorialSkip(true)
+        preferences.setFastCoinFlip(false)
+        preferences.setCameraRollDisabled(false)
+        preferences.setAutoKo(true)
         preferences.setAutoSkip(true)
         preferences.setKeepScreenOn(false)
         preferences.setTurnTimer(false)
         preferences.setNumPlayers(4)
+        preferences.setAlt4PlayerLayout(false)
+        preferences.setDarkTheme(true)
+        preferences.setStartingLife(40)
+        preferences.setDevMode(false)
         koin.get<TimerStateRepository>().save(null)
         runBlocking {
             val freshSession = GameSession.newGame(
