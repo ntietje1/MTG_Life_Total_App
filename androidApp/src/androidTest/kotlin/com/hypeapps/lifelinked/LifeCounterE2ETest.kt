@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
@@ -322,6 +323,26 @@ class LifeCounterE2ETest {
         openMiddleMenuItem(OPEN_APP_SETTINGS)
         performSemanticClick(OPEN_PATCH_NOTES)
         waitForText(CHANGE_LOG_TITLE)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForContentDescription(OPEN_TUTORIAL_FROM_SETTINGS)
+
+        performSemanticClick(CLOSE_DIALOG)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun settingsAboutMeDialogCanBackAndClose() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_APP_SETTINGS)
+        composeRule.onNodeWithContentDescription(OPEN_ABOUT_ME, useUnmergedTree = true)
+            .performScrollTo()
+        performSemanticClick(OPEN_ABOUT_ME)
+        waitForText(ABOUT_ME_TITLE)
+        waitForText(ABOUT_ME_NAME)
 
         performSemanticClick(BACK_IN_DIALOG)
         waitForContentDescription(OPEN_TUTORIAL_FROM_SETTINGS)
@@ -1473,6 +1494,9 @@ class LifeCounterE2ETest {
         const val OPEN_APP_SETTINGS = "Open app settings"
         const val OPEN_PATCH_NOTES = "Patch Notes"
         const val CHANGE_LOG_TITLE = "Change Log"
+        const val OPEN_ABOUT_ME = "About Me"
+        const val ABOUT_ME_TITLE = "App Development & Design"
+        const val ABOUT_ME_NAME = "Nick Tietje"
         const val FAST_COIN_FLIP_SETTING_PREFIX = "Fast Coin Flip setting "
         const val DISABLE_CAMERA_ROLL_SETTING_PREFIX = "Disable Camera Roll setting "
         const val AUTO_KO_SETTING_PREFIX = "Auto KO setting "
