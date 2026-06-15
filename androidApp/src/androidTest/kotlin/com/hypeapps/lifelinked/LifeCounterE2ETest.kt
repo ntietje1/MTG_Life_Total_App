@@ -509,6 +509,31 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun diceDialogCanRollCustomDieValue() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_DICE_ROLL)
+        waitForContentDescription(CUSTOM_DIE_INPUT)
+        composeRule.onNodeWithContentDescription(CUSTOM_DIE_INPUT, useUnmergedTree = true)
+            .performTextClearance()
+        composeRule.onNodeWithContentDescription(CUSTOM_DIE_INPUT, useUnmergedTree = true)
+            .performTextInput("3")
+        performSemanticClick(ENTER_CUSTOM_DIE)
+        waitForContentDescription(ROLL_D3)
+
+        composeRule.onNodeWithContentDescription(ROLL_D3, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitUntil("custom dice result from D3") {
+            findIntContentDescription(LAST_DICE_RESULT_PREFIX) in 1..3
+        }
+
+        closeDialogAndWaitForCounter()
+        waitForContentDescription(P1_SETTINGS_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun planechaseCanSelectPlaneAndPlaneswalk() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1476,6 +1501,9 @@ class LifeCounterE2ETest {
         const val RESET_TABLE_COUNTERS = "Reset table counters"
         const val OPEN_DICE_ROLL = "Open dice roll"
         const val ROLL_D6 = "Roll D6"
+        const val ROLL_D3 = "Roll D3"
+        const val CUSTOM_DIE_INPUT = "Custom die input"
+        const val ENTER_CUSTOM_DIE = "Enter custom die value"
         const val LAST_DICE_RESULT_PREFIX = "Last dice result "
         const val OPEN_COIN_FLIP = "Open coin flip"
         const val COINS_TO_FLIP_PREFIX = "Coins to flip "

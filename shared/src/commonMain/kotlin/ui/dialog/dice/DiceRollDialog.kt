@@ -163,20 +163,32 @@ fun DiceRollDialogContent(
                 modifier = Modifier.width(diceRollButtonSize * 3).height(textFieldHeight)
                     .border(
                         dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)
-                    ), value = state.textFieldValue, onValueChange = viewModel::setTextFieldValue, label = "Custom Die Value", keyboardOptions = KeyboardOptions.Default.copy(
+                    ),
+                value = state.textFieldValue,
+                onValueChange = viewModel::setTextFieldValue,
+                label = "Custom Die Value",
+                keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
-                ), keyboardActions = KeyboardActions(onDone = {
+                ),
+                keyboardActions = KeyboardActions(onDone = {
                     focusManager.clearFocus()
-                })
+                }),
+                textFieldContentDescription = "Custom die input"
             ) {
                 IconButton(
                     onClick = {
                         focusManager.clearFocus()
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }, modifier = Modifier.fillMaxSize()
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .semantics { contentDescription = "Enter custom die value" }
                 ) {
                     Icon(
-                        imageVector = vectorResource(Res.drawable.enter_icon), contentDescription = "Enter", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.fillMaxSize()
+                        imageVector = vectorResource(Res.drawable.enter_icon),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
             }
