@@ -58,8 +58,6 @@ import theme.blendWith
 import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialog
 import ui.lifecounter.playerbutton.PlayerButton
-import ui.lifecounter.playerbutton.PlayerButtonAction
-import ui.modifier.routePointerChangesTo
 
 @Composable
 fun LifeCounterScreen(
@@ -101,7 +99,6 @@ fun LifeCounterScreen(
                     viewModel.setShowButtons(true)
                 }
             },
-            updateTurnTimerEnabled = { viewModel.setTimerEnabled(it) },
             goToTutorialScreen = goToTutorialScreen
         )
     }
@@ -151,11 +148,7 @@ fun LifeCounterScreen(
                                 playerButton = {
                                     PlayerButton(
                                         modifier = Modifier.size(width, height),
-                                        turnTimerModifier = Modifier.align(placement.timerAlignment).pointerInput(Unit) {
-                                            routePointerChangesTo(onDown = {
-                                                viewModel.onPlayerButtonAction(seatId, PlayerButtonAction.MoveTimer)
-                                            })
-                                        }.then(
+                                        turnTimerModifier = Modifier.align(placement.timerAlignment).then(
                                             when (placement.timerAlignment) {
                                                 Alignment.TopStart -> Modifier.align(Alignment.TopStart)
                                                     .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))

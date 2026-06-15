@@ -253,10 +253,6 @@ abstract class MockLifeCounterViewModel(
         preferencesRepository.setNumPlayers(value)
     }
 
-    override fun setTimerEnabled(value: Boolean) {
-        preferencesRepository.setTurnTimer(value)
-    }
-
     override fun onCommanderDealerButtonClicked() {
         resetCommanderState()
     }

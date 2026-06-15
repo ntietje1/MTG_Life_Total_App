@@ -143,6 +143,39 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun turnTimerCanSelectFirstPlayerAndMoveToNextPlayer() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenu()
+        performSemanticClick(OPEN_APP_SETTINGS)
+        val initialTurnTimer = readContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
+        performClickOnContentDescriptionPrefix(TURN_TIMER_SETTING_PREFIX)
+        waitUntil("turn timer changed") {
+            findContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
+                ?.let { it != initialTurnTimer } == true
+        }
+
+        composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(SELECT_P1_AS_FIRST_PLAYER)
+        composeRule.onNodeWithContentDescription(SELECT_P1_AS_FIRST_PLAYER, useUnmergedTree = true)
+            .performClick()
+
+        waitForContentDescription(P1_ACTIVE_TURN_TIMER)
+        waitUntil("P2 has no active turn timer") {
+            !hasContentDescription(P2_ACTIVE_TURN_TIMER)
+        }
+
+        composeRule.onNodeWithContentDescription(P1_ACTIVE_TURN_TIMER, useUnmergedTree = true)
+            .performClick()
+
+        waitForContentDescription(P2_ACTIVE_TURN_TIMER)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun chanceDialogsCanRollDiceAndFlipCoin() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -826,6 +859,9 @@ class LifeCounterE2ETest {
         const val OPEN_APP_SETTINGS = "Open app settings"
         const val KEEP_SCREEN_ON_SETTING_PREFIX = "Keep Screen On setting "
         const val TURN_TIMER_SETTING_PREFIX = "Turn Timer setting "
+        const val SELECT_P1_AS_FIRST_PLAYER = "Select P1 as first player"
+        const val P1_ACTIVE_TURN_TIMER = "P1 active turn timer"
+        const val P2_ACTIVE_TURN_TIMER = "P2 active turn timer"
         const val OPEN_PLAYER_NUMBER = "Open player number"
         const val SET_PLAYER_COUNT_2 = "Set player count to 2"
         const val OPEN_STARTING_LIFE = "Open starting life"

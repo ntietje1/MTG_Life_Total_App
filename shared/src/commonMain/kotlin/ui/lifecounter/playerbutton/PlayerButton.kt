@@ -3,6 +3,7 @@ package ui.lifecounter.playerbutton
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +35,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -92,6 +94,7 @@ fun PlayerButton(
 ) {
     val currentDealerIsPartnered = (state.commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
     val haptic = LocalHapticFeedback.current
+    val currentOnAction by rememberUpdatedState(onAction)
     val dimensions = LocalDimensions.current
     val commanderButtonVisible = state.buttonState.showsCommanderButton()
     val settingsButtonVisible = state.buttonState.showsSettingsButton()
@@ -130,13 +133,25 @@ fun PlayerButton(
 
     var timerTextSize by remember(Unit) { mutableStateOf(15) }
     var timerPadding by remember(Unit) { mutableStateOf(5) }
+    // Stops the repeating bounce after the timer is clicked.
+    var timerJustClicked by remember { mutableStateOf(false) }
 
     @Composable
     fun Timer(modifier: Modifier = Modifier, timer: TurnTimer) {
         val textSize = timerTextSize.scaledSp
         val padding = timerPadding.dp
+        val playerNumber = state.player.playerNum
         Column(
-            modifier = modifier.wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(padding)
+            modifier = modifier
+                .semantics {
+                    contentDescription = "P$playerNumber active turn timer"
+                }
+                .clickable {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    timerJustClicked = true
+                    currentOnAction(PlayerButtonAction.MoveTimer)
+                }
+                .wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(padding)
         ) {
             Text(
                 text = timer.getTimeString(),
@@ -158,9 +173,6 @@ fun PlayerButton(
             )
         }
     }
-
-    // Jank way of stopping the repeating bounce if long pressing on timer
-    var timerJustClicked by remember { mutableStateOf(false) }
 
     LaunchedEffect(timerJustClicked) {
         if (timerJustClicked) {
@@ -346,11 +358,17 @@ fun PlayerButton(
                             }
 
                             PBState.SELECT_FIRST_PLAYER -> {
-                                Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                                    detectTapGestures(onPress = {
-                                        onAction(PlayerButtonAction.SelectFirstPlayer)
-                                    })
-                                }) {
+                                val playerNumber = state.player.playerNum
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .semantics {
+                                            contentDescription = "Select P$playerNumber as first player"
+                                        }
+                                        .clickable {
+                                            currentOnAction(PlayerButtonAction.SelectFirstPlayer)
+                                        }
+                                ) {
                                     Column(
                                         modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
                                     ) {
@@ -706,12 +724,7 @@ fun PlayerButton(
                 }
                 val timer = state.timer
                 if (timer != null && state.buttonState == PBState.NORMAL) {
-                    Timer(modifier = turnTimerModifier.then(Modifier.pointerInput(Unit) {
-                        detectTapGestures(onPress = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            timerJustClicked = true
-                        })
-                    }), timer = timer)
+                    Timer(modifier = turnTimerModifier, timer = timer)
                 }
             }
         }

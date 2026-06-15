@@ -21,7 +21,6 @@ interface LifeCounterScreenController {
     fun setShowButtons(value: Boolean)
     fun setAlt4PlayerLayout(value: Boolean)
     fun setNumPlayers(value: Int)
-    fun setTimerEnabled(value: Boolean)
     fun onCommanderDealerButtonClicked()
     fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction)
     fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel?

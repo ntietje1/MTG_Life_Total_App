@@ -116,16 +116,6 @@ open class LifeCounterViewModel(
         )
     }
 
-    override fun setTimerEnabled(value: Boolean) {
-        viewModelScope.launch {
-            timerManager.onTimerEnabledChange(value)
-        }
-    }
-
-    fun setFirstPlayer(index: Int?) {
-        timerManager.handleFirstPlayerSelection(index)
-    }
-
     override fun onNavigate(firstNavigation: Boolean) {
         if (firstNavigation) {
             viewModelScope.launch {

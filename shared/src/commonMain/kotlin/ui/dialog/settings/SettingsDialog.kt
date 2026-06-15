@@ -76,7 +76,6 @@ fun SettingsDialogContent(
     addGoToSettingsToBackStack: () -> Unit,
     goToTutorialScreen: () -> Unit,
     setKeepScreenOn: (Boolean) -> Unit,
-    updateTurnTimerEnabled: (Boolean) -> Unit,
     preferencesRepository: PreferencesRepository = koinInject(),
     platform: Platform = koinInject(),
     version: VersionNumber = koinInject()
@@ -147,7 +146,6 @@ fun SettingsDialogContent(
                         initialState = preferencesRepository.turnTimer.value,
                         toggle = {
                             preferencesRepository.setTurnTimer(it)
-                            updateTurnTimerEnabled(it)
                         },
                         icon = vectorResource(Res.drawable.timer_icon)
                     )

@@ -68,7 +68,6 @@ fun MiddleButtonDialog(
     setNumPlayers: (Int) -> Unit,
     setAlt4PlayerLayout: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
-    updateTurnTimerEnabled: (Boolean) -> Unit,
 ) {
 
     val state by viewModel.state.collectAsState()
@@ -158,7 +157,6 @@ fun MiddleButtonDialog(
                         onDismiss()
                         goToTutorialScreen()
                     },
-                    updateTurnTimerEnabled = updateTurnTimerEnabled,
                     setKeepScreenOn = setKeepScreenOn
                 )
             }, Pair(
