@@ -1,6 +1,8 @@
 package com.hypeapps.lifelinked
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -17,6 +19,65 @@ import org.junit.runner.RunWith
 class LifeCounterE2ETest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun lifeTotalCanIncrementAndDecrement() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        val initialLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
+
+        waitForContentDescription(P1_INCREASE_LIFE)
+        composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
+
+        composeRule.onNodeWithContentDescription(P1_DECREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun commanderDamageCanIncrementAndDecrement() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        waitForContentDescription(P1_COMMANDER_BUTTON)
+        composeRule.onNodeWithContentDescription(P1_COMMANDER_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        val initialPrimaryDamage = readIntContentDescription(P2_PRIMARY_COMMANDER_DAMAGE_PREFIX)
+
+        waitForContentDescription(P2_PRIMARY_COMMANDER_DAMAGE_INCREASE)
+        composeRule.onNodeWithContentDescription(P2_PRIMARY_COMMANDER_DAMAGE_INCREASE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P2_PRIMARY_COMMANDER_DAMAGE_PREFIX, initialPrimaryDamage + 1)
+
+        composeRule.onNodeWithContentDescription(P2_PRIMARY_COMMANDER_DAMAGE_DECREASE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P2_PRIMARY_COMMANDER_DAMAGE_PREFIX, initialPrimaryDamage)
+
+        composeRule.onNodeWithContentDescription(ENABLE_PARTNER_COMMANDER_DAMAGE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(DISABLE_PARTNER_COMMANDER_DAMAGE)
+
+        val initialPartnerDamage = readIntContentDescription(P2_PARTNER_COMMANDER_DAMAGE_PREFIX)
+
+        waitForContentDescription(P2_PARTNER_COMMANDER_DAMAGE_INCREASE)
+        composeRule.onNodeWithContentDescription(P2_PARTNER_COMMANDER_DAMAGE_INCREASE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P2_PARTNER_COMMANDER_DAMAGE_PREFIX, initialPartnerDamage + 1)
+
+        composeRule.onNodeWithContentDescription(P2_PARTNER_COMMANDER_DAMAGE_DECREASE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P2_PARTNER_COMMANDER_DAMAGE_PREFIX, initialPartnerDamage)
+
+        composeRule.onNodeWithContentDescription(COMMANDER_EXIT_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P1_COMMANDER_BUTTON)
+    }
 
     @OptIn(ExperimentalTestApi::class)
     @Test
@@ -88,6 +149,21 @@ class LifeCounterE2ETest {
         }
     }
 
+    private fun readIntContentDescription(prefix: String): Int {
+        var value: Int? = null
+        waitUntil(prefix) {
+            value = findIntContentDescription(prefix)
+            value != null
+        }
+        return value ?: error("No content description found for $prefix")
+    }
+
+    private fun waitForIntContentDescription(prefix: String, expected: Int) {
+        waitUntil("$prefix$expected") {
+            findIntContentDescription(prefix) == expected
+        }
+    }
+
     private fun waitUntil(description: String, condition: () -> Boolean) {
         try {
             composeRule.waitUntil(timeoutMillis = 5_000, condition = condition)
@@ -106,7 +182,30 @@ class LifeCounterE2ETest {
             .isNotEmpty()
     }
 
+    private fun findIntContentDescription(prefix: String): Int? {
+        return contentDescriptions()
+            .firstNotNullOfOrNull { description ->
+                description.takeIf { it.startsWith(prefix) }
+                    ?.removePrefix(prefix)
+                    ?.toIntOrNull()
+            }
+    }
+
+    private fun contentDescriptions(): List<String> {
+        return composeRule.onAllNodes(HasContentDescription, useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .flatMap { node ->
+                runCatching { node.config[SemanticsProperties.ContentDescription] }
+                    .getOrNull()
+                    .orEmpty()
+            }
+    }
+
     private companion object {
+        val HasContentDescription = SemanticsMatcher("has content description") { node ->
+            runCatching { node.config[SemanticsProperties.ContentDescription] }.isSuccess
+        }
+
         const val P1_COMMANDER_BUTTON = "P1 commander mode"
         const val P1_COMMANDER_DEALER = "P1 is commander dealer"
         const val COMMANDER_EXIT_BUTTON = "Exit commander mode"
@@ -114,5 +213,14 @@ class LifeCounterE2ETest {
         const val START_LIFE_COUNTER = "Go to Life Counter"
         const val ENABLE_PARTNER_COMMANDER_DAMAGE = "Enable partner commander damage"
         const val DISABLE_PARTNER_COMMANDER_DAMAGE = "Disable partner commander damage"
+        const val P1_LIFE_TOTAL_PREFIX = "P1 life total "
+        const val P1_INCREASE_LIFE = "P1 increase life"
+        const val P1_DECREASE_LIFE = "P1 decrease life"
+        const val P2_PRIMARY_COMMANDER_DAMAGE_PREFIX = "P2 primary commander damage "
+        const val P2_PRIMARY_COMMANDER_DAMAGE_INCREASE = "P2 primary commander damage increase"
+        const val P2_PRIMARY_COMMANDER_DAMAGE_DECREASE = "P2 primary commander damage decrease"
+        const val P2_PARTNER_COMMANDER_DAMAGE_PREFIX = "P2 partner commander damage "
+        const val P2_PARTNER_COMMANDER_DAMAGE_INCREASE = "P2 partner commander damage increase"
+        const val P2_PARTNER_COMMANDER_DAMAGE_DECREASE = "P2 partner commander damage decrease"
     }
 }

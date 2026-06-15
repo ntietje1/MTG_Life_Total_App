@@ -213,32 +213,52 @@ fun PlayerButton(
                 if (!state.player.setDead) {
                     when (state.buttonState) {
                         PBState.NORMAL -> {
-                            LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
-                                onAction(PlayerButtonAction.IncrementLife)
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            }, onDecrementLife = {
-                                onAction(PlayerButtonAction.DecrementLife)
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            })
+                            val playerNumber = state.player.playerNum
+                            LifeChangeButtons(
+                                modifier = Modifier.fillMaxWidth(),
+                                incrementContentDescription = "P$playerNumber increase life",
+                                decrementContentDescription = "P$playerNumber decrease life",
+                                onIncrementLife = {
+                                    onAction(PlayerButtonAction.IncrementLife)
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                },
+                                onDecrementLife = {
+                                    onAction(PlayerButtonAction.DecrementLife)
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                },
+                            )
                         }
 
                         PBState.COMMANDER_RECEIVER -> {
+                            val playerNumber = state.player.playerNum
                             Row(Modifier.fillMaxSize()) {
-                                LifeChangeButtons(Modifier.then(if (currentDealerIsPartnered) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()), onIncrementLife = {
-                                    onAction(PlayerButtonAction.IncrementCommanderDamage(partner = false))
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                }, onDecrementLife = {
-                                    onAction(PlayerButtonAction.DecrementCommanderDamage(partner = false))
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                })
+                                LifeChangeButtons(
+                                    modifier = Modifier.then(if (currentDealerIsPartnered) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()),
+                                    incrementContentDescription = "P$playerNumber primary commander damage increase",
+                                    decrementContentDescription = "P$playerNumber primary commander damage decrease",
+                                    onIncrementLife = {
+                                        onAction(PlayerButtonAction.IncrementCommanderDamage(partner = false))
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    },
+                                    onDecrementLife = {
+                                        onAction(PlayerButtonAction.DecrementCommanderDamage(partner = false))
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    },
+                                )
                                 if (currentDealerIsPartnered) {
-                                    LifeChangeButtons(Modifier.fillMaxWidth(), onIncrementLife = {
-                                        onAction(PlayerButtonAction.IncrementCommanderDamage(partner = true))
-                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    }, onDecrementLife = {
-                                        onAction(PlayerButtonAction.DecrementCommanderDamage(partner = true))
-                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    })
+                                    LifeChangeButtons(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        incrementContentDescription = "P$playerNumber partner commander damage increase",
+                                        decrementContentDescription = "P$playerNumber partner commander damage decrease",
+                                        onIncrementLife = {
+                                            onAction(PlayerButtonAction.IncrementCommanderDamage(partner = true))
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        },
+                                        onDecrementLife = {
+                                            onAction(PlayerButtonAction.DecrementCommanderDamage(partner = true))
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        },
+                                    )
                                 }
                             }
                         }
@@ -296,7 +316,8 @@ fun PlayerButton(
                                         modifier = playerInfoModifier.fillMaxSize(),
                                         name = state.player.name,
                                         textColor = state.player.textColor,
-                                        value = state.player.lifeTotal
+                                        value = state.player.lifeTotal,
+                                        contentDescription = "P${state.player.playerNum} life total ${state.player.lifeTotal.number}",
                                     )
                                 }
                             }
@@ -332,15 +353,24 @@ fun PlayerButton(
                                 if (state.isDead) {
                                     Skull(playerInfoModifier)
                                 } else {
+                                    val playerNumber = state.player.playerNum
+                                    val primaryCommanderDamage = commanderDamageValue(state, partner = false)
+                                    val partnerCommanderDamage = if (currentDealerIsPartnered) {
+                                        commanderDamageValue(state, partner = true)
+                                    } else {
+                                        null
+                                    }
                                     CommanderDamageNumber(
                                         modifier = playerInfoModifier.fillMaxSize(),
                                         name = state.player.name,
                                         textColor = state.player.textColor,
-                                        firstValue = commanderDamageValue(state, partner = false),
-                                        secondValue = if (currentDealerIsPartnered) {
-                                            commanderDamageValue(state, partner = true)
-                                        } else {
+                                        firstValue = primaryCommanderDamage,
+                                        secondValue = partnerCommanderDamage,
+                                        firstContentDescription = "P$playerNumber primary commander damage ${primaryCommanderDamage.number}",
+                                        secondContentDescription = if (partnerCommanderDamage == null) {
                                             null
+                                        } else {
+                                            "P$playerNumber partner commander damage ${partnerCommanderDamage.number}"
                                         },
                                     )
                                 }

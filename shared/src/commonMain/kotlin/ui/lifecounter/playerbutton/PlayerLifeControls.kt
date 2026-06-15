@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,6 +51,8 @@ fun CommanderDamageNumber(
     textColor: Color,
     firstValue: NumberWithRecentChange,
     secondValue: NumberWithRecentChange?,
+    firstContentDescription: String,
+    secondContentDescription: String?,
 ) {
     BoxWithConstraints(modifier = modifier) {
         val dividerOffset = remember { maxHeight / 12f }
@@ -94,7 +98,8 @@ fun CommanderDamageNumber(
                     ),
                     name = name,
                     textColor = textColor,
-                    value = firstValue
+                    value = firstValue,
+                    contentDescription = firstContentDescription,
                 )
             }
             if (secondValue == null) return@BoxWithConstraints
@@ -106,7 +111,8 @@ fun CommanderDamageNumber(
                     modifier = Modifier.fillMaxSize().padding(padding),
                     name = name,
                     textColor = textColor,
-                    value = secondValue
+                    value = secondValue,
+                    contentDescription = secondContentDescription,
                 )
             }
         }
@@ -119,6 +125,7 @@ fun SingleCommanderDamageNumber(
     name: String,
     textColor: Color,
     value: NumberWithRecentChange,
+    contentDescription: String?,
 ) {
     val iconResource = remember { Res.drawable.commander_solid_icon }
 
@@ -127,7 +134,8 @@ fun SingleCommanderDamageNumber(
         iconResource = iconResource,
         name = name,
         textColor = textColor,
-        value = value
+        value = value,
+        contentDescription = contentDescription,
     )
 }
 
@@ -136,7 +144,8 @@ fun LifeNumber(
     modifier: Modifier = Modifier,
     textColor: Color,
     name: String,
-    value: NumberWithRecentChange
+    value: NumberWithRecentChange,
+    contentDescription: String? = null,
 ) {
     val iconResource = remember { Res.drawable.heart_solid_icon }
 
@@ -146,6 +155,7 @@ fun LifeNumber(
         name = name,
         value = value,
         iconResource = iconResource,
+        contentDescription = contentDescription,
     )
 }
 
@@ -156,9 +166,18 @@ fun NumericValue(
     name: String,
     value: NumberWithRecentChange,
     iconResource: DrawableResource,
+    contentDescription: String?,
 ) {
     BoxWithConstraints(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .then(
+                if (contentDescription == null) {
+                    Modifier
+                } else {
+                    Modifier.semantics { this.contentDescription = contentDescription }
+                }
+            ),
         contentAlignment = Alignment.Center
     ) {
         val largeText = value.number.toString()
@@ -241,17 +260,21 @@ fun NumericValue(
 fun LifeChangeButtons(
     modifier: Modifier = Modifier,
     onIncrementLife: () -> Unit,
-    onDecrementLife: () -> Unit
+    onDecrementLife: () -> Unit,
+    incrementContentDescription: String,
+    decrementContentDescription: String,
 ) {
     Column(modifier = modifier) {
         CustomIncrementButton(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(0.5f),
             onIncrementLife = onIncrementLife,
+            contentDescription = incrementContentDescription,
         )
 
         CustomIncrementButton(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(1.0f),
             onIncrementLife = onDecrementLife,
+            contentDescription = decrementContentDescription,
         )
     }
 }
@@ -259,7 +282,8 @@ fun LifeChangeButtons(
 @Composable
 private fun CustomIncrementButton(
     modifier: Modifier = Modifier,
-    onIncrementLife: () -> Unit = {}
+    onIncrementLife: () -> Unit = {},
+    contentDescription: String,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val ripple = remember { ripple(color = Color.Black) }
@@ -269,6 +293,6 @@ private fun CustomIncrementButton(
             indication = ripple,
             enabled = true,
             onPress = onIncrementLife
-        )
+        ).semantics { this.contentDescription = contentDescription }
     )
 }
