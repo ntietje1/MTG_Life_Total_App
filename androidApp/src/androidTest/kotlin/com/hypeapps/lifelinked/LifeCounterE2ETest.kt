@@ -40,6 +40,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext
 import theme.PlayerColor6
+import theme.PlayerColor7
 import ui.dialog.planechase.PlaneChaseViewModel
 
 @RunWith(AndroidJUnit4::class)
@@ -431,18 +432,43 @@ class LifeCounterE2ETest {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
 
+        changeP1CustomizationColorAndVerifyAfterLifeChange(
+            openColorPicker = CHANGE_BACKGROUND_COLOR,
+            selectColor = SELECT_TEST_BACKGROUND_COLOR,
+            expectedStateDescription = "$P1_BACKGROUND_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB"
+        )
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun customizationTextColorPersistsAfterLifeChange() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        changeP1CustomizationColorAndVerifyAfterLifeChange(
+            openColorPicker = CHANGE_TEXT_COLOR,
+            selectColor = SELECT_TEST_TEXT_COLOR,
+            expectedStateDescription = "$P1_TEXT_COLOR_PREFIX$TEST_TEXT_COLOR_ARGB"
+        )
+    }
+
+    private fun changeP1CustomizationColorAndVerifyAfterLifeChange(
+        openColorPicker: String,
+        selectColor: String,
+        expectedStateDescription: String,
+    ) {
         openP1Customization()
-        performSemanticClick(CHANGE_BACKGROUND_COLOR)
-        performSemanticClick(SELECT_TEST_BACKGROUND_COLOR)
+        performSemanticClick(openColorPicker)
+        performSemanticClick(selectColor)
 
         closeCustomizationAndReturnToCounter()
-        waitForContentDescription("$P1_BACKGROUND_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
+        waitForContentDescription(expectedStateDescription)
 
         val initialLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
         composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
             .performTouchInput { click() }
         waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
-        waitForContentDescription("$P1_BACKGROUND_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
+        waitForContentDescription(expectedStateDescription)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -973,11 +999,15 @@ class LifeCounterE2ETest {
         const val OPEN_LOAD_PROFILE = "Open load profile"
         const val LOAD_PROFILE_PREFIX = "Load profile "
         const val CHANGE_BACKGROUND_COLOR = "Change background color"
+        const val CHANGE_TEXT_COLOR = "Change text color"
         const val SELECT_COLOR_PREFIX = "Select color "
         const val P1_BACKGROUND_COLOR_PREFIX = "P1 background color "
+        const val P1_TEXT_COLOR_PREFIX = "P1 text color "
         const val P2_BACKGROUND_COLOR_PREFIX = "P2 background color "
         val TEST_BACKGROUND_COLOR_ARGB = PlayerColor6.toArgb()
+        val TEST_TEXT_COLOR_ARGB = PlayerColor7.toArgb()
         val SELECT_TEST_BACKGROUND_COLOR = "$SELECT_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB option 9"
+        val SELECT_TEST_TEXT_COLOR = "$SELECT_COLOR_PREFIX$TEST_TEXT_COLOR_ARGB option 10"
         const val CLOSE_DIALOG = "Close dialog"
         const val OPEN_CARD_IMAGE_SEARCH = "Open card image search"
         const val SCRYFALL_TEST_QUERY = "sol ring"

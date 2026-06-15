@@ -347,13 +347,22 @@ fun PlayerButton(
                                 if (state.isDead) {
                                     Skull(playerInfoModifier)
                                 } else {
-                                    LifeNumber(
-                                        modifier = playerInfoModifier.fillMaxSize(),
-                                        name = state.player.name,
-                                        textColor = state.player.textColor,
-                                        value = state.player.lifeTotal,
-                                        contentDescription = "P${state.player.playerNum} life total ${state.player.lifeTotal.number}",
-                                    )
+                                    Box(playerInfoModifier.fillMaxSize()) {
+                                        Box(
+                                            Modifier
+                                                .matchParentSize()
+                                                .semantics {
+                                                    contentDescription = "P${state.player.playerNum} text color ${state.player.textColor.toArgb()}"
+                                                }
+                                        )
+                                        LifeNumber(
+                                            modifier = Modifier.fillMaxSize(),
+                                            name = state.player.name,
+                                            textColor = state.player.textColor,
+                                            value = state.player.lifeTotal,
+                                            contentDescription = "P${state.player.playerNum} life total ${state.player.lifeTotal.number}",
+                                        )
+                                    }
                                 }
                             }
 
