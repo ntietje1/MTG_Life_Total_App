@@ -634,6 +634,23 @@ class LifeCounterE2ETest {
         )
     }
 
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun customizationColorPickerBackReturnsToCustomizationThenCloses() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        performSemanticClick(CHANGE_BACKGROUND_COLOR)
+        waitForContentDescription(SELECT_TEST_BACKGROUND_COLOR)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
     private fun changeP1CustomizationColorAndVerifyAfterLifeChange(
         openColorPicker: String,
         selectColor: String,
