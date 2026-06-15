@@ -130,6 +130,12 @@ class LifeCounterE2ETest {
 
         performSemanticClick(SHOW_TEST_CARD_PRINTINGS)
         waitForText(TEST_PRINTING_CARD_NAME)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForText(TEST_CARD_NAME)
+
+        performSemanticClick(CLOSE_DIALOG)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
     }
 
     @OptIn(ExperimentalTestApi::class)
