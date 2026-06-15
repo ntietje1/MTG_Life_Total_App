@@ -43,6 +43,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -322,14 +324,16 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         IconButton(
-            modifier = Modifier.size(buttonSize),
+            modifier = Modifier
+                .size(buttonSize)
+                .semantics { contentDescription = "Go back" },
             onClick = {
                 onMoveLeft()
             }
         ) {
             Icon(
                 imageVector = vectorResource(Res.drawable.back_icon_alt),
-                contentDescription = "Go back"
+                contentDescription = null
             )
         }
         Box(
@@ -361,7 +365,9 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
         }
 
         IconButton(
-            modifier = Modifier.size(buttonSize),
+            modifier = Modifier
+                .size(buttonSize)
+                .semantics { contentDescription = "Go forward" },
             onClick = {
                 onMoveRight()
             }
@@ -369,7 +375,7 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
             Icon(
                 modifier = Modifier.rotate(180f),
                 imageVector = vectorResource(Res.drawable.back_icon_alt),
-                contentDescription = "Go forward"
+                contentDescription = null
             )
         }
     }

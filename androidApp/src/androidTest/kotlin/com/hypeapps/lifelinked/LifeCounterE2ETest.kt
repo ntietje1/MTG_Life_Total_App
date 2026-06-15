@@ -159,6 +159,29 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun tutorialCanOpenNavigateAndSkip() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_APP_SETTINGS)
+        performSemanticClick(OPEN_TUTORIAL_FROM_SETTINGS)
+
+        waitForContentDescription(SKIP_TUTORIAL)
+        performSemanticClick(TUTORIAL_GO_FORWARD)
+        waitForContentDescription(TUTORIAL_GO_BACK)
+
+        performSemanticClick(TUTORIAL_GO_BACK)
+        waitForContentDescription(TUTORIAL_GO_FORWARD)
+
+        performSemanticClick(SKIP_TUTORIAL)
+        waitForContentDescription(CONFIRM_SKIP_TUTORIAL)
+        performSemanticClick(CONFIRM_SKIP_TUTORIAL)
+
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun middleMenuSettingsTogglesCanBeChanged() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -978,6 +1001,11 @@ class LifeCounterE2ETest {
         const val COMMANDER_EXIT_BUTTON = "Exit commander mode"
         const val MIDDLE_MENU_BUTTON = "Open life counter menu"
         const val START_LIFE_COUNTER = "Go to Life Counter"
+        const val OPEN_TUTORIAL_FROM_SETTINGS = "View Tutorial Again"
+        const val SKIP_TUTORIAL = "Skip tutorial"
+        const val TUTORIAL_GO_FORWARD = "Go forward"
+        const val TUTORIAL_GO_BACK = "Go back"
+        const val CONFIRM_SKIP_TUTORIAL = "Skip"
         const val ENABLE_PARTNER_COMMANDER_DAMAGE = "Enable partner commander damage"
         const val DISABLE_PARTNER_COMMANDER_DAMAGE = "Disable partner commander damage"
         const val TOGGLE_PARTNER_MODE_LABEL = "Toggle Partner Mode"
