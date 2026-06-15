@@ -448,7 +448,11 @@ fun PlayerButton(
                                             onAction(PlayerButtonAction.ToggleCommanderPartnerMode)
                                         })
                                     Text(
-                                        modifier = Modifier.wrapContentSize(unbounded = true),
+                                        modifier = Modifier
+                                            .wrapContentSize(unbounded = true)
+                                            .clickable {
+                                                onAction(PlayerButtonAction.ToggleCommanderPartnerMode)
+                                            },
                                         text = "Toggle Partner Mode",
                                         color = state.player.textColor,
                                         fontSize = textSize.scaledSp * 0.6f,

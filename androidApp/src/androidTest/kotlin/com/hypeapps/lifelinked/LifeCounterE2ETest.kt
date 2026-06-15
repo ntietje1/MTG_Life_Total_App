@@ -10,6 +10,7 @@ import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextClearance
@@ -637,7 +638,7 @@ class LifeCounterE2ETest {
             .performTouchInput { click() }
 
         waitForContentDescription(DISABLE_PARTNER_COMMANDER_DAMAGE)
-        composeRule.onNodeWithContentDescription(DISABLE_PARTNER_COMMANDER_DAMAGE, useUnmergedTree = true)
+        composeRule.onNodeWithText(TOGGLE_PARTNER_MODE_LABEL, useUnmergedTree = true)
             .performTouchInput { click() }
 
         waitForContentDescription(ENABLE_PARTNER_COMMANDER_DAMAGE)
@@ -926,6 +927,7 @@ class LifeCounterE2ETest {
         const val START_LIFE_COUNTER = "Go to Life Counter"
         const val ENABLE_PARTNER_COMMANDER_DAMAGE = "Enable partner commander damage"
         const val DISABLE_PARTNER_COMMANDER_DAMAGE = "Disable partner commander damage"
+        const val TOGGLE_PARTNER_MODE_LABEL = "Toggle Partner Mode"
         const val P1_LIFE_TOTAL_PREFIX = "P1 life total "
         const val P1_INCREASE_LIFE = "P1 increase life"
         const val P1_DECREASE_LIFE = "P1 decrease life"
