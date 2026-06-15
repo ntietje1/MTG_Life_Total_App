@@ -4,9 +4,10 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -37,6 +38,30 @@ class LifeCounterE2ETest {
         waitForContentDescription(P1_COMMANDER_BUTTON)
     }
 
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun commanderPartnerModeCanToggleOnAndOff() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        waitForContentDescription(P1_COMMANDER_BUTTON)
+        composeRule.onNodeWithContentDescription(P1_COMMANDER_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(ENABLE_PARTNER_COMMANDER_DAMAGE)
+        composeRule.onNodeWithContentDescription(ENABLE_PARTNER_COMMANDER_DAMAGE, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(DISABLE_PARTNER_COMMANDER_DAMAGE)
+        composeRule.onNodeWithContentDescription(DISABLE_PARTNER_COMMANDER_DAMAGE, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(ENABLE_PARTNER_COMMANDER_DAMAGE)
+        composeRule.onNodeWithContentDescription(COMMANDER_EXIT_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P1_COMMANDER_BUTTON)
+    }
+
     private fun exitCommanderModeIfNeeded() {
         if (composeRule.onAllNodesWithContentDescription(COMMANDER_EXIT_BUTTON, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()) {
             composeRule.onNodeWithContentDescription(COMMANDER_EXIT_BUTTON, useUnmergedTree = true)
@@ -45,18 +70,33 @@ class LifeCounterE2ETest {
     }
 
     private fun openLifeCounterIfNeeded() {
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            hasContentDescription(P1_COMMANDER_BUTTON) || hasContentDescription(START_LIFE_COUNTER)
+        waitUntil("life counter or splash action") {
+            hasContentDescription(P1_COMMANDER_BUTTON) ||
+                hasContentDescription(COMMANDER_EXIT_BUTTON) ||
+                hasContentDescription(START_LIFE_COUNTER)
         }
-        if (hasContentDescription(P1_COMMANDER_BUTTON)) {
+        if (hasContentDescription(P1_COMMANDER_BUTTON) || hasContentDescription(COMMANDER_EXIT_BUTTON)) {
             return
         }
-        composeRule.onNodeWithContentDescription(START_LIFE_COUNTER, useUnmergedTree = true).performClick()
+        composeRule.onNodeWithContentDescription(START_LIFE_COUNTER, useUnmergedTree = true)
+            .performTouchInput { click() }
     }
 
     private fun waitForContentDescription(value: String) {
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        waitUntil(value) {
             hasContentDescription(value)
+        }
+    }
+
+    private fun waitUntil(description: String, condition: () -> Boolean) {
+        try {
+            composeRule.waitUntil(timeoutMillis = 5_000, condition = condition)
+        } catch (error: Throwable) {
+            throw AssertionError(
+                "Timed out waiting for $description. Current semantics:\n" +
+                    composeRule.onRoot(useUnmergedTree = true).printToString(maxDepth = 10),
+                error
+            )
         }
     }
 
@@ -72,5 +112,7 @@ class LifeCounterE2ETest {
         const val COMMANDER_EXIT_BUTTON = "Exit commander mode"
         const val MIDDLE_MENU_BUTTON = "Open life counter menu"
         const val START_LIFE_COUNTER = "Go to Life Counter"
+        const val ENABLE_PARTNER_COMMANDER_DAMAGE = "Enable partner commander damage"
+        const val DISABLE_PARTNER_COMMANDER_DAMAGE = "Disable partner commander damage"
     }
 }

@@ -368,8 +368,13 @@ fun PlayerButton(
                                         imageVector = vectorResource(if (currentDealerIsPartnered) Res.drawable.sword_icon_double else Res.drawable.sword_icon),
                                         backgroundColor = Color.Transparent,
                                         mainColor = state.player.textColor,
+                                        contentDescription = if (currentDealerIsPartnered) {
+                                            "Disable partner commander damage"
+                                        } else {
+                                            "Enable partner commander damage"
+                                        },
                                         onPress = {
-                                            onAction(PlayerButtonAction.SetCommanderPartnerMode(!state.player.partnerMode))
+                                            onAction(PlayerButtonAction.ToggleCommanderPartnerMode)
                                         })
                                     Text(
                                         modifier = Modifier.wrapContentSize(unbounded = true),

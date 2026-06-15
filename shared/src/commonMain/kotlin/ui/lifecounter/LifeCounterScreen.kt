@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -352,26 +353,21 @@ fun AnimatedExitButton(
     visible: Boolean,
     onPress: () -> Unit
 ) {
-    val settingsButtonScale = remember { Animatable(0f) }
-    val duration = (300 / SystemManager.getAnimationCorrectionFactor()).toInt()
-
-    LaunchedEffect(visible) {
-        if (visible) {
-            settingsButtonScale.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = duration, easing = LinearOutSlowInEasing)
-            )
-        } else {
-            settingsButtonScale.snapTo(0f)
+    val hitTargetModifier = if (visible) {
+        Modifier.semantics {
+            contentDescription = "Exit commander mode"
+        }.pointerInput(onPress) {
+            detectTapGestures(onTap = {
+                onPress()
+            })
         }
+    } else {
+        Modifier.clearAndSetSemantics {}
     }
 
-    Box(modifier = modifier.background(
+    Box(modifier = modifier.then(hitTargetModifier).background(
         color = MaterialTheme.colorScheme.background, shape = CircleShape
-    ).graphicsLayer {
-        scaleX = settingsButtonScale.value
-        scaleY = settingsButtonScale.value
-    }) {
+    )) {
         SettingsButton(
             modifier = Modifier.fillMaxSize(),
             shape = CircleShape,
@@ -381,13 +377,9 @@ fun AnimatedExitButton(
             textSizeMultiplier = 1f,
             mainColor = MaterialTheme.colorScheme.onPrimary,
             visible = visible,
-            enabled = true,
+            enabled = false,
             shadowEnabled = true,
             hapticEnabled = true,
-            contentDescription = "Exit commander mode",
-            onPress = {
-                onPress()
-            },
         )
     }
 }

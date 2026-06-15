@@ -278,8 +278,8 @@ abstract class MockLifeCounterViewModel(
                 }
                 _state.value = _state.value.closePlayerCustomization(seatId)
             }
-            is PlayerButtonAction.SetCommanderPartnerMode -> updatePlayer(seatId) { player ->
-                player.copy(partnerMode = action.enabled)
+            PlayerButtonAction.ToggleCommanderPartnerMode -> updatePlayer(seatId) { player ->
+                player.copy(partnerMode = !player.partnerMode)
             }
             is PlayerButtonAction.ChangeCounter -> updatePlayer(seatId) { player ->
                 val counterIndex = action.counter.ordinal

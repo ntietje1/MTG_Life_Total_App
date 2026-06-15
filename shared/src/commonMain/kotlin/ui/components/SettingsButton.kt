@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
@@ -79,6 +81,10 @@ fun SettingsButton(
         }
     }
     val haptic = LocalHapticFeedback.current
+    val currentOnPress by rememberUpdatedState(onPress)
+    val currentOnTap by rememberUpdatedState(onTap)
+    val currentOnLongPress by rememberUpdatedState(onLongPress)
+    val currentOnDoubleTap by rememberUpdatedState(onDoubleTap)
 
     val semanticsModifier = when {
         !visible -> Modifier.clearAndSetSemantics {}
@@ -99,17 +105,16 @@ fun SettingsButton(
             .then(
                 if (enabled && visible) {
                     Modifier.pointerInput(Unit) {
-                        detectTapGestures(onPress = {
-                            onPress()
+                        detectTapGestures(onTap = {
+                            currentOnPress()
+                            currentOnTap()
                             if (hapticEnabled) {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
-                        }, onTap = {
-                            onTap()
                         }, onLongPress = {
-                            onLongPress()
+                            currentOnLongPress()
                         }, onDoubleTap = {
-                            onDoubleTap()
+                            currentOnDoubleTap()
                         })
                     }
                 } else {

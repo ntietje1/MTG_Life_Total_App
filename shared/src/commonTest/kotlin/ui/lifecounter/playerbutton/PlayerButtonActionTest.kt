@@ -68,7 +68,14 @@ class PlayerButtonActionTest {
     fun mapsCounterAndPartnerModeActionsToGameCommands() {
         assertEquals(
             listOf(GameCommand.SetCommanderPartnerMode(partnerMode = true)),
-            PlayerButtonAction.SetCommanderPartnerMode(enabled = true).toGameCommands(seatId)
+            PlayerButtonAction.ToggleCommanderPartnerMode.toGameCommands(seatId)
+        )
+        assertEquals(
+            listOf(GameCommand.SetCommanderPartnerMode(partnerMode = false)),
+            PlayerButtonAction.ToggleCommanderPartnerMode.toGameCommands(
+                seatId,
+                CommanderState.Active(dealer = model.Player(playerNum = 1, partnerMode = true))
+            )
         )
         assertEquals(
             listOf(

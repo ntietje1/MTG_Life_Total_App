@@ -12,7 +12,7 @@ sealed interface PlayerButtonAction {
     data class DecrementCommanderDamage(val partner: Boolean) : PlayerButtonAction
     data class SetMonarch(val monarch: Boolean) : PlayerButtonAction
     data class SetManualDeath(val dead: Boolean) : PlayerButtonAction
-    data class SetCommanderPartnerMode(val enabled: Boolean) : PlayerButtonAction
+    data object ToggleCommanderPartnerMode : PlayerButtonAction
     data class ChangeCounter(val counter: CounterType, val delta: Int) : PlayerButtonAction
     data class SetCounterActive(val counter: CounterType, val active: Boolean) : PlayerButtonAction
     data object ToggleCommanderDealer : PlayerButtonAction
@@ -60,8 +60,10 @@ fun PlayerButtonAction.toGameCommands(
             )
         )
 
-        is PlayerButtonAction.SetCommanderPartnerMode -> listOf(
-            GameCommand.SetCommanderPartnerMode(partnerMode = enabled)
+        PlayerButtonAction.ToggleCommanderPartnerMode -> listOf(
+            GameCommand.SetCommanderPartnerMode(
+                partnerMode = (commanderState as? CommanderState.Active)?.dealer?.partnerMode != true
+            )
         )
 
         is PlayerButtonAction.ChangeCounter -> listOf(
