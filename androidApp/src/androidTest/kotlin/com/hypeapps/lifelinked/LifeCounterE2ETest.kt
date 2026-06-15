@@ -203,6 +203,23 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun customizationUploadWarningCancelReturnsToCustomization() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        performSemanticClick(UPLOAD_PLAYER_IMAGE)
+        waitForText(CAMERA_ROLL_WARNING)
+
+        performSemanticClick(CANCEL_WARNING)
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+
+        performSemanticClick(CLOSE_DIALOG)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun tutorialCanOpenNavigateAndSkip() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1274,6 +1291,9 @@ class LifeCounterE2ETest {
         val SELECT_TEST_BACKGROUND_COLOR = "$SELECT_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB option 9"
         val SELECT_TEST_TEXT_COLOR = "$SELECT_COLOR_PREFIX$TEST_TEXT_COLOR_ARGB option 10"
         const val CLOSE_DIALOG = "Close dialog"
+        const val UPLOAD_PLAYER_IMAGE = "Upload player image"
+        const val CAMERA_ROLL_WARNING = "This will open the camera roll. Proceed?"
+        const val CANCEL_WARNING = "Cancel"
         const val OPEN_CARD_IMAGE_SEARCH = "Open card image search"
         const val SCRYFALL_TEST_QUERY = "sol ring"
         const val SCRYFALL_SEARCH_FIELD = "Search Scryfall input"
