@@ -37,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
@@ -73,14 +72,12 @@ fun LifeCounterScreen(
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
     val darkTheme by viewModel.darkTheme.collectAsState()
     val dimensions = LocalDimensions.current
+    val blurBackground = state.isModalOpen || state.players.any { it.showCustomizeMenu }
 
     state.currentModal?.let { modal ->
         MiddleButtonDialog(
             dialogState = modal,
             setDialogState = viewModel::openModal,
-            modifier = Modifier.onGloballyPositioned { _ ->
-                viewModel.setBlurBackground(state.isModalOpen)
-            },
             onDismiss = viewModel::closeModal,
             onBack = viewModel::goBackInModal,
             viewModel = viewModel,
@@ -108,10 +105,6 @@ fun LifeCounterScreen(
         viewModel.onNavigate(firstNavigation)
     }
 
-    LaunchedEffect(state.currentModal) {
-        viewModel.setBlurBackground(state.isModalOpen)
-    }
-
     BoxWithConstraints(
         modifier
             .background(MaterialTheme.colorScheme.background)
@@ -133,7 +126,7 @@ fun LifeCounterScreen(
                     contentDescription = "Player layout $numPlayers ${if (alt4PlayerLayout) "alternate" else "default"}"
                 }
                 .then(
-                    if (state.blurBackground) {
+                    if (blurBackground) {
                         Modifier.blur(radius = dimensions.blurRadius)
                     } else {
                         Modifier
@@ -176,7 +169,6 @@ fun LifeCounterScreen(
                                         customizationViewModel = viewModel.customizationViewModelFor(seatId),
                                         onAction = { action -> viewModel.onPlayerButtonAction(seatId, action) },
                                         rotation = rotation,
-                                        setBlurBackground = { viewModel.setBlurBackground(it) },
                                     )
                                 })
                         }
@@ -217,7 +209,7 @@ fun LifeCounterScreen(
 
             Box(
                 Modifier.fillMaxSize().then(
-                    if (state.blurBackground) {
+                    if (blurBackground) {
                         Modifier.background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
                     } else {
                         Modifier

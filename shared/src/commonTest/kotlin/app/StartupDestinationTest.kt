@@ -12,7 +12,8 @@ class StartupDestinationTest {
             startupDestination(
                 currentVersion = VersionNumber("2.0.0"),
                 lastSplashScreenShown = "1.0.0",
-                autoSkip = true
+                autoSkip = true,
+                gameStarted = false
             )
         )
     }
@@ -24,7 +25,8 @@ class StartupDestinationTest {
             startupDestination(
                 currentVersion = VersionNumber("2.0.0"),
                 lastSplashScreenShown = "2.0.0",
-                autoSkip = false
+                autoSkip = false,
+                gameStarted = false
             )
         )
     }
@@ -36,7 +38,21 @@ class StartupDestinationTest {
             startupDestination(
                 currentVersion = VersionNumber("2.0.0"),
                 lastSplashScreenShown = "2.0.0",
-                autoSkip = true
+                autoSkip = true,
+                gameStarted = false
+            )
+        )
+    }
+
+    @Test
+    fun matchingVersionWithStartedGameStartsAtLifeCounterEvenWithoutAutoSkip() {
+        assertEquals(
+            LifeLinkedRoute.LifeCounter,
+            startupDestination(
+                currentVersion = VersionNumber("2.0.0"),
+                lastSplashScreenShown = "2.0.0",
+                autoSkip = false,
+                gameStarted = true
             )
         )
     }

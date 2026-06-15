@@ -17,6 +17,10 @@ class PreferencesRepository(
     val autoSkip: StateFlow<Boolean> = _autoSkip.asStateFlow()
     fun setAutoSkip(value: Boolean) = putBoolean(Keys.AutoSkip, value, _autoSkip)
 
+    private val _gameStarted = MutableStateFlow(settings.getBoolean(Keys.GameStarted, false))
+    val gameStarted: StateFlow<Boolean> = _gameStarted.asStateFlow()
+    fun setGameStarted(value: Boolean) = putBoolean(Keys.GameStarted, value, _gameStarted)
+
     private val _keepScreenOn = MutableStateFlow(settings.getBoolean(Keys.KeepScreenOn, false))
     val keepScreenOn: StateFlow<Boolean> = _keepScreenOn.asStateFlow()
     fun setKeepScreenOn(value: Boolean) = putBoolean(Keys.KeepScreenOn, value, _keepScreenOn)
@@ -79,6 +83,7 @@ class PreferencesRepository(
     private object Keys {
         const val AutoKo = "autoKo"
         const val AutoSkip = "autoSkip"
+        const val GameStarted = "gameStarted"
         const val KeepScreenOn = "keepScreenOn"
         const val CameraRollDisabled = "cameraRollDisabled"
         const val FastCoinFlip = "fastCoinFlip"

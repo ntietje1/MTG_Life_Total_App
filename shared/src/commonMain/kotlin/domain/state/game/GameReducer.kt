@@ -44,9 +44,23 @@ private fun GameSession.setManualDeath(command: GameCommand.SetManualDeath): Gam
 }
 
 private fun GameSession.setSeatAppearance(command: GameCommand.SetSeatAppearance): GameSession {
+    val requestedName = command.appearance.displayName
+    val duplicateName = seats.any { seat ->
+        seat.id != command.seatId && seat.appearance.displayName.samePlayerNameAs(requestedName)
+    }
     return updateSeat(command.seatId) { seat ->
-        seat.copy(appearance = command.appearance)
+        seat.copy(
+            appearance = if (duplicateName) {
+                command.appearance.copy(displayName = seat.appearance.displayName)
+            } else {
+                command.appearance
+            }
+        )
     }.incrementVersion()
+}
+
+private fun String.samePlayerNameAs(other: String): Boolean {
+    return trim().lowercase() == other.trim().lowercase()
 }
 
 private fun GameSession.setMonarch(command: GameCommand.SetMonarch): GameSession {

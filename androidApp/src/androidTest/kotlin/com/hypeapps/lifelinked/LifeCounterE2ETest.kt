@@ -33,9 +33,11 @@ import domain.state.game.GameSessionRepository
 import domain.state.game.GameSessionStore
 import domain.state.game.PlayerProfileId
 import domain.state.game.SeatAppearance
+import domain.state.game.SeatId
 import domain.state.planechase.PlanechaseRepository
 import domain.state.planechase.PlanechaseSnapshot
 import domain.state.profile.PlayerProfile
+import domain.state.profile.PlayerColors
 import domain.state.profile.PlayerProfileRepository
 import domain.storage.PreferencesRepository
 import kotlinx.coroutines.runBlocking
@@ -65,6 +67,7 @@ class LifeCounterE2ETest {
         preferences.setCameraRollDisabled(false)
         preferences.setAutoKo(true)
         preferences.setAutoSkip(true)
+        preferences.setGameStarted(false)
         preferences.setKeepScreenOn(false)
         preferences.setTurnTimer(false)
         preferences.setNumPlayers(4)
@@ -492,6 +495,21 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun startedGameReopensToLifeCounterWhenAutoSkipIsOff() {
+        val preferences = GlobalContext.get().get<PreferencesRepository>()
+        preferences.setAutoSkip(false)
+        preferences.setGameStarted(true)
+
+        composeRule.activityRule.scenario.recreate()
+
+        waitForRealLifeCounter()
+        waitUntil("player select is not shown after reopening started game") {
+            !hasContentDescription(START_LIFE_COUNTER)
+        }
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun playerSelectTwoFingerSelectionPreservesExistingRoster() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -911,6 +929,29 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun duplicateCustomizationNameIsNotAppliedToGameSeat() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
+            .performTextClearance()
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
+            .performTextInput("P2")
+        closeCustomizationAndReturnToCounter()
+
+        val initialLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
+        composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
+
+        val session = GlobalContext.get().get<GameSessionStore>().session.value ?: error("No active game session")
+        check(session.requireSeat(SeatId("seat-1")).appearance.displayName == "P1")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun customizationBackgroundColorPersistsAfterLifeChange() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -988,6 +1029,46 @@ class LifeCounterE2ETest {
 
         waitForText(SAVED_PROFILE_NAME)
         waitForContentDescription("$P2_BACKGROUND_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun defaultProfilesAreHiddenFromLoadProfile() {
+        GlobalContext.get().get<PlayerProfileRepository>().run {
+            saveProfile(PlayerProfile(PlayerProfileId("P1"), "P1", PlayerColors(1, 2)))
+            saveProfile(PlayerProfile(PlayerProfileId(SAVED_PROFILE_NAME), SAVED_PROFILE_NAME))
+        }
+
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        performSemanticClick(OPEN_LOAD_PROFILE)
+
+        waitForContentDescription("$LOAD_PROFILE_PREFIX$SAVED_PROFILE_NAME")
+        waitUntil("default P1 profile hidden from load profile") {
+            !hasContentDescription("${LOAD_PROFILE_PREFIX}P1")
+        }
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun resetDifferentPlayersAssignsUniqueDefaultColors() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_RESET_GAME)
+        performSemanticClick(RESET_DIFFERENT_PLAYERS)
+        performSemanticClick(RESET_SKIP_FIRST_PLAYER)
+
+        waitForContentDescription(P4_SETTINGS_BUTTON)
+        val colors = listOf(
+            readIntContentDescription(P1_BACKGROUND_COLOR_PREFIX),
+            readIntContentDescription(P2_BACKGROUND_COLOR_PREFIX),
+            readIntContentDescription(P3_BACKGROUND_COLOR_PREFIX),
+            readIntContentDescription(P4_BACKGROUND_COLOR_PREFIX),
+        )
+        check(colors.distinct().size == colors.size)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -1569,6 +1650,8 @@ class LifeCounterE2ETest {
         const val P1_BACKGROUND_IMAGE_PREFIX = "P1 background image "
         const val P1_TEXT_COLOR_PREFIX = "P1 text color "
         const val P2_BACKGROUND_COLOR_PREFIX = "P2 background color "
+        const val P3_BACKGROUND_COLOR_PREFIX = "P3 background color "
+        const val P4_BACKGROUND_COLOR_PREFIX = "P4 background color "
         val TEST_BACKGROUND_COLOR_ARGB = PlayerColor6.toArgb()
         val TEST_TEXT_COLOR_ARGB = PlayerColor7.toArgb()
         val SELECT_TEST_BACKGROUND_COLOR = "$SELECT_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB option 9"

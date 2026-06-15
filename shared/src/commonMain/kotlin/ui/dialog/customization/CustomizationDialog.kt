@@ -68,7 +68,7 @@ import theme.LocalDimensions
 import theme.halfAlpha
 import ui.components.SettingsButton
 import ui.components.TextFieldWithButton
-import ui.dialog.AnimatedGridDialog
+import ui.dialog.GridDialog
 import ui.dialog.WarningDialog
 import ui.dialog.color.ColorDialogViewModel
 import ui.dialog.color.ColorPickerDialogContent
@@ -152,7 +152,7 @@ fun PlayerCustomizationDialog(
         }
     }
 
-    AnimatedGridDialog(modifier = modifier, onDismiss = {
+    GridDialog(modifier = modifier, onDismiss = {
         onDismiss()
         if (state.changeWasMade) notificationManager.showNotification("Changes saved successfully", 3000)
     }, onBack = ::handleDialogBack, pages = listOf(Pair(state.currentRoute == CustomizationRoute.Default) {

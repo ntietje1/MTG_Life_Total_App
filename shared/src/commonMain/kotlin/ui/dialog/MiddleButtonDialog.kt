@@ -1,11 +1,6 @@
 package ui.dialog
 
 import PlanechaseTutorialContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.TweenSpec
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import domain.system.SystemManager
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.halfAlpha
@@ -86,7 +80,7 @@ fun MiddleButtonDialog(
         }
     }
 
-    AnimatedGridDialog(modifier = modifier.fillMaxSize(), onDismiss = onDismiss, onBack = ::handleBack, pages = listOf(
+    GridDialog(modifier = modifier.fillMaxSize(), onDismiss = onDismiss, onBack = ::handleBack, pages = listOf(
             Pair(
                 dialogState == LifeCounterModal.CoinFlip
             ) {
@@ -238,57 +232,26 @@ fun MiddleButtonDialog(
 }
 
 @Composable
-fun AnimatedGridDialog(
+fun GridDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     onBack: (() -> Unit)? = null,
     pages: List<Pair<Boolean, @Composable () -> Unit>>
 ) {
     val dimensions = LocalDimensions.current
-
-    val duration = (450 / SystemManager.getAnimationCorrectionFactor()).toInt()
-
-    val enterAnimation = slideInHorizontally(
-        TweenSpec(
-            duration, easing = LinearOutSlowInEasing
-        )
-    ) { (-it * 1.25).toInt() }
-    val exitAnimation = slideOutHorizontally(
-        TweenSpec(
-            duration, easing = LinearOutSlowInEasing
-        )
-    ) { (it * 1.25).toInt() }
-
-    @Composable
-    fun FormattedAnimatedVisibility(
-        visible: Boolean, content: @Composable () -> Unit
-    ) {
-        AnimatedVisibility(
-            visible = visible, enter = enterAnimation, exit = exitAnimation
-        ) {
-            BoxWithConstraints(
-                modifier = modifier
-                    .background(
-                        MaterialTheme.colorScheme.surface.halfAlpha().halfAlpha()
-                    )
-                    .border(
-                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()
-                    ),
-            ) {
-                content()
-            }
-        }
-    }
+    val visiblePage = pages.firstOrNull { it.first }?.second
 
     val dialogContent: @Composable () -> Unit = {
-        Box {
-            for (page in pages) {
-                FormattedAnimatedVisibility(
-                    visible = page.first
-                ) {
-                    page.second.invoke()
-                }
-            }
+        BoxWithConstraints(
+            modifier = modifier
+                .background(
+                    MaterialTheme.colorScheme.surface.halfAlpha().halfAlpha()
+                )
+                .border(
+                    dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()
+                ),
+        ) {
+            visiblePage?.invoke()
         }
     }
 

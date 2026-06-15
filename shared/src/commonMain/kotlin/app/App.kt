@@ -1,6 +1,7 @@
 package app
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +41,8 @@ fun LifeLinkedApp() {
             startupDestination(
                 currentVersion = currentVersionNumber,
                 lastSplashScreenShown = preferencesRepository.lastSplashScreenShown.value,
-                autoSkip = preferencesRepository.autoSkip.value
+                autoSkip = preferencesRepository.autoSkip.value,
+                gameStarted = preferencesRepository.gameStarted.value
             )
         }
 
@@ -59,6 +61,7 @@ fun LifeLinkedApp() {
                     },
                     goToLifeCounter = {
                         preferencesRepository.setLastSplashScreenShown(currentVersionNumber.value)
+                        preferencesRepository.setGameStarted(true)
                         navController.navigate(LifeLinkedRoute.LifeCounter.route)
                     }
                 )
@@ -69,6 +72,7 @@ fun LifeLinkedApp() {
                     viewModel = viewModel,
                     onFinishTutorial = {
                         preferencesRepository.setTutorialSkip(true)
+                        preferencesRepository.setGameStarted(true)
                         if (navController.currentBackStack.value.all {
                                 it.destination.route != LifeLinkedRoute.PlayerSelect.route
                             }) {
@@ -86,6 +90,7 @@ fun LifeLinkedApp() {
                     viewModel = viewModel,
                     allowChangeNumPlayers = allowChangeNumPlayers,
                     goToLifeCounterScreen = {
+                        preferencesRepository.setGameStarted(true)
                         navController.navigate(LifeLinkedRoute.LifeCounter.route)
                     }
                 )
@@ -93,6 +98,9 @@ fun LifeLinkedApp() {
 
             composable(LifeLinkedRoute.LifeCounter.route) {
                 val viewModel = koinViewModel<LifeCounterViewModel>()
+                LaunchedEffect(Unit) {
+                    preferencesRepository.setGameStarted(true)
+                }
                 LifeCounterScreen(
                     viewModel = viewModel,
                     goToPlayerSelectScreen = { changeNumPlayers ->

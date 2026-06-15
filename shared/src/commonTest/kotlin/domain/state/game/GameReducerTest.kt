@@ -59,6 +59,58 @@ class GameReducerTest {
     }
 
     @Test
+    fun duplicateSeatNameIsRejectedButOtherAppearanceChangesApply() {
+        val initial = testSession()
+        val duplicateNameAppearance = SeatAppearance(
+            displayName = "P2",
+            colors = PlayerColors(backgroundArgb = 123, textArgb = 456),
+            background = PlayerBackground.ProviderImage("https://images.example/new.gif")
+        )
+
+        val updated = reduceGame(
+            initial,
+            GameCommand.SetSeatAppearance(firstSeatId, duplicateNameAppearance)
+        ).session
+
+        val firstSeat = updated.requireSeat(firstSeatId)
+        assertEquals("P1", firstSeat.appearance.displayName)
+        assertEquals(duplicateNameAppearance.colors, firstSeat.appearance.colors)
+        assertEquals(duplicateNameAppearance.background, firstSeat.appearance.background)
+    }
+
+    @Test
+    fun duplicateSeatNamesIgnoreWhitespaceAndCase() {
+        val initial = testSession()
+        val duplicateNameAppearance = SeatAppearance(
+            displayName = " p2 ",
+            colors = PlayerColors(backgroundArgb = 123, textArgb = 456)
+        )
+
+        val updated = reduceGame(
+            initial,
+            GameCommand.SetSeatAppearance(firstSeatId, duplicateNameAppearance)
+        ).session
+
+        assertEquals("P1", updated.requireSeat(firstSeatId).appearance.displayName)
+    }
+
+    @Test
+    fun sameSeatCanKeepItsNameWhenAppearanceChanges() {
+        val initial = testSession()
+        val appearance = SeatAppearance(
+            displayName = "P1",
+            colors = PlayerColors(backgroundArgb = 123, textArgb = 456)
+        )
+
+        val updated = reduceGame(
+            initial,
+            GameCommand.SetSeatAppearance(firstSeatId, appearance)
+        ).session
+
+        assertEquals(appearance, updated.requireSeat(firstSeatId).appearance)
+    }
+
+    @Test
     fun newSessionCreatesOneToSixSeatsWithStartingLife() {
         val session = GameSession.newGame(
             id = GameSessionId("game-1"),

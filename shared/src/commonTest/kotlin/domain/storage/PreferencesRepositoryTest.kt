@@ -24,6 +24,7 @@ class PreferencesRepositoryTest {
         assertEquals("0.0.0", repository.lastSplashScreenShown.value)
         assertFalse(repository.turnTimer.value)
         assertFalse(repository.devMode.value)
+        assertFalse(repository.gameStarted.value)
     }
 
     @Test
@@ -44,6 +45,7 @@ class PreferencesRepositoryTest {
         repository.setLastSplashScreenShown("1.2.3")
         repository.setTurnTimer(true)
         repository.setDevMode(true)
+        repository.setGameStarted(true)
 
         assertFalse(repository.autoKo.value)
         assertTrue(repository.autoSkip.value)
@@ -58,6 +60,7 @@ class PreferencesRepositoryTest {
         assertEquals("1.2.3", repository.lastSplashScreenShown.value)
         assertTrue(repository.turnTimer.value)
         assertTrue(repository.devMode.value)
+        assertTrue(repository.gameStarted.value)
     }
 
     @Test
@@ -70,6 +73,7 @@ class PreferencesRepositoryTest {
         firstRepository.setDarkTheme(false)
         firstRepository.setStartingLife(30)
         firstRepository.setLastSplashScreenShown("2.0.0")
+        firstRepository.setGameStarted(true)
 
         val reloadedRepository = PreferencesRepository(settings)
 
@@ -78,6 +82,7 @@ class PreferencesRepositoryTest {
         assertFalse(reloadedRepository.darkTheme.value)
         assertEquals(30, reloadedRepository.startingLife.value)
         assertEquals("2.0.0", reloadedRepository.lastSplashScreenShown.value)
+        assertTrue(reloadedRepository.gameStarted.value)
     }
 }
 

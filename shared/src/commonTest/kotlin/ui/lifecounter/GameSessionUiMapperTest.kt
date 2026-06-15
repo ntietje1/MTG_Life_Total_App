@@ -25,7 +25,6 @@ class GameSessionUiMapperTest {
         val previous = LifeCounterState(
             showButtons = true,
             showLoadingScreen = false,
-            blurBackground = true,
             counters = List(7) { -1 },
             middleButtonState = MiddleButtonState.COMMANDER_EXIT
         )
@@ -47,7 +46,6 @@ class GameSessionUiMapperTest {
 
         assertEquals(true, mapped.showButtons)
         assertEquals(false, mapped.showLoadingScreen)
-        assertEquals(true, mapped.blurBackground)
         assertEquals(DayNightState.NIGHT, mapped.dayNight)
         assertEquals(listOf(1, 2, 3, 4, 5, 6, 7), mapped.counters)
         assertEquals(MiddleButtonState.COMMANDER_EXIT, mapped.middleButtonState)

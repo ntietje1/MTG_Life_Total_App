@@ -246,10 +246,6 @@ class TutorialLifeCounterController(
         _state.value = _state.value.copy(modalStack = _state.value.modalStack.goBack())
     }
 
-    override fun setBlurBackground(value: Boolean) {
-        _state.value = _state.value.copy(blurBackground = value)
-    }
-
     override fun toggleDarkTheme(value: Boolean?) {
         if (blockedThemeToggleMessage != null) {
             showNotification(blockedThemeToggleMessage, 3000)

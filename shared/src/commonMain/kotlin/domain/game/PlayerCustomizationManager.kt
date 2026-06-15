@@ -26,12 +26,22 @@ class PlayerCustomizationManager(
         val usedColors = requireAttached().players.map { it.color }
         val newColor = allPlayerColors.filter { it !in usedColors }.random()
 
-        return player.copy(
-            name = "P${player.playerNum}",
+        return player.defaultAppearance(newColor)
+    }
+
+    fun resetAllPlayerPrefs(): List<Player> {
+        return requireAttached().players.mapIndexed { index, player ->
+            player.defaultAppearance(allPlayerColors[index])
+        }
+    }
+
+    private fun Player.defaultAppearance(color: Color): Player {
+        return copy(
+            name = "P$playerNum",
             textColor = Color.White,
             imageString = null,
             background = PlayerBackground.None,
-            color = newColor
+            color = color
         )
     }
 
@@ -57,9 +67,6 @@ class PlayerCustomizationManager(
         return player.toProfile().toSeatAppearance()
     }
 
-    fun resetAllPlayerPrefs(): List<Player> {
-        return requireAttached().players.map(::resetPlayerPrefs)
-    }
 }
 
 private fun Player.toProfile(): PlayerProfile {

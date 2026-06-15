@@ -193,7 +193,6 @@ open class LifeCounterViewModel(
                         appearance = playerCustomizationManager.seatAppearanceFor(player)
                     )
                 )
-                playerCustomizationManager.savePlayerPrefs(player)
                 customizationViewModels[seatId] = createCustomizationViewModel(seatId, player)
             }
         }
@@ -319,20 +318,11 @@ open class LifeCounterViewModel(
         preferencesRepository.setNumPlayers(value)
     }
 
-    private fun restartButtons() {
-        setShowButtons(false)
-        viewModelScope.launch {
-            delay(10)
-            setShowButtons(true)
-        }
-    }
-
     override fun resetGameState(startingLife: Int?) {
         dispatchGameCommand(GameCommand.ResetGame(startingLife = startingLife))
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
         timerManager.reset()
-        restartButtons()
     }
 
     override fun toggleKeepScreenOn(value: Boolean?) {
@@ -349,10 +339,6 @@ open class LifeCounterViewModel(
 
     override fun setShowButtons(value: Boolean) {
         _state.update { it.copy(showButtons = value) }
-    }
-
-    override fun setBlurBackground(value: Boolean) {
-        _state.update { it.copy(blurBackground = value) }
     }
 
     override fun setDayNight(value: DayNightState) {

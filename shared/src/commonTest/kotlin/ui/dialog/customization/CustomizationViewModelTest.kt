@@ -1,5 +1,9 @@
 package ui.dialog.customization
 
+import androidx.compose.ui.graphics.Color
+import domain.state.game.PlayerProfileId
+import domain.state.profile.PlayerProfile
+import domain.state.profile.PlayerColors
 import domain.state.profile.PlayerProfileRepository
 import domain.storage.IFileImageStore
 import domain.storage.PreferencesRepository
@@ -44,13 +48,27 @@ class CustomizationViewModelTest {
         assertEquals("Tutorial", changedPlayers.single().name)
     }
 
+    @Test
+    fun loadPlayerPrefsHidesDefaultPlayerProfiles() {
+        val profileRepository = PlayerProfileRepository(TestSettings())
+        profileRepository.saveProfile(PlayerProfile(PlayerProfileId("P1"), "P1", PlayerColors(1, 2)))
+        profileRepository.saveProfile(PlayerProfile(PlayerProfileId("Jace"), "Jace", PlayerColors(3, 4)))
+        val viewModel = customizationViewModel(profileRepository = profileRepository)
+
+        val players = viewModel.loadPlayerPrefs()
+
+        assertEquals(listOf("Jace"), players.map { it.name })
+        assertEquals(Color(3), players.single().color)
+    }
+
     private fun customizationViewModel(
+        profileRepository: PlayerProfileRepository = PlayerProfileRepository(TestSettings()),
         onPlayerChanged: (Player) -> Unit = {}
     ): CustomizationViewModel {
         return CustomizationViewModel(
             initialPlayer = Player(playerNum = 1),
             fileImageStore = FakeFileImageStore(),
-            profileRepository = PlayerProfileRepository(TestSettings()),
+            profileRepository = profileRepository,
             preferencesRepository = PreferencesRepository(TestSettings()),
             onPlayerChanged = onPlayerChanged
         )

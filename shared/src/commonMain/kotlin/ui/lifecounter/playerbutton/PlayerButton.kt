@@ -90,7 +90,6 @@ fun PlayerButton(
     onAction: (PlayerButtonAction) -> Unit,
     rotation: Float = 0f,
     turnTimerModifier: Modifier,
-    setBlurBackground: (Boolean) -> Unit,
 ) {
     val currentDealerIsPartnered = (state.commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
     val haptic = LocalHapticFeedback.current
@@ -108,15 +107,6 @@ fun PlayerButton(
         val smallPadding = settingsButtonSize / 10f
         val smallTextSize = maxHeight.value / 12f
         return Triple(settingsButtonSize, smallPadding, smallTextSize)
-    }
-
-    LaunchedEffect(
-        state.showCustomizeMenu
-    ) {
-        val dialogStates = listOf(
-            state.showCustomizeMenu
-        )
-        setBlurBackground(dialogStates.any { it })
     }
 
     if (state.showCustomizeMenu) {

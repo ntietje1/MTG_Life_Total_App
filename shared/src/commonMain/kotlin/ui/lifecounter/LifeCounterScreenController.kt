@@ -16,7 +16,6 @@ interface LifeCounterScreenController {
     fun openModal(value: LifeCounterModal)
     fun closeModal()
     fun goBackInModal()
-    fun setBlurBackground(value: Boolean)
     fun toggleDarkTheme(value: Boolean? = null)
     fun toggleKeepScreenOn(value: Boolean? = null)
     fun setShowButtons(value: Boolean)

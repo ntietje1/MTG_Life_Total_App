@@ -124,10 +124,10 @@ open class CustomizationViewModel(
     }
 
     fun loadPlayerPrefs(): List<Player> {
-        val currentDefaultName = "P${state.value.player.playerNum}"
         return profileRepository.loadProfiles()
             .map { it.toPlayer(state.value.player.playerNum) }
-            .sortedBy { player -> if (player.name == currentDefaultName) 0 else 1 }
+            .filterNot { player -> player.isDefaultOrEmptyName() }
+            .sortedBy { player -> player.name }
     }
 
     fun deletePlayerPref(player: Player) {

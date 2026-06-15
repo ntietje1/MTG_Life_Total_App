@@ -10,7 +10,6 @@ import ui.lifecounter.playerbutton.showsBackButton
 data class LifeCounterState(
     val showButtons: Boolean = false,
     val showLoadingScreen: Boolean = true,
-    val blurBackground: Boolean = false,
     val dayNight: DayNightState = DayNightState.NONE,
     val coinFlipHistory: List<String> = emptyList(),
     val counters: List<Int> = List(COUNTER_DIALOG_ENTRIES) { 0 },
