@@ -479,9 +479,23 @@ class LifeCounterE2ETest {
 
         openMiddleMenuItem(OPEN_COIN_FLIP)
         waitForIntContentDescription(COINS_TO_FLIP_PREFIX, 1)
+        composeRule.onNodeWithContentDescription(DECREASE_COINS_TO_FLIP, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(COINS_TO_FLIP_PREFIX, 1)
         composeRule.onNodeWithContentDescription(INCREASE_COINS_TO_FLIP, useUnmergedTree = true)
             .performTouchInput { click() }
         waitForIntContentDescription(COINS_TO_FLIP_PREFIX, 2)
+        composeRule.onNodeWithContentDescription(DECREASE_COINS_TO_FLIP, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(COINS_TO_FLIP_PREFIX, 1)
+
+        waitForIntContentDescription(KRARKS_THUMBS_PREFIX, 0)
+        composeRule.onNodeWithContentDescription(INCREASE_KRARKS_THUMBS, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(KRARKS_THUMBS_PREFIX, 1)
+        composeRule.onNodeWithContentDescription(DECREASE_KRARKS_THUMBS, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(KRARKS_THUMBS_PREFIX, 0)
 
         composeRule.onAllNodesWithContentDescription(FLIP_COIN, useUnmergedTree = true)[0]
             .performTouchInput { click() }
@@ -1436,7 +1450,11 @@ class LifeCounterE2ETest {
         const val LAST_DICE_RESULT_PREFIX = "Last dice result "
         const val OPEN_COIN_FLIP = "Open coin flip"
         const val COINS_TO_FLIP_PREFIX = "Coins to flip "
+        const val KRARKS_THUMBS_PREFIX = "Krark's thumbs "
         const val INCREASE_COINS_TO_FLIP = "Increase coins to flip"
+        const val DECREASE_COINS_TO_FLIP = "Decrease coins to flip"
+        const val INCREASE_KRARKS_THUMBS = "Increase Krark's thumbs"
+        const val DECREASE_KRARKS_THUMBS = "Decrease Krark's thumbs"
         const val FLIP_COIN = "Flip coin"
         const val COIN_FLIP_LAST_RESULT_PREFIX = "Coin flip last result "
         const val OPEN_PLANECHASE = "Open planechase"
