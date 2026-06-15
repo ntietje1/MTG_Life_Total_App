@@ -112,14 +112,17 @@ fun PlaneChaseDialogContent( //TODO: add animations
                 ) {
                     Spacer(modifier = Modifier.weight(0.8f))
                     Column(
-                        modifier = Modifier.wrapContentSize().pointerInput(Unit) {
-                            detectTapGestures {
-                                if (planarDieResult == PlanarDieResult.PLANESWALK) {
-                                    viewModel.planeswalk()
-                                    planarDieResultVisible = false
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .semantics { contentDescription = "Planar die result ${planarDieResult.toString}" }
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    if (planarDieResult == PlanarDieResult.PLANESWALK) {
+                                        viewModel.planeswalk()
+                                        planarDieResultVisible = false
+                                    }
                                 }
-                            }
-                        },
+                            },
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {

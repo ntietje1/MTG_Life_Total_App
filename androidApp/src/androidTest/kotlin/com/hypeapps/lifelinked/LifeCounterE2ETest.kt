@@ -18,10 +18,20 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import domain.game.timer.TimerStateRepository
+import domain.state.game.GameCommand
+import domain.state.game.GameMutation
+import domain.state.game.GameRules
+import domain.state.game.GameSession
+import domain.state.game.GameSessionId
+import domain.state.game.GameSessionRepository
+import domain.state.game.GameSessionStore
+import domain.state.game.SeatAppearance
 import domain.state.planechase.PlanechaseRepository
 import domain.state.planechase.PlanechaseSnapshot
 import domain.state.profile.PlayerProfileRepository
 import domain.storage.PreferencesRepository
+import kotlinx.coroutines.runBlocking
 import model.VersionNumber
 import org.junit.Before
 import org.junit.Rule
@@ -29,6 +39,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext
 import theme.PlayerColor6
+import ui.dialog.planechase.PlaneChaseViewModel
 
 @RunWith(AndroidJUnit4::class)
 class LifeCounterE2ETest {
@@ -46,7 +57,30 @@ class LifeCounterE2ETest {
         preferences.setKeepScreenOn(false)
         preferences.setTurnTimer(false)
         preferences.setNumPlayers(4)
+        koin.get<TimerStateRepository>().save(null)
+        runBlocking {
+            val freshSession = GameSession.newGame(
+                id = GameSessionId("local-active-game"),
+                rules = GameRules(startingLife = preferences.startingLife.value),
+                appearances = (1..preferences.numPlayers.value).map { seatNumber ->
+                    SeatAppearance(displayName = "P$seatNumber")
+                }
+            )
+            koin.get<GameSessionRepository>().commit(
+                GameMutation(
+                    sessionId = freshSession.id,
+                    expectedVersion = freshSession.version,
+                    command = GameCommand.ResetGame(),
+                    resultingSession = freshSession
+                )
+            )
+            koin.get<GameSessionStore>().loadActiveSession()
+        }
         koin.get<PlanechaseRepository>().save(PlanechaseSnapshot())
+        koin.get<PlaneChaseViewModel>().run {
+            removeAllPlanarDeck(state.value.planarDeck.toList())
+        }
+        composeRule.activityRule.scenario.recreate()
         val profileRepository = koin.get<PlayerProfileRepository>()
         profileRepository.loadProfiles().forEach { profile ->
             profileRepository.deleteProfile(profile.id)
@@ -231,16 +265,7 @@ class LifeCounterE2ETest {
         openMiddleMenuItem(OPEN_PLANECHASE)
         waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
 
-        performSemanticClick(OPEN_PLANAR_DECK)
-        waitForContentDescription(NO_PLANES_SELECTED)
-        waitForContentDescription(TEST_PLANE_SELECTION)
-
-        performSemanticClick(SELECT_ALL_PLANES)
-        waitForContentDescription(ONE_PLANE_SELECTED)
-
-        performSemanticClick(DONE_SELECTING_PLANES)
-        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 1)
-        waitForContentDescription("$CURRENT_PLANE_PREFIX$TEST_PLANE_NAME")
+        selectE2EPlaneDeck()
         waitForIntContentDescription(PLANAR_BACK_STACK_SIZE_PREFIX, 0)
 
         performSemanticClick(PLANESWALK)
@@ -251,6 +276,24 @@ class LifeCounterE2ETest {
 
         closeDialogAndWaitForCounter()
         waitForContentDescription(P1_SETTINGS_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun planechasePlanarDieShowsResult() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLANECHASE)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
+
+        selectE2EPlaneDeck()
+
+        performSemanticClick(ROLL_PLANAR_DIE)
+
+        waitUntil("planar die result") {
+            findContentDescriptionValue(PLANAR_DIE_RESULT_PREFIX) in PLANAR_DIE_RESULTS
+        }
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -746,6 +789,17 @@ class LifeCounterE2ETest {
             .performSemanticsAction(SemanticsActions.OnClick)
     }
 
+    private fun selectE2EPlaneDeck() {
+        performSemanticClick(OPEN_PLANAR_DECK)
+        waitForContentDescription(NO_PLANES_SELECTED)
+        waitForContentDescription(TEST_PLANE_SELECTION)
+        performSemanticClick(SELECT_ALL_PLANES)
+        waitForContentDescription(ONE_PLANE_SELECTED)
+        performSemanticClick(DONE_SELECTING_PLANES)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 1)
+        waitForContentDescription("$CURRENT_PLANE_PREFIX$TEST_PLANE_NAME")
+    }
+
     private fun readFirstP1Counter(): CounterReading? {
         return contentDescriptions().firstNotNullOfOrNull { description ->
             val counterText = description.removePrefix(P1_COUNTER_PREFIX)
@@ -932,12 +986,15 @@ class LifeCounterE2ETest {
         const val DONE_SELECTING_PLANES = "Done selecting planes"
         const val CURRENT_PLANE_PREFIX = "Current plane "
         const val PLANESWALK = "Planeswalk"
+        const val ROLL_PLANAR_DIE = "Roll planar die"
+        const val PLANAR_DIE_RESULT_PREFIX = "Planar die result "
         const val PREVIOUS_PLANE = "Previous plane"
         const val P1_ADD_COUNTER = "Add P1 counter"
         const val P1_ADD_POISON_COUNTER = "Add P1 Poison counter"
         const val P1_COUNTER_PREFIX = "P1 "
         const val COUNTER_VALUE_SEPARATOR = " counter "
         const val P1_POISON_COUNTER_PREFIX = "P1 Poison counter "
+        val PLANAR_DIE_RESULTS = setOf("Planeswalk", "Chaos Ensues", "No Effect")
     }
 
     private data class CounterReading(
