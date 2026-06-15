@@ -9,6 +9,7 @@ interface LifeCounterScreenController {
     val state: StateFlow<LifeCounterState>
     val numPlayers: StateFlow<Int>
     val alt4PlayerLayout: StateFlow<Boolean>
+    val darkTheme: StateFlow<Boolean>
     val turnTimerEnabled: StateFlow<Boolean>
 
     fun onNavigate(firstNavigation: Boolean)

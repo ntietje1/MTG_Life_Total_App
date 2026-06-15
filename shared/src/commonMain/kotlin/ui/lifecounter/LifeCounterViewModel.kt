@@ -47,6 +47,7 @@ open class LifeCounterViewModel(
 
     override val numPlayers: StateFlow<Int> = preferencesRepository.numPlayers
     override val alt4PlayerLayout: StateFlow<Boolean> = preferencesRepository.alt4PlayerLayout
+    override val darkTheme: StateFlow<Boolean> = preferencesRepository.darkTheme
     override val turnTimerEnabled: StateFlow<Boolean> = preferencesRepository.turnTimer
 
     private val customizationViewModels = mutableMapOf<SeatId, CustomizationViewModel>()

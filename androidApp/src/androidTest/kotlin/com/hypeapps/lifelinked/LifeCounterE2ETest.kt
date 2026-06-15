@@ -189,6 +189,13 @@ class LifeCounterE2ETest {
         exitCommanderModeIfNeeded()
 
         openMiddleMenu()
+        val initialTheme = readContentDescriptionValue(THEME_STATE_PREFIX)
+        performSemanticClick(TOGGLE_THEME)
+        waitUntil("theme changed") {
+            findContentDescriptionValue(THEME_STATE_PREFIX)
+                ?.let { it != initialTheme } == true
+        }
+
         val initialDayNight = readContentDescriptionValue(DAY_NIGHT_STATE_PREFIX)
         performSemanticClick(TOGGLE_DAY_NIGHT)
         waitUntil("day night changed") {
@@ -1180,6 +1187,8 @@ class LifeCounterE2ETest {
         const val RESET_SELECT_FIRST_PLAYER = "Select"
         const val RESET_SKIP_FIRST_PLAYER = "Skip"
         const val BACK_IN_DIALOG = "Back in dialog"
+        const val TOGGLE_THEME = "Toggle theme"
+        const val THEME_STATE_PREFIX = "Theme "
         const val TOGGLE_DAY_NIGHT = "Toggle day night"
         const val DAY_NIGHT_STATE_PREFIX = "Day night state "
         const val OPEN_APP_SETTINGS = "Open app settings"

@@ -209,6 +209,7 @@ abstract class MockLifeCounterViewModel(
     override val state = _state.asStateFlow()
     override val numPlayers = preferencesRepository.numPlayers
     override val alt4PlayerLayout = preferencesRepository.alt4PlayerLayout
+    override val darkTheme = preferencesRepository.darkTheme
     override val turnTimerEnabled = preferencesRepository.turnTimer
 
     private val customizationViewModels = mutableMapOf<SeatId, CustomizationViewModel>()

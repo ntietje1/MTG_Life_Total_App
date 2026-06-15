@@ -71,6 +71,7 @@ fun LifeCounterScreen(
     val scope = rememberCoroutineScope()
     val numPlayers by viewModel.numPlayers.collectAsState()
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
+    val darkTheme by viewModel.darkTheme.collectAsState()
     val dimensions = LocalDimensions.current
 
     state.currentModal?.let { modal ->
@@ -112,7 +113,11 @@ fun LifeCounterScreen(
     }
 
     BoxWithConstraints(
-        modifier.background(MaterialTheme.colorScheme.background)
+        modifier
+            .background(MaterialTheme.colorScheme.background)
+            .semantics {
+                contentDescription = "Theme ${if (darkTheme) "dark" else "light"}"
+            }
     ) {
         val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) {
             LifeCounterMeasurements(
