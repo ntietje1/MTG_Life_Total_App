@@ -323,19 +323,30 @@ class LifeCounterE2ETest {
         exitCommanderModeIfNeeded()
 
         openMiddleMenuItem(OPEN_PLAYER_SELECT)
-        composeRule.onRoot(useUnmergedTree = true)
-            .performTouchInput {
-                down(0, Offset(center.x - 160f, center.y))
-                down(1, Offset(center.x + 160f, center.y))
-                advanceEventTime(4_000)
-                up(0)
-                advanceEventTime(100)
-                up(1)
-            }
+        performTwoFingerPlayerSelect()
 
         waitForContentDescription(P2_SETTINGS_BUTTON)
         waitForContentDescription(P3_SETTINGS_BUTTON)
         waitForContentDescription(P4_SETTINGS_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun resetDifferentPlayersSelectCanStartTwoPlayerGame() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_RESET_GAME)
+        performSemanticClick(RESET_DIFFERENT_PLAYERS)
+        performSemanticClick(RESET_SELECT_FIRST_PLAYER)
+
+        waitForContentDescription(START_LIFE_COUNTER)
+        performTwoFingerPlayerSelect()
+
+        waitForContentDescription(P2_SETTINGS_BUTTON)
+        waitUntil("P3 removed after two-player reset selection") {
+            !hasContentDescription(P3_SETTINGS_BUTTON)
+        }
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -956,6 +967,18 @@ class LifeCounterE2ETest {
         waitForContentDescription(contentDescription)
         composeRule.onNodeWithContentDescription(contentDescription, useUnmergedTree = true)
             .performSemanticsAction(SemanticsActions.OnClick)
+    }
+
+    private fun performTwoFingerPlayerSelect() {
+        composeRule.onRoot(useUnmergedTree = true)
+            .performTouchInput {
+                down(0, Offset(center.x - 160f, center.y))
+                down(1, Offset(center.x + 160f, center.y))
+                advanceEventTime(4_000)
+                up(0)
+                advanceEventTime(100)
+                up(1)
+            }
     }
 
     private fun selectE2EPlaneDeck() {
