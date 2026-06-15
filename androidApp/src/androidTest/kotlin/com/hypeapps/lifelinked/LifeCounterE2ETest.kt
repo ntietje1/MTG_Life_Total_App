@@ -174,19 +174,31 @@ class LifeCounterE2ETest {
         composeRule.onNodeWithContentDescription(OPEN_GIF_SEARCH, useUnmergedTree = true)
             .performTouchInput { click() }
 
-        waitForContentDescription(GIF_SEARCH_FIELD)
-        composeRule.onNodeWithContentDescription(GIF_SEARCH_FIELD, useUnmergedTree = true)
-            .performTextInput("cat")
-        composeRule.onNodeWithContentDescription(SEARCH_BUTTON, useUnmergedTree = true)
-            .performTouchInput { click() }
-
-        waitForContentDescription(TEST_GIF_RESULT)
+        searchGifForTestResult()
         composeRule.onAllNodesWithContentDescription(TEST_GIF_RESULT, useUnmergedTree = true)[0]
             .performTouchInput { click() }
 
         waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
         closeCustomizationAndReturnToCounter()
         verifyP1StatePersistsAfterLifeChange("$P1_BACKGROUND_IMAGE_PREFIX$TEST_GIF_IMAGE_URI")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun customizationGifSearchBackReturnsToCustomization() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        performSemanticClick(OPEN_GIF_SEARCH)
+
+        searchGifForTestResult()
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+
+        performSemanticClick(CLOSE_DIALOG)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -937,6 +949,15 @@ class LifeCounterE2ETest {
         waitForText(TEST_CARD_NAME)
     }
 
+    private fun searchGifForTestResult() {
+        waitForContentDescription(GIF_SEARCH_FIELD)
+        composeRule.onNodeWithContentDescription(GIF_SEARCH_FIELD, useUnmergedTree = true)
+            .performTextInput(GIF_TEST_QUERY)
+        composeRule.onNodeWithContentDescription(SEARCH_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(TEST_GIF_RESULT)
+    }
+
     private fun openMiddleMenuItem(contentDescription: String) {
         openMiddleMenu()
         performSemanticClick(contentDescription)
@@ -1265,6 +1286,7 @@ class LifeCounterE2ETest {
         const val SHOW_TEST_CARD_PRINTINGS = "Show printings for E2E Card"
         const val OPEN_GIF_SEARCH = "Open GIF search"
         const val GIF_SEARCH_FIELD = "Search KLIPY input"
+        const val GIF_TEST_QUERY = "cat"
         const val SEARCH_BUTTON = "Search"
         const val TEST_GIF_RESULT = "GIF result e2e-gif"
         const val TEST_GIF_IMAGE_URI = "https://example.test/e2e-full.gif"
