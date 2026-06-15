@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.gradlePlayPublisher)
 }
 
 val releaseProperties = Properties().apply {
@@ -17,26 +18,26 @@ fun releaseProperty(name: String): String {
     }
 }
 
-fun signingInput(propertyName: String, environmentName: String): String? {
+fun releaseInput(propertyName: String, environmentName: String): String? {
     return providers.gradleProperty(propertyName)
         .orElse(providers.environmentVariable(environmentName))
         .orNull
         ?.takeIf { it.isNotBlank() }
 }
 
-val releaseKeystoreFile = signingInput(
+val releaseKeystoreFile = releaseInput(
     propertyName = "lifelinked.android.keystore.file",
     environmentName = "LIFELINKED_ANDROID_KEYSTORE_FILE"
 )
-val releaseKeystorePassword = signingInput(
+val releaseKeystorePassword = releaseInput(
     propertyName = "lifelinked.android.keystore.password",
     environmentName = "LIFELINKED_ANDROID_KEYSTORE_PASSWORD"
 )
-val releaseKeyAlias = signingInput(
+val releaseKeyAlias = releaseInput(
     propertyName = "lifelinked.android.key.alias",
     environmentName = "LIFELINKED_ANDROID_KEY_ALIAS"
 )
-val releaseKeyPassword = signingInput(
+val releaseKeyPassword = releaseInput(
     propertyName = "lifelinked.android.key.password",
     environmentName = "LIFELINKED_ANDROID_KEY_PASSWORD"
 )
@@ -46,6 +47,14 @@ val releaseSigningConfigured = listOf(
     releaseKeyAlias,
     releaseKeyPassword
 ).all { it != null }
+val playServiceAccountFile = releaseInput(
+    propertyName = "lifelinked.android.play.serviceAccount.file",
+    environmentName = "LIFELINKED_ANDROID_PLAY_SERVICE_ACCOUNT_FILE"
+)
+val playTrack = releaseInput(
+    propertyName = "lifelinked.android.play.track",
+    environmentName = "LIFELINKED_ANDROID_PLAY_TRACK"
+) ?: "internal"
 
 android {
     namespace = "com.hypeapps.lifelinked"
@@ -120,6 +129,14 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit4)
 }
 
+play {
+    if (playServiceAccountFile != null) {
+        serviceAccountCredentials.set(rootProject.file(playServiceAccountFile))
+    }
+    track.set(playTrack)
+    defaultToAppBundles.set(true)
+}
+
 val verifyReleaseSigningInputs by tasks.registering {
     doLast {
         val missing = listOfNotNull(
@@ -137,8 +154,26 @@ val verifyReleaseSigningInputs by tasks.registering {
     }
 }
 
+val verifyPlayPublishingInputs by tasks.registering {
+    doLast {
+        require(playServiceAccountFile != null) {
+            "Missing Google Play service account input: lifelinked.android.play.serviceAccount.file / LIFELINKED_ANDROID_PLAY_SERVICE_ACCOUNT_FILE"
+        }
+        require(rootProject.file(playServiceAccountFile).isFile) {
+            "Google Play service account file does not exist: ${rootProject.file(playServiceAccountFile).absolutePath}"
+        }
+    }
+}
+
 tasks.matching { task ->
     task.name in setOf("assembleRelease", "bundleRelease")
 }.configureEach {
     dependsOn(verifyReleaseSigningInputs)
+}
+
+tasks.matching { task ->
+    task.name in setOf("publishBundle", "publishReleaseBundle")
+}.configureEach {
+    dependsOn(verifyReleaseSigningInputs)
+    dependsOn(verifyPlayPublishingInputs)
 }

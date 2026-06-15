@@ -2,6 +2,15 @@ name: Android Release Artifact
 
 on:
   workflow_dispatch:
+    inputs:
+      upload_to_play:
+        description: Upload the signed bundle to Google Play internal testing
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 permissions:
   contents: read
@@ -73,3 +82,26 @@ jobs:
             androidApp/build/outputs/bundle/release/*.aab
             androidApp/build/outputs/mapping/release/**
           if-no-files-found: error
+
+      - name: Decode Google Play service account
+        if: ${{ inputs.upload_to_play == 'true' }}
+        env:
+          LIFELINKED_ANDROID_PLAY_SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.LIFELINKED_ANDROID_PLAY_SERVICE_ACCOUNT_JSON_BASE64 }}
+        run: |
+          if [ -z "$LIFELINKED_ANDROID_PLAY_SERVICE_ACCOUNT_JSON_BASE64" ]; then
+            echo "::error::Missing LIFELINKED_ANDROID_PLAY_SERVICE_ACCOUNT_JSON_BASE64 secret"
+            exit 1
+          fi
+
+          mkdir -p "$RUNNER_TEMP/lifelinked-play"
+          printf '%s' "$LIFELINKED_ANDROID_PLAY_SERVICE_ACCOUNT_JSON_BASE64" | base64 --decode > "$RUNNER_TEMP/lifelinked-play/service-account.json"
+          echo "LIFELINKED_ANDROID_PLAY_SERVICE_ACCOUNT_FILE=$RUNNER_TEMP/lifelinked-play/service-account.json" >> "$GITHUB_ENV"
+          echo "LIFELINKED_ANDROID_PLAY_TRACK=internal" >> "$GITHUB_ENV"
+
+      - name: Upload to Google Play internal testing
+        if: ${{ inputs.upload_to_play == 'true' }}
+        env:
+          LIFELINKED_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.LIFELINKED_ANDROID_KEYSTORE_PASSWORD }}
+          LIFELINKED_ANDROID_KEY_ALIAS: ${{ secrets.LIFELINKED_ANDROID_KEY_ALIAS }}
+          LIFELINKED_ANDROID_KEY_PASSWORD: ${{ secrets.LIFELINKED_ANDROID_KEY_PASSWORD }}
+        run: ./gradlew :androidApp:publishBundle --artifact-dir androidApp/build/outputs/bundle/release --no-daemon --warning-mode all

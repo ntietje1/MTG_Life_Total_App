@@ -11,6 +11,7 @@ compose = "1.11.2"
 compose-material3 = "1.11.0-alpha07"
 compose-plugin = "1.11.1"
 compose-navigation = "2.9.2"
+gradlePlayPublisher = "4.0.0"
 kamelImageDefault = "1.0.9"
 kotlin = "2.4.0"
 kotlinx-datetime = "0.8.0"
@@ -73,3 +74,4 @@ jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+gradlePlayPublisher = { id = "com.github.triplet.play", version.ref = "gradlePlayPublisher" }
