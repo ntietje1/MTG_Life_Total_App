@@ -952,7 +952,7 @@ class LifeCounterE2ETest {
             .performTouchInput { click() }
 
         waitForContentDescription(DISABLE_PARTNER_COMMANDER_DAMAGE)
-        composeRule.onNodeWithText(TOGGLE_PARTNER_MODE_LABEL, useUnmergedTree = true)
+        composeRule.onNodeWithContentDescription(DISABLE_PARTNER_COMMANDER_DAMAGE, useUnmergedTree = true)
             .performTouchInput { click() }
 
         waitForContentDescription(ENABLE_PARTNER_COMMANDER_DAMAGE)
