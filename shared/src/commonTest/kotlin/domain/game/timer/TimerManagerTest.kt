@@ -6,6 +6,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class TimerManagerTest {
     @Test
@@ -47,6 +48,34 @@ class TimerManagerTest {
         manager.moveTimer()
 
         assertEquals(0, host.activePlayerIndex)
+        manager.detach()
+    }
+
+    @Test
+    fun resetClearsVisibleAndPersistedTimerBeforePromptingAgain() = runTest {
+        val preferencesRepository = PreferencesRepository(TestSettings()).also {
+            it.setNumPlayers(2)
+            it.setTurnTimer(true)
+        }
+        val timerStateRepository = TimerStateRepository(TestSettings())
+        val manager = TimerManager(
+            timerStateRepository = timerStateRepository,
+            preferencesRepository = preferencesRepository
+        )
+        val host = FakeTimerManagerHost(playerCount = 2)
+        manager.attach(host)
+
+        manager.onTimerEnabledChange(true)
+        manager.handleFirstPlayerSelection(0)
+        manager.reset()
+
+        assertEquals(2, host.promptCount)
+        assertNull(host.activePlayerIndex)
+        assertNull(host.activeTimer)
+        val savedState = timerStateRepository.load()
+        assertNull(savedState?.firstPlayer)
+        assertNull(savedState?.activePlayerIndex)
+        assertNull(savedState?.turnTimer)
         manager.detach()
     }
 }

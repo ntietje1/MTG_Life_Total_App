@@ -73,9 +73,11 @@ class TimerManager(
         clearFirstPlayerSelectionState()
         gameTimer.reset()
         initializeGameTimer()
+        updateHostWithTimer()
         if (preferencesRepository.turnTimer.value) {
             promptForFirstPlayer()
         }
+        saveTimerState()
     }
 
     private fun promptForFirstPlayer() {

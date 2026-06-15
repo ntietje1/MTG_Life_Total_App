@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
@@ -467,6 +468,31 @@ class LifeCounterE2ETest {
             .performTouchInput { click() }
 
         waitForIntContentDescription(PLANAR_BACK_STACK_SIZE_PREFIX, 1)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun planechaseSearchBackRestoresFullPlaneListBeforeClosingDeck() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLANECHASE)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
+
+        performSemanticClick(OPEN_PLANAR_DECK)
+        waitForContentDescription(NO_PLANES_SELECTED)
+
+        composeRule.onNodeWithContentDescription(PLANAR_SEARCH_FIELD, useUnmergedTree = true)
+            .performTextInput(EMPTY_PLANE_SEARCH_QUERY)
+        composeRule.onNodeWithContentDescription(PLANAR_SEARCH_FIELD, useUnmergedTree = true)
+            .performImeAction()
+        waitForContentDescription(NO_PLANES_MATCH_SEARCH)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForContentDescription(NO_PLANES_SELECTED)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -1247,11 +1273,14 @@ class LifeCounterE2ETest {
         const val COIN_FLIP_LAST_RESULT_PREFIX = "Coin flip last result "
         const val OPEN_PLANECHASE = "Open planechase"
         const val OPEN_PLANAR_DECK = "Open planar deck"
+        const val PLANAR_SEARCH_FIELD = "Search planes input"
         const val PLANAR_DECK_SIZE_PREFIX = "Planar deck size "
         const val PLANAR_BACK_STACK_SIZE_PREFIX = "Planar back stack size "
         const val TEST_PLANE_NAME = "E2E Plane"
         const val TEST_PLANE_SELECTION = "Plane selection E2E Plane not selected"
         const val NO_PLANES_SELECTED = "0 of 1 planes selected"
+        const val EMPTY_PLANE_SEARCH_QUERY = "empty-plane-search"
+        const val NO_PLANES_MATCH_SEARCH = "0 of 0 planes selected"
         const val ONE_PLANE_SELECTED = "1 of 1 planes selected"
         const val SELECT_ALL_PLANES = "Select all planes"
         const val DONE_SELECTING_PLANES = "Done selecting planes"

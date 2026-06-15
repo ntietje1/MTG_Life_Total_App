@@ -331,9 +331,7 @@ open class LifeCounterViewModel(
         dispatchGameCommand(GameCommand.ResetGame(startingLife = startingLife))
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
-        viewModelScope.launch {
-            timerManager.reset()
-        }
+        timerManager.reset()
         restartButtons()
     }
 

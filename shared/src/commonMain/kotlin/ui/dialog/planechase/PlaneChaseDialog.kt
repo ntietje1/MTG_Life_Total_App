@@ -348,6 +348,7 @@ fun ChoosePlanesDialogContent(
                     ),
                 query = state.query,
                 onQueryChange = { viewModel.setQuery(it) },
+                label = "Search planes",
                 searchInProgress = state.searchInProgress
             ) {
                 viewModel.searchPlanes {

@@ -80,6 +80,10 @@ private class FakeGifSearchClient : GifSearchClient {
 
 private class FakeScryfallClient : ScryfallClient {
     override suspend fun searchCards(query: String): ScryfallResult<ScryfallPage> {
+        if (query.contains("empty-plane-search")) {
+            return ScryfallResult.Success(ScryfallPage(cards = emptyList(), nextPageUrl = null))
+        }
+
         return ScryfallResult.Success(ScryfallPage(cards = listOf(fakeCardFor(query)), nextPageUrl = null))
     }
 
