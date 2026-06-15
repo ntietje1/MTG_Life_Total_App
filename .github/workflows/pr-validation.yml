@@ -94,6 +94,7 @@ jobs:
             set +e
             ./gradlew :androidApp:connectedDebugAndroidTest --no-daemon --stacktrace --warning-mode all
             test_status=$?
+            adb exec-out screencap -p > androidApp/build/reports/androidTests/connected/debug/final-screen.png || true
             adb logcat -d > androidApp/build/reports/androidTests/connected/debug/logcat.txt || true
             exit "$test_status"
 
