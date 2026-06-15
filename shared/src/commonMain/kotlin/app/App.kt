@@ -36,11 +36,13 @@ fun LifeLinkedApp() {
 
         val navController = rememberNavController()
         val currentVersionNumber = koinInject<VersionNumber>()
-        val startRoute = startupDestination(
-            currentVersion = currentVersionNumber,
-            lastSplashScreenShown = preferencesRepository.lastSplashScreenShown.value,
-            autoSkip = preferencesRepository.autoSkip.value
-        )
+        val startRoute = remember {
+            startupDestination(
+                currentVersion = currentVersionNumber,
+                lastSplashScreenShown = preferencesRepository.lastSplashScreenShown.value,
+                autoSkip = preferencesRepository.autoSkip.value
+            )
+        }
 
         var allowChangeNumPlayers by remember { mutableStateOf(true) }
         var firstLifeCounterNavigation by remember { mutableStateOf(true) }

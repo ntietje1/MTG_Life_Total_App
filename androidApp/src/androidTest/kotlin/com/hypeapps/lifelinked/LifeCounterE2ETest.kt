@@ -294,19 +294,12 @@ class LifeCounterE2ETest {
 
         performSemanticClick(OPEN_APP_SETTINGS)
 
-        val initialKeepScreenOn = readContentDescriptionValue(KEEP_SCREEN_ON_SETTING_PREFIX)
-        performClickOnContentDescriptionPrefix(KEEP_SCREEN_ON_SETTING_PREFIX)
-        waitUntil("keep screen on changed") {
-            findContentDescriptionValue(KEEP_SCREEN_ON_SETTING_PREFIX)
-                ?.let { it != initialKeepScreenOn } == true
-        }
-
-        val initialTurnTimer = readContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
-        performClickOnContentDescriptionPrefix(TURN_TIMER_SETTING_PREFIX)
-        waitUntil("turn timer changed") {
-            findContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
-                ?.let { it != initialTurnTimer } == true
-        }
+        verifySettingToggleChanges(FAST_COIN_FLIP_SETTING_PREFIX)
+        verifySettingToggleChanges(DISABLE_CAMERA_ROLL_SETTING_PREFIX)
+        verifySettingToggleChanges(AUTO_KO_SETTING_PREFIX)
+        verifySettingToggleChanges(AUTO_SKIP_PLAYER_SELECT_SETTING_PREFIX)
+        verifySettingToggleChanges(KEEP_SCREEN_ON_SETTING_PREFIX)
+        verifySettingToggleChanges(TURN_TIMER_SETTING_PREFIX)
 
         composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
             .performTouchInput { click() }
@@ -1211,6 +1204,14 @@ class LifeCounterE2ETest {
             .performSemanticsAction(SemanticsActions.OnClick)
     }
 
+    private fun verifySettingToggleChanges(prefix: String) {
+        val initial = readContentDescriptionValue(prefix)
+        performClickOnContentDescriptionPrefix(prefix)
+        waitUntil("$prefix changed") {
+            findContentDescriptionValue(prefix)?.let { it != initial } == true
+        }
+    }
+
     private fun performSemanticClick(contentDescription: String) {
         waitForContentDescription(contentDescription)
         composeRule.onNodeWithContentDescription(contentDescription, useUnmergedTree = true)
@@ -1423,6 +1424,10 @@ class LifeCounterE2ETest {
         const val OPEN_APP_SETTINGS = "Open app settings"
         const val OPEN_PATCH_NOTES = "Patch Notes"
         const val CHANGE_LOG_TITLE = "Change Log"
+        const val FAST_COIN_FLIP_SETTING_PREFIX = "Fast Coin Flip setting "
+        const val DISABLE_CAMERA_ROLL_SETTING_PREFIX = "Disable Camera Roll setting "
+        const val AUTO_KO_SETTING_PREFIX = "Auto KO setting "
+        const val AUTO_SKIP_PLAYER_SELECT_SETTING_PREFIX = "Auto Skip Player Select setting "
         const val KEEP_SCREEN_ON_SETTING_PREFIX = "Keep Screen On setting "
         const val TURN_TIMER_SETTING_PREFIX = "Turn Timer setting "
         const val SELECT_P1_AS_FIRST_PLAYER = "Select P1 as first player"
