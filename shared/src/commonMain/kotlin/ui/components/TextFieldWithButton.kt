@@ -18,6 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -32,6 +34,7 @@ fun TextFieldWithButton(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     label: String,
+    textFieldContentDescription: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(
         capitalization = KeyboardCapitalization.None, imeAction = ImeAction.Done
     ),
@@ -43,7 +46,18 @@ fun TextFieldWithButton(
     ) {
         val textSize = remember(Unit) { (maxHeight / 3.75f).value }
         TextField(
-            modifier = Modifier.fillMaxHeight().width(maxWidth - maxHeight).padding(top = textSize.dp / 32f, bottom = textSize.dp / 64f).align(Alignment.CenterStart),
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(maxWidth - maxHeight)
+                .padding(top = textSize.dp / 32f, bottom = textSize.dp / 64f)
+                .align(Alignment.CenterStart)
+                .then(
+                    if (textFieldContentDescription == null) {
+                        Modifier
+                    } else {
+                        Modifier.semantics { this.contentDescription = textFieldContentDescription }
+                    }
+                ),
             value = value,
             onValueChange = onValueChange,
             label = {

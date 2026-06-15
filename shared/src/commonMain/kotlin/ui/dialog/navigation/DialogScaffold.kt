@@ -56,6 +56,7 @@ fun DialogScaffold(
                             modifier = Modifier.size(buttonSize),
                             visible = true,
                             icon = Res.drawable.x_icon,
+                            contentDescription = "Close dialog",
                             onPress = onDismiss
                         )
                     }
@@ -75,6 +76,7 @@ fun DialogScaffold(
                             modifier = Modifier.size(buttonSize),
                             visible = true,
                             icon = Res.drawable.back_icon_alt,
+                            contentDescription = "Back in dialog",
                             onPress = onBack
                         )
                     }
@@ -89,6 +91,7 @@ private fun DialogIconButton(
     modifier: Modifier = Modifier,
     visible: Boolean,
     icon: org.jetbrains.compose.resources.DrawableResource,
+    contentDescription: String,
     onPress: () -> Unit
 ) {
     SettingsButton(
@@ -98,6 +101,7 @@ private fun DialogIconButton(
         visible = visible,
         shadowEnabled = false,
         imageVector = vectorResource(icon),
+        contentDescription = contentDescription,
         onPress = onPress
     )
 }

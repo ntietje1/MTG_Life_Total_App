@@ -196,7 +196,9 @@ fun PlayerCustomizationDialog(
                         viewModel.setChangeNameField(it)
                     }, label = "Name", keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
-                    ), keyboardActions = KeyboardActions(onDone = {
+                    ),
+                    textFieldContentDescription = "P${state.player.playerNum} customization name",
+                    keyboardActions = KeyboardActions(onDone = {
                         focusManager.clearFocus()
                     }), button = {
                         SettingsButton(modifier = Modifier.fillMaxSize().padding(padding / 6f), imageVector = vectorResource(Res.drawable.pencil_icon), shadowEnabled = false, onPress = {

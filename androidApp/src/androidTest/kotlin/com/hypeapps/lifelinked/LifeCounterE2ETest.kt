@@ -6,7 +6,10 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.printToString
@@ -19,6 +22,47 @@ import org.junit.runner.RunWith
 class LifeCounterE2ETest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun customizationNamePersistsAfterLifeChange() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        waitForContentDescription(P1_SETTINGS_BUTTON)
+        composeRule.onNodeWithContentDescription(P1_SETTINGS_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(P1_CUSTOMIZE)
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZE, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
+            .performTextClearance()
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
+            .performTextInput(P1_CUSTOM_NAME)
+
+        composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(P1_BACK_BUTTON)
+        composeRule.onNodeWithContentDescription(P1_BACK_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForText(P1_CUSTOM_NAME)
+        val initialLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
+
+        composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
+        waitForText(P1_CUSTOM_NAME)
+
+        composeRule.onNodeWithContentDescription(P1_DECREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife)
+        waitForText(P1_CUSTOM_NAME)
+    }
 
     @OptIn(ExperimentalTestApi::class)
     @Test
@@ -208,6 +252,12 @@ class LifeCounterE2ETest {
         }
     }
 
+    private fun waitForText(value: String) {
+        waitUntil(value) {
+            hasText(value)
+        }
+    }
+
     private fun readIntContentDescription(prefix: String): Int {
         var value: Int? = null
         waitUntil(prefix) {
@@ -246,14 +296,28 @@ class LifeCounterE2ETest {
         } catch (error: Throwable) {
             throw AssertionError(
                 "Timed out waiting for $description. Current semantics:\n" +
-                    composeRule.onRoot(useUnmergedTree = true).printToString(maxDepth = 10),
+                    semanticsSnapshot(),
                 error
             )
         }
     }
 
+    private fun semanticsSnapshot(): String {
+        return runCatching {
+            composeRule.onRoot(useUnmergedTree = true).printToString(maxDepth = 10)
+        }.getOrElse { error ->
+            "Could not print semantics tree: ${error.message}"
+        }
+    }
+
     private fun hasContentDescription(value: String): Boolean {
         return composeRule.onAllNodesWithContentDescription(value, useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+    }
+
+    private fun hasText(value: String): Boolean {
+        return composeRule.onAllNodesWithText(value, useUnmergedTree = true)
             .fetchSemanticsNodes()
             .isNotEmpty()
     }
@@ -303,6 +367,10 @@ class LifeCounterE2ETest {
         const val P1_BECOME_MONARCH = "Make P1 the monarch"
         const val P1_CLEAR_MONARCH = "Clear P1 as monarch"
         const val P1_OPEN_COUNTERS = "Open P1 counters"
+        const val P1_CUSTOMIZE = "Customize P1"
+        const val P1_CUSTOMIZATION_NAME_FIELD = "P1 customization name"
+        const val P1_CUSTOM_NAME = "P1 E2E"
+        const val CLOSE_DIALOG = "Close dialog"
         const val P1_ADD_COUNTER = "Add P1 counter"
         const val P1_ADD_POISON_COUNTER = "Add P1 Poison counter"
         const val P1_COUNTER_PREFIX = "P1 "
