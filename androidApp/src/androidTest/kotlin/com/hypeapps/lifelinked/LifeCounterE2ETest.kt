@@ -226,6 +226,23 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun settingsChildDialogCanBackAndClose() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_APP_SETTINGS)
+        performSemanticClick(OPEN_PATCH_NOTES)
+        waitForText(CHANGE_LOG_TITLE)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForContentDescription(OPEN_TUTORIAL_FROM_SETTINGS)
+
+        performSemanticClick(CLOSE_DIALOG)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun turnTimerCanSelectFirstPlayerAndMoveToNextPlayer() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1192,6 +1209,8 @@ class LifeCounterE2ETest {
         const val TOGGLE_DAY_NIGHT = "Toggle day night"
         const val DAY_NIGHT_STATE_PREFIX = "Day night state "
         const val OPEN_APP_SETTINGS = "Open app settings"
+        const val OPEN_PATCH_NOTES = "Patch Notes"
+        const val CHANGE_LOG_TITLE = "Change Log"
         const val KEEP_SCREEN_ON_SETTING_PREFIX = "Keep Screen On setting "
         const val TURN_TIMER_SETTING_PREFIX = "Turn Timer setting "
         const val SELECT_P1_AS_FIRST_PLAYER = "Select P1 as first player"
