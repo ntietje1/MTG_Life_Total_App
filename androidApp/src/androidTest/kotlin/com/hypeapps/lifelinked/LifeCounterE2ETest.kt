@@ -141,6 +141,29 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun customizationScryfallPrintingsBackReturnsToCustomization() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        performSemanticClick(OPEN_CARD_IMAGE_SEARCH)
+
+        searchScryfallForTestCard()
+        performSemanticClick(SHOW_TEST_CARD_PRINTINGS)
+        waitForText(TEST_PRINTING_CARD_NAME)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForText(TEST_CARD_NAME)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+
+        performSemanticClick(CLOSE_DIALOG)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun gifSearchUsesInjectedClient() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
