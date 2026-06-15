@@ -121,13 +121,19 @@ fun LifeCounterScreen(
         }
         val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }
         Box(
-            Modifier.fillMaxSize().padding(dimensions.paddingTiny).then(
-                if (state.blurBackground) {
-                    Modifier.blur(radius = dimensions.blurRadius)
-                } else {
-                    Modifier
+            Modifier
+                .fillMaxSize()
+                .padding(dimensions.paddingTiny)
+                .semantics {
+                    contentDescription = "Player layout $numPlayers ${if (alt4PlayerLayout) "alternate" else "default"}"
                 }
-            )
+                .then(
+                    if (state.blurBackground) {
+                        Modifier.blur(radius = dimensions.blurRadius)
+                    } else {
+                        Modifier
+                    }
+                )
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
                 items(m.buttonPlacements(), key = { it.hashCode() }) { buttonPlacements ->

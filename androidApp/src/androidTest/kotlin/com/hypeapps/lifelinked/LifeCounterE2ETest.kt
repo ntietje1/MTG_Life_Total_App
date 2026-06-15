@@ -485,6 +485,23 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun playerNumberCanSelectFourPlayerLayouts() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLAYER_NUMBER)
+        performSemanticClick(CHOOSE_4_PLAYER_LAYOUT)
+        performSemanticClick(SET_ALTERNATE_4_PLAYER_LAYOUT)
+        waitForContentDescription(FOUR_PLAYER_ALTERNATE_LAYOUT)
+
+        openMiddleMenuItem(OPEN_PLAYER_NUMBER)
+        performSemanticClick(CHOOSE_4_PLAYER_LAYOUT)
+        performSemanticClick(SET_DEFAULT_4_PLAYER_LAYOUT)
+        waitForContentDescription(FOUR_PLAYER_DEFAULT_LAYOUT)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun middleMenuCanSetStartingLife() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1174,6 +1191,11 @@ class LifeCounterE2ETest {
         const val P2_ACTIVE_TURN_TIMER = "P2 active turn timer"
         const val OPEN_PLAYER_NUMBER = "Open player number"
         const val SET_PLAYER_COUNT_2 = "Set player count to 2"
+        const val CHOOSE_4_PLAYER_LAYOUT = "Choose 4 player layout"
+        const val SET_ALTERNATE_4_PLAYER_LAYOUT = "Set alternate 4 player layout"
+        const val SET_DEFAULT_4_PLAYER_LAYOUT = "Set default 4 player layout"
+        const val FOUR_PLAYER_ALTERNATE_LAYOUT = "Player layout 4 alternate"
+        const val FOUR_PLAYER_DEFAULT_LAYOUT = "Player layout 4 default"
         const val OPEN_STARTING_LIFE = "Open starting life"
         const val SET_STARTING_LIFE_20 = "Set starting life to 20"
         const val SET_STARTING_LIFE_40 = "Set starting life to 40"
