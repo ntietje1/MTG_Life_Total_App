@@ -34,7 +34,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run Android checks
-        run: ./gradlew :shared:testAndroidHostTest :shared:compileKotlinMetadata :androidApp:lintDebug :androidApp:testDebugUnitTest :androidApp:assembleDebug --no-daemon --warning-mode all
+        run: ./gradlew :verifyReleaseVersion :shared:testAndroidHostTest :shared:compileKotlinMetadata :androidApp:lintDebug :androidApp:testDebugUnitTest :androidApp:assembleDebug --no-daemon --warning-mode all
 
       - name: Upload Android reports
         if: always()

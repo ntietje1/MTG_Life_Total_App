@@ -1,9 +1,20 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+}
+
+val releaseProperties = Properties().apply {
+    rootProject.file("release.properties").inputStream().use(::load)
+}
+
+fun releaseProperty(name: String): String {
+    return requireNotNull(releaseProperties.getProperty(name)) {
+        "Missing $name in release.properties"
+    }
 }
 
 android {
@@ -14,8 +25,8 @@ android {
         applicationId = "com.hypeapps.lifelinked"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 18
-        versionName = "1.9.0"
+        versionCode = releaseProperty("versionCode").toInt()
+        versionName = releaseProperty("versionName")
         testInstrumentationRunner = "com.hypeapps.lifelinked.LifeLinkedTestRunner"
     }
 

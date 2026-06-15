@@ -17,6 +17,10 @@ val localProperties = Properties().apply {
     }
 }
 
+val releaseProperties = Properties().apply {
+    rootProject.file("release.properties").inputStream().use(::load)
+}
+
 val klipyApiKeyProvider = providers.gradleProperty("klipy.api.key")
     .orElse(providers.environmentVariable("KLIPY_API_KEY"))
     .orElse(localProperties.getProperty("klipy.api.key") ?: localProperties.getProperty("KLIPY_API_KEY") ?: "")
@@ -51,6 +55,18 @@ val generateLifeLinkedApiConfig by tasks.registering {
 
             internal object LifeLinkedApiConfig {
                 const val KLIPY_API_KEY: String = ${klipyApiKeyProvider.get().toKotlinStringLiteral()}
+            }
+            """.trimIndent()
+        )
+
+        val releaseConfigFile = generatedApiConfigDir.get().file("model/LifeLinkedReleaseConfig.kt").asFile
+        releaseConfigFile.parentFile.mkdirs()
+        releaseConfigFile.writeText(
+            """
+            package model
+
+            internal object LifeLinkedReleaseConfig {
+                const val VERSION_NAME: String = ${releaseProperties.getProperty("versionName").toKotlinStringLiteral()}
             }
             """.trimIndent()
         )
