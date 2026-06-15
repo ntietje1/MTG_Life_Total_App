@@ -56,7 +56,7 @@ jobs:
           if-no-files-found: ignore
 
   android-instrumentation:
-    name: Android Instrumentation Tests
+    name: Android E2E Instrumentation Tests
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -85,11 +85,17 @@ jobs:
       - name: Run connected Android tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: 30
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          script: ./gradlew :androidApp:connectedDebugAndroidTest --no-daemon --stacktrace --warning-mode all
+          script: |
+            mkdir -p androidApp/build/reports/androidTests/connected/debug
+            set +e
+            ./gradlew :androidApp:connectedDebugAndroidTest --no-daemon --stacktrace --warning-mode all
+            test_status=$?
+            adb logcat -d > androidApp/build/reports/androidTests/connected/debug/logcat.txt || true
+            exit "$test_status"
 
       - name: Upload instrumentation reports
         if: always()
