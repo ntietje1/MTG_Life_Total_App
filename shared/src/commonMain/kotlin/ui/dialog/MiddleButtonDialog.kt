@@ -1,6 +1,11 @@
 package ui.dialog
 
 import PlanechaseTutorialContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import domain.system.SystemManager
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.halfAlpha
@@ -239,19 +245,42 @@ fun GridDialog(
     pages: List<Pair<Boolean, @Composable () -> Unit>>
 ) {
     val dimensions = LocalDimensions.current
-    val visiblePage = pages.firstOrNull { it.first }?.second
+    val duration = (450 / SystemManager.getAnimationCorrectionFactor()).toInt()
+    val enterAnimation = slideInHorizontally(
+        TweenSpec(duration, easing = LinearOutSlowInEasing)
+    ) { (-it * 1.25).toInt() }
+    val exitAnimation = slideOutHorizontally(
+        TweenSpec(duration, easing = LinearOutSlowInEasing)
+    ) { (it * 1.25).toInt() }
+
+    @Composable
+    fun DialogPage(visible: Boolean, content: @Composable () -> Unit) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = enterAnimation,
+            exit = exitAnimation
+        ) {
+            BoxWithConstraints(
+                modifier = modifier
+                    .background(
+                        MaterialTheme.colorScheme.surface.halfAlpha().halfAlpha()
+                    )
+                    .border(
+                        dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()
+                    ),
+            ) {
+                content()
+            }
+        }
+    }
 
     val dialogContent: @Composable () -> Unit = {
-        BoxWithConstraints(
-            modifier = modifier
-                .background(
-                    MaterialTheme.colorScheme.surface.halfAlpha().halfAlpha()
-                )
-                .border(
-                    dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha()
-                ),
-        ) {
-            visiblePage?.invoke()
+        Box {
+            pages.forEach { page ->
+                DialogPage(visible = page.first) {
+                    page.second()
+                }
+            }
         }
     }
 

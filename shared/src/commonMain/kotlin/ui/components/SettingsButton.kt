@@ -69,7 +69,7 @@ fun SettingsButton(
     onPress: () -> Unit = {},
     onTap: () -> Unit = {},
     onLongPress: () -> Unit = {},
-    onDoubleTap: () -> Unit = {},
+    onDoubleTap: (() -> Unit)? = null,
     overlay: @Composable () -> Unit = {},
 ) {
     val matrix: ColorMatrix? = remember(mainColor) {
@@ -124,8 +124,8 @@ fun SettingsButton(
                             }
                         }, onLongPress = {
                             currentOnLongPress()
-                        }, onDoubleTap = {
-                            currentOnDoubleTap()
+                        }, onDoubleTap = currentOnDoubleTap?.let { doubleTap ->
+                            { doubleTap() }
                         })
                     }
                 } else {
