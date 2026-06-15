@@ -108,6 +108,7 @@ class LifeCounterE2ETest {
 
         waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
         closeCustomizationAndReturnToCounter()
+        verifyP1StatePersistsAfterLifeChange("$P1_BACKGROUND_IMAGE_PREFIX$TEST_CARD_IMAGE_URI")
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -153,6 +154,7 @@ class LifeCounterE2ETest {
 
         waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
         closeCustomizationAndReturnToCounter()
+        verifyP1StatePersistsAfterLifeChange("$P1_BACKGROUND_IMAGE_PREFIX$TEST_GIF_IMAGE_URI")
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -462,13 +464,7 @@ class LifeCounterE2ETest {
         performSemanticClick(selectColor)
 
         closeCustomizationAndReturnToCounter()
-        waitForContentDescription(expectedStateDescription)
-
-        val initialLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
-        composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
-            .performTouchInput { click() }
-        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
-        waitForContentDescription(expectedStateDescription)
+        verifyP1StatePersistsAfterLifeChange(expectedStateDescription)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -795,6 +791,15 @@ class LifeCounterE2ETest {
         }
     }
 
+    private fun verifyP1StatePersistsAfterLifeChange(expectedStateDescription: String) {
+        waitForContentDescription(expectedStateDescription)
+        val initialLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
+        composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
+        waitForContentDescription(expectedStateDescription)
+    }
+
     private fun waitForContentDescription(value: String) {
         waitUntil(value) {
             hasContentDescription(value)
@@ -1002,6 +1007,7 @@ class LifeCounterE2ETest {
         const val CHANGE_TEXT_COLOR = "Change text color"
         const val SELECT_COLOR_PREFIX = "Select color "
         const val P1_BACKGROUND_COLOR_PREFIX = "P1 background color "
+        const val P1_BACKGROUND_IMAGE_PREFIX = "P1 background image "
         const val P1_TEXT_COLOR_PREFIX = "P1 text color "
         const val P2_BACKGROUND_COLOR_PREFIX = "P2 background color "
         val TEST_BACKGROUND_COLOR_ARGB = PlayerColor6.toArgb()
@@ -1014,6 +1020,7 @@ class LifeCounterE2ETest {
         const val SCRYFALL_SEARCH_FIELD = "Search Scryfall input"
         const val TEST_CARD_NAME = "E2E Card"
         const val TEST_CARD_SELECT = "Select E2E Card"
+        const val TEST_CARD_IMAGE_URI = "https://example.test/e2e-card-art.jpg"
         const val TEST_PRINTING_CARD_NAME = "E2E Printing"
         const val TEST_RULING_COMMENT = "E2E ruling text"
         const val SHOW_TEST_CARD_RULINGS = "Show rulings for E2E Card"
@@ -1022,6 +1029,7 @@ class LifeCounterE2ETest {
         const val GIF_SEARCH_FIELD = "Search KLIPY input"
         const val SEARCH_BUTTON = "Search"
         const val TEST_GIF_RESULT = "GIF result e2e-gif"
+        const val TEST_GIF_IMAGE_URI = "https://example.test/e2e-full.gif"
         const val OPEN_CARD_SEARCH = "Open card search"
         const val OPEN_RESET_GAME = "Open reset game"
         const val RESET_SAME_PLAYERS = "Same players"

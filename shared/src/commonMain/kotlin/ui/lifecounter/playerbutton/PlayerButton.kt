@@ -228,6 +228,15 @@ fun PlayerButton(
                     color = state.player.color,
                     isDead = state.isDead,
                 )
+                state.player.imageString?.let { imageUri ->
+                    Box(
+                        Modifier
+                            .matchParentSize()
+                            .semantics {
+                                contentDescription = "P${state.player.playerNum} background image $imageUri"
+                            }
+                    )
+                }
 
                 val smallButtonSize = remember(Unit) { (maxWidth / 15f) + (maxHeight / 10f) }
 
