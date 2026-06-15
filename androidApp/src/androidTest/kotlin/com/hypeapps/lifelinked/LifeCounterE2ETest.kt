@@ -753,6 +753,37 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun playerNumberCanSelectOneThreeFiveAndSixPlayers() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLAYER_NUMBER)
+        performSemanticClick(SET_PLAYER_COUNT_6)
+        waitForContentDescription(SIX_PLAYER_LAYOUT)
+
+        openMiddleMenuItem(OPEN_PLAYER_NUMBER)
+        performSemanticClick(SET_PLAYER_COUNT_5)
+        waitForContentDescription(FIVE_PLAYER_LAYOUT)
+
+        openMiddleMenuItem(OPEN_PLAYER_NUMBER)
+        performSemanticClick(SET_PLAYER_COUNT_3)
+        waitForContentDescription(THREE_PLAYER_LAYOUT)
+        waitForContentDescription(P3_SETTINGS_BUTTON)
+        waitUntil("P4 removed after setting player count to 3") {
+            !hasContentDescription(P4_SETTINGS_BUTTON)
+        }
+
+        openMiddleMenuItem(OPEN_PLAYER_NUMBER)
+        performSemanticClick(SET_PLAYER_COUNT_1)
+        waitForContentDescription(ONE_PLAYER_LAYOUT)
+        waitForContentDescription(P1_SETTINGS_BUTTON)
+        waitUntil("P2 removed after setting player count to 1") {
+            !hasContentDescription(P2_SETTINGS_BUTTON)
+        }
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun middleMenuCanSetStartingLife() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1508,12 +1539,20 @@ class LifeCounterE2ETest {
         const val P1_ACTIVE_TURN_TIMER = "P1 active turn timer"
         const val P2_ACTIVE_TURN_TIMER = "P2 active turn timer"
         const val OPEN_PLAYER_NUMBER = "Open player number"
+        const val SET_PLAYER_COUNT_1 = "Set player count to 1"
         const val SET_PLAYER_COUNT_2 = "Set player count to 2"
+        const val SET_PLAYER_COUNT_3 = "Set player count to 3"
+        const val SET_PLAYER_COUNT_5 = "Set player count to 5"
+        const val SET_PLAYER_COUNT_6 = "Set player count to 6"
         const val CHOOSE_4_PLAYER_LAYOUT = "Choose 4 player layout"
         const val SET_ALTERNATE_4_PLAYER_LAYOUT = "Set alternate 4 player layout"
         const val SET_DEFAULT_4_PLAYER_LAYOUT = "Set default 4 player layout"
+        const val ONE_PLAYER_LAYOUT = "Player layout 1 default"
+        const val THREE_PLAYER_LAYOUT = "Player layout 3 default"
         const val FOUR_PLAYER_ALTERNATE_LAYOUT = "Player layout 4 alternate"
         const val FOUR_PLAYER_DEFAULT_LAYOUT = "Player layout 4 default"
+        const val FIVE_PLAYER_LAYOUT = "Player layout 5 default"
+        const val SIX_PLAYER_LAYOUT = "Player layout 6 default"
         const val OPEN_STARTING_LIFE = "Open starting life"
         const val SET_STARTING_LIFE_20 = "Set starting life to 20"
         const val SET_STARTING_LIFE_40 = "Set starting life to 40"
