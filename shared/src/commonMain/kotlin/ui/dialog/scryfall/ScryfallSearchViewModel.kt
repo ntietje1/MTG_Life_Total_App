@@ -3,7 +3,7 @@ package ui.dialog.scryfall
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.api.ScryfallApi
+import domain.api.ScryfallClient
 import domain.api.ScryfallResult
 import model.card.CardSummary
 import model.card.RulingSummary
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ScryfallSearchViewModel(
-    private val scryfallApi: ScryfallApi
+    private val scryfallClient: ScryfallClient
 ): ViewModel() {
     private val _state = MutableStateFlow(ScryfallSearchState())
     val state: StateFlow<ScryfallSearchState> = _state.asStateFlow()
@@ -23,7 +23,7 @@ class ScryfallSearchViewModel(
         viewModelScope.launch {
             clearResults()
             setIsSearchInProgress(true)
-            when (val result = scryfallApi.searchCards(qry)) {
+            when (val result = scryfallClient.searchCards(qry)) {
                 is ScryfallResult.Failure -> {
                     setCardResults(emptyList())
                     setLastSearchWasError(true)
@@ -48,7 +48,7 @@ class ScryfallSearchViewModel(
         viewModelScope.launch {
             clearResults()
             setIsSearchInProgress(true)
-            when (val result = scryfallApi.searchRulings(qry)) {
+            when (val result = scryfallClient.searchRulings(qry)) {
                 is ScryfallResult.Failure -> {
                     setRulingsResults(emptyList())
                     setLastSearchWasError(true)

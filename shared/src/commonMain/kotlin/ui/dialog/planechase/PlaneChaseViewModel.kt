@@ -5,7 +5,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.api.ScryfallApi
+import domain.api.ScryfallClient
 import domain.api.ScryfallResult
 import domain.state.planechase.PlanechaseRepository
 import domain.state.planechase.PlanechaseSnapshot
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class PlaneChaseViewModel(
     private val planechaseRepository: PlanechaseRepository,
-    private val scryfallApi: ScryfallApi,
+    private val scryfallClient: ScryfallClient,
     private val initialPlaneSearchEnabled: Boolean = true
 ): ViewModel() {
 
@@ -152,7 +152,7 @@ class PlaneChaseViewModel(
     }
 
     private suspend fun search(qry: String = state.value.query.text): List<CardSummary> {
-        return when (val result = scryfallApi.searchCards("(t:plane or t:phenomenon) $qry")) {
+        return when (val result = scryfallClient.searchCards("(t:plane or t:phenomenon) $qry")) {
             is ScryfallResult.Failure -> emptyList()
             is ScryfallResult.Success -> result.value.cards.filter { card -> card.art != null }
         }

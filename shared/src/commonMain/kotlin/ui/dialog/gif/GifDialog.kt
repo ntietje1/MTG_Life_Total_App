@@ -31,6 +31,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import theme.LocalDimensions
@@ -124,6 +126,7 @@ fun GifDialogContent(
                             .padding(8.dp)
                             .width(buttonWidth)
                             .height(buttonHeight)
+                            .semantics { contentDescription = "GIF result ${gif.id}" }
                             .pointerInput(Unit) {
                                 detectTapGestures(
                                     onTap = {

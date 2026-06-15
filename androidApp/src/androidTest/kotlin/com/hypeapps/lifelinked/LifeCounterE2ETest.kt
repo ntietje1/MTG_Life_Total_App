@@ -25,6 +25,59 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun scryfallSearchUsesInjectedClient() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+
+        waitForContentDescription(OPEN_CARD_IMAGE_SEARCH)
+        composeRule.onNodeWithContentDescription(OPEN_CARD_IMAGE_SEARCH, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(SCRYFALL_SEARCH_FIELD)
+        composeRule.onNodeWithContentDescription(SCRYFALL_SEARCH_FIELD, useUnmergedTree = true)
+            .performTextInput("sol ring")
+        composeRule.onNodeWithContentDescription(SEARCH_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForText(TEST_CARD_NAME)
+        waitForContentDescription(TEST_CARD_SELECT)
+        composeRule.onNodeWithContentDescription(TEST_CARD_SELECT, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+        closeCustomizationAndReturnToCounter()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun gifSearchUsesInjectedClient() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+
+        waitForContentDescription(OPEN_GIF_SEARCH)
+        composeRule.onNodeWithContentDescription(OPEN_GIF_SEARCH, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(GIF_SEARCH_FIELD)
+        composeRule.onNodeWithContentDescription(GIF_SEARCH_FIELD, useUnmergedTree = true)
+            .performTextInput("cat")
+        composeRule.onNodeWithContentDescription(SEARCH_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(TEST_GIF_RESULT)
+        composeRule.onAllNodesWithContentDescription(TEST_GIF_RESULT, useUnmergedTree = true)[0]
+            .performTouchInput { click() }
+
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+        closeCustomizationAndReturnToCounter()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun middleMenuCanSetStartingLife() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -46,13 +99,7 @@ class LifeCounterE2ETest {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
 
-        waitForContentDescription(P1_SETTINGS_BUTTON)
-        composeRule.onNodeWithContentDescription(P1_SETTINGS_BUTTON, useUnmergedTree = true)
-            .performTouchInput { click() }
-
-        waitForContentDescription(P1_CUSTOMIZE)
-        composeRule.onNodeWithContentDescription(P1_CUSTOMIZE, useUnmergedTree = true)
-            .performTouchInput { click() }
+        openP1Customization()
 
         waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
         composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
@@ -273,6 +320,25 @@ class LifeCounterE2ETest {
         waitForContentDescription(SET_STARTING_LIFE_40)
     }
 
+    private fun openP1Customization() {
+        waitForContentDescription(P1_SETTINGS_BUTTON)
+        composeRule.onNodeWithContentDescription(P1_SETTINGS_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForContentDescription(P1_CUSTOMIZE)
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZE, useUnmergedTree = true)
+            .performTouchInput { click() }
+    }
+
+    private fun closeCustomizationAndReturnToCounter() {
+        composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P1_BACK_BUTTON)
+        composeRule.onNodeWithContentDescription(P1_BACK_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P1_SETTINGS_BUTTON)
+    }
+
     private fun waitForContentDescription(value: String) {
         waitUntil(value) {
             hasContentDescription(value)
@@ -398,6 +464,14 @@ class LifeCounterE2ETest {
         const val P1_CUSTOMIZATION_NAME_FIELD = "P1 customization name"
         const val P1_CUSTOM_NAME = "P1 E2E"
         const val CLOSE_DIALOG = "Close dialog"
+        const val OPEN_CARD_IMAGE_SEARCH = "Open card image search"
+        const val SCRYFALL_SEARCH_FIELD = "Search Scryfall input"
+        const val TEST_CARD_NAME = "E2E Card"
+        const val TEST_CARD_SELECT = "Select E2E Card"
+        const val OPEN_GIF_SEARCH = "Open GIF search"
+        const val GIF_SEARCH_FIELD = "Search KLIPY input"
+        const val SEARCH_BUTTON = "Search"
+        const val TEST_GIF_RESULT = "GIF result e2e-gif"
         const val OPEN_STARTING_LIFE = "Open starting life"
         const val SET_STARTING_LIFE_20 = "Set starting life to 20"
         const val SET_STARTING_LIFE_40 = "Set starting life to 40"

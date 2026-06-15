@@ -42,6 +42,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -213,6 +215,7 @@ fun ScryfallDialogContent(
 fun ScryfallButton(
     modifier: Modifier = Modifier,
     text: String,
+    contentDescription: String = text,
     onTap: () -> Unit
 ) {
     val originalColor = MaterialTheme.colorScheme.onSurface
@@ -226,12 +229,14 @@ fun ScryfallButton(
         }
     })
     BoxWithConstraints(
-        modifier = modifier.pointerInput(Unit) {
-            detectTapGestures { _ ->
-                color = pressedColor
-                onTap()
+        modifier = modifier
+            .semantics { this.contentDescription = contentDescription }
+            .pointerInput(Unit) {
+                detectTapGestures { _ ->
+                    color = pressedColor
+                    onTap()
+                }
             }
-        },
     ) {
         val textSize = remember(Unit) { (maxWidth / 4.5f).value }
         val textPadding = remember(Unit) { maxWidth / 13.5f }
@@ -360,6 +365,7 @@ fun CardInfoPreview(
                                 ScryfallButton(
                                     modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = dimensions.paddingSmall).clip(RoundedCornerShape(30)),
                                     text = "Rulings",
+                                    contentDescription = "Show rulings for ${card.name}",
                                     onTap = {
                                         onRulings(rulingsUri)
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -369,6 +375,7 @@ fun CardInfoPreview(
                                 ScryfallButton(
                                     modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = dimensions.paddingSmall).clip(RoundedCornerShape(30)),
                                     text = "Select",
+                                    contentDescription = "Select ${card.name}",
                                     onTap = {
                                         onSelect()
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -379,6 +386,7 @@ fun CardInfoPreview(
                                 ScryfallButton(
                                     modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = dimensions.paddingSmall).clip(RoundedCornerShape(30)),
                                     text = "Printings",
+                                    contentDescription = "Show printings for ${card.name}",
                                     onTap = {
                                         onPrintings(printsSearchUri)
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)

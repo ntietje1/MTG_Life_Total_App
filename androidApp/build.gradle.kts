@@ -16,7 +16,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 18
         versionName = "1.9.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.hypeapps.lifelinked.LifeLinkedTestRunner"
     }
 
     packaging {

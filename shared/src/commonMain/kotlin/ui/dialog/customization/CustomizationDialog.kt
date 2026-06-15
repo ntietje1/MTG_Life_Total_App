@@ -170,7 +170,12 @@ fun PlayerCustomizationDialog(
             }
 
             @Composable
-            fun FormattedSettingsButton(imageResource: DrawableResource, text: String, onPress: () -> Unit) {
+            fun FormattedSettingsButton(
+                imageResource: DrawableResource,
+                text: String,
+                contentDescription: String,
+                onPress: () -> Unit
+            ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
@@ -179,6 +184,7 @@ fun PlayerCustomizationDialog(
                         modifier = buttonModifier.height(textFieldHeight * 1.25f).padding(horizontal = padding / 4f).padding(bottom = padding / 2f),
                         imageVector = vectorResource(imageResource),
                         text = text,
+                        contentDescription = contentDescription,
                         shadowEnabled = false,
                         onPress = onPress
                     )
@@ -251,34 +257,43 @@ fun PlayerCustomizationDialog(
                             FormattedSettingsButton(
                                 imageResource = Res.drawable.gif_icon,
                                 text = "Gif",
+                                contentDescription = "Open GIF search",
                             ) {
                                 viewModel.openRoute(CustomizationRoute.GifSearch)
                             }
                         }
                         item {
                             FormattedSettingsButton(
-                                imageResource = Res.drawable.search_icon, text = "Search Image"
+                                imageResource = Res.drawable.search_icon,
+                                text = "Search Image",
+                                contentDescription = "Open card image search"
                             ) {
                                 viewModel.openRoute(CustomizationRoute.ScryfallSearch)
                             }
                         }
                         item {
                             FormattedSettingsButton(
-                                imageResource = Res.drawable.camera_icon, text = "Upload Image"
+                                imageResource = Res.drawable.camera_icon,
+                                text = "Upload Image",
+                                contentDescription = "Upload player image"
                             ) {
                                 viewModel.showCameraWarning(true)
                             }
                         }
                         item {
                             FormattedSettingsButton(
-                                imageResource = Res.drawable.color_picker_icon, text = "Background Color"
+                                imageResource = Res.drawable.color_picker_icon,
+                                text = "Background Color",
+                                contentDescription = "Change background color"
                             ) {
                                 viewModel.openRoute(CustomizationRoute.BackgroundColorPicker)
                             }
                         }
                         item {
                             FormattedSettingsButton(
-                                imageResource = Res.drawable.text_icon, text = "Text Color"
+                                imageResource = Res.drawable.text_icon,
+                                text = "Text Color",
+                                contentDescription = "Change text color"
                             ) {
                                 viewModel.openRoute(CustomizationRoute.AccentColorPicker)
                             }

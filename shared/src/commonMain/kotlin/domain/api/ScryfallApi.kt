@@ -26,10 +26,15 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
+interface ScryfallClient {
+    suspend fun searchRulings(query: String): ScryfallResult<List<RulingSummary>>
+    suspend fun searchCards(query: String): ScryfallResult<ScryfallPage>
+}
+
 class ScryfallApi(
     private val client: HttpClient = HttpClient(),
     private val requestDelayMillis: Long = 100
-) {
+) : ScryfallClient {
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -37,14 +42,14 @@ class ScryfallApi(
     private val requestMutex = Mutex()
     private var lastRequest: TimeMark? = null
 
-    suspend fun searchRulings(query: String): ScryfallResult<List<RulingSummary>> {
+    override suspend fun searchRulings(query: String): ScryfallResult<List<RulingSummary>> {
         return when (val response = requestScryfall(query)) {
             is ScryfallResult.Failure -> response
             is ScryfallResult.Success -> decodeRulings(response.value)
         }
     }
 
-    suspend fun searchCards(query: String): ScryfallResult<ScryfallPage> {
+    override suspend fun searchCards(query: String): ScryfallResult<ScryfallPage> {
         return when (val response = requestScryfall(query)) {
             is ScryfallResult.Failure -> response
             is ScryfallResult.Success -> decodeCards(response.value)
