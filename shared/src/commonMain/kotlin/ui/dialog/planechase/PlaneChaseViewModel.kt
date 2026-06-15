@@ -18,7 +18,8 @@ import kotlinx.coroutines.launch
 class PlaneChaseViewModel(
     private val planechaseRepository: PlanechaseRepository,
     private val scryfallClient: ScryfallClient,
-    private val initialPlaneSearchEnabled: Boolean = true
+    private val initialPlaneSearchEnabled: Boolean = true,
+    private val planarDieRoll: () -> PlanarDieResult = ::randomPlanarDieResult
 ): ViewModel() {
 
     private val _state = MutableStateFlow(PlaneChaseState())
@@ -151,6 +152,10 @@ class PlaneChaseViewModel(
         return null
     }
 
+    fun rollPlanarDie(): PlanarDieResult {
+        return planarDieRoll()
+    }
+
     private suspend fun search(qry: String = state.value.query.text): List<CardSummary> {
         return when (val result = scryfallClient.searchCards("(t:plane or t:phenomenon) $qry")) {
             is ScryfallResult.Failure -> emptyList()
@@ -187,5 +192,13 @@ class PlaneChaseViewModel(
 
     fun toggleHideUnselected(value: Boolean? = null) {
         _state.value = _state.value.copy(hideUnselected = value ?: !_state.value.hideUnselected)
+    }
+}
+
+private fun randomPlanarDieResult(): PlanarDieResult {
+    return when ((1..6).random()) {
+        1 -> PlanarDieResult.PLANESWALK
+        2 -> PlanarDieResult.CHAOS
+        else -> PlanarDieResult.NO_EFFECT
     }
 }

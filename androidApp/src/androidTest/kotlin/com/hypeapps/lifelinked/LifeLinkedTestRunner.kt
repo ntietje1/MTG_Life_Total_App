@@ -19,6 +19,8 @@ import model.VersionNumber
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.loadKoinModules
 import org.koin.dsl.module
+import ui.dialog.planechase.PlanarDieResult
+import ui.dialog.planechase.PlaneChaseViewModel
 
 class LifeLinkedTestRunner : AndroidJUnitRunner() {
     override fun newApplication(cl: ClassLoader, className: String, context: Context): Application {
@@ -34,6 +36,13 @@ class LifeLinkedTestApp : App() {
             module {
                 single<GifSearchClient> { FakeGifSearchClient() }
                 single<ScryfallClient> { FakeScryfallClient() }
+                single {
+                    PlaneChaseViewModel(
+                        planechaseRepository = get(),
+                        scryfallClient = get(),
+                        planarDieRoll = { PlanarDieResult.PLANESWALK }
+                    )
+                }
             }
         )
     }

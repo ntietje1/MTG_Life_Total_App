@@ -76,11 +76,15 @@ import ui.components.SelectableEnlargeableCardImage
 import ui.components.SettingsButton
 import ui.modifier.routePointerChangesTo
 
-private enum class PlanarDieResult(
-    val toString: String,
-    val drawableResource: DrawableResource
-) {
-    PLANESWALK("Planeswalk", Res.drawable.planeswalker_icon), CHAOS("Chaos Ensues", Res.drawable.chaos_icon), NO_EFFECT("No Effect", Res.drawable.x_icon)
+private val PlanarDieResult.drawableResource: DrawableResource
+    get() = when (this) {
+        PlanarDieResult.PLANESWALK -> Res.drawable.planeswalker_icon
+        PlanarDieResult.CHAOS -> Res.drawable.chaos_icon
+        PlanarDieResult.NO_EFFECT -> Res.drawable.x_icon
+    }
+
+private fun PlanarDieResult.planechaseContentDescription(): String {
+    return "Planar die result $label"
 }
 
 @Composable
@@ -114,7 +118,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                     Column(
                         modifier = Modifier
                             .wrapContentSize()
-                            .semantics { contentDescription = "Planar die result ${planarDieResult.toString}" }
+                            .semantics { contentDescription = planarDieResult.planechaseContentDescription() }
                             .pointerInput(Unit) {
                                 detectTapGestures {
                                     if (planarDieResult == PlanarDieResult.PLANESWALK) {
@@ -135,7 +139,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                         )
                         Text(
                             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-                            text = planarDieResult.toString,
+                            text = planarDieResult.label,
                             color = MaterialTheme.colorScheme.onPrimary,
                             textAlign = TextAlign.Center,
                             fontSize = 35.scaledSp
@@ -154,23 +158,6 @@ fun PlaneChaseDialogContent( //TODO: add animations
                 }
             }
         })
-    }
-
-    fun rollPlanarDie() {
-        when ((1..6).random()) {
-            1 -> {
-                planarDieResult = PlanarDieResult.PLANESWALK
-            }
-
-            2 -> {
-                planarDieResult = PlanarDieResult.CHAOS
-            }
-
-            3, 4, 5, 6 -> {
-                planarDieResult = PlanarDieResult.NO_EFFECT
-            }
-        }
-        planarDieResultVisible = true
     }
 
     BoxWithConstraints(modifier = modifier.padding(bottom = 20.dp)) {
@@ -287,7 +274,8 @@ fun PlaneChaseDialogContent( //TODO: add animations
                     imageVector = vectorResource(Res.drawable.die_icon),
                     onPress = {
                         if (state.planarDeck.size > 0) {
-                            rollPlanarDie()
+                            planarDieResult = viewModel.rollPlanarDie()
+                            planarDieResultVisible = true
                         } else {
                             notificationManager.showNotification("Select your planar deck first")
                         }

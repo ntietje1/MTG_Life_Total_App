@@ -298,6 +298,25 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun planechasePlaneswalkDieResultMovesPlaneToBackStack() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLANECHASE)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
+        selectE2EPlaneDeck()
+        waitForIntContentDescription(PLANAR_BACK_STACK_SIZE_PREFIX, 0)
+
+        performSemanticClick(ROLL_PLANAR_DIE)
+        waitForContentDescription("$PLANAR_DIE_RESULT_PREFIX$PLANESWALK")
+        composeRule.onNodeWithContentDescription("$PLANAR_DIE_RESULT_PREFIX$PLANESWALK", useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        waitForIntContentDescription(PLANAR_BACK_STACK_SIZE_PREFIX, 1)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun middleMenuCanChangePlayerCountResetGameAndResetTableCounters() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
