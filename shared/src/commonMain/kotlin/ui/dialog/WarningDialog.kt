@@ -21,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,11 +39,19 @@ fun WarningDialog(
     optionTwoEnabled: Boolean = true,
     optionOneMessage: String = "Confirm",
     optionTwoMessage: String = "Dismiss",
+    dismissOnOption: Boolean = true,
     onOptionOne: () -> Unit = {},
     onOptionTwo: () -> Unit = {},
     onDismiss: () -> Unit = {}
 ) {
     val dimensions = LocalDimensions.current
+
+    fun handleOptionSelected(action: () -> Unit) {
+        if (dismissOnOption) {
+            onDismiss()
+        }
+        action()
+    }
 
         Dialog(
             properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = true, usePlatformDefaultWidth = false),
@@ -87,9 +97,10 @@ fun WarningDialog(
                     ) {
                         if (optionTwoEnabled) {
                             TextButton(onClick = {
-                                onDismiss()
-                                onOptionTwo()
-                            }, modifier = Modifier.fillMaxWidth(0.5f)
+                                handleOptionSelected(onOptionTwo)
+                            }, modifier = Modifier
+                                .fillMaxWidth(0.5f)
+                                .semantics { contentDescription = optionTwoMessage }
                             ) {
                                 Text(
                                     text = optionTwoMessage,
@@ -102,9 +113,10 @@ fun WarningDialog(
                         }
                         if (optionOneEnabled) {
                             TextButton(onClick = {
-                                onDismiss()
-                                onOptionOne()
-                            }, modifier = Modifier.fillMaxWidth()
+                                handleOptionSelected(onOptionOne)
+                            }, modifier = Modifier
+                                .fillMaxWidth()
+                                .semantics { contentDescription = optionOneMessage }
                             ) {
                                 Text(
                                     text = optionOneMessage,

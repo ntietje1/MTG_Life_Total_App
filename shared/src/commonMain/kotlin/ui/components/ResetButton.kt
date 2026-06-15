@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -22,11 +24,25 @@ import theme.halfAlpha
 import theme.scaledSp
 
 @Composable
-fun ResetButton(modifier: Modifier = Modifier, onReset: () -> Unit) {
+fun ResetButton(
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    onReset: () -> Unit
+) {
+    val semanticsModifier = if (contentDescription == null) {
+        Modifier
+    } else {
+        Modifier.semantics { this.contentDescription = contentDescription }
+    }
+
     BoxWithConstraints(
-        modifier = modifier.aspectRatio(2.5f).clip(RoundedCornerShape(15)).pointerInput(Unit) {
-            detectTapGestures(onTap = { _ -> onReset() })
-        },
+        modifier = modifier
+            .then(semanticsModifier)
+            .aspectRatio(2.5f)
+            .clip(RoundedCornerShape(15))
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { _ -> onReset() })
+            },
 
         ) {
         val textSize = remember(Unit) { (maxWidth / 4f).value }

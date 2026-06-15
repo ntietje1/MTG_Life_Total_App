@@ -4,10 +4,11 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
@@ -74,6 +75,50 @@ class LifeCounterE2ETest {
 
         waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
         closeCustomizationAndReturnToCounter()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun middleMenuCanChangePlayerCountResetGameAndResetTableCounters() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLAYER_NUMBER)
+        waitForContentDescription(SET_PLAYER_COUNT_2)
+        composeRule.onNodeWithContentDescription(SET_PLAYER_COUNT_2, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P2_SETTINGS_BUTTON)
+        waitUntil("P3 removed after setting player count to 2") {
+            !hasContentDescription(P3_SETTINGS_BUTTON)
+        }
+
+        val resetLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
+        composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, resetLife + 1)
+
+        openMiddleMenuItem(OPEN_RESET_GAME)
+        waitForContentDescription(RESET_SAME_PLAYERS)
+        composeRule.onNodeWithContentDescription(RESET_SAME_PLAYERS, useUnmergedTree = true)
+            .performClick()
+        waitForContentDescription(RESET_SKIP_FIRST_PLAYER)
+        composeRule.onNodeWithContentDescription(RESET_SKIP_FIRST_PLAYER, useUnmergedTree = true)
+            .performClick()
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, resetLife)
+
+        openMiddleMenuItem(OPEN_TABLE_COUNTERS)
+        waitForIntContentDescription(WHITE_MANA_COUNTER_PREFIX, 0)
+        composeRule.onNodeWithContentDescription(INCREASE_WHITE_MANA, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(WHITE_MANA_COUNTER_PREFIX, 1)
+
+        composeRule.onNodeWithContentDescription(RESET_TABLE_COUNTERS, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(WHITE_MANA_COUNTER_PREFIX, 0)
+
+        composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P1_SETTINGS_BUTTON)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -311,13 +356,17 @@ class LifeCounterE2ETest {
     }
 
     private fun openStartingLifeDialog() {
+        openMiddleMenuItem(OPEN_STARTING_LIFE)
+        waitForContentDescription(SET_STARTING_LIFE_40)
+    }
+
+    private fun openMiddleMenuItem(contentDescription: String) {
         waitForContentDescription(MIDDLE_MENU_BUTTON)
         composeRule.onNodeWithContentDescription(MIDDLE_MENU_BUTTON, useUnmergedTree = true)
             .performTouchInput { click() }
-        waitForContentDescription(OPEN_STARTING_LIFE)
-        composeRule.onNodeWithContentDescription(OPEN_STARTING_LIFE, useUnmergedTree = true)
+        waitForContentDescription(contentDescription)
+        composeRule.onNodeWithContentDescription(contentDescription, useUnmergedTree = true)
             .performTouchInput { click() }
-        waitForContentDescription(SET_STARTING_LIFE_40)
     }
 
     private fun openP1Customization() {
@@ -397,7 +446,14 @@ class LifeCounterE2ETest {
 
     private fun semanticsSnapshot(): String {
         return runCatching {
-            composeRule.onRoot(useUnmergedTree = true).printToString(maxDepth = 10)
+            composeRule.onAllNodes(isRoot(), useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .indices
+                .joinToString(separator = "\n\n") { index ->
+                    "Root $index:\n" +
+                        composeRule.onAllNodes(isRoot(), useUnmergedTree = true)[index]
+                            .printToString(maxDepth = 10)
+                }
         }.getOrElse { error ->
             "Could not print semantics tree: ${error.message}"
         }
@@ -442,6 +498,8 @@ class LifeCounterE2ETest {
         const val P1_COMMANDER_BUTTON = "P1 commander mode"
         const val P1_COMMANDER_DEALER = "P1 is commander dealer"
         const val P1_SETTINGS_BUTTON = "P1 settings"
+        const val P2_SETTINGS_BUTTON = "P2 settings"
+        const val P3_SETTINGS_BUTTON = "P3 settings"
         const val P1_BACK_BUTTON = "P1 back"
         const val COMMANDER_EXIT_BUTTON = "Exit commander mode"
         const val MIDDLE_MENU_BUTTON = "Open life counter menu"
@@ -472,9 +530,18 @@ class LifeCounterE2ETest {
         const val GIF_SEARCH_FIELD = "Search KLIPY input"
         const val SEARCH_BUTTON = "Search"
         const val TEST_GIF_RESULT = "GIF result e2e-gif"
+        const val OPEN_RESET_GAME = "Open reset game"
+        const val RESET_SAME_PLAYERS = "Same players"
+        const val RESET_SKIP_FIRST_PLAYER = "Skip"
+        const val OPEN_PLAYER_NUMBER = "Open player number"
+        const val SET_PLAYER_COUNT_2 = "Set player count to 2"
         const val OPEN_STARTING_LIFE = "Open starting life"
         const val SET_STARTING_LIFE_20 = "Set starting life to 20"
         const val SET_STARTING_LIFE_40 = "Set starting life to 40"
+        const val OPEN_TABLE_COUNTERS = "Open mana and storm counters"
+        const val WHITE_MANA_COUNTER_PREFIX = "White mana "
+        const val INCREASE_WHITE_MANA = "Increase white mana"
+        const val RESET_TABLE_COUNTERS = "Reset table counters"
         const val P1_ADD_COUNTER = "Add P1 counter"
         const val P1_ADD_POISON_COUNTER = "Add P1 Poison counter"
         const val P1_COUNTER_PREFIX = "P1 "

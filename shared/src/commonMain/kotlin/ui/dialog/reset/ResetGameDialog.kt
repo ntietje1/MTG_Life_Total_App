@@ -21,6 +21,7 @@ fun ResetGameDialog(
             message = "Select an option to start a new game",
             optionOneMessage = "Same players",
             optionTwoMessage = "Different players",
+            dismissOnOption = false,
             onOptionOne = {
                 playerPreferenceReset = false
             },
@@ -35,6 +36,7 @@ fun ResetGameDialog(
             message = "Select whether to skip player selection or not",
             optionOneMessage = "Select",
             optionTwoMessage = "Skip",
+            dismissOnOption = false,
             onOptionOne = {
                 onChoice(choiceFor(resetPlayerPreferences = playerPreferenceReset == true, chooseFirstPlayer = true))
             },
