@@ -298,6 +298,24 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun playerSelectSkipReturnsToExistingGame() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        val initialLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
+        composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
+
+        openMiddleMenuItem(OPEN_PLAYER_SELECT)
+        performSemanticClick(START_LIFE_COUNTER)
+
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun chanceDialogsCanRollDiceAndFlipCoin() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1090,6 +1108,7 @@ class LifeCounterE2ETest {
         const val TEST_GIF_RESULT = "GIF result e2e-gif"
         const val TEST_GIF_IMAGE_URI = "https://example.test/e2e-full.gif"
         const val OPEN_CARD_SEARCH = "Open card search"
+        const val OPEN_PLAYER_SELECT = "Open player select"
         const val OPEN_RESET_GAME = "Open reset game"
         const val RESET_SAME_PLAYERS = "Same players"
         const val RESET_DIFFERENT_PLAYERS = "Different players"
