@@ -555,6 +555,24 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun coinFlipCanFlipUntilCalledResultLoses() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_COIN_FLIP)
+        waitForContentDescription(CALL_HEADS)
+        waitForContentDescription(CALL_TAILS)
+        performSemanticClick(CALL_HEADS)
+        waitUntil("coin flip call heads result") {
+            findContentDescriptionValue(COIN_FLIP_LAST_RESULT_PREFIX).orEmpty().isNotBlank()
+        }
+
+        closeDialogAndWaitForCounter()
+        waitForContentDescription(P1_SETTINGS_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun diceDialogCanRollCustomDieValue() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1600,6 +1618,8 @@ class LifeCounterE2ETest {
         const val DECREASE_COINS_TO_FLIP = "Decrease coins to flip"
         const val INCREASE_KRARKS_THUMBS = "Increase Krark's thumbs"
         const val DECREASE_KRARKS_THUMBS = "Decrease Krark's thumbs"
+        const val CALL_HEADS = "Call heads"
+        const val CALL_TAILS = "Call tails"
         const val FLIP_COIN = "Flip coin"
         const val COIN_FLIP_LAST_RESULT_PREFIX = "Coin flip last result "
         const val OPEN_PLANECHASE = "Open planechase"

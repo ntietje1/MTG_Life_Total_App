@@ -282,6 +282,7 @@ fun CoinFlipDialogContent(
                             shadowEnabled = false,
                             mainColor = null,
                             text = "Call Heads",
+                            contentDescription = "Call heads",
                             imageVector = vectorResource(CoinHistoryItem.HEADS.drawable)
                         )
                         Spacer(Modifier.width(buttonSize / 4f))
@@ -293,6 +294,7 @@ fun CoinFlipDialogContent(
                             shadowEnabled = false,
                             mainColor = null,
                             text = "Call Tails",
+                            contentDescription = "Call tails",
                             imageVector = vectorResource(CoinHistoryItem.TAILS.drawable)
                         )
                     }
