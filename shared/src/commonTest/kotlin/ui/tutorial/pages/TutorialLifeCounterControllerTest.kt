@@ -11,12 +11,12 @@ import ui.lifecounter.MiddleButtonState
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonAction
 
-class MockLifeCounterViewModelTest {
+class TutorialLifeCounterControllerTest {
     private val gameState = MockGameState()
 
     @Test
     fun tutorialControllerImplementsScreenContractWithoutProductionViewModelInheritance() {
-        val controller = TestMockLifeCounterViewModel(gameState)
+        val controller = TutorialLifeCounterController(gameState)
         val controllerAsAny: Any = controller
 
         assertIs<ui.lifecounter.LifeCounterScreenController>(controller)
@@ -25,7 +25,7 @@ class MockLifeCounterViewModelTest {
 
     @Test
     fun tutorialControllerUpdatesVisibleLifeAndCommanderDamageState() {
-        val controller = TestMockLifeCounterViewModel(gameState)
+        val controller = TutorialLifeCounterController(gameState)
         val dealerSeatId = SeatId("seat-1")
         val receiverSeatId = SeatId("seat-2")
 
@@ -43,7 +43,7 @@ class MockLifeCounterViewModelTest {
 
     @Test
     fun tutorialControllerUsesModalStackForMiddleMenuNavigation() {
-        val controller = TestMockLifeCounterViewModel(gameState)
+        val controller = TutorialLifeCounterController(gameState)
 
         controller.openModal(LifeCounterModal.Default)
         controller.openModal(LifeCounterModal.PlayerNumber)
@@ -52,14 +52,20 @@ class MockLifeCounterViewModelTest {
         assertEquals(LifeCounterModal.Default, controller.state.value.currentModal)
         assertTrue(controller.state.value.isModalOpen)
     }
-}
 
-private class TestMockLifeCounterViewModel(
-    gameState: MockGameState
-) : MockLifeCounterViewModel(
-    lifeCounterState = gameState.lifeCounterState,
-    preferencesRepository = gameState.mockPreferencesRepository,
-    profileRepository = gameState.mockProfileRepository,
-    fileImageStore = gameState.mockFileImageStore,
-    notificationManager = null,
-)
+    @Test
+    fun tutorialControllerCanBlockActionsWithoutSubclassing() {
+        val controller = TutorialLifeCounterController(
+            gameState = gameState,
+            blockedPlayerActionMessage = { action ->
+                if (action == PlayerButtonAction.ToggleSettings) "Settings disabled" else null
+            }
+        )
+        val seatId = SeatId("seat-1")
+
+        controller.onPlayerButtonAction(seatId, PlayerButtonAction.ToggleSettings)
+
+        val player = controller.state.value.players.first { it.seatId == seatId }
+        assertEquals(PBState.NORMAL, player.buttonState)
+    }
+}

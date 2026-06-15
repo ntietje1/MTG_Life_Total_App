@@ -198,15 +198,25 @@ private class InMemorySettings : Settings {
     }
 }
 
-abstract class MockLifeCounterViewModel(
-    lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-    private val preferencesRepository: PreferencesRepository,
-    private val profileRepository: PlayerProfileRepository,
-    private val fileImageStore: IFileImageStore,
-    private val notificationManager: NotificationManager?
+class TutorialLifeCounterController(
+    gameState: MockGameState = MockGameState(),
+    notificationManager: NotificationManager? = null,
+    private val blockedPlayerActionMessage: (PlayerButtonAction) -> String? = { null },
+    private val onModalRequested: (LifeCounterModal) -> Unit = {},
+    private val shouldOpenModal: (LifeCounterModal) -> Boolean = { true },
+    private val blockedModalMessage: (LifeCounterModal) -> String = { "Menu disabled" },
+    private val blockedThemeToggleMessage: String? = null,
+    private val afterPlayerAction: (SeatId, PlayerButtonAction, LifeCounterState) -> Unit = { _, _, _ -> },
+    private val afterModalOpened: (LifeCounterModal, LifeCounterState) -> Unit = { _, _ -> },
+    private val afterNumPlayersChanged: (Int) -> Unit = {},
+    private val afterCustomizationChanged: (Player) -> Unit = {},
 ) : LifeCounterScreenController {
-    private val _state = MutableStateFlow(lifeCounterState)
+    private val _state = MutableStateFlow(gameState.lifeCounterState)
     override val state = _state.asStateFlow()
+    private val preferencesRepository = gameState.mockPreferencesRepository
+    private val profileRepository = gameState.mockProfileRepository
+    private val fileImageStore = gameState.mockFileImageStore
+    private val notificationManager = notificationManager
     override val numPlayers = preferencesRepository.numPlayers
     override val alt4PlayerLayout = preferencesRepository.alt4PlayerLayout
     override val darkTheme = preferencesRepository.darkTheme
@@ -219,7 +229,13 @@ abstract class MockLifeCounterViewModel(
     }
 
     override fun openModal(value: LifeCounterModal) {
+        onModalRequested(value)
+        if (!shouldOpenModal(value)) {
+            showNotification(blockedModalMessage(value), 3000)
+            return
+        }
         _state.value = _state.value.copy(modalStack = _state.value.modalStack.open(value))
+        afterModalOpened(value, _state.value)
     }
 
     override fun closeModal() {
@@ -234,7 +250,11 @@ abstract class MockLifeCounterViewModel(
         _state.value = _state.value.copy(blurBackground = value)
     }
 
-    open override fun toggleDarkTheme(value: Boolean?) {
+    override fun toggleDarkTheme(value: Boolean?) {
+        if (blockedThemeToggleMessage != null) {
+            showNotification(blockedThemeToggleMessage, 3000)
+            return
+        }
         preferencesRepository.setDarkTheme(value ?: !preferencesRepository.darkTheme.value)
     }
 
@@ -250,15 +270,21 @@ abstract class MockLifeCounterViewModel(
         preferencesRepository.setAlt4PlayerLayout(value)
     }
 
-    open override fun setNumPlayers(value: Int) {
+    override fun setNumPlayers(value: Int) {
         preferencesRepository.setNumPlayers(value)
+        afterNumPlayersChanged(value)
     }
 
     override fun onCommanderDealerButtonClicked() {
         resetCommanderState()
     }
 
-    open override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
+    override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
+        val blockedMessage = blockedPlayerActionMessage(action)
+        if (blockedMessage != null) {
+            showNotification(blockedMessage, 3000)
+            return
+        }
         when (action) {
             PlayerButtonAction.IncrementLife -> updatePlayer(seatId) { player ->
                 player.copy(lifeTotal = player.lifeTotal.changeBy(1))
@@ -314,6 +340,7 @@ abstract class MockLifeCounterViewModel(
             PlayerButtonAction.SelectFirstPlayer,
             PlayerButtonAction.MoveTimer -> Unit
         }
+        afterPlayerAction(seatId, action, _state.value)
     }
 
     override fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel? {
@@ -352,25 +379,23 @@ abstract class MockLifeCounterViewModel(
         _state.value = _state.value.copy(dayNight = value)
     }
 
-    protected open fun createCustomizationViewModel(
-        seatId: SeatId,
-        player: Player
-    ): CustomizationViewModel {
+    private fun createCustomizationViewModel(player: Player): CustomizationViewModel {
         return CustomizationViewModel(
             initialPlayer = player,
             fileImageStore = fileImageStore,
             profileRepository = profileRepository,
             preferencesRepository = preferencesRepository,
+            onPlayerChanged = afterCustomizationChanged,
         )
     }
 
-    protected fun showNotification(message: String, duration: Long = 2000L) {
+    private fun showNotification(message: String, duration: Long = 2000L) {
         notificationManager?.showNotification(message, duration)
     }
 
     private fun ensureCustomizationViewModel(seatId: SeatId): CustomizationViewModel {
         return customizationViewModels.getOrPut(seatId) {
-            createCustomizationViewModel(seatId, requirePlayer(seatId))
+            createCustomizationViewModel(requirePlayer(seatId))
         }
     }
 

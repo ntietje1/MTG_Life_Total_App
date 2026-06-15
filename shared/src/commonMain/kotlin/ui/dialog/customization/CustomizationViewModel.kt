@@ -23,7 +23,8 @@ open class CustomizationViewModel(
     private val initialPlayer: Player,
     private val fileImageStore: IFileImageStore,
     private val profileRepository: PlayerProfileRepository,
-    val preferencesRepository: PreferencesRepository
+    val preferencesRepository: PreferencesRepository,
+    private val onPlayerChanged: (Player) -> Unit = {}
 ) : ViewModel() {
     private val _state = MutableStateFlow(CustomizationDialogState(initialPlayer))
     val state: StateFlow<CustomizationDialogState> = _state.asStateFlow()
@@ -50,6 +51,7 @@ open class CustomizationViewModel(
     open fun setPlayer(player: Player) {
         _state.value = _state.value.copy(player = player)
         setChangeNameField(TextFieldValue(player.name, selection = TextRange(player.name.length)))
+        onPlayerChanged(player)
     }
 
     fun onChangeImage(uri: String) {

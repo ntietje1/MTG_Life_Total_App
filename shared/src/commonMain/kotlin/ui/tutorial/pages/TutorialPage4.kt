@@ -22,25 +22,17 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import domain.state.game.SeatId
-import domain.storage.IFileImageStore
-import domain.storage.PreferencesRepository
-import domain.state.profile.PlayerProfileRepository
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.down_arrow_icon
 import lifelinked.shared.generated.resources.pencil_icon
 import lifelinked.shared.generated.resources.settings_icon
-import model.Player
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.components.SettingsButton
-import ui.dialog.customization.CustomizationViewModel
-import ui.lifecounter.LifeCounterModal
 import ui.lifecounter.LifeCounterScreen
-import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonAction
 
@@ -60,83 +52,45 @@ fun TutorialPage4(
     var stepTwoComplete by remember { mutableStateOf(false) }
     var complete by remember { mutableStateOf(false) }
 
-    class MockLifeCounterViewModelPage4(
-        lifeCounterState: LifeCounterState,
-        private val preferencesRepository: PreferencesRepository,
-        private val profileRepository: PlayerProfileRepository,
-        private val fileImageStore: IFileImageStore,
-        notificationManager: NotificationManager
-    ) : MockLifeCounterViewModel(
-        lifeCounterState, preferencesRepository, profileRepository, fileImageStore, notificationManager
-    ) {
-        override fun openModal(value: LifeCounterModal) {
-            showNotification("Settings menu disabled", 3000)
-        }
+    fun checkStepOneComplete(state: ui.lifecounter.LifeCounterState) {
+        stepOneComplete = state.players.any { it.buttonState == PBState.SETTINGS }
+    }
 
-        private fun checkStepOneComplete() {
-            stepOneComplete = state.value.players.any { it.buttonState == PBState.SETTINGS }
+    fun checkStepTwoComplete(state: ui.lifecounter.LifeCounterState) {
+        stepTwoComplete = state.players.any { it.showCustomizeMenu }
+        setBlurUI(stepTwoComplete)
+        if (stepTwoComplete) {
+            notificationManager.showNotification("Next: Change the appearance of the player", 3000)
         }
+    }
 
-        private fun checkStepTwoComplete() {
-            stepTwoComplete = state.value.players.any { it.showCustomizeMenu }
-            setBlurUI(stepTwoComplete)
-            if (stepTwoComplete) {
-                showNotification("Next: Change the appearance of the player", 3000)
-            }
-        }
-
-        override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
-            when (action) {
-                PlayerButtonAction.ToggleCommanderDealer -> {
-                    showNotification("Commander damage disabled", 3000)
-                }
-                is PlayerButtonAction.SetMonarch -> {
-                    showNotification("Monarchy disabled", 3000)
-                }
-                is PlayerButtonAction.SetManualDeath -> {
-                    showNotification("Auto KO disabled", 3000)
-                }
-                PlayerButtonAction.OpenCounters -> {
-                    showNotification("Counters disabled", 3000)
-                }
-                else -> {
-                    super.onPlayerButtonAction(seatId, action)
-                    if (action == PlayerButtonAction.ToggleSettings) checkStepOneComplete()
-                    if (action == PlayerButtonAction.OpenCustomization) checkStepTwoComplete()
-                }
-            }
-        }
-
-        override fun createCustomizationViewModel(
-            seatId: SeatId,
-            player: Player
-        ): CustomizationViewModel {
-            return MockCustomizationViewModelPage4(player)
-        }
-
-        inner class MockCustomizationViewModelPage4(
-            initialPlayer: Player
-        ) : CustomizationViewModel(
-            initialPlayer = initialPlayer,
-            profileRepository = profileRepository,
-            preferencesRepository = preferencesRepository,
-            fileImageStore = fileImageStore,
-        ) {
-            override fun setPlayer(player: Player) {
-                super.setPlayer(player)
-                complete = true
-                onComplete()
-            }
+    fun checkComplete() {
+        if (!complete) {
+            complete = true
+            onComplete()
         }
     }
 
     val lifeCounterViewModel = remember {
-        MockLifeCounterViewModelPage4(
-            lifeCounterState = gameState.lifeCounterState,
-        preferencesRepository = gameState.mockPreferencesRepository,
-        profileRepository = gameState.mockProfileRepository,
-        fileImageStore = gameState.mockFileImageStore,
-        notificationManager = notificationManager,
+        TutorialLifeCounterController(
+            gameState = gameState,
+            notificationManager = notificationManager,
+            shouldOpenModal = { false },
+            blockedModalMessage = { "Settings menu disabled" },
+            blockedPlayerActionMessage = { action ->
+                when (action) {
+                    PlayerButtonAction.ToggleCommanderDealer -> "Commander damage disabled"
+                    is PlayerButtonAction.SetMonarch -> "Monarchy disabled"
+                    is PlayerButtonAction.SetManualDeath -> "Auto KO disabled"
+                    PlayerButtonAction.OpenCounters -> "Counters disabled"
+                    else -> null
+                }
+            },
+            afterPlayerAction = { _, action, state ->
+                if (action == PlayerButtonAction.ToggleSettings) checkStepOneComplete(state)
+                if (action == PlayerButtonAction.OpenCustomization) checkStepTwoComplete(state)
+            },
+            afterCustomizationChanged = { checkComplete() }
         )
     }
 

@@ -22,10 +22,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import domain.state.game.SeatId
-import domain.storage.IFileImageStore
-import domain.storage.PreferencesRepository
-import domain.state.profile.PlayerProfileRepository
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.down_arrow_icon
@@ -38,7 +34,6 @@ import theme.scaledSp
 import ui.components.SettingsButton
 import ui.lifecounter.LifeCounterModal
 import ui.lifecounter.LifeCounterScreen
-import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PlayerButtonAction
 
 
@@ -57,101 +52,57 @@ fun TutorialPage5(
     var stepTwoComplete by remember { mutableStateOf(false) }
     var complete by remember { mutableStateOf(false) }
 
-    class MockLifeCounterViewModelPage5(
-        lifeCounterState: LifeCounterState,
-        preferencesRepository: PreferencesRepository,
-        profileRepository: PlayerProfileRepository,
-        fileImageStore: IFileImageStore,
-        notificationManager: NotificationManager
-    ) : MockLifeCounterViewModel(
-        lifeCounterState, preferencesRepository, profileRepository, fileImageStore, notificationManager
-    ) {
-        private fun checkStepOneOrTwoComplete() {
-            when {
-                state.value.currentModal in listOf(LifeCounterModal.PlayerNumber, LifeCounterModal.FourPlayerLayout) -> {
-                    stepTwoComplete = true
-                    showNotification("Next: Change the number of players", 3000)
-                }
-
-                state.value.currentModal != null -> {
-                    stepOneComplete = true
-                    showNotification("Next: Navigate to the player number menu", 3000)
-                }
+    fun checkStepOneOrTwoComplete(state: ui.lifecounter.LifeCounterState) {
+        when {
+            state.currentModal in listOf(LifeCounterModal.PlayerNumber, LifeCounterModal.FourPlayerLayout) -> {
+                stepTwoComplete = true
+                notificationManager.showNotification("Next: Change the number of players", 3000)
             }
-        }
 
-        override fun toggleDarkTheme(value: Boolean?) {
-            showNotification("Changing theme disabled", 3000)
-        }
-
-        override fun openModal(value: LifeCounterModal) {
-            setBlurUI(true)
-            when (value) {
-                LifeCounterModal.PlayerNumber, LifeCounterModal.FourPlayerLayout, LifeCounterModal.Default -> {
-                    super.openModal(value)
-                    checkStepOneOrTwoComplete()
-                }
-
-                LifeCounterModal.Counter -> {
-                    showNotification("Counters menu disabled", 3000)
-                }
-
-                LifeCounterModal.Settings -> {
-                    showNotification("Settings menu disabled", 3000)
-                }
-
-                LifeCounterModal.StartingLife -> {
-                    showNotification("Starting life menu disabled", 3000)
-                }
-
-                LifeCounterModal.CoinFlip -> {
-                    showNotification("Coin flip menu disabled", 3000)
-                }
-
-                LifeCounterModal.DiceRoll -> {
-                    showNotification("Dice roll menu disabled", 3000)
-                }
-
-                LifeCounterModal.Scryfall -> {
-                    showNotification("Scryfall menu disabled", 3000)
-                }
-
-                LifeCounterModal.PlaneChase -> {
-                    showNotification("Planar deck menu disabled", 3000)
-                }
-
-                else -> {
-                    showNotification("Menu disabled", 3000)
-                }
-            }
-        }
-
-        override fun setNumPlayers(value: Int) {
-            super.setNumPlayers(value)
-            complete = true
-            onComplete()
-        }
-
-        override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
-            when (action) {
-                PlayerButtonAction.ToggleCommanderDealer -> {
-                    showNotification("Commander damage disabled", 3000)
-                }
-                PlayerButtonAction.ToggleSettings -> {
-                    showNotification("Settings disabled", 3000)
-                }
-                else -> super.onPlayerButtonAction(seatId, action)
+            state.currentModal != null -> {
+                stepOneComplete = true
+                notificationManager.showNotification("Next: Navigate to the player number menu", 3000)
             }
         }
     }
 
+    fun checkComplete() {
+        if (!complete) {
+            complete = true
+            onComplete()
+        }
+    }
+
     val lifeCounterViewModel = remember {
-        MockLifeCounterViewModelPage5(
-            lifeCounterState = gameState.lifeCounterState,
-        preferencesRepository = gameState.mockPreferencesRepository,
-        profileRepository = gameState.mockProfileRepository,
-        fileImageStore = gameState.mockFileImageStore,
-        notificationManager = notificationManager,
+        TutorialLifeCounterController(
+            gameState = gameState,
+            notificationManager = notificationManager,
+            onModalRequested = { setBlurUI(true) },
+            shouldOpenModal = { modal ->
+                modal in listOf(LifeCounterModal.PlayerNumber, LifeCounterModal.FourPlayerLayout, LifeCounterModal.Default)
+            },
+            blockedModalMessage = { modal ->
+                when (modal) {
+                    LifeCounterModal.Counter -> "Counters menu disabled"
+                    LifeCounterModal.Settings -> "Settings menu disabled"
+                    LifeCounterModal.StartingLife -> "Starting life menu disabled"
+                    LifeCounterModal.CoinFlip -> "Coin flip menu disabled"
+                    LifeCounterModal.DiceRoll -> "Dice roll menu disabled"
+                    LifeCounterModal.Scryfall -> "Scryfall menu disabled"
+                    LifeCounterModal.PlaneChase -> "Planar deck menu disabled"
+                    else -> "Menu disabled"
+                }
+            },
+            afterModalOpened = { _, state -> checkStepOneOrTwoComplete(state) },
+            afterNumPlayersChanged = { checkComplete() },
+            blockedThemeToggleMessage = "Changing theme disabled",
+            blockedPlayerActionMessage = { action ->
+                when (action) {
+                    PlayerButtonAction.ToggleCommanderDealer -> "Commander damage disabled"
+                    PlayerButtonAction.ToggleSettings -> "Settings disabled"
+                    else -> null
+                }
+            }
         )
     }
 

@@ -18,10 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import domain.state.game.SeatId
-import domain.storage.IFileImageStore
-import domain.storage.PreferencesRepository
-import domain.state.profile.PlayerProfileRepository
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.sword_icon
@@ -30,9 +26,7 @@ import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.components.SettingsButton
-import ui.lifecounter.LifeCounterModal
 import ui.lifecounter.LifeCounterScreen
-import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PlayerButtonAction
 
 
@@ -48,41 +42,10 @@ fun TutorialPage1(
 
     var complete by remember { mutableStateOf(false) }
 
-    class MockLifeCounterViewModelPage1(
-        lifeCounterState: LifeCounterState,
-        preferencesRepository: PreferencesRepository,
-        profileRepository: PlayerProfileRepository,
-        fileImageStore: IFileImageStore,
-        notificationManager: NotificationManager
-    ) : MockLifeCounterViewModel(
-        lifeCounterState, preferencesRepository, profileRepository, fileImageStore, notificationManager
-    ) {
-        override fun openModal(value: LifeCounterModal) {
-            showNotification("Settings menu disabled", 3000)
-        }
-
-        override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
-            when (action) {
-                PlayerButtonAction.ToggleCommanderDealer -> {
-                    showNotification("Commander damage disabled", 3000)
-                }
-                PlayerButtonAction.ToggleSettings -> {
-                    showNotification("Settings disabled", 3000)
-                }
-                else -> {
-                    super.onPlayerButtonAction(seatId, action)
-                    if (action == PlayerButtonAction.DecrementLife) {
-                        checkComplete()
-                    }
-                }
-            }
-        }
-
-        private fun checkComplete() {
-            if (state.value.players.any { it.player.life == 20 }) {
-                onComplete()
-                complete = true
-            }
+    fun checkComplete(state: ui.lifecounter.LifeCounterState) {
+        if (!complete && state.players.any { it.player.life == 20 }) {
+            onComplete()
+            complete = true
         }
     }
 
@@ -95,12 +58,23 @@ fun TutorialPage1(
         LifeCounterScreen(
             modifier = Modifier.fillMaxSize(),
             viewModel = remember {
-                MockLifeCounterViewModelPage1(
-                    lifeCounterState = gameState.lifeCounterState,
-        preferencesRepository = gameState.mockPreferencesRepository,
-        profileRepository = gameState.mockProfileRepository,
-        fileImageStore = gameState.mockFileImageStore,
-        notificationManager = notificationManager
+                TutorialLifeCounterController(
+                    gameState = gameState,
+                    notificationManager = notificationManager,
+                    shouldOpenModal = { false },
+                    blockedModalMessage = { "Settings menu disabled" },
+                    blockedPlayerActionMessage = { action ->
+                        when (action) {
+                            PlayerButtonAction.ToggleCommanderDealer -> "Commander damage disabled"
+                            PlayerButtonAction.ToggleSettings -> "Settings disabled"
+                            else -> null
+                        }
+                    },
+                    afterPlayerAction = { _, action, state ->
+                        if (action == PlayerButtonAction.DecrementLife) {
+                            checkComplete(state)
+                        }
+                    }
                 )
             },
             goToPlayerSelectScreen = {},

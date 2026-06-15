@@ -34,12 +34,25 @@ class CustomizationViewModelTest {
         assertEquals(listOf(CustomizationRoute.Default), viewModel.state.value.routeStack)
     }
 
-    private fun customizationViewModel(): CustomizationViewModel {
+    @Test
+    fun notifiesWhenPlayerChanges() {
+        val changedPlayers = mutableListOf<Player>()
+        val viewModel = customizationViewModel(onPlayerChanged = changedPlayers::add)
+
+        viewModel.setPlayer(Player(playerNum = 1, name = "Tutorial"))
+
+        assertEquals("Tutorial", changedPlayers.single().name)
+    }
+
+    private fun customizationViewModel(
+        onPlayerChanged: (Player) -> Unit = {}
+    ): CustomizationViewModel {
         return CustomizationViewModel(
             initialPlayer = Player(playerNum = 1),
             fileImageStore = FakeFileImageStore(),
             profileRepository = PlayerProfileRepository(TestSettings()),
-            preferencesRepository = PreferencesRepository(TestSettings())
+            preferencesRepository = PreferencesRepository(TestSettings()),
+            onPlayerChanged = onPlayerChanged
         )
     }
 }
