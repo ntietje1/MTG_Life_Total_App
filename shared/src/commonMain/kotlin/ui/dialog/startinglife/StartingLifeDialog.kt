@@ -81,11 +81,18 @@ fun StartingLifeDialogContent(
                 modifier = Modifier.fillMaxWidth(0.8f).height(textFieldHeight)
                     .border(
                         dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)
-                    ), value = state.textFieldValue, onValueChange = {
+                    ),
+                value = state.textFieldValue,
+                onValueChange = {
                     viewModel.setTextFieldValue(it)
-                }, label = "Custom Starting Life", keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
-                ), keyboardActions = KeyboardActions(onDone = {
+                },
+                label = "Custom Starting Life",
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                textFieldContentDescription = "Custom starting life input",
+                keyboardActions = KeyboardActions(onDone = {
                     viewModel.parseStartingLife()?.let {
                         viewModel.setStartingLife(it)
                         resetGameState(it)

@@ -657,6 +657,23 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun middleMenuCanSetCustomStartingLife() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openStartingLifeDialog()
+        composeRule.onNodeWithContentDescription(CUSTOM_STARTING_LIFE_INPUT, useUnmergedTree = true)
+            .performTextClearance()
+        composeRule.onNodeWithContentDescription(CUSTOM_STARTING_LIFE_INPUT, useUnmergedTree = true)
+            .performTextInput("37")
+        composeRule.onNodeWithContentDescription(CUSTOM_STARTING_LIFE_INPUT, useUnmergedTree = true)
+            .performImeAction()
+
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, 37)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun customizationNamePersistsAfterLifeChange() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1372,6 +1389,7 @@ class LifeCounterE2ETest {
         const val OPEN_STARTING_LIFE = "Open starting life"
         const val SET_STARTING_LIFE_20 = "Set starting life to 20"
         const val SET_STARTING_LIFE_40 = "Set starting life to 40"
+        const val CUSTOM_STARTING_LIFE_INPUT = "Custom starting life input"
         const val OPEN_TABLE_COUNTERS = "Open mana and storm counters"
         const val WHITE_MANA_COUNTER_PREFIX = "White mana "
         const val INCREASE_WHITE_MANA = "Increase white mana"
