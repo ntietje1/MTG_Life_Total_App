@@ -305,13 +305,28 @@ class LifeCounterE2ETest {
         verifySettingToggleChanges(FAST_COIN_FLIP_SETTING_PREFIX)
         verifySettingToggleChanges(DISABLE_CAMERA_ROLL_SETTING_PREFIX)
         verifySettingToggleChanges(AUTO_KO_SETTING_PREFIX)
-        verifySettingToggleChanges(AUTO_SKIP_PLAYER_SELECT_SETTING_PREFIX)
+        verifySettingTouchToggleChangesWithoutLeavingSettings(AUTO_SKIP_PLAYER_SELECT_SETTING_PREFIX)
         verifySettingToggleChanges(KEEP_SCREEN_ON_SETTING_PREFIX)
         verifySettingToggleChanges(TURN_TIMER_SETTING_PREFIX)
 
         composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
             .performTouchInput { click() }
         waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun autoSkipSettingCanTurnOnWithoutLeavingSettings() {
+        GlobalContext.get().get<PreferencesRepository>().setAutoSkip(false)
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_APP_SETTINGS)
+
+        waitUntil("auto skip initially off") {
+            findContentDescriptionValue(AUTO_SKIP_PLAYER_SELECT_SETTING_PREFIX) == "off"
+        }
+        verifySettingTouchToggleChangesWithoutLeavingSettings(AUTO_SKIP_PLAYER_SELECT_SETTING_PREFIX)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -1354,6 +1369,31 @@ class LifeCounterE2ETest {
         waitUntil("$prefix changed") {
             findContentDescriptionValue(prefix)?.let { it != initial } == true
         }
+    }
+
+    private fun verifySettingTouchToggleChangesWithoutLeavingSettings(prefix: String) {
+        val initial = readContentDescriptionValue(prefix)
+        performTouchClickOnContentDescriptionPrefix(prefix)
+        waitUntil("$prefix changed") {
+            findContentDescriptionValue(prefix)?.let { it != initial } == true
+        }
+        waitUntil("settings remains open after $prefix change") {
+            hasContentDescription(CLOSE_DIALOG) &&
+                findContentDescriptionValue(prefix) != null &&
+                !hasContentDescription(START_LIFE_COUNTER)
+        }
+    }
+
+    private fun performTouchClickOnContentDescriptionPrefix(prefix: String) {
+        waitUntil(prefix) {
+            composeRule.onAllNodes(hasContentDescriptionStartingWith(prefix), useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onAllNodes(hasContentDescriptionStartingWith(prefix), useUnmergedTree = true)[0]
+            .performTouchInput {
+                click(Offset(width * 0.9f, height / 2f))
+            }
     }
 
     private fun performSemanticClick(contentDescription: String) {
