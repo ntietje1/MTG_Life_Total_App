@@ -44,6 +44,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -269,9 +271,21 @@ fun PlayerButton(
                 }
 
                 @Composable
-                fun FormattedSettingsButton(modifier: Modifier, imageResource: DrawableResource, text: String, onPress: () -> Unit) {
+                fun FormattedSettingsButton(
+                    modifier: Modifier,
+                    imageResource: DrawableResource,
+                    text: String,
+                    contentDescription: String? = null,
+                    onPress: () -> Unit
+                ) {
                     SettingsButton(
-                        modifier = modifier, imageVector = vectorResource(imageResource), text = text, onPress = onPress, mainColor = state.player.textColor, backgroundColor = Color.Transparent
+                        modifier = modifier,
+                        imageVector = vectorResource(imageResource),
+                        text = text,
+                        contentDescription = contentDescription,
+                        onPress = onPress,
+                        mainColor = state.player.textColor,
+                        backgroundColor = Color.Transparent
                     )
                 }
 
@@ -419,6 +433,7 @@ fun PlayerButton(
 
                             PBState.SETTINGS -> {
                                 BoxWithConstraints(settingsModifier.fillMaxSize()) {
+                                    val playerNumber = state.player.playerNum
                                     val (settingsButtonSize, smallPadding, _) = remember { generateSizes(maxWidth, maxHeight) }
                                     val settingsButtonModifier = remember { Modifier.size(settingsButtonSize).padding(smallPadding / 2f) }
                                     LazyHorizontalGrid(
@@ -426,7 +441,14 @@ fun PlayerButton(
                                     ) {
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = settingsButtonModifier, imageResource = Res.drawable.monarchy_icon, text = "Monarchy"
+                                                modifier = settingsButtonModifier,
+                                                imageResource = Res.drawable.monarchy_icon,
+                                                text = "Monarchy",
+                                                contentDescription = if (state.player.monarch) {
+                                                    "Clear P$playerNumber as monarch"
+                                                } else {
+                                                    "Make P$playerNumber the monarch"
+                                                }
                                             ) { onAction(PlayerButtonAction.SetMonarch(!state.player.monarch)) }
                                         }
                                         item {
@@ -436,21 +458,30 @@ fun PlayerButton(
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = settingsButtonModifier, imageResource = Res.drawable.mana_icon, text = "Counters"
+                                                modifier = settingsButtonModifier,
+                                                imageResource = Res.drawable.mana_icon,
+                                                text = "Counters",
+                                                contentDescription = "Open P$playerNumber counters"
                                             ) {
                                                 onAction(PlayerButtonAction.OpenCounters)
                                             }
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = settingsButtonModifier, imageResource = Res.drawable.pencil_icon, text = "Customize"
+                                                modifier = settingsButtonModifier,
+                                                imageResource = Res.drawable.pencil_icon,
+                                                text = "Customize",
+                                                contentDescription = "Customize P$playerNumber"
                                             ) {
                                                 onAction(PlayerButtonAction.OpenCustomization)
                                             }
                                         }
                                         item {
                                             FormattedSettingsButton(
-                                                modifier = settingsButtonModifier, imageResource = Res.drawable.skull_icon, text = "KO Player"
+                                                modifier = settingsButtonModifier,
+                                                imageResource = Res.drawable.skull_icon,
+                                                text = "KO Player",
+                                                contentDescription = "KO P$playerNumber"
                                             ) {
                                                 onAction(PlayerButtonAction.SetManualDeath(!state.player.setDead))
                                             }
@@ -465,6 +496,7 @@ fun PlayerButton(
                             }
 
                             PBState.COUNTERS_VIEW -> {
+                                val playerNumber = state.player.playerNum
                                 CounterWrapper(
                                     modifier = settingsModifier.fillMaxSize(), textColor = state.player.textColor, text = "Counters"
                                 ) {
@@ -475,16 +507,25 @@ fun PlayerButton(
                                             horizontalArrangement = Arrangement.spacedBy(padding),
                                         ) {
                                             itemsIndexed(state.player.activeCounters) { index, counterType ->
+                                                val counterName = counterType.name
                                                 Counter(
                                                     modifier = Modifier
                                                         .fillMaxHeight()
                                                         .aspectRatio(0.70f)
                                                         .then(if (index == 0) Modifier.padding(start = padding) else Modifier),
-                                                    textColor = state.player.textColor, iconResource = counterType.resource, value = state.player.counters[counterType.ordinal], onIncrement = {
+                                                    textColor = state.player.textColor,
+                                                    iconResource = counterType.resource,
+                                                    value = state.player.counters[counterType.ordinal],
+                                                    valueContentDescription = "P$playerNumber $counterName counter ${state.player.counters[counterType.ordinal]}",
+                                                    incrementContentDescription = "P$playerNumber increase $counterName counter",
+                                                    decrementContentDescription = "P$playerNumber decrease $counterName counter",
+                                                    onIncrement = {
                                                         onAction(PlayerButtonAction.ChangeCounter(counterType, 1))
-                                                    }, onDecrement = {
+                                                    },
+                                                    onDecrement = {
                                                         onAction(PlayerButtonAction.ChangeCounter(counterType, -1))
-                                                    })
+                                                    },
+                                                )
                                             }
                                             item {
                                                 AddCounter(
@@ -494,6 +535,7 @@ fun PlayerButton(
                                                         end = padding
                                                     ),
                                                     textColor = state.player.textColor,
+                                                    contentDescription = "Add P$playerNumber counter",
                                                 ) {
                                                     onAction(PlayerButtonAction.OpenCounterSelection)
                                                 }
@@ -504,6 +546,7 @@ fun PlayerButton(
                             }
 
                             PBState.COUNTERS_SELECT -> {
+                                val playerNumber = state.player.playerNum
                                 CounterWrapper(
                                     modifier = settingsModifier.fillMaxSize(), textColor = state.player.textColor, text = "Select Counters"
                                 ) {
@@ -520,6 +563,7 @@ fun PlayerButton(
                                             ) {
                                                 items(CounterType.entries.toTypedArray()) { counterType ->
                                                     var selected by remember { mutableStateOf(counterType in state.player.activeCounters) }
+                                                    val counterName = counterType.name
                                                     Box(modifier = Modifier.fillMaxSize().aspectRatio(1.0f).background(
                                                         if (selected) {
                                                             Color.Green.copy(alpha = 0.5f)
@@ -531,6 +575,12 @@ fun PlayerButton(
                                                             selected = true
                                                             onAction(PlayerButtonAction.SetCounterActive(counterType, true))
                                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        }
+                                                    }.semantics {
+                                                        contentDescription = if (selected) {
+                                                            "P$playerNumber $counterName counter selected"
+                                                        } else {
+                                                            "Add P$playerNumber $counterName counter"
                                                         }
                                                     }) {
                                                         SettingsButton(

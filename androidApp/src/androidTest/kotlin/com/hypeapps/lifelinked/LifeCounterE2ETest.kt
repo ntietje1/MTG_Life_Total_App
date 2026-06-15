@@ -22,6 +22,65 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun playerSettingsCanToggleMonarchAndChangeCounters() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        waitForContentDescription(P1_SETTINGS_BUTTON)
+        composeRule.onNodeWithContentDescription(P1_SETTINGS_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        if (hasContentDescription(P1_CLEAR_MONARCH)) {
+            composeRule.onNodeWithContentDescription(P1_CLEAR_MONARCH, useUnmergedTree = true)
+                .performTouchInput { click() }
+            waitForContentDescription(P1_BECOME_MONARCH)
+        }
+
+        waitForContentDescription(P1_BECOME_MONARCH)
+        composeRule.onNodeWithContentDescription(P1_BECOME_MONARCH, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P1_CLEAR_MONARCH)
+
+        composeRule.onNodeWithContentDescription(P1_CLEAR_MONARCH, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P1_BECOME_MONARCH)
+
+        composeRule.onNodeWithContentDescription(P1_OPEN_COUNTERS, useUnmergedTree = true)
+            .performTouchInput { click() }
+
+        if (readFirstP1Counter() == null) {
+            waitForContentDescription(P1_ADD_COUNTER)
+            composeRule.onNodeWithContentDescription(P1_ADD_COUNTER, useUnmergedTree = true)
+                .performTouchInput { click() }
+            waitForContentDescription(P1_ADD_POISON_COUNTER)
+            composeRule.onNodeWithContentDescription(P1_ADD_POISON_COUNTER, useUnmergedTree = true)
+                .performTouchInput { click() }
+            composeRule.onNodeWithContentDescription(P1_BACK_BUTTON, useUnmergedTree = true)
+                .performTouchInput { click() }
+            waitForIntContentDescription(P1_POISON_COUNTER_PREFIX, 0)
+        }
+
+        val initialCounter = readFirstP1Counter() ?: error("No P1 counter available")
+
+        composeRule.onNodeWithContentDescription("P1 increase ${initialCounter.name} counter", useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForCounterValue(initialCounter.name, initialCounter.value + 1)
+
+        composeRule.onNodeWithContentDescription("P1 decrease ${initialCounter.name} counter", useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForCounterValue(initialCounter.name, initialCounter.value)
+
+        composeRule.onNodeWithContentDescription(P1_BACK_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P1_BECOME_MONARCH)
+
+        composeRule.onNodeWithContentDescription(P1_BACK_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(P1_SETTINGS_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun lifeTotalCanIncrementAndDecrement() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -164,6 +223,23 @@ class LifeCounterE2ETest {
         }
     }
 
+    private fun waitForCounterValue(name: String, expected: Int) {
+        waitForIntContentDescription("P1 $name counter ", expected)
+    }
+
+    private fun readFirstP1Counter(): CounterReading? {
+        return contentDescriptions().firstNotNullOfOrNull { description ->
+            val counterText = description.removePrefix(P1_COUNTER_PREFIX)
+            if (counterText == description) return@firstNotNullOfOrNull null
+
+            val name = counterText.substringBefore(COUNTER_VALUE_SEPARATOR, missingDelimiterValue = "")
+            if (name.isEmpty()) return@firstNotNullOfOrNull null
+
+            val value = counterText.substringAfter(COUNTER_VALUE_SEPARATOR, missingDelimiterValue = "").toIntOrNull()
+            value?.let { CounterReading(name = name, value = it) }
+        }
+    }
+
     private fun waitUntil(description: String, condition: () -> Boolean) {
         try {
             composeRule.waitUntil(timeoutMillis = 5_000, condition = condition)
@@ -208,6 +284,8 @@ class LifeCounterE2ETest {
 
         const val P1_COMMANDER_BUTTON = "P1 commander mode"
         const val P1_COMMANDER_DEALER = "P1 is commander dealer"
+        const val P1_SETTINGS_BUTTON = "P1 settings"
+        const val P1_BACK_BUTTON = "P1 back"
         const val COMMANDER_EXIT_BUTTON = "Exit commander mode"
         const val MIDDLE_MENU_BUTTON = "Open life counter menu"
         const val START_LIFE_COUNTER = "Go to Life Counter"
@@ -222,5 +300,18 @@ class LifeCounterE2ETest {
         const val P2_PARTNER_COMMANDER_DAMAGE_PREFIX = "P2 partner commander damage "
         const val P2_PARTNER_COMMANDER_DAMAGE_INCREASE = "P2 partner commander damage increase"
         const val P2_PARTNER_COMMANDER_DAMAGE_DECREASE = "P2 partner commander damage decrease"
+        const val P1_BECOME_MONARCH = "Make P1 the monarch"
+        const val P1_CLEAR_MONARCH = "Clear P1 as monarch"
+        const val P1_OPEN_COUNTERS = "Open P1 counters"
+        const val P1_ADD_COUNTER = "Add P1 counter"
+        const val P1_ADD_POISON_COUNTER = "Add P1 Poison counter"
+        const val P1_COUNTER_PREFIX = "P1 "
+        const val COUNTER_VALUE_SEPARATOR = " counter "
+        const val P1_POISON_COUNTER_PREFIX = "P1 Poison counter "
     }
+
+    private data class CounterReading(
+        val name: String,
+        val value: Int,
+    )
 }

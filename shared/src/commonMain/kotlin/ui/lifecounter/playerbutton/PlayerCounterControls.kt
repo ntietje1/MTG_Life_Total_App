@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -86,6 +88,7 @@ fun CounterWrapper(
 fun AddCounter(
     modifier: Modifier = Modifier,
     textColor: Color,
+    contentDescription: String,
     onTap: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -102,7 +105,7 @@ fun AddCounter(
             onTap()
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
-    }) {
+    }.semantics { this.contentDescription = contentDescription }) {
         val iconSize = maxHeight / 2.5f
         SettingsButton(
             modifier = Modifier.align(Alignment.Center).size(iconSize),
@@ -121,6 +124,9 @@ fun Counter(
     textColor: Color,
     iconResource: DrawableResource,
     value: Int,
+    valueContentDescription: String,
+    incrementContentDescription: String,
+    decrementContentDescription: String,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit
 ) {
@@ -149,17 +155,17 @@ fun Counter(
                     onIncrement()
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 }
-            })
+            }.semantics { contentDescription = incrementContentDescription })
             Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(1.0f).background(Color.Black.copy(alpha = 0.04f)).pointerInput(Unit) {
                 detectTapGestures {
                     onDecrement()
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 }
-            })
+            }.semantics { contentDescription = decrementContentDescription })
         }
 
         Column(
-            Modifier.fillMaxSize(),
+            Modifier.fillMaxSize().semantics { contentDescription = valueContentDescription },
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
