@@ -405,6 +405,34 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun playerKoHidesLifeControlsUntilGameReset() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        waitForContentDescription(P1_ALIVE)
+        performSemanticClick(P1_SETTINGS_BUTTON)
+        performSemanticClick(KO_P1)
+
+        waitForContentDescription(P1_DEAD)
+        waitUntil("P1 life controls hidden while dead") {
+            !hasContentDescription(P1_INCREASE_LIFE) &&
+                !hasContentDescription(P1_DECREASE_LIFE)
+        }
+
+        openMiddleMenuItem(OPEN_RESET_GAME)
+        waitForContentDescription(RESET_SAME_PLAYERS)
+        composeRule.onNodeWithContentDescription(RESET_SAME_PLAYERS, useUnmergedTree = true)
+            .performClick()
+        waitForContentDescription(RESET_SKIP_FIRST_PLAYER)
+        composeRule.onNodeWithContentDescription(RESET_SKIP_FIRST_PLAYER, useUnmergedTree = true)
+            .performClick()
+
+        waitForContentDescription(P1_ALIVE)
+        waitForContentDescription(P1_INCREASE_LIFE)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun lifeTotalCanIncrementAndDecrement() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -765,6 +793,9 @@ class LifeCounterE2ETest {
         const val P1_BECOME_MONARCH = "Make P1 the monarch"
         const val P1_CLEAR_MONARCH = "Clear P1 as monarch"
         const val P1_OPEN_COUNTERS = "Open P1 counters"
+        const val KO_P1 = "KO P1"
+        const val P1_ALIVE = "P1 death state alive"
+        const val P1_DEAD = "P1 death state dead"
         const val P1_CUSTOMIZE = "Customize P1"
         const val P2_CUSTOMIZE = "Customize P2"
         const val P1_CUSTOMIZATION_NAME_FIELD = "P1 customization name"

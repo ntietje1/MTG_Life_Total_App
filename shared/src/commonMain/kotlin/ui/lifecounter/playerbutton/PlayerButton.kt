@@ -188,15 +188,19 @@ fun PlayerButton(
             borderWidth = dimensions.paddingTiny,
         ) {
             BoxWithConstraints(
-                modifier = modifier.then(
-                    if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked && !state.isDead) {
-                        Modifier.bounceClick(
-                            initialBounceFactor = 3.5f, bounceAmount = 0.005f, bounceDuration = 60L, repeatEnabled = true
-                        )
-                    } else {
-                        Modifier
+                modifier = modifier
+                    .semantics {
+                        contentDescription = "P${state.player.playerNum} death state ${if (state.isDead) "dead" else "alive"}"
                     }
-                ), contentAlignment = Alignment.Center
+                    .then(
+                        if ((state.buttonState == PBState.NORMAL || state.buttonState == PBState.COMMANDER_RECEIVER) && !timerJustClicked && !state.isDead) {
+                            Modifier.bounceClick(
+                                initialBounceFactor = 3.5f, bounceAmount = 0.005f, bounceDuration = 60L, repeatEnabled = true
+                            )
+                        } else {
+                            Modifier
+                        }
+                    ), contentAlignment = Alignment.Center
             ) {
                 timerTextSize = remember(Unit) { (4.dp + maxWidth / 35f + maxHeight / 55f).value.toInt() }
                 timerPadding = remember(Unit) { timerTextSize / 3 }
