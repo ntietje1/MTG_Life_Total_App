@@ -103,7 +103,7 @@ fun PlayerCustomizationDialog(
 
     fun goBackInCustomization(): Boolean {
         if (scryfallBackActions.isNotEmpty()) {
-            scryfallBackActions.removeLast().invoke()
+            scryfallBackActions.removeAt(scryfallBackActions.lastIndex).invoke()
             return true
         }
         val route = state.currentRoute

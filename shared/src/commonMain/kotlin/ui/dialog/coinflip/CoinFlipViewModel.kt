@@ -478,7 +478,7 @@ class CoinFlipViewModel(
     private fun updateNumberOfCoins() {
         val coinCount = calculateCoinCount()
         while (coinControllers.size > coinCount) {
-            coinControllers.removeLast()
+            coinControllers.removeAt(coinControllers.lastIndex)
         }
         while (coinControllers.size < coinCount) {
             coinControllers.add(generateCoinController())

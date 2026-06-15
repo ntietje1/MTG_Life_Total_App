@@ -71,30 +71,44 @@ private class FakeGifSearchClient : GifSearchClient {
 
 private class FakeScryfallClient : ScryfallClient {
     override suspend fun searchCards(query: String): ScryfallResult<ScryfallPage> {
-        return ScryfallResult.Success(
-            ScryfallPage(
-                cards = listOf(
-                    CardSummary(
-                        id = "e2e-card",
-                        name = "E2E Card",
-                        art = CardArt(
-                            small = "https://example.test/e2e-card-small.jpg",
-                            normal = "https://example.test/e2e-card-normal.jpg",
-                            large = "https://example.test/e2e-card-large.jpg",
-                            artCrop = "https://example.test/e2e-card-art.jpg"
-                        ),
-                        artist = "E2E Artist",
-                        setName = "E2E Set",
-                        printsSearchUri = "https://api.scryfall.com/cards/search?q=e2e",
-                        rulingsUri = "https://api.scryfall.com/cards/e2e/rulings"
-                    )
-                ),
-                nextPageUrl = null
-            )
-        )
+        return ScryfallResult.Success(ScryfallPage(cards = listOf(fakeCardFor(query)), nextPageUrl = null))
     }
 
     override suspend fun searchRulings(query: String): ScryfallResult<List<RulingSummary>> {
         return ScryfallResult.Success(emptyList())
+    }
+
+    private fun fakeCardFor(query: String): CardSummary {
+        if (query.contains("t:plane") || query.contains("t:phenomenon")) {
+            return CardSummary(
+                id = "e2e-plane",
+                name = "E2E Plane",
+                art = CardArt(
+                    small = "https://example.test/e2e-plane-small.jpg",
+                    normal = "https://example.test/e2e-plane-normal.jpg",
+                    large = "https://example.test/e2e-plane-large.jpg",
+                    artCrop = "https://example.test/e2e-plane-art.jpg"
+                ),
+                artist = "E2E Artist",
+                setName = "E2E Plane Set",
+                printsSearchUri = "https://api.scryfall.com/cards/search?q=e2e-plane",
+                rulingsUri = "https://api.scryfall.com/cards/e2e-plane/rulings"
+            )
+        }
+
+        return CardSummary(
+            id = "e2e-card",
+            name = "E2E Card",
+            art = CardArt(
+                small = "https://example.test/e2e-card-small.jpg",
+                normal = "https://example.test/e2e-card-normal.jpg",
+                large = "https://example.test/e2e-card-large.jpg",
+                artCrop = "https://example.test/e2e-card-art.jpg"
+            ),
+            artist = "E2E Artist",
+            setName = "E2E Set",
+            printsSearchUri = "https://api.scryfall.com/cards/search?q=e2e",
+            rulingsUri = "https://api.scryfall.com/cards/e2e/rulings"
+        )
     }
 }

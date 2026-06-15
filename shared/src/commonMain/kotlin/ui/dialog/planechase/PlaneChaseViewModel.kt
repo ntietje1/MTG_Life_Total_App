@@ -94,7 +94,7 @@ class PlaneChaseViewModel(
 
     private fun popBackStack(): CardSummary? {
         val card = _state.value.planarBackStack.lastOrNull()
-        if (card != null) { _state.value.planarBackStack.removeLast() }
+        if (card != null) { _state.value.planarBackStack.removeAt(_state.value.planarBackStack.lastIndex) }
         return card
     }
 

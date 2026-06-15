@@ -17,6 +17,8 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import domain.state.planechase.PlanechaseRepository
+import domain.state.planechase.PlanechaseSnapshot
 import domain.storage.PreferencesRepository
 import model.VersionNumber
 import org.junit.Before
@@ -41,6 +43,7 @@ class LifeCounterE2ETest {
         preferences.setKeepScreenOn(false)
         preferences.setTurnTimer(false)
         preferences.setNumPlayers(4)
+        koin.get<PlanechaseRepository>().save(PlanechaseSnapshot())
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -157,6 +160,37 @@ class LifeCounterE2ETest {
         waitUntil("coin flip last result") {
             findContentDescriptionValue(COIN_FLIP_LAST_RESULT_PREFIX).orEmpty().isNotBlank()
         }
+
+        closeDialogAndWaitForCounter()
+        waitForContentDescription(P1_SETTINGS_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun planechaseCanSelectPlaneAndPlaneswalk() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLANECHASE)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
+
+        performSemanticClick(OPEN_PLANAR_DECK)
+        waitForContentDescription(NO_PLANES_SELECTED)
+        waitForContentDescription(TEST_PLANE_SELECTION)
+
+        performSemanticClick(SELECT_ALL_PLANES)
+        waitForContentDescription(ONE_PLANE_SELECTED)
+
+        performSemanticClick(DONE_SELECTING_PLANES)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 1)
+        waitForContentDescription("$CURRENT_PLANE_PREFIX$TEST_PLANE_NAME")
+        waitForIntContentDescription(PLANAR_BACK_STACK_SIZE_PREFIX, 0)
+
+        performSemanticClick(PLANESWALK)
+        waitForIntContentDescription(PLANAR_BACK_STACK_SIZE_PREFIX, 1)
+
+        performSemanticClick(PREVIOUS_PLANE)
+        waitForIntContentDescription(PLANAR_BACK_STACK_SIZE_PREFIX, 0)
 
         closeDialogAndWaitForCounter()
         waitForContentDescription(P1_SETTINGS_BUTTON)
@@ -699,6 +733,19 @@ class LifeCounterE2ETest {
         const val INCREASE_COINS_TO_FLIP = "Increase coins to flip"
         const val FLIP_COIN = "Flip coin"
         const val COIN_FLIP_LAST_RESULT_PREFIX = "Coin flip last result "
+        const val OPEN_PLANECHASE = "Open planechase"
+        const val OPEN_PLANAR_DECK = "Open planar deck"
+        const val PLANAR_DECK_SIZE_PREFIX = "Planar deck size "
+        const val PLANAR_BACK_STACK_SIZE_PREFIX = "Planar back stack size "
+        const val TEST_PLANE_NAME = "E2E Plane"
+        const val TEST_PLANE_SELECTION = "Plane selection E2E Plane not selected"
+        const val NO_PLANES_SELECTED = "0 of 1 planes selected"
+        const val ONE_PLANE_SELECTED = "1 of 1 planes selected"
+        const val SELECT_ALL_PLANES = "Select all planes"
+        const val DONE_SELECTING_PLANES = "Done selecting planes"
+        const val CURRENT_PLANE_PREFIX = "Current plane "
+        const val PLANESWALK = "Planeswalk"
+        const val PREVIOUS_PLANE = "Previous plane"
         const val P1_ADD_COUNTER = "Add P1 counter"
         const val P1_ADD_POISON_COUNTER = "Add P1 Poison counter"
         const val P1_COUNTER_PREFIX = "P1 "

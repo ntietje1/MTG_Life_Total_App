@@ -81,7 +81,7 @@ fun MiddleButtonDialog(
 
     fun handleBack() {
         if (nestedBackActions.isNotEmpty()) {
-            nestedBackActions.removeLast().invoke()
+            nestedBackActions.removeAt(nestedBackActions.lastIndex).invoke()
         } else {
             onBack()
         }
