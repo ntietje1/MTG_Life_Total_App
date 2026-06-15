@@ -316,6 +316,31 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun middleMenuCanClearDayNightWithLongPress() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenu()
+        performSemanticClick(TOGGLE_DAY_NIGHT)
+        waitUntil("day night enabled") {
+            findContentDescriptionValue(DAY_NIGHT_STATE_PREFIX) != "none"
+        }
+
+        composeRule.onNodeWithContentDescription(TOGGLE_DAY_NIGHT, useUnmergedTree = true)
+            .performTouchInput {
+                down(center)
+                advanceEventTime(1_000)
+                up()
+            }
+        waitForContentDescription("${DAY_NIGHT_STATE_PREFIX}none")
+
+        composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun settingsChildDialogCanBackAndClose() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
