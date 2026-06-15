@@ -1,5 +1,6 @@
 package com.hypeapps.lifelinked
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -7,6 +8,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.isRoot
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
@@ -312,6 +314,28 @@ class LifeCounterE2ETest {
 
         waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
         waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun playerSelectTwoFingerSelectionPreservesExistingRoster() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLAYER_SELECT)
+        composeRule.onRoot(useUnmergedTree = true)
+            .performTouchInput {
+                down(0, Offset(center.x - 160f, center.y))
+                down(1, Offset(center.x + 160f, center.y))
+                advanceEventTime(4_000)
+                up(0)
+                advanceEventTime(100)
+                up(1)
+            }
+
+        waitForContentDescription(P2_SETTINGS_BUTTON)
+        waitForContentDescription(P3_SETTINGS_BUTTON)
+        waitForContentDescription(P4_SETTINGS_BUTTON)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -1045,6 +1069,7 @@ class LifeCounterE2ETest {
         const val P1_SETTINGS_BUTTON = "P1 settings"
         const val P2_SETTINGS_BUTTON = "P2 settings"
         const val P3_SETTINGS_BUTTON = "P3 settings"
+        const val P4_SETTINGS_BUTTON = "P4 settings"
         const val P1_BACK_BUTTON = "P1 back"
         const val P2_BACK_BUTTON = "P2 back"
         const val COMMANDER_EXIT_BUTTON = "Exit commander mode"
