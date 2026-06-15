@@ -43,6 +43,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -222,6 +223,10 @@ fun ScryfallButton(
     val pressedColor = Color.Green.copy(alpha = 0.5f)
     var color by remember { mutableStateOf(originalColor) }
     val coroutineScope = rememberCoroutineScope()
+    fun activate() {
+        color = pressedColor
+        onTap()
+    }
     val animatedColor by animateColorAsState(targetValue = color, animationSpec = tween(durationMillis = 500), finishedListener = {
         coroutineScope.launch {
             delay(1500)
@@ -230,11 +235,16 @@ fun ScryfallButton(
     })
     BoxWithConstraints(
         modifier = modifier
-            .semantics { this.contentDescription = contentDescription }
+            .semantics {
+                this.contentDescription = contentDescription
+                onClick {
+                    activate()
+                    true
+                }
+            }
             .pointerInput(Unit) {
                 detectTapGestures { _ ->
-                    color = pressedColor
-                    onTap()
+                    activate()
                 }
             }
     ) {

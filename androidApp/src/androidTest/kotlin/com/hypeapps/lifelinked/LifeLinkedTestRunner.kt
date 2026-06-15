@@ -84,7 +84,15 @@ private class FakeScryfallClient : ScryfallClient {
     }
 
     override suspend fun searchRulings(query: String): ScryfallResult<List<RulingSummary>> {
-        return ScryfallResult.Success(emptyList())
+        return ScryfallResult.Success(
+            listOf(
+                RulingSummary(
+                    comment = "E2E ruling text",
+                    publishedAt = "2026-06-15",
+                    source = "scryfall"
+                )
+            )
+        )
     }
 
     private fun fakeCardFor(query: String): CardSummary {
@@ -105,9 +113,28 @@ private class FakeScryfallClient : ScryfallClient {
             )
         }
 
+        if (query == "https://api.scryfall.com/cards/search?q=e2e") {
+            return CardSummary(
+                id = "e2e-printing",
+                name = "E2E Printing",
+                oracleText = "E2E printing oracle text",
+                art = CardArt(
+                    small = "https://example.test/e2e-printing-small.jpg",
+                    normal = "https://example.test/e2e-printing-normal.jpg",
+                    large = "https://example.test/e2e-printing-large.jpg",
+                    artCrop = "https://example.test/e2e-printing-art.jpg"
+                ),
+                artist = "E2E Artist",
+                setName = "E2E Printing Set",
+                printsSearchUri = null,
+                rulingsUri = "https://api.scryfall.com/cards/e2e-printing/rulings"
+            )
+        }
+
         return CardSummary(
             id = "e2e-card",
             name = "E2E Card",
+            oracleText = "E2E oracle text",
             art = CardArt(
                 small = "https://example.test/e2e-card-small.jpg",
                 normal = "https://example.test/e2e-card-normal.jpg",

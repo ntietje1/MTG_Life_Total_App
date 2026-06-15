@@ -100,19 +100,32 @@ class LifeCounterE2ETest {
         composeRule.onNodeWithContentDescription(OPEN_CARD_IMAGE_SEARCH, useUnmergedTree = true)
             .performTouchInput { click() }
 
-        waitForContentDescription(SCRYFALL_SEARCH_FIELD)
-        composeRule.onNodeWithContentDescription(SCRYFALL_SEARCH_FIELD, useUnmergedTree = true)
-            .performTextInput("sol ring")
-        composeRule.onNodeWithContentDescription(SEARCH_BUTTON, useUnmergedTree = true)
-            .performTouchInput { click() }
-
-        waitForText(TEST_CARD_NAME)
+        searchScryfallForTestCard()
         waitForContentDescription(TEST_CARD_SELECT)
         composeRule.onNodeWithContentDescription(TEST_CARD_SELECT, useUnmergedTree = true)
             .performTouchInput { click() }
 
         waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
         closeCustomizationAndReturnToCounter()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun scryfallDetailsCanShowRulingsAndPrintings() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_CARD_SEARCH)
+
+        searchScryfallForTestCard()
+        performSemanticClick(SHOW_TEST_CARD_RULINGS)
+        waitForText(TEST_RULING_COMMENT)
+
+        performSemanticClick(BACK_IN_DIALOG)
+        waitForText(TEST_CARD_NAME)
+
+        performSemanticClick(SHOW_TEST_CARD_PRINTINGS)
+        waitForText(TEST_PRINTING_CARD_NAME)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -673,6 +686,15 @@ class LifeCounterE2ETest {
         waitForContentDescription(SET_STARTING_LIFE_40)
     }
 
+    private fun searchScryfallForTestCard() {
+        waitForContentDescription(SCRYFALL_SEARCH_FIELD)
+        composeRule.onNodeWithContentDescription(SCRYFALL_SEARCH_FIELD, useUnmergedTree = true)
+            .performTextInput(SCRYFALL_TEST_QUERY)
+        composeRule.onNodeWithContentDescription(SEARCH_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForText(TEST_CARD_NAME)
+    }
+
     private fun openMiddleMenuItem(contentDescription: String) {
         openMiddleMenu()
         performSemanticClick(contentDescription)
@@ -958,17 +980,24 @@ class LifeCounterE2ETest {
         val SELECT_TEST_BACKGROUND_COLOR = "$SELECT_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB option 9"
         const val CLOSE_DIALOG = "Close dialog"
         const val OPEN_CARD_IMAGE_SEARCH = "Open card image search"
+        const val SCRYFALL_TEST_QUERY = "sol ring"
         const val SCRYFALL_SEARCH_FIELD = "Search Scryfall input"
         const val TEST_CARD_NAME = "E2E Card"
         const val TEST_CARD_SELECT = "Select E2E Card"
+        const val TEST_PRINTING_CARD_NAME = "E2E Printing"
+        const val TEST_RULING_COMMENT = "E2E ruling text"
+        const val SHOW_TEST_CARD_RULINGS = "Show rulings for E2E Card"
+        const val SHOW_TEST_CARD_PRINTINGS = "Show printings for E2E Card"
         const val OPEN_GIF_SEARCH = "Open GIF search"
         const val GIF_SEARCH_FIELD = "Search KLIPY input"
         const val SEARCH_BUTTON = "Search"
         const val TEST_GIF_RESULT = "GIF result e2e-gif"
+        const val OPEN_CARD_SEARCH = "Open card search"
         const val OPEN_RESET_GAME = "Open reset game"
         const val RESET_SAME_PLAYERS = "Same players"
         const val RESET_SELECT_FIRST_PLAYER = "Select"
         const val RESET_SKIP_FIRST_PLAYER = "Skip"
+        const val BACK_IN_DIALOG = "Back in dialog"
         const val TOGGLE_DAY_NIGHT = "Toggle day night"
         const val DAY_NIGHT_STATE_PREFIX = "Day night state "
         const val OPEN_APP_SETTINGS = "Open app settings"
