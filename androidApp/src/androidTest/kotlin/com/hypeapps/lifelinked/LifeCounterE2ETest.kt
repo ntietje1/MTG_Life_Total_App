@@ -30,9 +30,11 @@ import domain.state.game.GameSession
 import domain.state.game.GameSessionId
 import domain.state.game.GameSessionRepository
 import domain.state.game.GameSessionStore
+import domain.state.game.PlayerProfileId
 import domain.state.game.SeatAppearance
 import domain.state.planechase.PlanechaseRepository
 import domain.state.planechase.PlanechaseSnapshot
+import domain.state.profile.PlayerProfile
 import domain.state.profile.PlayerProfileRepository
 import domain.storage.PreferencesRepository
 import kotlinx.coroutines.runBlocking
@@ -212,6 +214,34 @@ class LifeCounterE2ETest {
         waitForText(CAMERA_ROLL_WARNING)
 
         performSemanticClick(CANCEL_WARNING)
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+
+        performSemanticClick(CLOSE_DIALOG)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun loadProfileDeleteWarningCancelKeepsProfile() {
+        GlobalContext.get().get<PlayerProfileRepository>().saveProfile(
+            PlayerProfile(PlayerProfileId(SAVED_PROFILE_NAME), SAVED_PROFILE_NAME)
+        )
+
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        performSemanticClick(OPEN_LOAD_PROFILE)
+        waitForContentDescription("$LOAD_PROFILE_PREFIX$SAVED_PROFILE_NAME")
+
+        composeRule.onNodeWithContentDescription("$LOAD_PROFILE_PREFIX$SAVED_PROFILE_NAME", useUnmergedTree = true)
+            .performSemanticsAction(SemanticsActions.OnLongClick)
+        waitForText(DELETE_PROFILE_WARNING)
+
+        performSemanticClick(CANCEL_WARNING)
+        waitForContentDescription("$LOAD_PROFILE_PREFIX$SAVED_PROFILE_NAME")
+
+        performSemanticClick(BACK_IN_DIALOG)
         waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
 
         performSemanticClick(CLOSE_DIALOG)
@@ -1279,6 +1309,7 @@ class LifeCounterE2ETest {
         const val SAVED_PROFILE_NAME = "Saved E2E"
         const val OPEN_LOAD_PROFILE = "Open load profile"
         const val LOAD_PROFILE_PREFIX = "Load profile "
+        const val DELETE_PROFILE_WARNING = "This will delete the player profile. Proceed?"
         const val CHANGE_BACKGROUND_COLOR = "Change background color"
         const val CHANGE_TEXT_COLOR = "Change text color"
         const val SELECT_COLOR_PREFIX = "Select color "

@@ -2,6 +2,7 @@ package ui.dialog.customization
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
@@ -22,27 +23,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import model.Player
-import kotlinx.coroutines.delay
 import theme.scaledSp
 import theme.textShadowStyle
 import ui.dialog.GridDialogContent
 import ui.dialog.WarningDialog
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonBackground
-import ui.modifier.routePointerChangesTo
 
 @Composable
 fun LoadPlayerDialogContent(
@@ -53,6 +51,12 @@ fun LoadPlayerDialogContent(
     var toBeDeletedPlayer by remember { mutableStateOf<Player?>(null) }
     var highlightedPlayer by remember { mutableStateOf<Player?>(null) }
     val haptic = LocalHapticFeedback.current
+
+    fun requestDelete(player: Player) {
+        toBeDeletedPlayer = player
+        highlightedPlayer = player
+        showDeletePlayerWarning = true
+    }
 
     if (showDeletePlayerWarning) {
         WarningDialog(title = "Warning",
@@ -84,7 +88,6 @@ fun LoadPlayerDialogContent(
             modifier = modifier, title = "Load Profile", columns = 2
         ) {
             items(items = playerList, key = { player -> player.hashCode() }) { player ->
-                var isLongPressed by remember { mutableStateOf(false) }
                 SmallPlayerButtonPreview(
                     name = player.name,
                     state = PBState.NORMAL,
@@ -92,35 +95,20 @@ fun LoadPlayerDialogContent(
                     imageUri = player.imageString,
                     backgroundColor = player.color,
                     accentColor = player.textColor,
-                    overlayColor = if (isLongPressed || highlightedPlayer == player) Color.Red.copy(alpha = 0.4f) else Color.Transparent,
-                    modifier = Modifier.padding(8.dp).width(buttonWidth).aspectRatio(1.75f).graphicsLayer(
-                        alpha = if (isLongPressed) 0.6f else 1f
-                    ).pointerInput(Unit) {
-                        routePointerChangesTo(
-                            onLongPress = {
-                                delay(500)
-                                isLongPressed = true
-                            }, onUp = {
-                                if (!it.isOutOfBounds(size = size, extendedTouchPadding = extendedTouchPadding)) {
-                                    if (isLongPressed) {
-                                        toBeDeletedPlayer = player
-                                        highlightedPlayer = player
-                                        showDeletePlayerWarning = true
-                                    } else {
-                                        onPlayerSelected(player)
-                                    }
-                                }
-                                isLongPressed = false
-                            }, onMove = { pointerInputChange, _ ->
-                                if (isLongPressed && pointerInputChange.isOutOfBounds(size = size, extendedTouchPadding = extendedTouchPadding)) {
-                                    isLongPressed = false
-                                }
-                            }
+                    overlayColor = if (highlightedPlayer == player) Color.Red.copy(alpha = 0.4f) else Color.Transparent,
+                    modifier = Modifier.padding(8.dp).width(buttonWidth).aspectRatio(1.75f).pointerInput(player) {
+                        detectTapGestures(
+                            onTap = { onPlayerSelected(player) },
+                            onLongPress = { requestDelete(player) }
                         )
                     }.semantics {
                         contentDescription = "Load profile ${player.name}"
                         onClick {
                             onPlayerSelected(player)
+                            true
+                        }
+                        onLongClick("Delete profile") {
+                            requestDelete(player)
                             true
                         }
                     },
