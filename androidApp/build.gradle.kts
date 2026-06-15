@@ -17,6 +17,36 @@ fun releaseProperty(name: String): String {
     }
 }
 
+fun signingInput(propertyName: String, environmentName: String): String? {
+    return providers.gradleProperty(propertyName)
+        .orElse(providers.environmentVariable(environmentName))
+        .orNull
+        ?.takeIf { it.isNotBlank() }
+}
+
+val releaseKeystoreFile = signingInput(
+    propertyName = "lifelinked.android.keystore.file",
+    environmentName = "LIFELINKED_ANDROID_KEYSTORE_FILE"
+)
+val releaseKeystorePassword = signingInput(
+    propertyName = "lifelinked.android.keystore.password",
+    environmentName = "LIFELINKED_ANDROID_KEYSTORE_PASSWORD"
+)
+val releaseKeyAlias = signingInput(
+    propertyName = "lifelinked.android.key.alias",
+    environmentName = "LIFELINKED_ANDROID_KEY_ALIAS"
+)
+val releaseKeyPassword = signingInput(
+    propertyName = "lifelinked.android.key.password",
+    environmentName = "LIFELINKED_ANDROID_KEY_PASSWORD"
+)
+val releaseSigningConfigured = listOf(
+    releaseKeystoreFile,
+    releaseKeystorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword
+).all { it != null }
+
 android {
     namespace = "com.hypeapps.lifelinked"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -30,6 +60,17 @@ android {
         testInstrumentationRunner = "com.hypeapps.lifelinked.LifeLinkedTestRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            if (releaseSigningConfigured) {
+                storeFile = rootProject.file(releaseKeystoreFile!!)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -40,6 +81,9 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -74,4 +118,27 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.compose.ui.test.junit4)
+}
+
+val verifyReleaseSigningInputs by tasks.registering {
+    doLast {
+        val missing = listOfNotNull(
+            "lifelinked.android.keystore.file / LIFELINKED_ANDROID_KEYSTORE_FILE".takeIf { releaseKeystoreFile == null },
+            "lifelinked.android.keystore.password / LIFELINKED_ANDROID_KEYSTORE_PASSWORD".takeIf { releaseKeystorePassword == null },
+            "lifelinked.android.key.alias / LIFELINKED_ANDROID_KEY_ALIAS".takeIf { releaseKeyAlias == null },
+            "lifelinked.android.key.password / LIFELINKED_ANDROID_KEY_PASSWORD".takeIf { releaseKeyPassword == null }
+        )
+        require(missing.isEmpty()) {
+            "Missing Android release signing inputs: ${missing.joinToString()}"
+        }
+        require(rootProject.file(releaseKeystoreFile!!).isFile) {
+            "Android release keystore file does not exist: ${rootProject.file(releaseKeystoreFile!!).absolutePath}"
+        }
+    }
+}
+
+tasks.matching { task ->
+    task.name in setOf("assembleRelease", "bundleRelease")
+}.configureEach {
+    dependsOn(verifyReleaseSigningInputs)
 }
