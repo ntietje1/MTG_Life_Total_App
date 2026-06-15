@@ -3,26 +3,45 @@ package com.hypeapps.lifelinked
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import domain.storage.PreferencesRepository
+import model.VersionNumber
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.GlobalContext
 
 @RunWith(AndroidJUnit4::class)
 class LifeCounterE2ETest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @Before
+    fun resetE2EPreferences() {
+        val koin = GlobalContext.get()
+        val preferences = koin.get<PreferencesRepository>()
+        val version = koin.get<VersionNumber>()
+        preferences.setLastSplashScreenShown(version.value)
+        preferences.setTutorialSkip(true)
+        preferences.setAutoSkip(true)
+        preferences.setKeepScreenOn(false)
+        preferences.setTurnTimer(false)
+        preferences.setNumPlayers(4)
+    }
 
     @OptIn(ExperimentalTestApi::class)
     @Test
@@ -75,6 +94,72 @@ class LifeCounterE2ETest {
 
         waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
         closeCustomizationAndReturnToCounter()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun middleMenuSettingsTogglesCanBeChanged() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenu()
+        val initialDayNight = readContentDescriptionValue(DAY_NIGHT_STATE_PREFIX)
+        performSemanticClick(TOGGLE_DAY_NIGHT)
+        waitUntil("day night changed") {
+            findContentDescriptionValue(DAY_NIGHT_STATE_PREFIX)
+                ?.let { it != initialDayNight } == true
+        }
+
+        performSemanticClick(OPEN_APP_SETTINGS)
+
+        val initialKeepScreenOn = readContentDescriptionValue(KEEP_SCREEN_ON_SETTING_PREFIX)
+        performClickOnContentDescriptionPrefix(KEEP_SCREEN_ON_SETTING_PREFIX)
+        waitUntil("keep screen on changed") {
+            findContentDescriptionValue(KEEP_SCREEN_ON_SETTING_PREFIX)
+                ?.let { it != initialKeepScreenOn } == true
+        }
+
+        val initialTurnTimer = readContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
+        performClickOnContentDescriptionPrefix(TURN_TIMER_SETTING_PREFIX)
+        waitUntil("turn timer changed") {
+            findContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
+                ?.let { it != initialTurnTimer } == true
+        }
+
+        composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun chanceDialogsCanRollDiceAndFlipCoin() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_DICE_ROLL)
+        waitForContentDescription(ROLL_D6)
+        composeRule.onNodeWithContentDescription(ROLL_D6, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitUntil("last dice result") {
+            findIntContentDescription(LAST_DICE_RESULT_PREFIX) != null
+        }
+        closeDialogAndWaitForCounter()
+
+        openMiddleMenuItem(OPEN_COIN_FLIP)
+        waitForIntContentDescription(COINS_TO_FLIP_PREFIX, 1)
+        composeRule.onNodeWithContentDescription(INCREASE_COINS_TO_FLIP, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(COINS_TO_FLIP_PREFIX, 2)
+
+        composeRule.onAllNodesWithContentDescription(FLIP_COIN, useUnmergedTree = true)[0]
+            .performTouchInput { click() }
+        waitUntil("coin flip last result") {
+            findContentDescriptionValue(COIN_FLIP_LAST_RESULT_PREFIX).orEmpty().isNotBlank()
+        }
+
+        closeDialogAndWaitForCounter()
+        waitForContentDescription(P1_SETTINGS_BUTTON)
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -337,22 +422,23 @@ class LifeCounterE2ETest {
 
     private fun exitCommanderModeIfNeeded() {
         if (composeRule.onAllNodesWithContentDescription(COMMANDER_EXIT_BUTTON, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()) {
-            composeRule.onNodeWithContentDescription(COMMANDER_EXIT_BUTTON, useUnmergedTree = true)
-                .performTouchInput { click() }
+            performSemanticClick(COMMANDER_EXIT_BUTTON)
         }
     }
 
     private fun openLifeCounterIfNeeded() {
         waitUntil("life counter or splash action") {
-            hasContentDescription(P1_COMMANDER_BUTTON) ||
+            hasContentDescription(MIDDLE_MENU_BUTTON) ||
                 hasContentDescription(COMMANDER_EXIT_BUTTON) ||
                 hasContentDescription(START_LIFE_COUNTER)
         }
-        if (hasContentDescription(P1_COMMANDER_BUTTON) || hasContentDescription(COMMANDER_EXIT_BUTTON)) {
-            return
+
+        if (hasContentDescription(START_LIFE_COUNTER) && !isRealLifeCounterVisible()) {
+            performSemanticClick(START_LIFE_COUNTER)
+            waitForRealLifeCounter()
         }
-        composeRule.onNodeWithContentDescription(START_LIFE_COUNTER, useUnmergedTree = true)
-            .performTouchInput { click() }
+
+        waitForRealLifeCounter()
     }
 
     private fun openStartingLifeDialog() {
@@ -361,12 +447,12 @@ class LifeCounterE2ETest {
     }
 
     private fun openMiddleMenuItem(contentDescription: String) {
-        waitForContentDescription(MIDDLE_MENU_BUTTON)
-        composeRule.onNodeWithContentDescription(MIDDLE_MENU_BUTTON, useUnmergedTree = true)
-            .performTouchInput { click() }
-        waitForContentDescription(contentDescription)
-        composeRule.onNodeWithContentDescription(contentDescription, useUnmergedTree = true)
-            .performTouchInput { click() }
+        openMiddleMenu()
+        performSemanticClick(contentDescription)
+    }
+
+    private fun openMiddleMenu() {
+        performSemanticClick(MIDDLE_MENU_BUTTON)
     }
 
     private fun openP1Customization() {
@@ -388,9 +474,23 @@ class LifeCounterE2ETest {
         waitForContentDescription(P1_SETTINGS_BUTTON)
     }
 
+    private fun closeDialogAndWaitForCounter() {
+        composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitUntil("dialog closed") {
+            !hasContentDescription(CLOSE_DIALOG) && hasContentDescription(MIDDLE_MENU_BUTTON)
+        }
+    }
+
     private fun waitForContentDescription(value: String) {
         waitUntil(value) {
             hasContentDescription(value)
+        }
+    }
+
+    private fun waitForRealLifeCounter() {
+        waitUntil("real life counter") {
+            isRealLifeCounterVisible()
         }
     }
 
@@ -409,6 +509,15 @@ class LifeCounterE2ETest {
         return value ?: error("No content description found for $prefix")
     }
 
+    private fun readContentDescriptionValue(prefix: String): String {
+        var value: String? = null
+        waitUntil(prefix) {
+            value = findContentDescriptionValue(prefix)
+            value != null
+        }
+        return value ?: error("No content description found for $prefix")
+    }
+
     private fun waitForIntContentDescription(prefix: String, expected: Int) {
         waitUntil("$prefix$expected") {
             findIntContentDescription(prefix) == expected
@@ -417,6 +526,22 @@ class LifeCounterE2ETest {
 
     private fun waitForCounterValue(name: String, expected: Int) {
         waitForIntContentDescription("P1 $name counter ", expected)
+    }
+
+    private fun performClickOnContentDescriptionPrefix(prefix: String) {
+        waitUntil(prefix) {
+            composeRule.onAllNodes(hasContentDescriptionStartingWith(prefix), useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onAllNodes(hasContentDescriptionStartingWith(prefix), useUnmergedTree = true)[0]
+            .performSemanticsAction(SemanticsActions.OnClick)
+    }
+
+    private fun performSemanticClick(contentDescription: String) {
+        waitForContentDescription(contentDescription)
+        composeRule.onNodeWithContentDescription(contentDescription, useUnmergedTree = true)
+            .performSemanticsAction(SemanticsActions.OnClick)
     }
 
     private fun readFirstP1Counter(): CounterReading? {
@@ -471,12 +596,24 @@ class LifeCounterE2ETest {
             .isNotEmpty()
     }
 
+    private fun isRealLifeCounterVisible(): Boolean {
+        return hasContentDescription(MIDDLE_MENU_BUTTON) || hasContentDescription(COMMANDER_EXIT_BUTTON)
+    }
+
     private fun findIntContentDescription(prefix: String): Int? {
         return contentDescriptions()
             .firstNotNullOfOrNull { description ->
                 description.takeIf { it.startsWith(prefix) }
                     ?.removePrefix(prefix)
                     ?.toIntOrNull()
+            }
+    }
+
+    private fun findContentDescriptionValue(prefix: String): String? {
+        return contentDescriptions()
+            .firstNotNullOfOrNull { description ->
+                description.takeIf { it.startsWith(prefix) }
+                    ?.removePrefix(prefix)
             }
     }
 
@@ -493,6 +630,13 @@ class LifeCounterE2ETest {
     private companion object {
         val HasContentDescription = SemanticsMatcher("has content description") { node ->
             runCatching { node.config[SemanticsProperties.ContentDescription] }.isSuccess
+        }
+
+        fun hasContentDescriptionStartingWith(prefix: String) = SemanticsMatcher("has content description starting with $prefix") { node ->
+            runCatching { node.config[SemanticsProperties.ContentDescription] }
+                .getOrNull()
+                .orEmpty()
+                .any { it.startsWith(prefix) }
         }
 
         const val P1_COMMANDER_BUTTON = "P1 commander mode"
@@ -533,6 +677,11 @@ class LifeCounterE2ETest {
         const val OPEN_RESET_GAME = "Open reset game"
         const val RESET_SAME_PLAYERS = "Same players"
         const val RESET_SKIP_FIRST_PLAYER = "Skip"
+        const val TOGGLE_DAY_NIGHT = "Toggle day night"
+        const val DAY_NIGHT_STATE_PREFIX = "Day night state "
+        const val OPEN_APP_SETTINGS = "Open app settings"
+        const val KEEP_SCREEN_ON_SETTING_PREFIX = "Keep Screen On setting "
+        const val TURN_TIMER_SETTING_PREFIX = "Turn Timer setting "
         const val OPEN_PLAYER_NUMBER = "Open player number"
         const val SET_PLAYER_COUNT_2 = "Set player count to 2"
         const val OPEN_STARTING_LIFE = "Open starting life"
@@ -542,6 +691,14 @@ class LifeCounterE2ETest {
         const val WHITE_MANA_COUNTER_PREFIX = "White mana "
         const val INCREASE_WHITE_MANA = "Increase white mana"
         const val RESET_TABLE_COUNTERS = "Reset table counters"
+        const val OPEN_DICE_ROLL = "Open dice roll"
+        const val ROLL_D6 = "Roll D6"
+        const val LAST_DICE_RESULT_PREFIX = "Last dice result "
+        const val OPEN_COIN_FLIP = "Open coin flip"
+        const val COINS_TO_FLIP_PREFIX = "Coins to flip "
+        const val INCREASE_COINS_TO_FLIP = "Increase coins to flip"
+        const val FLIP_COIN = "Flip coin"
+        const val COIN_FLIP_LAST_RESULT_PREFIX = "Coin flip last result "
         const val P1_ADD_COUNTER = "Add P1 counter"
         const val P1_ADD_POISON_COUNTER = "Add P1 Poison counter"
         const val P1_COUNTER_PREFIX = "P1 "

@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -122,6 +124,7 @@ fun CoinFlipDialogContent(
                     hapticEnabled = true,
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.thumbsup_icon),
+                    contentDescription = "Decrease Krark's thumbs",
                     shape = RoundedCornerShape(30),
                     backgroundColor = MaterialTheme.colorScheme.onSurface.halfAlpha(),
                 )
@@ -133,12 +136,15 @@ fun CoinFlipDialogContent(
                     hapticEnabled = true,
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.thumbsup_icon),
+                    contentDescription = "Increase Krark's thumbs",
                     shape = RoundedCornerShape(30),
                     backgroundColor = MaterialTheme.colorScheme.onSurface.halfAlpha(),
                 )
             }
             Text(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .semantics { contentDescription = "Krark's thumbs ${state.krarksThumbs}" },
                 text = "Krark's Thumbs: ${state.krarksThumbs}",
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
@@ -164,6 +170,7 @@ fun CoinFlipDialogContent(
                     hapticEnabled = true,
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.minus_icon),
+                    contentDescription = "Decrease coins to flip",
                     shape = RoundedCornerShape(30),
                     backgroundColor = MaterialTheme.colorScheme.onSurface.halfAlpha(),
                 )
@@ -176,12 +183,15 @@ fun CoinFlipDialogContent(
                     hapticEnabled = true,
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.plus_icon),
+                    contentDescription = "Increase coins to flip",
                     shape = RoundedCornerShape(30),
                     backgroundColor = MaterialTheme.colorScheme.onSurface.halfAlpha(),
                 )
             }
             Text(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .semantics { contentDescription = "Coins to flip ${state.baseCoins}" },
                 text = "Coins to Flip: ${state.baseCoins}",
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 fontWeight = FontWeight.Bold,
@@ -310,7 +320,12 @@ fun CoinFlipDialogContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = padding / 8f, bottom = padding / 24f)
             )
             LastResult(
-                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.8f).height(counterHeight), lastResult = state.lastResultString
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth(0.8f)
+                    .height(counterHeight)
+                    .semantics { contentDescription = "Coin flip last result ${state.lastResultString.text}" },
+                lastResult = state.lastResultString
             )
             Spacer(Modifier.weight(0.1f))
             Text(
@@ -364,11 +379,17 @@ fun CoinFlippable(
                     coinController.reset()
                 }
             })
-        Box(Modifier.fillMaxHeight().aspectRatio(1f).pointerInput(Unit) {
-            detectTapGestures(onPress = { _ ->
-                onTap()
-            })
-        })
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .aspectRatio(1f)
+                .semantics { contentDescription = "Flip coin" }
+                .pointerInput(Unit) {
+                    detectTapGestures(onPress = { _ ->
+                        onTap()
+                    })
+                }
+        )
     }
 }
 

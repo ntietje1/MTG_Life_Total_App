@@ -11,9 +11,12 @@ import domain.api.GifSearchResult
 import domain.api.ScryfallClient
 import domain.api.ScryfallPage
 import domain.api.ScryfallResult
+import domain.storage.PreferencesRepository
 import model.card.CardArt
 import model.card.CardSummary
 import model.card.RulingSummary
+import model.VersionNumber
+import org.koin.core.context.GlobalContext
 import org.koin.core.context.loadKoinModules
 import org.koin.dsl.module
 
@@ -26,12 +29,22 @@ class LifeLinkedTestRunner : AndroidJUnitRunner() {
 class LifeLinkedTestApp : App() {
     override fun onCreate() {
         super.onCreate()
+        seedE2EPreferences()
         loadKoinModules(
             module {
                 single<GifSearchClient> { FakeGifSearchClient() }
                 single<ScryfallClient> { FakeScryfallClient() }
             }
         )
+    }
+
+    private fun seedE2EPreferences() {
+        val koin = GlobalContext.get()
+        val preferences = koin.get<PreferencesRepository>()
+        val version = koin.get<VersionNumber>()
+        preferences.setLastSplashScreenShown(version.value)
+        preferences.setTutorialSkip(true)
+        preferences.setAutoSkip(true)
     }
 }
 

@@ -238,6 +238,7 @@ fun TutorialScreen(
                     mainColor = Color.White,
                     backgroundColor = Color.Transparent,
                     text = if (state.currentPage == state.totalPages - 1) "Close Tutorial" else "Skip Tutorial",
+                    contentDescription = "Skip tutorial",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.x_icon),
                     onTap = {

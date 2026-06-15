@@ -36,6 +36,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import di.Platform
@@ -342,14 +345,41 @@ fun SettingsDialogButtonWithToggle(
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val iconSize = remember(Unit) { 10.dp + maxHeight / 2.25f }
         val toggleScale = remember(Unit) { (maxWidth.value + 5) / 500.dp.value }
+        val rowContentDescription = if (toggleVisible) {
+            "$text setting ${if (isChecked.value) "on" else "off"}"
+        } else {
+            text
+        }
+
+        fun setToggleState(checked: Boolean) {
+            isChecked.value = checked
+            toggle(checked)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+
+        fun activateRow() {
+            if (toggleVisible) {
+                setToggleState(!isChecked.value)
+            } else {
+                onTap()
+                if (hapticEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
+        }
+
         Row(
             modifier = modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.onSurface.halfAlpha())
+                .semantics {
+                    contentDescription = rowContentDescription
+                    onClick {
+                        activateRow()
+                        true
+                    }
+                }
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
-                        onTap()
-                        if (hapticEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        activateRow()
                     })
                 },
             verticalAlignment = Alignment.CenterVertically,
@@ -379,13 +409,11 @@ fun SettingsDialogButtonWithToggle(
             Spacer(modifier = Modifier.weight(1f))
             if (toggleVisible) {
                 Switch(
-                    modifier = Modifier.weight(1f).scale(toggleScale),
+                    modifier = Modifier
+                        .weight(1f)
+                        .scale(toggleScale),
                     checked = isChecked.value,
-                    onCheckedChange = { checked ->
-                        isChecked.value = checked
-                        toggle(checked)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    },
+                    onCheckedChange = ::setToggleState,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MainColorLight.halfAlpha(),
                         uncheckedThumbColor = MaterialTheme.colorScheme.onPrimary.halfAlpha(),

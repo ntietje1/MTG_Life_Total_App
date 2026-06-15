@@ -42,6 +42,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -190,7 +192,12 @@ fun DiceRollDialogContent(
                 )
                 Spacer(modifier = Modifier.height(dimensions.paddingSmall))
                 Box(
-                    modifier = Modifier.aspectRatio(1.0f).align(Alignment.CenterHorizontally)
+                    modifier = Modifier
+                        .aspectRatio(1.0f)
+                        .align(Alignment.CenterHorizontally)
+                        .semantics {
+                            contentDescription = "Last dice result ${state.lastResult ?: ""}"
+                        }
                         .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15))
                 ) {
                     SettingsButton(modifier = Modifier.fillMaxSize().bounceClick(bounceAmount = 0.02f).graphicsLayer(scaleX = animatedSize, scaleY = animatedSize).then(
@@ -276,6 +283,7 @@ fun DiceRollButton(
             backgroundColor = backgroundColor,
             imageVector = imageVector,
             text = "D$value",
+            contentDescription = "Roll D$value",
             mainColor = mainColor,
             shadowEnabled = false,
             enabled = isEnabled,

@@ -2,11 +2,14 @@ package ui.dialog.middle
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.coin_icon
 import lifelinked.shared.generated.resources.die_icon
@@ -147,22 +150,28 @@ fun MiddleButtonMenuDialog(
                     )
                 },
                 {
-                    SettingsButton(
-                        modifier = buttonModifier,
-                        imageVector = when (dayNightState) {
-                            DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
-                            DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
-                            DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
-                        },
-                        text = "Day/Night",
-                        contentDescription = "Toggle day night",
-                        shadowEnabled = false,
-                        onPress = onToggleDayNight,
-                        onLongPress = {
-                            onClearDayNight()
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    Box(
+                        modifier = Modifier.semantics {
+                            contentDescription = "Day night state ${dayNightState.name.lowercase()}"
                         }
-                    )
+                    ) {
+                        SettingsButton(
+                            modifier = buttonModifier,
+                            imageVector = when (dayNightState) {
+                                DayNightState.DAY -> vectorResource(Res.drawable.sun_icon)
+                                DayNightState.NIGHT -> vectorResource(Res.drawable.moon_icon)
+                                DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
+                            },
+                            text = "Day/Night",
+                            contentDescription = "Toggle day night",
+                            shadowEnabled = false,
+                            onPress = onToggleDayNight,
+                            onLongPress = {
+                                onClearDayNight()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                        )
+                    }
                 },
                 {
                     SettingsButton(

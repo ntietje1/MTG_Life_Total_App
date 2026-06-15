@@ -40,6 +40,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -331,6 +332,10 @@ fun AnimatedMiddleButton(
 
     Box(modifier = modifier.semantics {
         contentDescription = "Open life counter menu"
+        onClick {
+            onMiddleButtonClick()
+            true
+        }
     }.background(
         color = MaterialTheme.colorScheme.background, shape = CircleShape
     ).rotate(animatableAngle.value).graphicsLayer {
@@ -356,6 +361,10 @@ fun AnimatedExitButton(
     val hitTargetModifier = if (visible) {
         Modifier.semantics {
             contentDescription = "Exit commander mode"
+            onClick {
+                onPress()
+                true
+            }
         }.pointerInput(onPress) {
             detectTapGestures(onTap = {
                 onPress()
