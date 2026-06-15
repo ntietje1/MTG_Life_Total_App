@@ -147,21 +147,7 @@ class LifeCounterE2ETest {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
 
-        openMiddleMenu()
-        performSemanticClick(OPEN_APP_SETTINGS)
-        val initialTurnTimer = readContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
-        performClickOnContentDescriptionPrefix(TURN_TIMER_SETTING_PREFIX)
-        waitUntil("turn timer changed") {
-            findContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
-                ?.let { it != initialTurnTimer } == true
-        }
-
-        composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
-            .performTouchInput { click() }
-
-        waitForContentDescription(SELECT_P1_AS_FIRST_PLAYER)
-        composeRule.onNodeWithContentDescription(SELECT_P1_AS_FIRST_PLAYER, useUnmergedTree = true)
-            .performClick()
+        enableTurnTimerAndSelectP1()
 
         waitForContentDescription(P1_ACTIVE_TURN_TIMER)
         waitUntil("P2 has no active turn timer") {
@@ -172,6 +158,37 @@ class LifeCounterE2ETest {
             .performClick()
 
         waitForContentDescription(P2_ACTIVE_TURN_TIMER)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun resetSamePlayersCanChooseNewTurnTimerFirstPlayer() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        enableTurnTimerAndSelectP1()
+        waitForContentDescription(P1_ACTIVE_TURN_TIMER)
+
+        openMiddleMenuItem(OPEN_RESET_GAME)
+        waitForContentDescription(RESET_SAME_PLAYERS)
+        composeRule.onNodeWithContentDescription(RESET_SAME_PLAYERS, useUnmergedTree = true)
+            .performClick()
+        waitForContentDescription(RESET_SELECT_FIRST_PLAYER)
+        composeRule.onNodeWithContentDescription(RESET_SELECT_FIRST_PLAYER, useUnmergedTree = true)
+            .performClick()
+
+        waitForContentDescription(START_LIFE_COUNTER)
+        composeRule.onNodeWithContentDescription(START_LIFE_COUNTER, useUnmergedTree = true)
+            .performClick()
+
+        waitForContentDescription(SELECT_P2_AS_FIRST_PLAYER)
+        composeRule.onNodeWithContentDescription(SELECT_P2_AS_FIRST_PLAYER, useUnmergedTree = true)
+            .performClick()
+
+        waitForContentDescription(P2_ACTIVE_TURN_TIMER)
+        waitUntil("P1 has no active turn timer after reset first-player selection") {
+            !hasContentDescription(P1_ACTIVE_TURN_TIMER)
+        }
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -599,7 +616,29 @@ class LifeCounterE2ETest {
     }
 
     private fun openMiddleMenu() {
-        performSemanticClick(MIDDLE_MENU_BUTTON)
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+        composeRule.onNodeWithContentDescription(MIDDLE_MENU_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+    }
+
+    private fun enableTurnTimerAndSelectP1() {
+        openMiddleMenu()
+        performSemanticClick(OPEN_APP_SETTINGS)
+        val initialTurnTimer = readContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
+        performClickOnContentDescriptionPrefix(TURN_TIMER_SETTING_PREFIX)
+        waitUntil("turn timer changed") {
+            findContentDescriptionValue(TURN_TIMER_SETTING_PREFIX)
+                ?.let { it != initialTurnTimer } == true
+        }
+
+        performSemanticClick(CLOSE_DIALOG)
+        waitUntil("settings dialog closed") {
+            !hasContentDescription(CLOSE_DIALOG)
+        }
+
+        waitForContentDescription(SELECT_P1_AS_FIRST_PLAYER)
+        composeRule.onNodeWithContentDescription(SELECT_P1_AS_FIRST_PLAYER, useUnmergedTree = true)
+            .performClick()
     }
 
     private fun openP1Customization() {
@@ -853,6 +892,7 @@ class LifeCounterE2ETest {
         const val TEST_GIF_RESULT = "GIF result e2e-gif"
         const val OPEN_RESET_GAME = "Open reset game"
         const val RESET_SAME_PLAYERS = "Same players"
+        const val RESET_SELECT_FIRST_PLAYER = "Select"
         const val RESET_SKIP_FIRST_PLAYER = "Skip"
         const val TOGGLE_DAY_NIGHT = "Toggle day night"
         const val DAY_NIGHT_STATE_PREFIX = "Day night state "
@@ -860,6 +900,7 @@ class LifeCounterE2ETest {
         const val KEEP_SCREEN_ON_SETTING_PREFIX = "Keep Screen On setting "
         const val TURN_TIMER_SETTING_PREFIX = "Turn Timer setting "
         const val SELECT_P1_AS_FIRST_PLAYER = "Select P1 as first player"
+        const val SELECT_P2_AS_FIRST_PLAYER = "Select P2 as first player"
         const val P1_ACTIVE_TURN_TIMER = "P1 active turn timer"
         const val P2_ACTIVE_TURN_TIMER = "P2 active turn timer"
         const val OPEN_PLAYER_NUMBER = "Open player number"

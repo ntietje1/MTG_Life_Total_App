@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import model.Player
 import model.Player.Companion.MAX_PLAYERS
@@ -84,28 +85,32 @@ open class LifeCounterViewModel(
     }
 
     override fun promptForFirstPlayer() {
-        _state.value = _state.value.promptForFirstPlayer()
+        _state.update { it.promptForFirstPlayer() }
     }
 
     override fun clearFirstPlayerPrompt() {
-        _state.value = _state.value.clearFirstPlayerPrompt()
+        _state.update { it.clearFirstPlayerPrompt() }
     }
 
     override fun showTimer(activePlayerIndex: Int?, timer: TurnTimer?) {
-        _state.value = _state.value.showTimer(activePlayerIndex = activePlayerIndex, timer = timer)
+        _state.update { state ->
+            state.showTimer(activePlayerIndex = activePlayerIndex, timer = timer)
+        }
     }
 
     private fun initializePlayerSeats() {
         if (_state.value.players.isNotEmpty()) return
-        _state.value = _state.value.copy(
-            players = (1..MAX_PLAYERS).map { playerNumber ->
-                val player = generatePlayer(playerNumber)
-                PlayerSeatUiState(
-                    seatId = GameSessionUiMapper.seatIdForPlayerNumber(player.playerNum),
-                    player = player
-                )
-            }
-        )
+        _state.update { state ->
+            state.copy(
+                players = (1..MAX_PLAYERS).map { playerNumber ->
+                    val player = generatePlayer(playerNumber)
+                    PlayerSeatUiState(
+                        seatId = GameSessionUiMapper.seatIdForPlayerNumber(player.playerNum),
+                        player = player
+                    )
+                }
+            )
+        }
     }
 
     private fun generatePlayer(playerNum: Int): Player {
@@ -140,20 +145,20 @@ open class LifeCounterViewModel(
     override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
         when (action) {
             PlayerButtonAction.ToggleSettings -> {
-                _state.value = _state.value.openPlayerSettings(seatId)
+                _state.update { it.openPlayerSettings(seatId) }
             }
             PlayerButtonAction.PopBackStack -> {
-                _state.value = _state.value.popPlayerButtonBackStack(seatId)
+                _state.update { it.popPlayerButtonBackStack(seatId) }
             }
             PlayerButtonAction.OpenCounters -> {
-                _state.value = _state.value.openPlayerCounters(seatId)
+                _state.update { it.openPlayerCounters(seatId) }
             }
             PlayerButtonAction.OpenCounterSelection -> {
-                _state.value = _state.value.openPlayerCounterSelection(seatId)
+                _state.update { it.openPlayerCounterSelection(seatId) }
             }
             is PlayerButtonAction.SetManualDeath -> {
                 dispatchPlayerButtonAction(seatId, action)
-                _state.value = _state.value.closePlayerMenu(seatId)
+                _state.update { it.closePlayerMenu(seatId) }
             }
             PlayerButtonAction.ToggleCommanderDealer -> onCommanderButtonAction(seatId)
             PlayerButtonAction.SelectFirstPlayer -> {
@@ -194,28 +199,36 @@ open class LifeCounterViewModel(
     }
 
     override fun openModal(value: LifeCounterModal) {
-        _state.value = _state.value.copy(modalStack = _state.value.modalStack.open(value))
+        _state.update { state ->
+            state.copy(modalStack = state.modalStack.open(value))
+        }
     }
 
     override fun closeModal() {
-        _state.value = _state.value.copy(modalStack = LifeCounterModalStack.Empty)
+        _state.update { state ->
+            state.copy(modalStack = LifeCounterModalStack.Empty)
+        }
     }
 
     override fun goBackInModal() {
-        _state.value = _state.value.copy(modalStack = _state.value.modalStack.goBack())
+        _state.update { state ->
+            state.copy(modalStack = state.modalStack.goBack())
+        }
     }
 
     private fun setAllButtonStates(pbState: PBState) {
-        _state.value = _state.value.setAllPlayerButtonStates(pbState)
+        _state.update { it.setAllPlayerButtonStates(pbState) }
     }
 
     private fun applyGameSession(session: GameSession) {
-        _state.value = GameSessionUiMapper.mapLifeCounterUiState(
-            session = session,
-            current = _state.value,
-            fileImageStore = fileImageStore,
-            autoKo = preferencesRepository.autoKo.value
-        )
+        _state.update { state ->
+            GameSessionUiMapper.mapLifeCounterUiState(
+                session = session,
+                current = state,
+                fileImageStore = fileImageStore,
+                autoKo = preferencesRepository.autoKo.value
+            )
+        }
     }
 
     private fun dispatchGameCommand(command: GameCommand) {
@@ -248,7 +261,7 @@ open class LifeCounterViewModel(
         when (action) {
             PlayerButtonAction.OpenCustomization -> {
                 ensureCustomizationViewModel(seatId)
-                _state.value = _state.value.openPlayerCustomization(seatId)
+                _state.update { it.openPlayerCustomization(seatId) }
             }
             PlayerButtonAction.CloseCustomization -> applyCustomization(seatId)
             else -> Unit
@@ -283,7 +296,7 @@ open class LifeCounterViewModel(
             playerCustomizationManager.savePlayerPrefs(player)
             customizationViewModels[seatId] = createCustomizationViewModel(seatId, player)
         }
-        _state.value = _state.value.closePlayerCustomization(seatId)
+        _state.update { it.closePlayerCustomization(seatId) }
     }
 
     private fun requirePlayer(seatId: SeatId): Player {
@@ -297,7 +310,7 @@ open class LifeCounterViewModel(
     }
 
     private fun showLoadingScreen(value: Boolean) {
-        _state.value = _state.value.copy(showLoadingScreen = value)
+        _state.update { it.copy(showLoadingScreen = value) }
     }
 
     override fun setNumPlayers(value: Int) {
@@ -336,15 +349,15 @@ open class LifeCounterViewModel(
     }
 
     override fun setShowButtons(value: Boolean) {
-        _state.value = _state.value.copy(showButtons = value)
+        _state.update { it.copy(showButtons = value) }
     }
 
     override fun setBlurBackground(value: Boolean) {
-        _state.value = _state.value.copy(blurBackground = value)
+        _state.update { it.copy(blurBackground = value) }
     }
 
     override fun setDayNight(value: DayNightState) {
-        _state.value = _state.value.copy(dayNight = value)
+        _state.update { it.copy(dayNight = value) }
     }
 
     override fun incrementCounter(index: Int, value: Int) {

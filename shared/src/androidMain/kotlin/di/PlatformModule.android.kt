@@ -23,8 +23,8 @@ actual val platformModule = module {
     single { platform }
     single { NotificationManager(get()) }
     single<IFileImageStore> { FileImageStore(get()) }
-    single { PlayerCustomizationManager(get()) }
-    single { TimerManager(timerStateRepository = get(), preferencesRepository = get()) }
+    factory { PlayerCustomizationManager(get()) }
+    factory { TimerManager(timerStateRepository = get(), preferencesRepository = get()) }
     single { PlaneChaseViewModel(planechaseRepository = get(), scryfallClient = get()) }
     single { CoinFlipViewModel(get()) }
     viewModel { TutorialViewModel() }

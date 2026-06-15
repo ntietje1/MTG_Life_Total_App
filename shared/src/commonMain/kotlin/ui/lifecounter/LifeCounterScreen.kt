@@ -335,7 +335,7 @@ fun AnimatedMiddleButton(
         scaleX = animatableScale.value
         scaleY = animatableScale.value
     }.pointerInput(Unit) {
-        detectTapGestures(onPress = {
+        detectTapGestures(onTap = {
             onMiddleButtonClick()
         })
     }) {
