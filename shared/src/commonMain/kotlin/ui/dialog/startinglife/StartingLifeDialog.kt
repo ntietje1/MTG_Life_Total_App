@@ -58,19 +58,19 @@ fun StartingLifeDialogContent(
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.height(textFieldHeight))
             GridDialogContent(Modifier.wrapContentSize().weight(1.0f), title = "Set starting life total", items = listOf({
-                SettingsButton(imageVector = vectorResource(Res.drawable.forty_icon), text = "", shadowEnabled = false, onPress = {
+                SettingsButton(imageVector = vectorResource(Res.drawable.forty_icon), text = "", contentDescription = "Set starting life to 40", shadowEnabled = false, onPress = {
                     viewModel.setStartingLife(40)
                     resetGameState(40)
                     onDismiss()
                 })
             }, {
-                SettingsButton(imageVector = vectorResource(Res.drawable.thirty_icon), text = "", shadowEnabled = false, onPress = {
+                SettingsButton(imageVector = vectorResource(Res.drawable.thirty_icon), text = "", contentDescription = "Set starting life to 30", shadowEnabled = false, onPress = {
                     viewModel.setStartingLife(30)
                     resetGameState(30)
                     onDismiss()
                 })
             }, {
-                SettingsButton(imageVector = vectorResource(Res.drawable.twenty_icon), text = "", shadowEnabled = false, onPress = {
+                SettingsButton(imageVector = vectorResource(Res.drawable.twenty_icon), text = "", contentDescription = "Set starting life to 20", shadowEnabled = false, onPress = {
                     viewModel.setStartingLife(20)
                     resetGameState(20)
                     onDismiss()

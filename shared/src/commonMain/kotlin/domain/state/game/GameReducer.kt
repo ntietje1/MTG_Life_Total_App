@@ -18,7 +18,7 @@ fun reduceGame(
             is GameCommand.SetMonarch -> state.setMonarch(command)
             is GameCommand.SetSeatAppearance -> state.setSeatAppearance(command)
             is GameCommand.SetSeatCounterActive -> state.setSeatCounterActive(command)
-            GameCommand.ResetGame -> state.resetGame()
+            is GameCommand.ResetGame -> state.resetGame(command)
             GameCommand.ResetTableCounters -> state.resetTableCounters()
             GameCommand.ToggleDayNight -> state.toggleDayNight()
         }
@@ -145,13 +145,17 @@ private fun GameSession.toggleDayNight(): GameSession {
     ).incrementVersion()
 }
 
-private fun GameSession.resetGame(): GameSession {
+private fun GameSession.resetGame(command: GameCommand.ResetGame): GameSession {
+    val nextRules = command.startingLife?.let { startingLife ->
+        rules.copy(startingLife = startingLife)
+    } ?: rules
     return copy(
+        rules = nextRules,
         seats = seats.map { seat ->
             GameSeat.new(
                 id = seat.id,
                 appearance = seat.appearance,
-                startingLife = rules.startingLife
+                startingLife = nextRules.startingLife
             )
         },
         commander = CommanderDamageMatrix(),

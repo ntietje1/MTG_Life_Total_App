@@ -53,7 +53,7 @@ sealed interface GameCommand {
 
     data object ToggleDayNight : GameCommand
 
-    data object ResetGame : GameCommand
+    data class ResetGame(val startingLife: Int? = null) : GameCommand
 }
 
 sealed interface GameEffect {

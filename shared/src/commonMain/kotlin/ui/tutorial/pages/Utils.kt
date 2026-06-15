@@ -327,7 +327,7 @@ abstract class MockLifeCounterViewModel(
 
     override fun resetAllPrefs() = Unit
 
-    override fun resetGameState() {
+    override fun resetGameState(startingLife: Int?) {
         _state.value = _state.value
             .setAllPlayerButtonStates(PBState.NORMAL)
             .copy(middleButtonState = MiddleButtonState.DEFAULT)

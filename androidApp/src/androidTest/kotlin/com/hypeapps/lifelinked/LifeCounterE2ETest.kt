@@ -25,6 +25,23 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun middleMenuCanSetStartingLife() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openStartingLifeDialog()
+        composeRule.onNodeWithContentDescription(SET_STARTING_LIFE_20, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, 20)
+
+        openStartingLifeDialog()
+        composeRule.onNodeWithContentDescription(SET_STARTING_LIFE_40, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, 40)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun customizationNamePersistsAfterLifeChange() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -246,6 +263,16 @@ class LifeCounterE2ETest {
             .performTouchInput { click() }
     }
 
+    private fun openStartingLifeDialog() {
+        waitForContentDescription(MIDDLE_MENU_BUTTON)
+        composeRule.onNodeWithContentDescription(MIDDLE_MENU_BUTTON, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(OPEN_STARTING_LIFE)
+        composeRule.onNodeWithContentDescription(OPEN_STARTING_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForContentDescription(SET_STARTING_LIFE_40)
+    }
+
     private fun waitForContentDescription(value: String) {
         waitUntil(value) {
             hasContentDescription(value)
@@ -371,6 +398,9 @@ class LifeCounterE2ETest {
         const val P1_CUSTOMIZATION_NAME_FIELD = "P1 customization name"
         const val P1_CUSTOM_NAME = "P1 E2E"
         const val CLOSE_DIALOG = "Close dialog"
+        const val OPEN_STARTING_LIFE = "Open starting life"
+        const val SET_STARTING_LIFE_20 = "Set starting life to 20"
+        const val SET_STARTING_LIFE_40 = "Set starting life to 40"
         const val P1_ADD_COUNTER = "Add P1 counter"
         const val P1_ADD_POISON_COUNTER = "Add P1 Poison counter"
         const val P1_COUNTER_PREFIX = "P1 "

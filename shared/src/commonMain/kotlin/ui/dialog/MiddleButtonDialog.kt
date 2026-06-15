@@ -123,7 +123,7 @@ fun MiddleButtonDialog(
                 dialogState == LifeCounterModal.StartingLife
             ) {
                 StartingLifeDialogContent(modifier = Modifier.fillMaxSize(), onDismiss = onDismiss, resetGameState = {
-                    viewModel.resetGameState()
+                    viewModel.resetGameState(startingLife = it)
                     triggerEnterAnimation()
                 })
             }, Pair(

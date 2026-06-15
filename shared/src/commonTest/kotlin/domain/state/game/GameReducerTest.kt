@@ -51,7 +51,7 @@ class GameReducerTest {
             GameCommand.SetSeatAppearance(firstSeatId, editedAppearance)
         ).session
         val lifeChanged = reduceGame(customized, GameCommand.ChangeLife(firstSeatId, -3)).session
-        val reset = reduceGame(lifeChanged, GameCommand.ResetGame).session
+        val reset = reduceGame(lifeChanged, GameCommand.ResetGame()).session
 
         assertEquals(editedAppearance, customized.requireSeat(firstSeatId).appearance)
         assertEquals(editedAppearance, lifeChanged.requireSeat(firstSeatId).appearance)
@@ -71,6 +71,16 @@ class GameReducerTest {
         assertEquals(6, session.seats.size)
         assertEquals((1..6).map { SeatId("seat-$it") }, session.seats.map { it.id })
         assertEquals(List(6) { 20 }, session.seats.map { it.life.value })
+    }
+
+    @Test
+    fun resetGameCanUpdateStartingLife() {
+        val initial = testSession(startingLife = 40)
+
+        val reset = reduceGame(initial, GameCommand.ResetGame(startingLife = 20)).session
+
+        assertEquals(20, reset.rules.startingLife)
+        assertEquals(List(reset.seats.size) { 20 }, reset.seats.map { it.life.value })
     }
 
     @Test
@@ -175,7 +185,7 @@ class GameReducerTest {
             decremented,
             GameCommand.SetSeatCounterActive(firstSeatId, CounterType.POISON, false)
         ).session
-        val reset = reduceGame(inactive, GameCommand.ResetGame).session
+        val reset = reduceGame(inactive, GameCommand.ResetGame()).session
 
         assertEquals(3, incremented.requireSeat(firstSeatId).counterValue(CounterType.POISON))
         assertTrue(CounterType.POISON in active.requireSeat(firstSeatId).activeCounters)
@@ -189,7 +199,7 @@ class GameReducerTest {
         val initial = testSession()
 
         val incremented = reduceGame(initial, GameCommand.ChangeTableCounter(TableCounterType.STORM, 2)).session
-        val reset = reduceGame(incremented, GameCommand.ResetGame).session
+        val reset = reduceGame(incremented, GameCommand.ResetGame()).session
 
         assertEquals(2, incremented.tableCounterValue(TableCounterType.STORM))
         assertEquals(0, reset.tableCounterValue(TableCounterType.STORM))
@@ -307,7 +317,7 @@ class GameReducerTest {
             GameCommand.ChangeTableCounter(TableCounterType.STORM, 3)
         ).fold(initial) { session, command -> reduceGame(session, command).session }
 
-        val reset = reduceGame(changed, GameCommand.ResetGame).session
+        val reset = reduceGame(changed, GameCommand.ResetGame()).session
         val resetSeat = reset.requireSeat(firstSeatId)
 
         assertEquals(40, resetSeat.life.value)

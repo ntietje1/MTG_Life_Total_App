@@ -71,6 +71,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.player_select_icon),
                         text = "Player Select",
+                        contentDescription = "Open player select",
                         shadowEnabled = false,
                         onPress = onPlayerSelect
                     )
@@ -80,6 +81,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.reset_icon),
                         text = "Reset Game",
+                        contentDescription = "Open reset game",
                         shadowEnabled = false,
                         onPress = onResetGame
                     )
@@ -89,6 +91,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.heart_solid_icon),
                         text = "Starting Life",
+                        contentDescription = "Open starting life",
                         shadowEnabled = false,
                         onPress = onStartingLife
                     )
@@ -98,6 +101,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.star_icon_small),
                         text = "Toggle Theme",
+                        contentDescription = "Toggle theme",
                         shadowEnabled = false,
                         onPress = onToggleTheme
                     )
@@ -107,6 +111,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.player_count_icon),
                         text = "Player Number",
+                        contentDescription = "Open player number",
                         shadowEnabled = false,
                         onPress = onPlayerNumber
                     )
@@ -116,6 +121,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.mana_icon),
                         text = "Mana & Storm",
+                        contentDescription = "Open mana and storm counters",
                         shadowEnabled = false,
                         onPress = onCounters
                     )
@@ -125,6 +131,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.die_icon),
                         text = "Dice roll",
+                        contentDescription = "Open dice roll",
                         shadowEnabled = false,
                         onPress = onDiceRoll
                     )
@@ -134,6 +141,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.coin_icon),
                         text = "Coin Flip",
+                        contentDescription = "Open coin flip",
                         shadowEnabled = false,
                         onPress = onCoinFlip
                     )
@@ -147,6 +155,7 @@ fun MiddleButtonMenuDialog(
                             DayNightState.NONE -> vectorResource(Res.drawable.sun_and_moon_icon)
                         },
                         text = "Day/Night",
+                        contentDescription = "Toggle day night",
                         shadowEnabled = false,
                         onPress = onToggleDayNight,
                         onLongPress = {
@@ -160,6 +169,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.search_icon),
                         text = "Card Search",
+                        contentDescription = "Open card search",
                         shadowEnabled = false,
                         onPress = onCardSearch
                     )
@@ -169,6 +179,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.planeswalker_icon),
                         text = "Planechase",
+                        contentDescription = "Open planechase",
                         shadowEnabled = false,
                         onPress = onPlanechase
                     )
@@ -178,6 +189,7 @@ fun MiddleButtonMenuDialog(
                         modifier = buttonModifier,
                         imageVector = vectorResource(Res.drawable.settings_icon_small),
                         text = "Settings",
+                        contentDescription = "Open app settings",
                         shadowEnabled = false,
                         onPress = onSettings
                     )

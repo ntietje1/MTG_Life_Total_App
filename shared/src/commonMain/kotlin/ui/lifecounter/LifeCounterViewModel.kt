@@ -323,8 +323,8 @@ open class LifeCounterViewModel(
         }
     }
 
-    override fun resetGameState() {
-        dispatchGameCommand(GameCommand.ResetGame)
+    override fun resetGameState(startingLife: Int?) {
+        dispatchGameCommand(GameCommand.ResetGame(startingLife = startingLife))
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
         viewModelScope.launch {
