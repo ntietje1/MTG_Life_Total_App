@@ -5,6 +5,8 @@ import domain.state.legacy.LocalGameSessionMapper
 import domain.state.profile.PlayerBackground
 import domain.state.profile.PlayerColors
 import domain.storage.PreferencesRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -17,27 +19,31 @@ class SavedGameRepository(
     private val sessionId: GameSessionId = GameSessionId("local-active-game")
 ) : GameSessionRepository {
     override suspend fun loadActiveSession(): GameSession {
-        val savedJson = settings.getStringOrNull(ActiveGameKey)
-        if (savedJson != null) {
-            return loadSavedGame(savedJson)
-        }
+        return withContext(Dispatchers.Default) {
+            val savedJson = settings.getStringOrNull(ActiveGameKey)
+            if (savedJson != null) {
+                return@withContext loadSavedGame(savedJson)
+            }
 
-        val session = LocalGameSessionMapper.fromLegacyOrFresh(
-            id = sessionId,
-            rules = GameRules(startingLife = preferencesRepository.startingLife.value),
-            legacyPlayers = loadLegacyPlayerStates(),
-            fallbackSeatCount = preferencesRepository.numPlayers.value
-        )
-        saveSession(session)
-        return session
+            val session = LocalGameSessionMapper.fromLegacyOrFresh(
+                id = sessionId,
+                rules = GameRules(startingLife = preferencesRepository.startingLife.value),
+                legacyPlayers = loadLegacyPlayerStates(),
+                fallbackSeatCount = preferencesRepository.numPlayers.value
+            )
+            saveSession(session)
+            session
+        }
     }
 
     override suspend fun commit(mutation: GameMutation): CommitResult {
-        return try {
-            saveSession(mutation.resultingSession)
-            CommitResult.Success
-        } catch (error: Exception) {
-            CommitResult.Failure(error.message ?: "Failed to save game session")
+        return withContext(Dispatchers.Default) {
+            try {
+                saveSession(mutation.resultingSession)
+                CommitResult.Success
+            } catch (error: Exception) {
+                CommitResult.Failure(error.message ?: "Failed to save game session")
+            }
         }
     }
 

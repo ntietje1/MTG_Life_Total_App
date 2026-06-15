@@ -31,7 +31,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -72,7 +71,7 @@ fun LifeCounterScreen(
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
     val darkTheme by viewModel.darkTheme.collectAsState()
     val dimensions = LocalDimensions.current
-    val blurBackground = state.isModalOpen || state.players.any { it.showCustomizeMenu }
+    val dimBackground = state.isModalOpen || state.players.any { it.showCustomizeMenu }
 
     state.currentModal?.let { modal ->
         MiddleButtonDialog(
@@ -125,13 +124,6 @@ fun LifeCounterScreen(
                 .semantics {
                     contentDescription = "Player layout $numPlayers ${if (alt4PlayerLayout) "alternate" else "default"}"
                 }
-                .then(
-                    if (blurBackground) {
-                        Modifier.blur(radius = dimensions.blurRadius)
-                    } else {
-                        Modifier
-                    }
-                )
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
                 items(m.buttonPlacements(), key = { it.hashCode() }) { buttonPlacements ->
@@ -209,7 +201,7 @@ fun LifeCounterScreen(
 
             Box(
                 Modifier.fillMaxSize().then(
-                    if (blurBackground) {
+                    if (dimBackground) {
                         Modifier.background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
                     } else {
                         Modifier
