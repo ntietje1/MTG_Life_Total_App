@@ -612,6 +612,16 @@ class LifeCounterE2ETest {
             .performTouchInput { click() }
         waitForIntContentDescription(WHITE_MANA_COUNTER_PREFIX, 1)
 
+        composeRule.onNodeWithContentDescription(DECREASE_WHITE_MANA, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(WHITE_MANA_COUNTER_PREFIX, 0)
+        composeRule.onNodeWithContentDescription(DECREASE_WHITE_MANA, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(WHITE_MANA_COUNTER_PREFIX, 0)
+
+        composeRule.onNodeWithContentDescription(INCREASE_WHITE_MANA, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(WHITE_MANA_COUNTER_PREFIX, 1)
         composeRule.onNodeWithContentDescription(RESET_TABLE_COUNTERS, useUnmergedTree = true)
             .performTouchInput { click() }
         waitForIntContentDescription(WHITE_MANA_COUNTER_PREFIX, 0)
@@ -1393,6 +1403,7 @@ class LifeCounterE2ETest {
         const val OPEN_TABLE_COUNTERS = "Open mana and storm counters"
         const val WHITE_MANA_COUNTER_PREFIX = "White mana "
         const val INCREASE_WHITE_MANA = "Increase white mana"
+        const val DECREASE_WHITE_MANA = "Decrease white mana"
         const val RESET_TABLE_COUNTERS = "Reset table counters"
         const val OPEN_DICE_ROLL = "Open dice roll"
         const val ROLL_D6 = "Roll D6"
