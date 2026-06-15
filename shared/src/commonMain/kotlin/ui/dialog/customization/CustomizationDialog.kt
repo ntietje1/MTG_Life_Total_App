@@ -40,6 +40,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -159,6 +162,11 @@ fun PlayerCustomizationDialog(
             val playerButtonPreviewHeight = remember(Unit) { min(maxWidth / 2f, maxHeight / 3f) }
             val focusManager = LocalFocusManager.current
 
+            fun openLoadProfile() {
+                viewModel.openRoute(CustomizationRoute.LoadPlayer)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
+
             val buttonModifier = remember(Unit) {
                 Modifier.then(
                     if (maxWidth / 3f < maxHeight / 4f) {
@@ -215,10 +223,13 @@ fun PlayerCustomizationDialog(
                     Box(
                         modifier = Modifier.fillMaxWidth().height(textFieldHeight).clip(RoundedCornerShape(8))
                             .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(8)).pointerInput(Unit) {
-                                detectTapGestures(onPress = {
-                                    viewModel.openRoute(CustomizationRoute.LoadPlayer)
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                })
+                                detectTapGestures(onPress = { openLoadProfile() })
+                            }.semantics {
+                                contentDescription = "Open load profile"
+                                onClick {
+                                    openLoadProfile()
+                                    true
+                                }
                             },
                         contentAlignment = Alignment.Center,
                     ) {

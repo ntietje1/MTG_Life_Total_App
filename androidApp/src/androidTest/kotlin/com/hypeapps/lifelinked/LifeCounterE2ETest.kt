@@ -20,6 +20,7 @@ import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import domain.state.planechase.PlanechaseRepository
 import domain.state.planechase.PlanechaseSnapshot
+import domain.state.profile.PlayerProfileRepository
 import domain.storage.PreferencesRepository
 import model.VersionNumber
 import org.junit.Before
@@ -46,6 +47,10 @@ class LifeCounterE2ETest {
         preferences.setTurnTimer(false)
         preferences.setNumPlayers(4)
         koin.get<PlanechaseRepository>().save(PlanechaseSnapshot())
+        val profileRepository = koin.get<PlayerProfileRepository>()
+        profileRepository.loadProfiles().forEach { profile ->
+            profileRepository.deleteProfile(profile.id)
+        }
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -302,7 +307,7 @@ class LifeCounterE2ETest {
 
         openP1Customization()
         performSemanticClick(CHANGE_BACKGROUND_COLOR)
-        performSemanticClick("$SELECT_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
+        performSemanticClick(SELECT_TEST_BACKGROUND_COLOR)
 
         closeCustomizationAndReturnToCounter()
         waitForContentDescription("$P1_BACKGROUND_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
@@ -312,6 +317,31 @@ class LifeCounterE2ETest {
             .performTouchInput { click() }
         waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
         waitForContentDescription("$P1_BACKGROUND_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun savedProfileCanBeLoadedForAnotherPlayer() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
+            .performTextClearance()
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
+            .performTextInput(SAVED_PROFILE_NAME)
+        performSemanticClick(CHANGE_BACKGROUND_COLOR)
+        performSemanticClick(SELECT_TEST_BACKGROUND_COLOR)
+        closeCustomizationAndReturnToCounter()
+
+        openP2Customization()
+        performSemanticClick(OPEN_LOAD_PROFILE)
+        performSemanticClick("$LOAD_PROFILE_PREFIX$SAVED_PROFILE_NAME")
+        closeCustomizationAndReturnToCounter(settingsButton = P2_SETTINGS_BUTTON, backButton = P2_BACK_BUTTON)
+
+        waitForText(SAVED_PROFILE_NAME)
+        waitForContentDescription("$P2_BACKGROUND_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -512,22 +542,38 @@ class LifeCounterE2ETest {
     }
 
     private fun openP1Customization() {
-        waitForContentDescription(P1_SETTINGS_BUTTON)
-        composeRule.onNodeWithContentDescription(P1_SETTINGS_BUTTON, useUnmergedTree = true)
+        openCustomization(P1_SETTINGS_BUTTON, P1_CUSTOMIZE)
+    }
+
+    private fun openP2Customization() {
+        openCustomization(P2_SETTINGS_BUTTON, P2_CUSTOMIZE)
+    }
+
+    private fun openCustomization(settingsButton: String, customizeButton: String) {
+        waitForContentDescription(settingsButton)
+        composeRule.onNodeWithContentDescription(settingsButton, useUnmergedTree = true)
             .performTouchInput { click() }
 
-        waitForContentDescription(P1_CUSTOMIZE)
-        composeRule.onNodeWithContentDescription(P1_CUSTOMIZE, useUnmergedTree = true)
+        waitForContentDescription(customizeButton)
+        composeRule.onNodeWithContentDescription(customizeButton, useUnmergedTree = true)
             .performTouchInput { click() }
     }
 
-    private fun closeCustomizationAndReturnToCounter() {
+    private fun closeCustomizationAndReturnToCounter(
+        settingsButton: String = P1_SETTINGS_BUTTON,
+        backButton: String = P1_BACK_BUTTON,
+    ) {
         composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
             .performTouchInput { click() }
-        waitForContentDescription(P1_BACK_BUTTON)
-        composeRule.onNodeWithContentDescription(P1_BACK_BUTTON, useUnmergedTree = true)
-            .performTouchInput { click() }
-        waitForContentDescription(P1_SETTINGS_BUTTON)
+        waitUntil("customization closed") {
+            !hasContentDescription(CLOSE_DIALOG) &&
+                (hasContentDescription(backButton) || hasContentDescription(settingsButton))
+        }
+        if (hasContentDescription(backButton)) {
+            composeRule.onNodeWithContentDescription(backButton, useUnmergedTree = true)
+                .performTouchInput { click() }
+        }
+        waitForContentDescription(settingsButton)
     }
 
     private fun closeDialogAndWaitForCounter() {
@@ -701,6 +747,7 @@ class LifeCounterE2ETest {
         const val P2_SETTINGS_BUTTON = "P2 settings"
         const val P3_SETTINGS_BUTTON = "P3 settings"
         const val P1_BACK_BUTTON = "P1 back"
+        const val P2_BACK_BUTTON = "P2 back"
         const val COMMANDER_EXIT_BUTTON = "Exit commander mode"
         const val MIDDLE_MENU_BUTTON = "Open life counter menu"
         const val START_LIFE_COUNTER = "Go to Life Counter"
@@ -719,12 +766,18 @@ class LifeCounterE2ETest {
         const val P1_CLEAR_MONARCH = "Clear P1 as monarch"
         const val P1_OPEN_COUNTERS = "Open P1 counters"
         const val P1_CUSTOMIZE = "Customize P1"
+        const val P2_CUSTOMIZE = "Customize P2"
         const val P1_CUSTOMIZATION_NAME_FIELD = "P1 customization name"
         const val P1_CUSTOM_NAME = "P1 E2E"
+        const val SAVED_PROFILE_NAME = "Saved E2E"
+        const val OPEN_LOAD_PROFILE = "Open load profile"
+        const val LOAD_PROFILE_PREFIX = "Load profile "
         const val CHANGE_BACKGROUND_COLOR = "Change background color"
         const val SELECT_COLOR_PREFIX = "Select color "
         const val P1_BACKGROUND_COLOR_PREFIX = "P1 background color "
+        const val P2_BACKGROUND_COLOR_PREFIX = "P2 background color "
         val TEST_BACKGROUND_COLOR_ARGB = PlayerColor6.toArgb()
+        val SELECT_TEST_BACKGROUND_COLOR = "$SELECT_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB option 9"
         const val CLOSE_DIALOG = "Close dialog"
         const val OPEN_CARD_IMAGE_SEARCH = "Open card image search"
         const val SCRYFALL_SEARCH_FIELD = "Search Scryfall input"

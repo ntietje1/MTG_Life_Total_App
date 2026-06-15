@@ -321,6 +321,7 @@ fun ColorGrid(
                             ColorCircle(
                                 modifier = Modifier.size(circleSize),
                                 color = colors[index],
+                                optionNumber = index + 1,
                                 isSelected = colors[index] == selectedColor,
                                 onClick = { onColorSelected(colors[index]) }
                             )
@@ -335,6 +336,7 @@ fun ColorGrid(
 @Composable
 private fun ColorCircle(
     color: Color,
+    optionNumber: Int,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -353,7 +355,7 @@ private fun ColorCircle(
                     }
                 )
                 .clickable(onClick = onClick)
-                .semantics { contentDescription = "Select color ${color.toArgb()}" }
+                .semantics { contentDescription = "Select color ${color.toArgb()} option $optionNumber" }
         )
     }
 }
