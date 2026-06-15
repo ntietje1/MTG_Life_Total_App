@@ -267,6 +267,37 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun resetDifferentPlayersSkipFirstPlayerClearsCustomizations() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        waitForContentDescription(P1_CUSTOMIZATION_NAME_FIELD)
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
+            .performTextClearance()
+        composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
+            .performTextInput(P1_CUSTOM_NAME)
+        closeCustomizationAndReturnToCounter()
+        waitForText(P1_CUSTOM_NAME)
+
+        val resetLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
+        composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, resetLife + 1)
+
+        openMiddleMenuItem(OPEN_RESET_GAME)
+        performSemanticClick(RESET_DIFFERENT_PLAYERS)
+        performSemanticClick(RESET_SKIP_FIRST_PLAYER)
+
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, resetLife)
+        waitUntil("P1 custom name removed after different-player reset") {
+            !hasText(P1_CUSTOM_NAME)
+        }
+        waitForText("P1")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun chanceDialogsCanRollDiceAndFlipCoin() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1061,6 +1092,7 @@ class LifeCounterE2ETest {
         const val OPEN_CARD_SEARCH = "Open card search"
         const val OPEN_RESET_GAME = "Open reset game"
         const val RESET_SAME_PLAYERS = "Same players"
+        const val RESET_DIFFERENT_PLAYERS = "Different players"
         const val RESET_SELECT_FIRST_PLAYER = "Select"
         const val RESET_SKIP_FIRST_PLAYER = "Skip"
         const val BACK_IN_DIALOG = "Back in dialog"
