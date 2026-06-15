@@ -1,6 +1,7 @@
 package com.hypeapps.lifelinked
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.semantics.SemanticsActions
@@ -26,6 +27,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext
+import theme.PlayerColor6
 
 @RunWith(AndroidJUnit4::class)
 class LifeCounterE2ETest {
@@ -290,6 +292,26 @@ class LifeCounterE2ETest {
             .performTouchInput { click() }
         waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife)
         waitForText(P1_CUSTOM_NAME)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun customizationBackgroundColorPersistsAfterLifeChange() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openP1Customization()
+        performSemanticClick(CHANGE_BACKGROUND_COLOR)
+        performSemanticClick("$SELECT_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
+
+        closeCustomizationAndReturnToCounter()
+        waitForContentDescription("$P1_BACKGROUND_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
+
+        val initialLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)
+        composeRule.onNodeWithContentDescription(P1_INCREASE_LIFE, useUnmergedTree = true)
+            .performTouchInput { click() }
+        waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
+        waitForContentDescription("$P1_BACKGROUND_COLOR_PREFIX$TEST_BACKGROUND_COLOR_ARGB")
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -699,6 +721,10 @@ class LifeCounterE2ETest {
         const val P1_CUSTOMIZE = "Customize P1"
         const val P1_CUSTOMIZATION_NAME_FIELD = "P1 customization name"
         const val P1_CUSTOM_NAME = "P1 E2E"
+        const val CHANGE_BACKGROUND_COLOR = "Change background color"
+        const val SELECT_COLOR_PREFIX = "Select color "
+        const val P1_BACKGROUND_COLOR_PREFIX = "P1 background color "
+        val TEST_BACKGROUND_COLOR_ARGB = PlayerColor6.toArgb()
         const val CLOSE_DIALOG = "Close dialog"
         const val OPEN_CARD_IMAGE_SEARCH = "Open card image search"
         const val SCRYFALL_SEARCH_FIELD = "Search Scryfall input"

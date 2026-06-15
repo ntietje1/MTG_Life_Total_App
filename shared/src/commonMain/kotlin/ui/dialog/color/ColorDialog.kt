@@ -37,7 +37,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import model.Player
@@ -350,6 +353,7 @@ private fun ColorCircle(
                     }
                 )
                 .clickable(onClick = onClick)
+                .semantics { contentDescription = "Select color ${color.toArgb()}" }
         )
     }
 }

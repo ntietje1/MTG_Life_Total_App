@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -201,7 +202,11 @@ fun PlayerButton(
                 timerPadding = remember(Unit) { timerTextSize / 3 }
 
                 PlayerButtonBackground(
-                    modifier = Modifier.clip(RoundedCornerShape(12)),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12))
+                        .semantics {
+                            contentDescription = "P${state.player.playerNum} background color ${state.player.color.toArgb()}"
+                        },
                     state = state.buttonState,
                     imageUri = state.player.imageString,
                     color = state.player.color,
