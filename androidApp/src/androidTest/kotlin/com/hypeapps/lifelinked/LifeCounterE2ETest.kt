@@ -568,12 +568,38 @@ class LifeCounterE2ETest {
             .performTextInput(EMPTY_PLANE_SEARCH_QUERY)
         composeRule.onNodeWithContentDescription(PLANAR_SEARCH_FIELD, useUnmergedTree = true)
             .performImeAction()
-        waitForContentDescription(NO_PLANES_MATCH_SEARCH)
+        waitForContentDescription(NO_VISIBLE_PLANES_SELECTED)
 
         performSemanticClick(BACK_IN_DIALOG)
         waitForContentDescription(NO_PLANES_SELECTED)
 
         performSemanticClick(BACK_IN_DIALOG)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun planechaseDeckControlsCanHideShowAndUnselectPlanes() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLANECHASE)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
+
+        performSemanticClick(OPEN_PLANAR_DECK)
+        waitForContentDescription(NO_PLANES_SELECTED)
+
+        performSemanticClick(HIDE_UNSELECTED_PLANES)
+        waitForContentDescription(NO_VISIBLE_PLANES_SELECTED)
+        performSemanticClick(SHOW_UNSELECTED_PLANES)
+        waitForContentDescription(NO_PLANES_SELECTED)
+
+        performSemanticClick(SELECT_ALL_PLANES)
+        waitForContentDescription(ONE_PLANE_SELECTED)
+        performSemanticClick(UNSELECT_ALL_PLANES)
+        waitForContentDescription(NO_PLANES_SELECTED)
+
+        performSemanticClick(DONE_SELECTING_PLANES)
         waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
     }
 
@@ -1422,9 +1448,12 @@ class LifeCounterE2ETest {
         const val TEST_PLANE_SELECTION = "Plane selection E2E Plane not selected"
         const val NO_PLANES_SELECTED = "0 of 1 planes selected"
         const val EMPTY_PLANE_SEARCH_QUERY = "empty-plane-search"
-        const val NO_PLANES_MATCH_SEARCH = "0 of 0 planes selected"
+        const val NO_VISIBLE_PLANES_SELECTED = "0 of 0 planes selected"
         const val ONE_PLANE_SELECTED = "1 of 1 planes selected"
         const val SELECT_ALL_PLANES = "Select all planes"
+        const val UNSELECT_ALL_PLANES = "Unselect all planes"
+        const val HIDE_UNSELECTED_PLANES = "Hide unselected planes"
+        const val SHOW_UNSELECTED_PLANES = "Show unselected planes"
         const val DONE_SELECTING_PLANES = "Done selecting planes"
         const val CURRENT_PLANE_PREFIX = "Current plane "
         const val PLANESWALK = "Planeswalk"
