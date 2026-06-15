@@ -195,10 +195,11 @@ fun PlaneChaseDialogContent( //TODO: add animations
                         .padding(dimensions.paddingSmall)
                 )
             } else {
+                val currentPlaneSide = if (rotated) "back" else "front"
                 EnlargeableCardImage(
                     modifier = Modifier
                         .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
-                        .semantics { contentDescription = "Current plane ${card.name}" }
+                        .semantics { contentDescription = "Current plane ${card.name} $currentPlaneSide" }
                         .fillMaxHeight()
                         .weight(0.99f)
                         .padding(dimensions.paddingSmall)

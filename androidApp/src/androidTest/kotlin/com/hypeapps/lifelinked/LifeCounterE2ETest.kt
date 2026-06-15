@@ -531,6 +531,23 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun planechaseCanFlipCurrentPlaneImage() {
+        openLifeCounterIfNeeded()
+        exitCommanderModeIfNeeded()
+
+        openMiddleMenuItem(OPEN_PLANECHASE)
+        waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 0)
+        selectE2EPlaneDeck()
+
+        performSemanticClick(FLIP_CURRENT_PLANE_IMAGE)
+        waitForContentDescription(TEST_PLANE_BACK)
+
+        performSemanticClick(FLIP_CURRENT_PLANE_IMAGE)
+        waitForContentDescription(TEST_PLANE_FRONT)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun planechasePlanarDieShowsResult() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
@@ -1245,7 +1262,7 @@ class LifeCounterE2ETest {
         waitForContentDescription(ONE_PLANE_SELECTED)
         performSemanticClick(DONE_SELECTING_PLANES)
         waitForIntContentDescription(PLANAR_DECK_SIZE_PREFIX, 1)
-        waitForContentDescription("$CURRENT_PLANE_PREFIX$TEST_PLANE_NAME")
+        waitForContentDescription(TEST_PLANE_FRONT)
     }
 
     private fun readFirstP1Counter(): CounterReading? {
@@ -1485,7 +1502,9 @@ class LifeCounterE2ETest {
         const val HIDE_UNSELECTED_PLANES = "Hide unselected planes"
         const val SHOW_UNSELECTED_PLANES = "Show unselected planes"
         const val DONE_SELECTING_PLANES = "Done selecting planes"
-        const val CURRENT_PLANE_PREFIX = "Current plane "
+        const val TEST_PLANE_FRONT = "Current plane E2E Plane front"
+        const val TEST_PLANE_BACK = "Current plane E2E Plane back"
+        const val FLIP_CURRENT_PLANE_IMAGE = "Flip current plane image"
         const val PLANESWALK = "Planeswalk"
         const val ROLL_PLANAR_DIE = "Roll planar die"
         const val PLANAR_DIE_RESULT_PREFIX = "Planar die result "
