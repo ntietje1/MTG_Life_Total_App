@@ -31,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -121,6 +122,7 @@ fun LifeCounterScreen(
             Modifier
                 .fillMaxSize()
                 .padding(dimensions.paddingTiny)
+                .then(if (dimBackground) Modifier.blur(dimensions.blurRadius) else Modifier)
                 .semantics {
                     contentDescription = "Player layout $numPlayers ${if (alt4PlayerLayout) "alternate" else "default"}"
                 }

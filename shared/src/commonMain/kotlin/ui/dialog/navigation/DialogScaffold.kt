@@ -11,13 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon_alt
 import lifelinked.shared.generated.resources.x_icon
@@ -35,18 +33,15 @@ fun DialogScaffold(
 ) {
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            usePlatformDefaultWidth = false,
-        )
+        properties = dialogScaffoldProperties()
     ) {
         BoxWithConstraints(
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            val buttonSize = remember(Unit) { maxWidth / 6.5f }
+            val buttonSize = maxWidth / 6.5f
 
-            Column(Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize().padding(top = dialogScaffoldTopPadding())) {
                 if (exitButtonEnabled) {
                     Row(
                         Modifier.fillMaxWidth().wrapContentHeight(),

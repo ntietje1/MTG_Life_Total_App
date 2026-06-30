@@ -56,6 +56,7 @@ import ui.lifecounter.openPlayerCounters
 import ui.lifecounter.openPlayerCustomization
 import ui.lifecounter.openPlayerSettings
 import ui.lifecounter.popPlayerButtonBackStack
+import ui.lifecounter.playerbutton.CommanderState
 import ui.lifecounter.playerbutton.PBState
 import ui.lifecounter.playerbutton.PlayerButtonAction
 import ui.lifecounter.setAllPlayerButtonStates
@@ -202,12 +203,11 @@ class TutorialLifeCounterController(
     gameState: MockGameState = MockGameState(),
     notificationManager: NotificationManager? = null,
     private val blockedPlayerActionMessage: (PlayerButtonAction) -> String? = { null },
-    private val onModalRequested: (LifeCounterModal) -> Unit = {},
     private val shouldOpenModal: (LifeCounterModal) -> Boolean = { true },
     private val blockedModalMessage: (LifeCounterModal) -> String = { "Menu disabled" },
     private val blockedThemeToggleMessage: String? = null,
     private val afterPlayerAction: (SeatId, PlayerButtonAction, LifeCounterState) -> Unit = { _, _, _ -> },
-    private val afterModalOpened: (LifeCounterModal, LifeCounterState) -> Unit = { _, _ -> },
+    private val afterModalChanged: (LifeCounterState) -> Unit = {},
     private val afterNumPlayersChanged: (Int) -> Unit = {},
     private val afterCustomizationChanged: (Player) -> Unit = {},
 ) : LifeCounterScreenController {
@@ -229,21 +229,22 @@ class TutorialLifeCounterController(
     }
 
     override fun openModal(value: LifeCounterModal) {
-        onModalRequested(value)
         if (!shouldOpenModal(value)) {
             showNotification(blockedModalMessage(value), 3000)
             return
         }
         _state.value = _state.value.copy(modalStack = _state.value.modalStack.open(value))
-        afterModalOpened(value, _state.value)
+        afterModalChanged(_state.value)
     }
 
     override fun closeModal() {
         _state.value = _state.value.copy(modalStack = LifeCounterModalStack.Empty)
+        afterModalChanged(_state.value)
     }
 
     override fun goBackInModal() {
         _state.value = _state.value.copy(modalStack = _state.value.modalStack.goBack())
+        afterModalChanged(_state.value)
     }
 
     override fun toggleDarkTheme(value: Boolean?) {
@@ -331,7 +332,7 @@ class TutorialLifeCounterController(
                 _state.value = _state.value.openPlayerCustomization(seatId)
             }
             PlayerButtonAction.CloseCustomization -> {
-                _state.value = _state.value.closePlayerCustomization(seatId)
+                applyCustomizationAndClose(seatId)
             }
             PlayerButtonAction.SelectFirstPlayer,
             PlayerButtonAction.MoveTimer -> Unit
@@ -385,6 +386,19 @@ class TutorialLifeCounterController(
         )
     }
 
+    private fun applyCustomizationAndClose(seatId: SeatId) {
+        val customizedPlayer = customizationViewModels[seatId]?.state?.value?.player
+        _state.value = _state.value.copy(
+            players = _state.value.players.map { seat ->
+                if (seat.seatId == seatId && customizedPlayer != null) {
+                    seat.copy(player = customizedPlayer)
+                } else {
+                    seat
+                }
+            }
+        ).closePlayerCustomization(seatId).withCommanderStateFromButtonStates()
+    }
+
     private fun showNotification(message: String, duration: Long = 2000L) {
         notificationManager?.showNotification(message, duration)
     }
@@ -409,13 +423,14 @@ class TutorialLifeCounterController(
                 )
             },
             middleButtonState = MiddleButtonState.COMMANDER_EXIT,
-        )
+        ).withCommanderStateFromButtonStates()
     }
 
     private fun resetCommanderState() {
         _state.value = _state.value
             .setAllPlayerButtonStates(PBState.NORMAL)
             .copy(middleButtonState = MiddleButtonState.DEFAULT)
+            .withCommanderStateFromButtonStates()
     }
 
     private fun changeCommanderDamage(receiverSeatId: SeatId, partner: Boolean, delta: Int) {
@@ -444,7 +459,13 @@ class TutorialLifeCounterController(
     private fun updateSeat(seatId: SeatId, update: (PlayerSeatUiState) -> PlayerSeatUiState) {
         _state.value = _state.value.copy(
             players = _state.value.players.map { seat -> if (seat.seatId == seatId) update(seat) else seat }
-        )
+        ).withCommanderStateFromButtonStates()
+    }
+
+    private fun LifeCounterState.withCommanderStateFromButtonStates(): LifeCounterState {
+        val dealer = players.firstOrNull { it.buttonState == PBState.COMMANDER_DEALER }?.player
+        val commanderState = dealer?.let(CommanderState::Active) ?: CommanderState.Inactive
+        return copy(players = players.map { seat -> seat.copy(commanderState = commanderState) })
     }
 
     private fun requirePlayer(seatId: SeatId): Player {

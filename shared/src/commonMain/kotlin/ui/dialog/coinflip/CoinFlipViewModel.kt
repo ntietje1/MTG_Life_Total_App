@@ -418,11 +418,17 @@ class CoinFlipViewModel(
 
     fun reset() {
         flippingUntil = null
-        _state.value = state.value.copy(
-            history = listOf(), lastResults = listOf(), headCount = 0, tailCount = 0, flipInProgress = false, userInteractionEnabled = false
-        )
         resetCoinControllers()
-        setUserInteractionEnabled(true)
+        _state.value = state.value.copy(
+            history = listOf(),
+            lastResults = listOf(),
+            historyString = AnnotatedString(""),
+            lastResultString = AnnotatedString(""),
+            headCount = 0,
+            tailCount = 0,
+            flipInProgress = false,
+            userInteractionEnabled = true
+        )
     }
 
     private fun setUserInteractionEnabled(value: Boolean) {

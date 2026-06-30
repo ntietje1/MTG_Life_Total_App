@@ -77,7 +77,6 @@ fun TutorialPage5(
         TutorialLifeCounterController(
             gameState = gameState,
             notificationManager = notificationManager,
-            onModalRequested = { setBlurUI(true) },
             shouldOpenModal = { modal ->
                 modal in listOf(LifeCounterModal.PlayerNumber, LifeCounterModal.FourPlayerLayout, LifeCounterModal.Default)
             },
@@ -93,7 +92,10 @@ fun TutorialPage5(
                     else -> "Menu disabled"
                 }
             },
-            afterModalOpened = { _, state -> checkStepOneOrTwoComplete(state) },
+            afterModalChanged = { state ->
+                setBlurUI(state.isModalOpen)
+                checkStepOneOrTwoComplete(state)
+            },
             afterNumPlayersChanged = { checkComplete() },
             blockedThemeToggleMessage = "Changing theme disabled",
             blockedPlayerActionMessage = { action ->

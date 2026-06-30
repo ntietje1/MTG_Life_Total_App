@@ -272,7 +272,7 @@ fun TutorialScreen(
                         onTap = {
                             viewModel.showHint(!state.showHint)
                         })
-                    dotNavBar(
+                    DotNavBar(
                         modifier = Modifier.align(Alignment.Center),
                         pagerState = pagerState,
                         completed = state.completed,
@@ -303,10 +303,12 @@ fun TutorialScreen(
 }
 
 @Composable
-fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: List<Boolean>, onMoveLeft: () -> Unit, onMoveRight: () -> Unit) {
+fun DotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: List<Boolean>, onMoveLeft: () -> Unit, onMoveRight: () -> Unit) {
     val dotDistance = 2.dp
     val dotSize = 20.dp
     val buttonSize = 40.dp
+    val arrowSize = 16.dp
+    val neutralDotColor = Color.Black.copy(alpha = 0.2f)
     Row(
         modifier = modifier.wrapContentWidth().height(50.dp).clip(RoundedCornerShape(100))
             .padding(8.dp)
@@ -332,8 +334,10 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
             }
         ) {
             Icon(
+                modifier = Modifier.size(arrowSize),
                 imageVector = vectorResource(Res.drawable.back_icon_alt),
-                contentDescription = null
+                contentDescription = null,
+                tint = neutralDotColor
             )
         }
         Box(
@@ -347,7 +351,7 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
                             .offset(x = (i * (dotSize + dotDistance)))
                             .size(dotSize)
                             .background(
-                                color = Color.Black.copy(alpha = 0.2f),
+                                color = neutralDotColor,
                                 shape = CircleShape,
                             )
                     )
@@ -373,9 +377,10 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
             }
         ) {
             Icon(
-                modifier = Modifier.rotate(180f),
+                modifier = Modifier.size(arrowSize).rotate(180f),
                 imageVector = vectorResource(Res.drawable.back_icon_alt),
-                contentDescription = null
+                contentDescription = null,
+                tint = neutralDotColor
             )
         }
     }

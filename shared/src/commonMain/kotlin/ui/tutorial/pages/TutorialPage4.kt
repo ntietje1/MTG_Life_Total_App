@@ -88,7 +88,9 @@ fun TutorialPage4(
             },
             afterPlayerAction = { _, action, state ->
                 if (action == PlayerButtonAction.ToggleSettings) checkStepOneComplete(state)
-                if (action == PlayerButtonAction.OpenCustomization) checkStepTwoComplete(state)
+                if (action == PlayerButtonAction.OpenCustomization || action == PlayerButtonAction.CloseCustomization) {
+                    checkStepTwoComplete(state)
+                }
             },
             afterCustomizationChanged = { checkComplete() }
         )
