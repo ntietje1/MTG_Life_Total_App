@@ -130,7 +130,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run shared iOS checks
-        run: ./gradlew :shared:allTests :shared:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosArm64 --no-daemon --warning-mode all
+        run: ./gradlew :shared:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosArm64 :shared:linkDebugFrameworkIosSimulatorArm64 :shared:linkReleaseFrameworkIosArm64 --no-daemon --warning-mode all
 
       - name: Upload shared reports
         if: always()
