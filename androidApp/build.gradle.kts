@@ -18,28 +18,40 @@ fun releaseProperty(name: String): String {
     }
 }
 
-fun releaseInput(propertyName: String, environmentName: String): String? {
-    return providers.gradleProperty(propertyName)
+fun releaseInput(propertyName: String, environmentName: String, studioPropertyName: String? = null): String? {
+    val configuredInput = providers.gradleProperty(propertyName)
         .orElse(providers.environmentVariable(environmentName))
+        .orNull
+        ?.takeIf { it.isNotBlank() }
+
+    if (configuredInput != null || studioPropertyName == null) {
+        return configuredInput
+    }
+
+    return providers.gradleProperty(studioPropertyName)
         .orNull
         ?.takeIf { it.isNotBlank() }
 }
 
 val releaseKeystoreFile = releaseInput(
     propertyName = "lifelinked.android.keystore.file",
-    environmentName = "LIFELINKED_ANDROID_KEYSTORE_FILE"
+    environmentName = "LIFELINKED_ANDROID_KEYSTORE_FILE",
+    studioPropertyName = "android.injected.signing.store.file"
 )
 val releaseKeystorePassword = releaseInput(
     propertyName = "lifelinked.android.keystore.password",
-    environmentName = "LIFELINKED_ANDROID_KEYSTORE_PASSWORD"
+    environmentName = "LIFELINKED_ANDROID_KEYSTORE_PASSWORD",
+    studioPropertyName = "android.injected.signing.store.password"
 )
 val releaseKeyAlias = releaseInput(
     propertyName = "lifelinked.android.key.alias",
-    environmentName = "LIFELINKED_ANDROID_KEY_ALIAS"
+    environmentName = "LIFELINKED_ANDROID_KEY_ALIAS",
+    studioPropertyName = "android.injected.signing.key.alias"
 )
 val releaseKeyPassword = releaseInput(
     propertyName = "lifelinked.android.key.password",
-    environmentName = "LIFELINKED_ANDROID_KEY_PASSWORD"
+    environmentName = "LIFELINKED_ANDROID_KEY_PASSWORD",
+    studioPropertyName = "android.injected.signing.key.password"
 )
 val releaseSigningConfigured = listOf(
     releaseKeystoreFile,
@@ -140,10 +152,10 @@ play {
 val verifyReleaseSigningInputs by tasks.registering {
     doLast {
         val missing = listOfNotNull(
-            "lifelinked.android.keystore.file / LIFELINKED_ANDROID_KEYSTORE_FILE".takeIf { releaseKeystoreFile == null },
-            "lifelinked.android.keystore.password / LIFELINKED_ANDROID_KEYSTORE_PASSWORD".takeIf { releaseKeystorePassword == null },
-            "lifelinked.android.key.alias / LIFELINKED_ANDROID_KEY_ALIAS".takeIf { releaseKeyAlias == null },
-            "lifelinked.android.key.password / LIFELINKED_ANDROID_KEY_PASSWORD".takeIf { releaseKeyPassword == null }
+            "lifelinked.android.keystore.file / LIFELINKED_ANDROID_KEYSTORE_FILE / android.injected.signing.store.file".takeIf { releaseKeystoreFile == null },
+            "lifelinked.android.keystore.password / LIFELINKED_ANDROID_KEYSTORE_PASSWORD / android.injected.signing.store.password".takeIf { releaseKeystorePassword == null },
+            "lifelinked.android.key.alias / LIFELINKED_ANDROID_KEY_ALIAS / android.injected.signing.key.alias".takeIf { releaseKeyAlias == null },
+            "lifelinked.android.key.password / LIFELINKED_ANDROID_KEY_PASSWORD / android.injected.signing.key.password".takeIf { releaseKeyPassword == null }
         )
         require(missing.isEmpty()) {
             "Missing Android release signing inputs: ${missing.joinToString()}"
