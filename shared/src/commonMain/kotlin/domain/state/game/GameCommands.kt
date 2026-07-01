@@ -13,6 +13,8 @@ sealed interface GameCommand {
 
     data class SetSeatAppearance(val seatId: SeatId, val appearance: SeatAppearance) : GameCommand
 
+    data class SetSeatCount(val count: Int) : GameCommand
+
     data class SetMonarch(val seatId: SeatId?) : GameCommand
 
     data class SetCommanderDealer(val seatId: SeatId?) : GameCommand

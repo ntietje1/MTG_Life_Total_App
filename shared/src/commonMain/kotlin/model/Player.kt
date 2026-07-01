@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import domain.common.NumberWithRecentChange
 import domain.state.profile.PlayerBackground
+import domain.state.profile.PlayerColors
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -16,15 +17,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
-import theme.PlayerColor1
-import theme.PlayerColor2
-import theme.PlayerColor3
-import theme.PlayerColor4
-import theme.PlayerColor5
-import theme.PlayerColor6
-import theme.PlayerColor7
-import theme.PlayerColor8
-import theme.PlayerColor9
 import ui.lifecounter.CounterType
 
 @Serializable
@@ -141,16 +133,6 @@ data class Player(
     companion object {
         const val MAX_PLAYERS = 6
 
-        val allPlayerColors = listOf(
-            PlayerColor1,
-            PlayerColor2,
-            PlayerColor3,
-            PlayerColor4,
-            PlayerColor5,
-            PlayerColor6,
-            PlayerColor7,
-            PlayerColor8,
-            PlayerColor9
-        )
+        val allPlayerColors = PlayerColors.DefaultPalette.map { colors -> Color(colors.backgroundArgb) }
     }
 }

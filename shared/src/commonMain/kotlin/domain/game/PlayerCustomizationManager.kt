@@ -19,7 +19,8 @@ interface PlayerCustomizationHost {
  * Manages player customization operations
  */
 class PlayerCustomizationManager(
-    private val profileRepository: PlayerProfileRepository
+    private val profileRepository: PlayerProfileRepository,
+    private val defaultColorOrder: (List<Color>) -> List<Color> = { colors -> colors.shuffled() }
 ) : AttachableManager<PlayerCustomizationHost>() {
 
     fun resetPlayerPrefs(player: Player): Player {
@@ -30,9 +31,20 @@ class PlayerCustomizationManager(
     }
 
     fun resetAllPlayerPrefs(): List<Player> {
-        return requireAttached().players.mapIndexed { index, player ->
-            player.defaultAppearance(allPlayerColors[index])
+        val players = requireAttached().players
+        val colors = freshDefaultColors(players)
+        return players.mapIndexed { index, player ->
+            player.defaultAppearance(colors[index])
         }
+    }
+
+    private fun freshDefaultColors(players: List<Player>): List<Color> {
+        val colors = defaultColorOrder(allPlayerColors)
+        val selectedColors = mutableListOf<Color>()
+        players.forEach { player ->
+            selectedColors += colors.first { color -> color !in selectedColors && color != player.color }
+        }
+        return selectedColors
     }
 
     private fun Player.defaultAppearance(color: Color): Player {

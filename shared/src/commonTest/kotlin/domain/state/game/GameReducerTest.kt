@@ -152,6 +152,91 @@ class GameReducerTest {
     }
 
     @Test
+    fun seatCountCanGrowAStartedGameWithFreshDefaultSeats() {
+        val changed = reduceGame(
+            testSession(startingLife = 30),
+            GameCommand.ChangeLife(firstSeatId, -5)
+        ).session
+
+        val resized = reduceGame(changed, GameCommand.SetSeatCount(4)).session
+
+        assertEquals(4, resized.seats.size)
+        assertEquals(25, resized.requireSeat(firstSeatId).life.value)
+        assertEquals("P1", resized.requireSeat(firstSeatId).appearance.displayName)
+        assertEquals("P3", resized.requireSeat(SeatId("seat-3")).appearance.displayName)
+        assertEquals(30, resized.requireSeat(SeatId("seat-3")).life.value)
+        assertEquals("P4", resized.requireSeat(SeatId("seat-4")).appearance.displayName)
+        assertEquals(30, resized.requireSeat(SeatId("seat-4")).life.value)
+    }
+
+    @Test
+    fun newSeatsUsePlayerPaletteColors() {
+        val palette = PlayerColors.DefaultPalette.map { colors -> colors.backgroundArgb }
+        val colored = listOf(
+            GameCommand.SetSeatAppearance(
+                firstSeatId,
+                SeatAppearance(displayName = "P1", colors = PlayerColors.DefaultPalette[0])
+            ),
+            GameCommand.SetSeatAppearance(
+                secondSeatId,
+                SeatAppearance(displayName = "P2", colors = PlayerColors.DefaultPalette[1])
+            )
+        ).fold(testSession()) { session, command -> reduceGame(session, command).session }
+
+        val resized = reduceGame(colored, GameCommand.SetSeatCount(4)).session
+        val seatColors = resized.seats.map { seat -> seat.appearance.colors.backgroundArgb }
+        val newSeatColors = seatColors.drop(2)
+
+        assertEquals(seatColors.size, seatColors.distinct().size)
+        assertTrue(PlayerColors().backgroundArgb !in newSeatColors)
+        assertTrue(newSeatColors.all { color -> color in palette })
+    }
+
+    @Test
+    fun newSeatsGetUniqueDefaultNames() {
+        val renamed = reduceGame(
+            testSession(),
+            GameCommand.SetSeatAppearance(
+                firstSeatId,
+                SeatAppearance(displayName = "P3")
+            )
+        ).session
+
+        val resized = reduceGame(renamed, GameCommand.SetSeatCount(3)).session
+
+        assertEquals("P3", resized.requireSeat(firstSeatId).appearance.displayName)
+        assertEquals("P3 (2)", resized.requireSeat(SeatId("seat-3")).appearance.displayName)
+    }
+
+    @Test
+    fun seatCountCanShrinkAStartedGameAndDropRemovedSeatState() {
+        val initial = testSession()
+        val changed = listOf(
+            GameCommand.SetMonarch(secondSeatId),
+            GameCommand.SetCommanderDealer(secondSeatId),
+            GameCommand.ChangeCommanderDamage(secondSeatId, firstSeatId, partner = false, delta = 7),
+            GameCommand.ChangeCommanderDamage(firstSeatId, secondSeatId, partner = false, delta = 9)
+        ).fold(initial) { session, command -> reduceGame(session, command).session }
+
+        val resized = reduceGame(changed, GameCommand.SetSeatCount(1)).session
+
+        assertEquals(listOf(firstSeatId), resized.seats.map { it.id })
+        assertEquals(null, resized.monarchSeatId)
+        assertEquals(null, resized.commanderMode)
+        assertEquals(emptyMap(), resized.commander.entries())
+    }
+
+    @Test
+    fun seatCountRejectsInvalidCounts() {
+        assertFailsWithMessage<IllegalArgumentException>("GameSession supports 1 to 6 seats") {
+            reduceGame(testSession(), GameCommand.SetSeatCount(0))
+        }
+        assertFailsWithMessage<IllegalArgumentException>("GameSession supports 1 to 6 seats") {
+            reduceGame(testSession(), GameCommand.SetSeatCount(7))
+        }
+    }
+
+    @Test
     fun togglesDayNightFromNoneToDayToNightToDay() {
         val initial = testSession()
 

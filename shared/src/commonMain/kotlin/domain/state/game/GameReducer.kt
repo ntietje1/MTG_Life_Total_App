@@ -1,5 +1,7 @@
 package domain.state.game
 
+import domain.state.profile.PlayerColors
+
 fun reduceGame(
     state: GameSession,
     command: GameCommand
@@ -17,6 +19,7 @@ fun reduceGame(
             is GameCommand.SetManualDeath -> state.setManualDeath(command)
             is GameCommand.SetMonarch -> state.setMonarch(command)
             is GameCommand.SetSeatAppearance -> state.setSeatAppearance(command)
+            is GameCommand.SetSeatCount -> state.setSeatCount(command)
             is GameCommand.SetSeatCounterActive -> state.setSeatCounterActive(command)
             is GameCommand.ResetGame -> state.resetGame(command)
             GameCommand.ResetTableCounters -> state.resetTableCounters()
@@ -61,6 +64,53 @@ private fun GameSession.setSeatAppearance(command: GameCommand.SetSeatAppearance
 
 private fun String.samePlayerNameAs(other: String): Boolean {
     return trim().lowercase() == other.trim().lowercase()
+}
+
+private fun GameSession.setSeatCount(command: GameCommand.SetSeatCount): GameSession {
+    require(command.count in 1..GameSession.MaxSeats) { "GameSession supports 1 to 6 seats" }
+    val nextSeatIds = (1..command.count).map { seatNumber -> SeatId("seat-$seatNumber") }
+    val nextSeatIdSet = nextSeatIds.toSet()
+    val seatsById = seats.associateBy { seat -> seat.id }
+    val nextSeats = mutableListOf<GameSeat>()
+    nextSeatIds.forEachIndexed { index, seatId ->
+        nextSeats += seatsById[seatId] ?: GameSeat.new(
+            id = seatId,
+            appearance = SeatAppearance(
+                displayName = uniqueDisplayName("P${index + 1}", nextSeats),
+                colors = uniquePlayerColors(nextSeats)
+            ),
+            startingLife = rules.startingLife
+        )
+    }
+    return copy(
+        seats = nextSeats,
+        commander = commander.filterToSeats(nextSeatIdSet),
+        commanderMode = commanderMode?.takeIf { mode -> mode.dealerSeatId in nextSeatIdSet },
+        monarchSeatId = monarchSeatId?.takeIf { seatId -> seatId in nextSeatIdSet }
+    ).incrementVersion()
+}
+
+private fun uniqueDisplayName(baseName: String, existingSeats: List<GameSeat>): String {
+    var candidate = baseName
+    var suffix = 2
+    while (existingSeats.any { seat -> seat.appearance.displayName.samePlayerNameAs(candidate) }) {
+        candidate = "$baseName ($suffix)"
+        suffix += 1
+    }
+    return candidate
+}
+
+private fun uniquePlayerColors(existingSeats: List<GameSeat>): PlayerColors {
+    val usedColorValues = existingSeats.map { seat -> seat.appearance.colors.backgroundArgb }.toSet()
+    return PlayerColors.DefaultPalette.first { colors -> colors.backgroundArgb !in usedColorValues }
+}
+
+private fun CommanderDamageMatrix.filterToSeats(seatIds: Set<SeatId>): CommanderDamageMatrix {
+    return CommanderDamageMatrix(
+        entries().filterKeys { key ->
+            key.dealerSeatId in seatIds && key.receiverSeatId in seatIds
+        }
+    )
 }
 
 private fun GameSession.setMonarch(command: GameCommand.SetMonarch): GameSession {

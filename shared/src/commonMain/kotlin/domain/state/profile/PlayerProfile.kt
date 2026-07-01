@@ -25,7 +25,21 @@ data class PlayerProfile(
 data class PlayerColors(
     val backgroundArgb: Int = -2894893,
     val textArgb: Int = -1
-)
+) {
+    companion object {
+        val DefaultPalette = listOf(
+            PlayerColors(backgroundArgb = -882206),
+            PlayerColors(backgroundArgb = -1160057),
+            PlayerColors(backgroundArgb = -565409),
+            PlayerColors(backgroundArgb = -553387),
+            PlayerColors(backgroundArgb = -539553),
+            PlayerColors(backgroundArgb = -12264868),
+            PlayerColors(backgroundArgb = -12130341),
+            PlayerColors(backgroundArgb = -10330121),
+            PlayerColors(backgroundArgb = -4026628)
+        )
+    }
+}
 
 @Serializable
 sealed interface PlayerBackground {

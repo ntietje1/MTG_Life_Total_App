@@ -228,9 +228,11 @@ fun MiddleButtonDialog(
                 }
                 viewModel.resetGameState()
                 showResetDialog = false
-                onDismiss()
                 if (choice.chooseFirstPlayer) {
+                    onDismiss()
                     goToPlayerSelectScreen(choice == ResetGameChoice.DifferentPlayersSelectFirst)
+                } else {
+                    triggerEnterAnimation()
                 }
             }
         )

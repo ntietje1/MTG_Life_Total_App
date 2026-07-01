@@ -68,6 +68,43 @@ class PlayerCustomizationManagerTest {
         assertEquals(resetPlayers.size, resetPlayers.map { it.color }.distinct().size)
         assertTrue(resetPlayers.all { it.name == "P${it.playerNum}" })
     }
+
+    @Test
+    fun resetsAllPlayerPrefsWithFreshDefaultColorOrder() {
+        val manager = PlayerCustomizationManager(
+            profileRepository = PlayerProfileRepository(TestSettings()),
+            defaultColorOrder = { colors -> colors.reversed() }
+        )
+        val host = FakePlayerCustomizationHost(
+            players = allPlayerColors.take(4).mapIndexed { index, color ->
+                Player(playerNum = index + 1, color = color)
+            }
+        )
+        manager.attach(host)
+
+        val resetPlayers = manager.resetAllPlayerPrefs()
+
+        assertEquals(allPlayerColors.reversed().take(host.players.size), resetPlayers.map { it.color })
+    }
+
+    @Test
+    fun resetsAllPlayerPrefsChangesEveryDefaultColor() {
+        val manager = PlayerCustomizationManager(
+            profileRepository = PlayerProfileRepository(TestSettings()),
+            defaultColorOrder = { colors -> colors }
+        )
+        val host = FakePlayerCustomizationHost(
+            players = allPlayerColors.take(4).mapIndexed { index, color ->
+                Player(playerNum = index + 1, color = color)
+            }
+        )
+        manager.attach(host)
+
+        val resetPlayers = manager.resetAllPlayerPrefs()
+
+        assertTrue(resetPlayers.zip(host.players).all { (reset, original) -> reset.color != original.color })
+        assertEquals(resetPlayers.size, resetPlayers.map { it.color }.distinct().size)
+    }
 }
 
 private class FakePlayerCustomizationHost(

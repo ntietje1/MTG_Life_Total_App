@@ -2,6 +2,7 @@ package theme
 
 
 import androidx.compose.ui.graphics.Color
+import domain.state.profile.PlayerColors as DomainPlayerColors
 import kotlin.math.max
 import kotlin.math.min
 
@@ -10,15 +11,15 @@ val Black = Color(0xFF000000)
 val MainColor = Color(252, 76, 97)
 val MainColorLight = Color(247, 101, 162)
 
-val PlayerColor1 = Color(0xFFf289e2)
-val PlayerColor2 = Color(0xFFee4c87)
-val PlayerColor3 = Color(0xFFF75F5F)
-val PlayerColor4 = Color(0xFFf78e55)
-val PlayerColor5 = Color(0xFFF7C45F)
-val PlayerColor6 = Color(0xFF44da5c)
-val PlayerColor7 = Color(0xFF46e7db)
-val PlayerColor8 = Color(0xFF625FF7)
-val PlayerColor9 = Color(0xFFc28efc)
+val PlayerColor1 = Color(DomainPlayerColors.DefaultPalette[0].backgroundArgb)
+val PlayerColor2 = Color(DomainPlayerColors.DefaultPalette[1].backgroundArgb)
+val PlayerColor3 = Color(DomainPlayerColors.DefaultPalette[2].backgroundArgb)
+val PlayerColor4 = Color(DomainPlayerColors.DefaultPalette[3].backgroundArgb)
+val PlayerColor5 = Color(DomainPlayerColors.DefaultPalette[4].backgroundArgb)
+val PlayerColor6 = Color(DomainPlayerColors.DefaultPalette[5].backgroundArgb)
+val PlayerColor7 = Color(DomainPlayerColors.DefaultPalette[6].backgroundArgb)
+val PlayerColor8 = Color(DomainPlayerColors.DefaultPalette[7].backgroundArgb)
+val PlayerColor9 = Color(DomainPlayerColors.DefaultPalette[8].backgroundArgb)
 
 fun Color.ghostify(): Color {
     return this.copy().blendWith(Color.Gray)

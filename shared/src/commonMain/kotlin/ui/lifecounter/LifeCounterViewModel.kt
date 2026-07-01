@@ -315,7 +315,10 @@ open class LifeCounterViewModel(
 
     override fun setNumPlayers(value: Int) {
         if (value < 1 || value > MAX_PLAYERS) throw IllegalArgumentException("Invalid number of players")
-        preferencesRepository.setNumPlayers(value)
+        viewModelScope.launch {
+            dispatchGameCommandNow(GameCommand.SetSeatCount(value))
+            preferencesRepository.setNumPlayers(value)
+        }
     }
 
     override fun resetGameState(startingLife: Int?) {
