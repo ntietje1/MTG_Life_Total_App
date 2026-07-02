@@ -3,47 +3,49 @@ package ui.dialog.gif
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.api.TenorApi
-import domain.api.MediaFormat
+import domain.api.GifAsset
+import domain.api.GifSearchClient
+import domain.api.GifSearchResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class GifDialogViewModel(private val tenorApi: TenorApi = TenorApi()) : ViewModel() {
+class GifDialogViewModel(private val gifSearchClient: GifSearchClient) : ViewModel() {
     private val _state = MutableStateFlow(GifDialogState())
     val state: StateFlow<GifDialogState> = _state.asStateFlow()
+    private var nextCursor: String? = null
+    private var lastQuery: String? = null
 
     fun searchGifs(qry: String, amount: Int) {
         viewModelScope.launch {
             clearResults()
             setIsSearchInProgress(true)
             setLastSearchWasError(false)
-//            println("searchGifs: $qry")
-            val result = tenorApi.searchGifs(qry, amount)
-            if (result.error != null) {
-                setLastSearchWasError(true)
-            } else {
-                result.result?.let { setGifResults(it.toSet()) }
+            when (val result = gifSearchClient.search(qry, amount, cursor = null)) {
+                is GifSearchResult.Failure -> setLastSearchWasError(true)
+                is GifSearchResult.Success -> {
+                    nextCursor = result.page.nextCursor
+                    lastQuery = qry
+                    setGifResults(result.page.items)
+                }
             }
             setIsSearchInProgress(false)
         }
     }
 
     fun getNextGifs(amount: Int) {
+        val query = lastQuery ?: return
+        val cursor = nextCursor ?: return
         if (state.value.isSearchInProgress || state.value.additionalSearchInProgress || state.value.lastSearchWasError || state.value.gifResults.isEmpty()) { return }
         viewModelScope.launch {
-//            println("getNextGifs")
             setAdditionalSearchInProgress(true)
-//            val result = tenorApi.getNextGifs(amount)
-//            setAdditionalSearchInProgress(false)
-//            println("getNextGifs result: $result")
-//            setGifResults(state.value.gifResults + result)
-            val result = tenorApi.getNextGifs(amount)
-            if (result.error != null) {
-                setLastSearchWasError(true)
-            } else {
-                result.result?.let { setGifResults(state.value.gifResults + it) }
+            when (val result = gifSearchClient.search(query, amount, cursor)) {
+                is GifSearchResult.Failure -> setLastSearchWasError(true)
+                is GifSearchResult.Success -> {
+                    nextCursor = result.page.nextCursor
+                    setGifResults(state.value.gifResults + result.page.items)
+                }
             }
             setAdditionalSearchInProgress(false)
         }
@@ -54,8 +56,8 @@ class GifDialogViewModel(private val tenorApi: TenorApi = TenorApi()) : ViewMode
         _state.value = _state.value.copy(textFieldValue = textFieldValue)
     }
 
-    private fun setGifResults(gifResults: Set<MediaFormat>) {
-        _state.value = _state.value.copy(gifResults = gifResults.toSet())
+    private fun setGifResults(gifResults: List<GifAsset>) {
+        _state.value = _state.value.copy(gifResults = gifResults)
     }
 
 
@@ -76,6 +78,8 @@ class GifDialogViewModel(private val tenorApi: TenorApi = TenorApi()) : ViewMode
     }
 
     private fun clearResults() {
-        setGifResults(setOf())
+        nextCursor = null
+        lastQuery = null
+        setGifResults(emptyList())
     }
 }

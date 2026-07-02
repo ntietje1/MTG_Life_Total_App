@@ -41,35 +41,35 @@ fun PlayerNumberDialogContent(
     show4PlayerDialog: () -> Unit
 ) {
     GridDialogContent(modifier, title = "Set number of players", items = listOf({
-        SettingsButton(imageVector = vectorResource(Res.drawable.one_icon), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.one_icon), text = "", contentDescription = "Set player count to 1", shadowEnabled = false, onPress = {
             setPlayerNum(1)
             resetPlayers()
             onDismiss()
         })
     }, {
-        SettingsButton(imageVector = vectorResource(Res.drawable.two_icon), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.two_icon), text = "", contentDescription = "Set player count to 2", shadowEnabled = false, onPress = {
             setPlayerNum(2)
             resetPlayers()
             onDismiss()
         })
     }, {
-        SettingsButton(imageVector = vectorResource(Res.drawable.three_icon), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.three_icon), text = "", contentDescription = "Set player count to 3", shadowEnabled = false, onPress = {
             setPlayerNum(3)
             resetPlayers()
             onDismiss()
         })
     }, {
-        SettingsButton(imageVector = vectorResource(Res.drawable.four_icon), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.four_icon), text = "", contentDescription = "Choose 4 player layout", shadowEnabled = false, onPress = {
             show4PlayerDialog()
         })
     }, {
-        SettingsButton(imageVector = vectorResource(Res.drawable.five_icon), text = "", shadowEnabled = false, onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.five_icon), text = "", contentDescription = "Set player count to 5", shadowEnabled = false, onPress = {
             setPlayerNum(5)
             resetPlayers()
             onDismiss()
         })
     }, {
-        SettingsButton(imageVector = vectorResource(Res.drawable.six_icon), text = "", onPress = {
+        SettingsButton(imageVector = vectorResource(Res.drawable.six_icon), text = "", contentDescription = "Set player count to 6", onPress = {
             setPlayerNum(6)
             resetPlayers()
             onDismiss()
@@ -100,12 +100,12 @@ fun FourPlayerLayoutContent(
                 setPlayerNum(4)
                 setAlt4PlayerLayout(false)
                 onDismiss()
-            })
+            }, contentDescription = "Set default 4 player layout")
             SettingsButton(Modifier.size(buttonSize), imageVector = vectorResource(Res.drawable.alternate4player_icon), shadowEnabled = false, onPress = {
                 setPlayerNum(4)
                 setAlt4PlayerLayout(true)
                 onDismiss()
-            })
+            }, contentDescription = "Set alternate 4 player layout")
             Spacer(modifier = Modifier.height(dimensions.paddingMedium))
         }
     }

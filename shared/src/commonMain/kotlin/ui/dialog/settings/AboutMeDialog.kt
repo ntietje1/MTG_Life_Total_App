@@ -17,14 +17,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.about_me
 import org.jetbrains.compose.resources.imageResource
@@ -83,8 +80,8 @@ fun AboutMeDialogContent(
                     )
                     Text(
                         modifier = Modifier.padding(bottom = dimensions.paddingMedium),
-                        text = "Nick is an undergraduate studying computer science and chemical engineering at Northeastern University and is pursuing a career in software development. He splits his time between reading, biking, and gaming.",
-                        style = TextStyle(
+                        text = "Nick recently obtained an MS in Computer Science from Northeastern University and is pursuing a career in software development." ,
+                            style = TextStyle(
                             fontSize = dimensions.textSmall.scaledSp,
                             color = MaterialTheme.colorScheme.onPrimary
                         )

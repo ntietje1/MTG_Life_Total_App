@@ -26,9 +26,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -41,10 +38,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -53,6 +53,7 @@ import domain.system.NotificationManager
 import domain.system.SystemManager
 import kotlinx.coroutines.launch
 import lifelinked.shared.generated.resources.Res
+import lifelinked.shared.generated.resources.back_icon_alt
 import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.x_icon
 import org.jetbrains.compose.resources.vectorResource
@@ -239,6 +240,7 @@ fun TutorialScreen(
                     mainColor = Color.White,
                     backgroundColor = Color.Transparent,
                     text = if (state.currentPage == state.totalPages - 1) "Close Tutorial" else "Skip Tutorial",
+                    contentDescription = "Skip tutorial",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.x_icon),
                     onTap = {
@@ -270,7 +272,7 @@ fun TutorialScreen(
                         onTap = {
                             viewModel.showHint(!state.showHint)
                         })
-                    dotNavBar(
+                    DotNavBar(
                         modifier = Modifier.align(Alignment.Center),
                         pagerState = pagerState,
                         completed = state.completed,
@@ -301,10 +303,12 @@ fun TutorialScreen(
 }
 
 @Composable
-fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: List<Boolean>, onMoveLeft: () -> Unit, onMoveRight: () -> Unit) {
+fun DotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: List<Boolean>, onMoveLeft: () -> Unit, onMoveRight: () -> Unit) {
     val dotDistance = 2.dp
     val dotSize = 20.dp
     val buttonSize = 40.dp
+    val arrowSize = 16.dp
+    val neutralDotColor = Color.Black.copy(alpha = 0.2f)
     Row(
         modifier = modifier.wrapContentWidth().height(50.dp).clip(RoundedCornerShape(100))
             .padding(8.dp)
@@ -322,13 +326,18 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         IconButton(
-            modifier = Modifier.size(buttonSize),
+            modifier = Modifier
+                .size(buttonSize)
+                .semantics { contentDescription = "Go back" },
             onClick = {
                 onMoveLeft()
             }
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Go back"
+                modifier = Modifier.size(arrowSize),
+                imageVector = vectorResource(Res.drawable.back_icon_alt),
+                contentDescription = null,
+                tint = neutralDotColor
             )
         }
         Box(
@@ -342,7 +351,7 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
                             .offset(x = (i * (dotSize + dotDistance)))
                             .size(dotSize)
                             .background(
-                                color = Color.Black.copy(alpha = 0.2f),
+                                color = neutralDotColor,
                                 shape = CircleShape,
                             )
                     )
@@ -360,14 +369,18 @@ fun dotNavBar(modifier: Modifier = Modifier, pagerState: PagerState, completed: 
         }
 
         IconButton(
-            modifier = Modifier.size(buttonSize),
+            modifier = Modifier
+                .size(buttonSize)
+                .semantics { contentDescription = "Go forward" },
             onClick = {
                 onMoveRight()
             }
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Go forward"
+                modifier = Modifier.size(arrowSize).rotate(180f),
+                imageVector = vectorResource(Res.drawable.back_icon_alt),
+                contentDescription = null,
+                tint = neutralDotColor
             )
         }
     }

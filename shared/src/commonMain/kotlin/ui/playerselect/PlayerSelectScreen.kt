@@ -147,6 +147,7 @@ fun PlayerSelectScreen(
                 text = "Skip",
                 shadowEnabled = false,
                 imageVector = vectorResource(Res.drawable.skip_icon),
+                contentDescription = "Go to Life Counter",
                 onTap = {
                     goToLifeCounterScreen()
                 })

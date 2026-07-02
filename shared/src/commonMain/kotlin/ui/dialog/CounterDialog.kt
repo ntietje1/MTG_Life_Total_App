@@ -30,6 +30,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -74,6 +76,15 @@ fun CounterDialogContent(
         Triple(vectorResource(Res.drawable.c_icon), Color(0xFFccc2c0), Color(0xFF130c0e)),
         Triple(vectorResource(Res.drawable.storm_icon), Color(0xFFffd84c), Color(0xFF2b2515))
     )
+    val counterNames = listOf(
+        "White mana",
+        "Blue mana",
+        "Black mana",
+        "Red mana",
+        "Green mana",
+        "Colorless mana",
+        "Storm count"
+    )
 
     BoxWithConstraints(
         modifier = modifier,
@@ -101,6 +112,7 @@ fun CounterDialogContent(
                     backgroundColor = counterResources[index].second,
                     buttonColor = counterResources[index].third,
                     counter = counters[index],
+                    label = counterNames[index],
                     incrementCounter = { incrementCounter(index, it) }
                 )
             }
@@ -118,12 +130,13 @@ fun CounterDialogContent(
                     backgroundColor = counterResources.last().second,
                     buttonColor = counterResources.last().third,
                     counter = counters.last(),
+                    label = counterNames.last(),
                     incrementCounter = { incrementCounter(counters.lastIndex, it) }
                 )
             }
 
             item {
-                ResetButton(modifier = Modifier.height(counterSize / 2f).padding(top = dimensions.paddingSmall), onReset = {
+                ResetButton(modifier = Modifier.height(counterSize / 2f).padding(top = dimensions.paddingSmall), contentDescription = "Reset table counters", onReset = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     resetCounters()
                 })
@@ -139,6 +152,7 @@ fun SingleCounter(
     buttonColor: Color = Color.White,
     imageVector: ImageVector = vectorResource(Res.drawable.placeholder_icon),
     counter: Int,
+    label: String,
     incrementCounter: (Int) -> Unit
 ) {
 
@@ -172,7 +186,11 @@ fun SingleCounter(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Box(
-                modifier = Modifier.aspectRatio(1.0f).fillMaxSize().repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onDecrement() }),
+                modifier = Modifier
+                    .aspectRatio(1.0f)
+                    .fillMaxSize()
+                    .semantics { contentDescription = "Decrease ${label.lowercase()}" }
+                    .repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onDecrement() }),
             ) {
                 Image(
                     modifier = Modifier.fillMaxSize(0.7f).align(Alignment.CenterEnd),
@@ -184,7 +202,10 @@ fun SingleCounter(
             }
 
             Row(
-                modifier = Modifier.fillMaxSize().weight(0.5f),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(0.5f)
+                    .semantics { contentDescription = "$label $counter" },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -208,7 +229,11 @@ fun SingleCounter(
             }
 
             Box(
-                modifier = Modifier.aspectRatio(1.0f).fillMaxSize().repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onIncrement() }),
+                modifier = Modifier
+                    .aspectRatio(1.0f)
+                    .fillMaxSize()
+                    .semantics { contentDescription = "Increase ${label.lowercase()}" }
+                    .repeatingClickable(interactionSource = interactionSource, enabled = true, onPress = { onIncrement() }),
             ) {
                 Image(
                     modifier = Modifier.fillMaxSize(0.7f).align(Alignment.CenterStart),

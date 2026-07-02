@@ -22,30 +22,19 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import domain.game.CommanderDamageManager
-import domain.game.GameStateManager
-import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
-import domain.game.timer.TimerManager
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.commander_solid_icon
 import lifelinked.shared.generated.resources.down_arrow_icon
 import lifelinked.shared.generated.resources.sword_icon
-import model.Player
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.components.SettingsButton
-import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.LifeCounterScreen
-import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import ui.lifecounter.playerbutton.PlayerButtonAction
 
 
 @Composable
@@ -61,93 +50,35 @@ fun TutorialPage2(
     var stepOneComplete by remember { mutableStateOf(false) }
     var complete by remember { mutableStateOf(false) }
 
-    class MockLifeCounterViewModelPage2(
-        lifeCounterState: LifeCounterState,
-        settingsManager: ISettingsManager,
-        imageManager: IImageManager,
-        notificationManager: NotificationManager
-    ) : MockLifeCounterViewModel(
-        lifeCounterState, settingsManager, imageManager, notificationManager
-    ) {
-        override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
-            this.notificationManager.showNotification("Settings menu disabled", 3000)
-        }
+    fun checkStepOneComplete(state: ui.lifecounter.LifeCounterState) {
+        stepOneComplete = state.players.any { it.buttonState == PBState.COMMANDER_DEALER }
+    }
 
-        private fun checkStepOneComplete() {
-            stepOneComplete = playerButtonViewModels.value.any { it.state.value.buttonState == PBState.COMMANDER_DEALER }
-        }
-
-        inner class MockPlayerButtonViewModelPage2(
-            state: PlayerButtonState,
-            settingsManager: ISettingsManager,
-            imageManager: IImageManager,
-            notificationManager: NotificationManager,
-            customizationManager: PlayerCustomizationManager,
-            playerStateManager: PlayerStateManager,
-            commanderDamageManager: CommanderDamageManager,
-            gameStateManager: GameStateManager,
-            timerManager: TimerManager
-        ) : MockPlayerButtonViewModel(
-            state = state,
-            settingsManager = settingsManager,
-            imageManager = imageManager,
-            notificationManager = notificationManager,
-            customizationManager = customizationManager,
-            playerStateManager = playerStateManager,
-            commanderDamageManager = commanderDamageManager,
-            gameStateManager = gameStateManager,
-            timerManager = timerManager
-        ) {
-
-            private fun checkComplete() {
-                if (state.value.player.commanderDamage.any { it.number >= 21 }) {
-                    onComplete()
-                    complete = true
-                }
-            }
-
-            override fun onCommanderButtonClicked() { //TODO: need to register commander listener
-                super.onCommanderButtonClicked()
-                checkStepOneComplete()
-            }
-
-            override fun popBackStack() {
-                super.popBackStack()
-                checkStepOneComplete()
-            }
-
-            override fun incrementCommanderDamage(value: Int, partner: Boolean) {
-                super.incrementCommanderDamage(value, partner)
-                checkComplete()
-            }
-
-
-            override fun onSettingsButtonClicked() {
-                this.notificationManager.showNotification("Settings disabled", 3000)
-            }
-        }
-
-        override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-            return MockPlayerButtonViewModelPage2(
-                state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
-                settingsManager = gameState.mockSettingsManager,
-                imageManager = gameState.mockImageManager,
-                notificationManager = this.notificationManager,
-                customizationManager = this.playerCustomizationManager,
-                playerStateManager = this.playerStateManager,
-                commanderDamageManager = this.commanderManager,
-                gameStateManager = this.gameStateManager,
-                timerManager = this.timerManager
-            )
+    fun checkComplete(state: ui.lifecounter.LifeCounterState) {
+        if (!complete && state.players.any { player -> player.player.commanderDamage.any { it.number >= 21 } }) {
+            onComplete()
+            complete = true
         }
     }
 
     val lifeCounterViewModel = remember {
-        MockLifeCounterViewModelPage2(
-            lifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-            settingsManager = gameState.mockSettingsManager,
-            imageManager = gameState.mockImageManager,
+        TutorialLifeCounterController(
+            gameState = gameState,
             notificationManager = notificationManager,
+            shouldOpenModal = { false },
+            blockedModalMessage = { "Settings menu disabled" },
+            blockedPlayerActionMessage = { action ->
+                if (action == PlayerButtonAction.ToggleSettings) "Settings disabled" else null
+            },
+            afterPlayerAction = { _, action, state ->
+                when (action) {
+                    PlayerButtonAction.ToggleCommanderDealer,
+                    PlayerButtonAction.PopBackStack -> checkStepOneComplete(state)
+                    is PlayerButtonAction.IncrementCommanderDamage,
+                    is PlayerButtonAction.DecrementCommanderDamage -> checkComplete(state)
+                    else -> Unit
+                }
+            }
         )
     }
 

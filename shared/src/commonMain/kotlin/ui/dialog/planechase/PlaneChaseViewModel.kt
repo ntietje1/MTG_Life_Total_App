@@ -5,29 +5,34 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.storage.ISettingsManager
-import domain.api.ScryfallApi
-import model.card.Card
+import domain.api.ScryfallClient
+import domain.api.ScryfallResult
+import domain.state.planechase.PlanechaseRepository
+import domain.state.planechase.PlanechaseSnapshot
+import model.card.CardSummary
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PlaneChaseViewModel(
-    private val settingsManager: ISettingsManager
+    private val planechaseRepository: PlanechaseRepository,
+    private val scryfallClient: ScryfallClient,
+    private val initialPlaneSearchEnabled: Boolean = true,
+    private val planarDieRoll: () -> PlanarDieResult = ::randomPlanarDieResult
 ): ViewModel() {
 
     private val _state = MutableStateFlow(PlaneChaseState())
     val state: StateFlow<PlaneChaseState> = _state.asStateFlow()
 
-    private val scryfallApi = ScryfallApi()
-
     init {
-        loadPlanechaseState()
-        searchPlanes { result ->
-            if (result.isNotEmpty()) {
-                _state.value = _state.value.copy(allPlanes = result)
-                savePlanechaseState()
+        loadState()
+        if (initialPlaneSearchEnabled) {
+            searchPlanes { result ->
+                if (result.isNotEmpty()) {
+                    _state.value = _state.value.copy(allPlanes = result)
+                    persistState()
+                }
             }
         }
     }
@@ -39,19 +44,19 @@ class PlaneChaseViewModel(
     fun onResetGame() {
         _state.value = _state.value.copy(planarBackStack = mutableStateListOf())
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
-    private fun savePlanechaseState() {
-        settingsManager.savePlanechaseState(
+    private fun persistState() {
+        planechaseRepository.save(PlanechaseSnapshot(
             allPlanes = state.value.allPlanes,
             planarDeck = state.value.planarDeck,
             planarBackStack = state.value.planarBackStack
-        )
+        ))
     }
 
-    private fun loadPlanechaseState() {
-        val (all, deck, back) = settingsManager.loadPlanechaseState()
+    private fun loadState() {
+        val (all, deck, back) = planechaseRepository.load()
         _state.value = _state.value.copy(
             allPlanes = all.toMutableStateList(),
             planarDeck = deck.toMutableStateList(),
@@ -59,16 +64,16 @@ class PlaneChaseViewModel(
         )
     }
 
-    private fun removeFromDeck(card: Card) {
+    private fun removeFromDeck(card: CardSummary) {
         _state.value.planarDeck.remove(card)
     }
 
-    private fun addToTopDeck(card: Card) {
+    private fun addToTopDeck(card: CardSummary) {
         removeFromDeck(card)
         _state.value.planarDeck.add(card)
     }
 
-    private fun addToBottomDeck(card: Card) {
+    private fun addToBottomDeck(card: CardSummary) {
         removeFromDeck(card)
         _state.value.planarDeck.add(0, card)
     }
@@ -77,81 +82,88 @@ class PlaneChaseViewModel(
         _state.value.planarBackStack.clear()
     }
 
-    private fun popDeck(): Card? {
+    private fun popDeck(): CardSummary? {
         val card = _state.value.planarDeck.lastOrNull()
         if (card != null) { removeFromDeck(card) }
         return card
     }
 
 
-    private fun pushBackStack(value: Card) {
+    private fun pushBackStack(value: CardSummary) {
        _state.value.planarBackStack.add(value)
     }
 
-    private fun popBackStack(): Card? {
+    private fun popBackStack(): CardSummary? {
         val card = _state.value.planarBackStack.lastOrNull()
-        if (card != null) { _state.value.planarBackStack.removeLast() }
+        if (card != null) { _state.value.planarBackStack.removeAt(_state.value.planarBackStack.lastIndex) }
         return card
     }
 
-    fun selectPlane(card: Card) {
+    fun selectPlane(card: CardSummary) {
         addToTopDeck(card)
         clearBackStack()
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
-    fun deselectPlane(card: Card) {
+    fun deselectPlane(card: CardSummary) {
         removeFromDeck(card)
         clearBackStack()
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
-    fun addAllPlanarDeck(cards: List<Card>) {
+    fun addAllPlanarDeck(cards: List<CardSummary>) {
         cards.forEach{
             addToTopDeck(it)
         }
         clearBackStack()
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
-    fun removeAllPlanarDeck(cards: List<Card>) {
+    fun removeAllPlanarDeck(cards: List<CardSummary>) {
         cards.forEach {
             removeFromDeck(it)
         }
         clearBackStack()
         shuffleDeck()
-        savePlanechaseState()
+        persistState()
     }
 
     fun backPlane() {
         if (_state.value.planarDeck.isNotEmpty()) {
             val card = popBackStack()
             card?.let { addToTopDeck(card) }
-            savePlanechaseState()
+            persistState()
         }
     }
 
-    fun planeswalk(): Card? {
+    fun planeswalk(): CardSummary? {
         if (state.value.planarDeck.isNotEmpty()) {
             val card = popDeck()
             card?.let {
                 pushBackStack(card)
                 addToBottomDeck(card)
             }
-            savePlanechaseState()
+            persistState()
             return card
         }
         return null
     }
 
-    private suspend fun search(qry: String = state.value.query.text): List<Card> {
-        return scryfallApi.searchCards("(t:plane or t:phenomenon) $qry")
+    fun rollPlanarDie(): PlanarDieResult {
+        return planarDieRoll()
     }
 
-    fun searchPlanes(qry: String = state.value.query.text, onSearchResult: (List<Card>) -> Unit) {
+    private suspend fun search(qry: String = state.value.query.text): List<CardSummary> {
+        return when (val result = scryfallClient.searchCards("(t:plane or t:phenomenon) $qry")) {
+            is ScryfallResult.Failure -> emptyList()
+            is ScryfallResult.Success -> result.value.cards.filter { card -> card.art != null }
+        }
+    }
+
+    fun searchPlanes(qry: String = state.value.query.text, onSearchResult: (List<CardSummary>) -> Unit) {
         setSearchInProgress(true)
         viewModelScope.launch {
             val resultCards = search(qry)
@@ -169,7 +181,7 @@ class PlaneChaseViewModel(
         _state.value = _state.value.copy(searchInProgress = value)
     }
 
-    private fun setSearchedPlanes(value: List<Card>) {
+    private fun setSearchedPlanes(value: List<CardSummary>) {
         _state.value = _state.value.copy(searchedPlanes = value)
     }
 
@@ -180,5 +192,13 @@ class PlaneChaseViewModel(
 
     fun toggleHideUnselected(value: Boolean? = null) {
         _state.value = _state.value.copy(hideUnselected = value ?: !_state.value.hideUnselected)
+    }
+}
+
+private fun randomPlanarDieResult(): PlanarDieResult {
+    return when ((1..6).random()) {
+        1 -> PlanarDieResult.PLANESWALK
+        2 -> PlanarDieResult.CHAOS
+        else -> PlanarDieResult.NO_EFFECT
     }
 }

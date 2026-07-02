@@ -1,15 +1,9 @@
 package di
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
-import domain.storage.ImageManager
-import domain.storage.SettingsManager
-import domain.game.GameStateManager
-import domain.game.CommanderDamageManager
+import domain.storage.FileImageStore
+import domain.storage.IFileImageStore
 import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
 import domain.game.timer.TimerManager
 import domain.system.NotificationManager
-import domain.system.SystemManager
 import org.koin.dsl.module
 import ui.dialog.coinflip.CoinFlipViewModel
 import ui.dialog.color.ColorDialogViewModel
@@ -26,33 +20,28 @@ import ui.tutorial.TutorialViewModel
 actual val platformModule = module {
     single { platform }
     single { NotificationManager() }
-    single<ISettingsManager> { SettingsManager.instance }
-    single<IImageManager> { ImageManager() }
-    single { PlayerStateManager(get()) }
-    single { PlayerCustomizationManager(get()) }
-    single { CommanderDamageManager(get()) }
-    single { GameStateManager(get()) }
-    single { TimerManager(get()) }
-    single { PlaneChaseViewModel(get()) }
+    single<IFileImageStore> { FileImageStore() }
+    factory { PlayerCustomizationManager(get()) }
+    factory { TimerManager(timerStateRepository = get(), preferencesRepository = get()) }
+    single { PlaneChaseViewModel(planechaseRepository = get(), scryfallClient = get()) }
     single { CoinFlipViewModel(get()) }
-    single { TutorialViewModel(get()) }
+    single { TutorialViewModel() }
     single { PlayerSelectViewModel(get()) }
     single { LifeCounterViewModel(
-        settingsManager = get(),
-        playerStateManager = get(),
-        commanderManager = get(),
-        imageManager = get(),
+        preferencesRepository = get(),
+        profileRepository = get(),
+        fileImageStore = get(),
         notificationManager = get(),
         playerCustomizationManager = get(),
         planeChaseViewModel = get(),
-        gameStateManager = get(),
+        gameSessionStore = get(),
         timerManager = get()
     )  }
-    single { PatchNotesViewModel(get()) }
+    single { PatchNotesViewModel(patchNotesRepository = get(), preferencesRepository = get()) }
     single { StartingLifeViewModel(get()) }
-    single { ScryfallSearchViewModel() }
+    single { ScryfallSearchViewModel(get()) }
     single { ColorDialogViewModel() }
-    single { GifDialogViewModel() }
+    single { GifDialogViewModel(get()) }
     single { DiceRollViewModel() }
 }
 

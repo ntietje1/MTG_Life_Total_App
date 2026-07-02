@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
@@ -34,6 +36,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -59,10 +65,11 @@ fun SettingsButton(
     visible: Boolean = true,
     shadowEnabled: Boolean = true,
     hapticEnabled: Boolean = true,
+    contentDescription: String? = null,
     onPress: () -> Unit = {},
     onTap: () -> Unit = {},
     onLongPress: () -> Unit = {},
-    onDoubleTap: () -> Unit = {},
+    onDoubleTap: (() -> Unit)? = null,
     overlay: @Composable () -> Unit = {},
 ) {
     val matrix: ColorMatrix? = remember(mainColor) {
@@ -75,30 +82,57 @@ fun SettingsButton(
         }
     }
     val haptic = LocalHapticFeedback.current
+    val currentOnPress by rememberUpdatedState(onPress)
+    val currentOnTap by rememberUpdatedState(onTap)
+    val currentOnLongPress by rememberUpdatedState(onLongPress)
+    val currentOnDoubleTap by rememberUpdatedState(onDoubleTap)
 
-    BoxWithConstraints(modifier = modifier
-        .alpha(if (visible) 1f else 0f)
-        .aspectRatio(1.0f)
-        .clip(shape)
-        .background(backgroundColor)
-        .then(if (enabled && visible) {
-            Modifier.pointerInput(Unit) {
-                detectTapGestures(onPress = {
-                    onPress()
+    val semanticsModifier = when {
+        !visible -> Modifier.clearAndSetSemantics {}
+        contentDescription != null -> Modifier.semantics(mergeDescendants = true) {
+            this.contentDescription = contentDescription
+            if (enabled) {
+                onClick {
+                    currentOnPress()
+                    currentOnTap()
                     if (hapticEnabled) {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
-                }, onTap = {
-                    onTap()
-                }, onLongPress = {
-                    onLongPress()
-                }, onDoubleTap = {
-                    onDoubleTap()
-                })
+                    true
+                }
             }
-        } else {
-            Modifier
-        })) {
+        }
+
+        else -> Modifier
+    }
+
+    BoxWithConstraints(
+        modifier = modifier
+            .alpha(if (visible) 1f else 0f)
+            .aspectRatio(1.0f)
+            .clip(shape)
+            .background(backgroundColor)
+            .then(semanticsModifier)
+            .then(
+                if (enabled && visible) {
+                    Modifier.pointerInput(Unit) {
+                        detectTapGestures(onTap = {
+                            currentOnPress()
+                            currentOnTap()
+                            if (hapticEnabled) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                        }, onLongPress = {
+                            currentOnLongPress()
+                        }, onDoubleTap = currentOnDoubleTap?.let { doubleTap ->
+                            { doubleTap() }
+                        })
+                    }
+                } else {
+                    Modifier
+                }
+            )
+    ) {
         val fontSize = remember(Unit) { (maxWidth / 9f).value }
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -113,7 +147,7 @@ fun SettingsButton(
                 ImageWithShadow(
                     modifier = Modifier.fillMaxSize(),
                     imageVector = imageVector,
-                    contentDescription = "settings button image",
+                    contentDescription = null,
                     colorFilter = matrix?.let { ColorFilter.colorMatrix(matrix) },
                     shadowColor = generateShadow(),
                     shadowEnabled = shadowEnabled
@@ -156,7 +190,7 @@ fun ImageWithShadow(
         if (shadowEnabled) {
             Image(
                 imageVector = imageVector,
-                contentDescription = "Shadow",
+                contentDescription = null,
                 alignment = alignment,
                 contentScale = contentScale,
                 alpha = shadowAlpha,

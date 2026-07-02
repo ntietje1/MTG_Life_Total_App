@@ -1,0 +1,143 @@
+name: PR Validation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-validation-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android Build and Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Run Android checks
+        run: ./gradlew :verifyReleaseVersion :shared:testAndroidHostTest :shared:compileKotlinMetadata :androidApp:lintDebug :androidApp:testDebugUnitTest :androidApp:assembleDebug --no-daemon --warning-mode all
+
+      - name: Upload Android reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-reports
+          path: |
+            androidApp/build/reports/lint-results-debug.*
+            androidApp/build/reports/tests/**
+            androidApp/build/test-results/**
+          if-no-files-found: ignore
+
+      - name: Upload debug APK
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-debug-apk
+          path: androidApp/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
+
+  android-instrumentation:
+    name: Android E2E Instrumentation Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run connected Android tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          script: >
+            mkdir -p androidApp/build/reports/androidTests/connected/debug;
+            set +e;
+            ./gradlew :androidApp:connectedDebugAndroidTest --no-daemon --stacktrace --warning-mode all;
+            test_status=$?;
+            adb exec-out screencap -p > androidApp/build/reports/androidTests/connected/debug/final-screen.png || true;
+            adb logcat -d > androidApp/build/reports/androidTests/connected/debug/logcat.txt || true;
+            exit "$test_status"
+
+      - name: Upload instrumentation reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-instrumentation-reports
+          path: |
+            androidApp/build/reports/androidTests/**
+            androidApp/build/outputs/androidTest-results/**
+          if-no-files-found: ignore
+
+  shared-ios:
+    name: Shared iOS Compile
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Run shared iOS checks
+        run: ./gradlew :shared:compileKotlinIosSimulatorArm64 :shared:compileKotlinIosArm64 :shared:linkDebugFrameworkIosSimulatorArm64 :shared:linkReleaseFrameworkIosArm64 --no-daemon --warning-mode all
+
+      - name: Upload shared reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: shared-ios-reports
+          path: |
+            shared/build/reports/tests/**
+            shared/build/test-results/**
+          if-no-files-found: ignore

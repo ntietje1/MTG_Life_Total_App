@@ -37,7 +37,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import model.Player
@@ -318,6 +321,7 @@ fun ColorGrid(
                             ColorCircle(
                                 modifier = Modifier.size(circleSize),
                                 color = colors[index],
+                                optionNumber = index + 1,
                                 isSelected = colors[index] == selectedColor,
                                 onClick = { onColorSelected(colors[index]) }
                             )
@@ -332,6 +336,7 @@ fun ColorGrid(
 @Composable
 private fun ColorCircle(
     color: Color,
+    optionNumber: Int,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -350,6 +355,7 @@ private fun ColorCircle(
                     }
                 )
                 .clickable(onClick = onClick)
+                .semantics { contentDescription = "Select color ${color.toArgb()} option $optionNumber" }
         )
     }
 }

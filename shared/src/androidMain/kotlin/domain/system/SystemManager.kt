@@ -21,13 +21,15 @@ actual class SystemManager {
         actual fun getAnimationCorrectionFactor(): Float {
             val context = LocalView.current.context
             return remember {
-                Settings.Global.getFloat(
+                val systemAnimatorScale = Settings.Global.getFloat(
                     context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f
                 )
+                animationCorrectionFactorFor(systemAnimatorScale)
             }
         }
 
         @SuppressLint("ComposableNaming")
+        @Suppress("DEPRECATION")
         @Composable
         actual fun updateSystemBarsColors(isDarkTheme: Boolean) {
             val view = LocalView.current

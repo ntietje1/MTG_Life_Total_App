@@ -36,10 +36,13 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import di.Platform
-import domain.storage.SettingsManager
+import domain.storage.PreferencesRepository
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.change_name_icon
 import lifelinked.shared.generated.resources.coffee_icon
@@ -72,9 +75,8 @@ fun SettingsDialogContent(
     goToPatchNotes: () -> Unit,
     addGoToSettingsToBackStack: () -> Unit,
     goToTutorialScreen: () -> Unit,
-    toggleKeepScreenOn: () -> Unit,
-    updateTurnTimerEnabled: (Boolean) -> Unit,
-    settingsManager: SettingsManager = koinInject(),
+    setKeepScreenOn: (Boolean) -> Unit,
+    preferencesRepository: PreferencesRepository = koinInject(),
     platform: Platform = koinInject(),
     version: VersionNumber = koinInject()
 ) {
@@ -104,49 +106,46 @@ fun SettingsDialogContent(
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Fast Coin Flip",
-                        initialState = settingsManager.fastCoinFlip.value,
-                        toggle = { settingsManager.setFastCoinFlip(it) },
+                        initialState = preferencesRepository.fastCoinFlip.value,
+                        toggle = { preferencesRepository.setFastCoinFlip(it) },
                         icon = vectorResource(Res.drawable.coin_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Disable Camera Roll",
-                        initialState = settingsManager.cameraRollDisabled.value,
-                        toggle = { settingsManager.setCameraRollDisabled(it) },
+                        initialState = preferencesRepository.cameraRollDisabled.value,
+                        toggle = { preferencesRepository.setCameraRollDisabled(it) },
                         icon = vectorResource(Res.drawable.invisible_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Auto KO",
-                        initialState = settingsManager.autoKo.value,
-                        toggle = { settingsManager.setAutoKo(it) },
+                        initialState = preferencesRepository.autoKo.value,
+                        toggle = { preferencesRepository.setAutoKo(it) },
                         icon = vectorResource(Res.drawable.skull_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Auto Skip Player Select",
-                        initialState = settingsManager.autoSkip.value,
-                        toggle = { settingsManager.setAutoSkip(it) },
+                        initialState = preferencesRepository.autoSkip.value,
+                        toggle = { preferencesRepository.setAutoSkip(it) },
                         icon = vectorResource(Res.drawable.player_select_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Keep Screen On",
-                        initialState = settingsManager.keepScreenOn.value,
+                        initialState = preferencesRepository.keepScreenOn.value,
                         toggle = {
-                            toggleKeepScreenOn()
-                            settingsManager.setKeepScreenOn(it)
+                            setKeepScreenOn(it)
                         },
                         icon = vectorResource(Res.drawable.sun_icon)
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Turn Timer",
-                        initialState = settingsManager.turnTimer.value,
+                        initialState = preferencesRepository.turnTimer.value,
                         toggle = {
-                            settingsManager.setTurnTimer(it)
-//                            settingsManager.turnTimer = it
-                            updateTurnTimerEnabled(it)
+                            preferencesRepository.setTurnTimer(it)
                         },
                         icon = vectorResource(Res.drawable.timer_icon)
                     )
@@ -237,7 +236,7 @@ fun SettingsDialogContent(
                 }
             }
 
-            if (settingsManager.devMode.value && false) {
+            if (preferencesRepository.devMode.value && false) {
                 item {
                     SettingsDialogHeader(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
@@ -344,14 +343,41 @@ fun SettingsDialogButtonWithToggle(
     BoxWithConstraints(Modifier.wrapContentSize()) {
         val iconSize = remember(Unit) { 10.dp + maxHeight / 2.25f }
         val toggleScale = remember(Unit) { (maxWidth.value + 5) / 500.dp.value }
+        val rowContentDescription = if (toggleVisible) {
+            "$text setting ${if (isChecked.value) "on" else "off"}"
+        } else {
+            text
+        }
+
+        fun setToggleState(checked: Boolean) {
+            isChecked.value = checked
+            toggle(checked)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+
+        fun activateRow() {
+            if (toggleVisible) {
+                setToggleState(!isChecked.value)
+            } else {
+                onTap()
+                if (hapticEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
+        }
+
         Row(
             modifier = modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.onSurface.halfAlpha())
+                .semantics {
+                    contentDescription = rowContentDescription
+                    onClick {
+                        activateRow()
+                        true
+                    }
+                }
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
-                        onTap()
-                        if (hapticEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        activateRow()
                     })
                 },
             verticalAlignment = Alignment.CenterVertically,
@@ -381,13 +407,11 @@ fun SettingsDialogButtonWithToggle(
             Spacer(modifier = Modifier.weight(1f))
             if (toggleVisible) {
                 Switch(
-                    modifier = Modifier.weight(1f).scale(toggleScale),
+                    modifier = Modifier
+                        .weight(1f)
+                        .scale(toggleScale),
                     checked = isChecked.value,
-                    onCheckedChange = { checked ->
-                        isChecked.value = checked
-                        toggle(checked)
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    },
+                    onCheckedChange = ::setToggleState,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MainColorLight.halfAlpha(),
                         uncheckedThumbColor = MaterialTheme.colorScheme.onPrimary.halfAlpha(),

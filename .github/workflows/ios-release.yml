@@ -1,0 +1,187 @@
+name: iOS Release Artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_to_testflight:
+        description: Upload the exported IPA to TestFlight
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-ios-release:
+    name: Build iOS Release Archive
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    env:
+      IOS_ARCHIVE_PATH: ${{ runner.temp }}/lifelinked-ios/LifeLinked.xcarchive
+      IOS_EXPORT_PATH: ${{ runner.temp }}/lifelinked-ios/export
+      IOS_TEAM_ID: 9W59TG5K86
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Verify shared release version
+        run: ./gradlew :verifyReleaseVersion :shared:compileKotlinMetadata --no-daemon --warning-mode all
+
+      - name: Decode iOS signing assets
+        env:
+          LIFELINKED_IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.LIFELINKED_IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          LIFELINKED_IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.LIFELINKED_IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          for secret_name in LIFELINKED_IOS_DISTRIBUTION_CERTIFICATE_BASE64 LIFELINKED_IOS_PROVISIONING_PROFILE_BASE64; do
+            if [ -z "${!secret_name}" ]; then
+              echo "::error::Missing $secret_name secret"
+              exit 1
+            fi
+          done
+
+          mkdir -p "$RUNNER_TEMP/lifelinked-ios-signing"
+          printf '%s' "$LIFELINKED_IOS_DISTRIBUTION_CERTIFICATE_BASE64" | base64 --decode > "$RUNNER_TEMP/lifelinked-ios-signing/distribution.p12"
+          printf '%s' "$LIFELINKED_IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$RUNNER_TEMP/lifelinked-ios-signing/profile.mobileprovision"
+
+          echo "LIFELINKED_IOS_CERTIFICATE_PATH=$RUNNER_TEMP/lifelinked-ios-signing/distribution.p12" >> "$GITHUB_ENV"
+          echo "LIFELINKED_IOS_PROFILE_PATH=$RUNNER_TEMP/lifelinked-ios-signing/profile.mobileprovision" >> "$GITHUB_ENV"
+
+      - name: Install iOS signing assets
+        env:
+          LIFELINKED_IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.LIFELINKED_IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          LIFELINKED_IOS_KEYCHAIN_PASSWORD: ${{ secrets.LIFELINKED_IOS_KEYCHAIN_PASSWORD }}
+        run: |
+          for secret_name in LIFELINKED_IOS_DISTRIBUTION_CERTIFICATE_PASSWORD LIFELINKED_IOS_KEYCHAIN_PASSWORD; do
+            if [ -z "${!secret_name}" ]; then
+              echo "::error::Missing $secret_name secret"
+              exit 1
+            fi
+          done
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/lifelinked-ios-signing/app-signing.keychain-db"
+          security create-keychain -p "$LIFELINKED_IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$LIFELINKED_IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$LIFELINKED_IOS_CERTIFICATE_PATH" -P "$LIFELINKED_IOS_DISTRIBUTION_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$LIFELINKED_IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          PROFILE_PLIST="$RUNNER_TEMP/lifelinked-ios-signing/profile.plist"
+          security cms -D -i "$LIFELINKED_IOS_PROFILE_PATH" > "$PROFILE_PLIST"
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" "$PROFILE_PLIST")
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print Name" "$PROFILE_PLIST")
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$LIFELINKED_IOS_PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          echo "LIFELINKED_IOS_PROVISIONING_PROFILE_SPECIFIER=$PROFILE_NAME" >> "$GITHUB_ENV"
+
+      - name: Archive iOS app
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project iosApp/LifeLinkedIOS.xcodeproj \
+            -scheme LifeLinked \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$IOS_ARCHIVE_PATH" \
+            DEVELOPMENT_TEAM="$IOS_TEAM_ID" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$LIFELINKED_IOS_PROVISIONING_PROFILE_SPECIFIER" \
+            | xcbeautify
+
+      - name: Write export options
+        run: |
+          mkdir -p "$IOS_EXPORT_PATH"
+          cat > "$RUNNER_TEMP/lifelinked-ios/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>signingCertificate</key>
+            <string>Apple Distribution</string>
+            <key>teamID</key>
+            <string>$IOS_TEAM_ID</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.hypeapps.LifeLinked</key>
+              <string>$LIFELINKED_IOS_PROVISIONING_PROFILE_SPECIFIER</string>
+            </dict>
+          </dict>
+          </plist>
+          PLIST
+
+      - name: Export iOS IPA
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$IOS_ARCHIVE_PATH" \
+            -exportPath "$IOS_EXPORT_PATH" \
+            -exportOptionsPlist "$RUNNER_TEMP/lifelinked-ios/ExportOptions.plist" \
+            | xcbeautify
+
+          IPA_PATH=$(find "$IOS_EXPORT_PATH" -maxdepth 1 -name "*.ipa" -print -quit)
+          if [ -z "$IPA_PATH" ]; then
+            echo "::error::No IPA was exported"
+            exit 1
+          fi
+          echo "LIFELINKED_IOS_IPA_PATH=$IPA_PATH" >> "$GITHUB_ENV"
+
+      - name: Upload iOS release artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-release-artifacts
+          path: |
+            ${{ env.IOS_EXPORT_PATH }}/*.ipa
+            ${{ env.IOS_ARCHIVE_PATH }}/dSYMs/**
+          if-no-files-found: error
+
+      - name: Install fastlane
+        if: ${{ inputs.upload_to_testflight == 'true' }}
+        run: bundle install
+
+      - name: Decode App Store Connect API key
+        if: ${{ inputs.upload_to_testflight == 'true' }}
+        env:
+          LIFELINKED_APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.LIFELINKED_APP_STORE_CONNECT_API_KEY_BASE64 }}
+        run: |
+          if [ -z "$LIFELINKED_APP_STORE_CONNECT_API_KEY_BASE64" ]; then
+            echo "::error::Missing LIFELINKED_APP_STORE_CONNECT_API_KEY_BASE64 secret"
+            exit 1
+          fi
+
+          printf '%s' "$LIFELINKED_APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/lifelinked-ios/AuthKey.p8"
+          echo "LIFELINKED_APP_STORE_CONNECT_API_KEY_PATH=$RUNNER_TEMP/lifelinked-ios/AuthKey.p8" >> "$GITHUB_ENV"
+
+      - name: Upload to TestFlight
+        if: ${{ inputs.upload_to_testflight == 'true' }}
+        env:
+          LIFELINKED_APP_STORE_CONNECT_KEY_ID: ${{ secrets.LIFELINKED_APP_STORE_CONNECT_KEY_ID }}
+          LIFELINKED_APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.LIFELINKED_APP_STORE_CONNECT_ISSUER_ID }}
+        run: bundle exec fastlane ios upload_testflight

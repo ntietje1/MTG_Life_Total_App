@@ -6,7 +6,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import domain.storage.SettingsManager
+import domain.storage.PreferencesRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 class CoinFlipViewModel(
-    val settingsManager: SettingsManager
+    val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(CoinFlipState())
     val state: StateFlow<CoinFlipState> = _state.asStateFlow()
@@ -418,11 +418,17 @@ class CoinFlipViewModel(
 
     fun reset() {
         flippingUntil = null
-        _state.value = state.value.copy(
-            history = listOf(), lastResults = listOf(), headCount = 0, tailCount = 0, flipInProgress = false, userInteractionEnabled = false
-        )
         resetCoinControllers()
-        setUserInteractionEnabled(true)
+        _state.value = state.value.copy(
+            history = listOf(),
+            lastResults = listOf(),
+            historyString = AnnotatedString(""),
+            lastResultString = AnnotatedString(""),
+            headCount = 0,
+            tailCount = 0,
+            flipInProgress = false,
+            userInteractionEnabled = true
+        )
     }
 
     private fun setUserInteractionEnabled(value: Boolean) {
@@ -471,14 +477,14 @@ class CoinFlipViewModel(
 
     private fun generateCoinController(): CoinController {
         return CoinController(
-            settingsManager = settingsManager,
+            preferencesRepository = preferencesRepository,
         )
     }
 
     private fun updateNumberOfCoins() {
         val coinCount = calculateCoinCount()
         while (coinControllers.size > coinCount) {
-            coinControllers.removeLast()
+            coinControllers.removeAt(coinControllers.lastIndex)
         }
         while (coinControllers.size < coinCount) {
             coinControllers.add(generateCoinController())

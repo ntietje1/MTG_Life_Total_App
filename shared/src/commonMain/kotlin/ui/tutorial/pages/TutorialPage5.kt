@@ -22,29 +22,19 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import domain.game.CommanderDamageManager
-import domain.game.GameStateManager
-import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
-import domain.game.timer.TimerManager
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.down_arrow_icon
 import lifelinked.shared.generated.resources.pencil_icon
 import lifelinked.shared.generated.resources.settings_icon
-import model.Player
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.components.SettingsButton
-import ui.dialog.MiddleButtonDialogState
+import ui.lifecounter.LifeCounterModal
 import ui.lifecounter.LifeCounterScreen
-import ui.lifecounter.LifeCounterState
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import ui.lifecounter.playerbutton.PlayerButtonAction
 
 
 @Composable
@@ -62,131 +52,59 @@ fun TutorialPage5(
     var stepTwoComplete by remember { mutableStateOf(false) }
     var complete by remember { mutableStateOf(false) }
 
-    class MockLifeCounterViewModelPage5(
-        lifeCounterState: LifeCounterState,
-        settingsManager: ISettingsManager,
-        imageManager: IImageManager,
-        notificationManager: NotificationManager
-    ) : MockLifeCounterViewModel(
-        lifeCounterState, settingsManager, imageManager, notificationManager
-    ) {
-        private fun checkStepOneOrTwoComplete() {
-            when {
-                state.value.middleButtonDialogState in listOf(MiddleButtonDialogState.PlayerNumber, MiddleButtonDialogState.FourPlayerLayout) -> {
-                    stepTwoComplete = true
-                    notificationManager.showNotification("Next: Change the number of players", 3000)
-                }
+    fun checkStepOneOrTwoComplete(state: ui.lifecounter.LifeCounterState) {
+        when {
+            state.currentModal in listOf(LifeCounterModal.PlayerNumber, LifeCounterModal.FourPlayerLayout) -> {
+                stepTwoComplete = true
+                notificationManager.showNotification("Next: Change the number of players", 3000)
+            }
 
-                state.value.middleButtonDialogState != null -> {
-                    stepOneComplete = true
-                    notificationManager.showNotification("Next: Navigate to the player number menu", 3000)
-                }
+            state.currentModal != null -> {
+                stepOneComplete = true
+                notificationManager.showNotification("Next: Navigate to the player number menu", 3000)
             }
         }
+    }
 
-        override fun toggleDarkTheme(value: Boolean?) {
-            notificationManager.showNotification("Changing theme disabled", 3000)
-        }
-
-        override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
-            setBlurUI(value != null)
-            when (value) {
-                MiddleButtonDialogState.PlayerNumber, MiddleButtonDialogState.FourPlayerLayout, MiddleButtonDialogState.Default, null -> {
-                    super.setMiddleButtonDialogState(value)
-                    checkStepOneOrTwoComplete()
-                }
-
-                MiddleButtonDialogState.Counter -> {
-                    notificationManager.showNotification("Counters menu disabled", 3000)
-                }
-
-                MiddleButtonDialogState.Settings -> {
-                    notificationManager.showNotification("Settings menu disabled", 3000)
-                }
-
-                MiddleButtonDialogState.StartingLife -> {
-                    notificationManager.showNotification("Starting life menu disabled", 3000)
-                }
-
-                MiddleButtonDialogState.CoinFlip -> {
-                    notificationManager.showNotification("Coin flip menu disabled", 3000)
-                }
-
-                MiddleButtonDialogState.DiceRoll -> {
-                    notificationManager.showNotification("Dice roll menu disabled", 3000)
-                }
-
-                MiddleButtonDialogState.Scryfall -> {
-                    notificationManager.showNotification("Scryfall menu disabled", 3000)
-                }
-
-                MiddleButtonDialogState.PlaneChase -> {
-                    notificationManager.showNotification("Planar deck menu disabled", 3000)
-                }
-
-                else -> {
-                    notificationManager.showNotification("Menu disabled", 3000)
-                }
-            }
-        }
-
-        override fun setNumPlayers(value: Int) {
-            super.setNumPlayers(value)
+    fun checkComplete() {
+        if (!complete) {
             complete = true
             onComplete()
-        }
-
-        inner class MockPlayerButtonViewModelPage5(
-            state: PlayerButtonState,
-            settingsManager: ISettingsManager,
-            imageManager: IImageManager,
-            notificationManager: NotificationManager,
-            customizationManager: PlayerCustomizationManager,
-            playerStateManager: PlayerStateManager,
-            commanderDamageManager: CommanderDamageManager,
-            gameStateManager: GameStateManager,
-            timerManager: TimerManager
-        ) : MockPlayerButtonViewModel(
-            state = state,
-            settingsManager = settingsManager,
-            imageManager = imageManager,
-            notificationManager = notificationManager,
-            customizationManager = customizationManager,
-            playerStateManager = playerStateManager,
-            commanderDamageManager = commanderDamageManager,
-            gameStateManager = gameStateManager,
-            timerManager = timerManager
-        ) {
-            override fun onCommanderButtonClicked() {
-                this.notificationManager.showNotification("Commander damage disabled", 3000)
-            }
-
-            override fun onSettingsButtonClicked() {
-                this.notificationManager.showNotification("Settings disabled", 3000)
-            }
-        }
-
-        override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-            return MockPlayerButtonViewModelPage5(
-                state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
-                settingsManager = gameState.mockSettingsManager,
-                imageManager = gameState.mockImageManager,
-                notificationManager = this.notificationManager,
-                customizationManager = this.playerCustomizationManager,
-                playerStateManager = this.playerStateManager,
-                commanderDamageManager = this.commanderManager,
-                gameStateManager = this.gameStateManager,
-                timerManager = this.timerManager
-            )
         }
     }
 
     val lifeCounterViewModel = remember {
-        MockLifeCounterViewModelPage5(
-            lifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-            settingsManager = gameState.mockSettingsManager,
-            imageManager = gameState.mockImageManager,
+        TutorialLifeCounterController(
+            gameState = gameState,
             notificationManager = notificationManager,
+            shouldOpenModal = { modal ->
+                modal in listOf(LifeCounterModal.PlayerNumber, LifeCounterModal.FourPlayerLayout, LifeCounterModal.Default)
+            },
+            blockedModalMessage = { modal ->
+                when (modal) {
+                    LifeCounterModal.Counter -> "Counters menu disabled"
+                    LifeCounterModal.Settings -> "Settings menu disabled"
+                    LifeCounterModal.StartingLife -> "Starting life menu disabled"
+                    LifeCounterModal.CoinFlip -> "Coin flip menu disabled"
+                    LifeCounterModal.DiceRoll -> "Dice roll menu disabled"
+                    LifeCounterModal.Scryfall -> "Scryfall menu disabled"
+                    LifeCounterModal.PlaneChase -> "Planar deck menu disabled"
+                    else -> "Menu disabled"
+                }
+            },
+            afterModalChanged = { state ->
+                setBlurUI(state.isModalOpen)
+                checkStepOneOrTwoComplete(state)
+            },
+            afterNumPlayersChanged = { checkComplete() },
+            blockedThemeToggleMessage = "Changing theme disabled",
+            blockedPlayerActionMessage = { action ->
+                when (action) {
+                    PlayerButtonAction.ToggleCommanderDealer -> "Commander damage disabled"
+                    PlayerButtonAction.ToggleSettings -> "Settings disabled"
+                    else -> null
+                }
+            }
         )
     }
 

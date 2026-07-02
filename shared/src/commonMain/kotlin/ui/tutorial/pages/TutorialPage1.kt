@@ -18,27 +18,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import domain.game.CommanderDamageManager
-import domain.game.GameStateManager
-import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
-import domain.game.timer.TimerManager
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.sword_icon
-import model.Player
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.components.SettingsButton
-import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.LifeCounterScreen
-import ui.lifecounter.LifeCounterState
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import ui.lifecounter.playerbutton.PlayerButtonAction
 
 
 @Composable
@@ -53,75 +42,10 @@ fun TutorialPage1(
 
     var complete by remember { mutableStateOf(false) }
 
-    class MockLifeCounterViewModelPage1(
-        lifeCounterState: LifeCounterState,
-        settingsManager: ISettingsManager,
-        imageManager: IImageManager,
-        notificationManager: NotificationManager
-    ) : MockLifeCounterViewModel(
-        lifeCounterState, settingsManager, imageManager, notificationManager
-    ) {
-        override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
-            this.notificationManager.showNotification("Settings menu disabled", 3000)
-        }
-
-        inner class MockPlayerButtonViewModelPage1(
-            state: PlayerButtonState,
-            settingsManager: ISettingsManager,
-            imageManager: IImageManager,
-            notificationManager: NotificationManager,
-            customizationManager: PlayerCustomizationManager,
-            playerStateManager: PlayerStateManager,
-            commanderDamageManager: CommanderDamageManager,
-            gameStateManager: GameStateManager,
-            timerManager: TimerManager
-        ) : MockPlayerButtonViewModel(
-            state = state,
-            settingsManager = settingsManager,
-            imageManager = imageManager,
-            notificationManager = notificationManager,
-            customizationManager = customizationManager,
-            playerStateManager = playerStateManager,
-            commanderDamageManager = commanderDamageManager,
-            gameStateManager = gameStateManager,
-            timerManager = timerManager
-        ) {
-
-            private fun checkComplete() {
-                if (state.value.player.life == 20) {
-                    onComplete()
-                    complete = true
-                }
-            }
-
-            override fun incrementLife(value: Int) {
-                super.incrementLife(value)
-                if (value < 0) {
-                    checkComplete()
-                }
-            }
-
-            override fun onCommanderButtonClicked() {
-                this.notificationManager.showNotification("Commander damage disabled", 3000)
-            }
-
-            override fun onSettingsButtonClicked() {
-                this.notificationManager.showNotification("Settings disabled", 3000)
-            }
-        }
-
-        override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-            return MockPlayerButtonViewModelPage1(
-                state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
-                settingsManager = gameState.mockSettingsManager,
-                imageManager = gameState.mockImageManager,
-                notificationManager = this.notificationManager,
-                customizationManager = this.playerCustomizationManager,
-                playerStateManager = this.playerStateManager,
-                commanderDamageManager = this.commanderManager,
-                gameStateManager = this.gameStateManager,
-                timerManager = this.timerManager
-            )
+    fun checkComplete(state: ui.lifecounter.LifeCounterState) {
+        if (!complete && state.players.any { it.player.life == 20 }) {
+            onComplete()
+            complete = true
         }
     }
 
@@ -134,11 +58,23 @@ fun TutorialPage1(
         LifeCounterScreen(
             modifier = Modifier.fillMaxSize(),
             viewModel = remember {
-                MockLifeCounterViewModelPage1(
-                    lifeCounterState = gameState.lifeCounterState,
-                    settingsManager = gameState.mockSettingsManager,
-                    imageManager = gameState.mockImageManager,
-                    notificationManager = notificationManager
+                TutorialLifeCounterController(
+                    gameState = gameState,
+                    notificationManager = notificationManager,
+                    shouldOpenModal = { false },
+                    blockedModalMessage = { "Settings menu disabled" },
+                    blockedPlayerActionMessage = { action ->
+                        when (action) {
+                            PlayerButtonAction.ToggleCommanderDealer -> "Commander damage disabled"
+                            PlayerButtonAction.ToggleSettings -> "Settings disabled"
+                            else -> null
+                        }
+                    },
+                    afterPlayerAction = { _, action, state ->
+                        if (action == PlayerButtonAction.DecrementLife) {
+                            checkComplete(state)
+                        }
+                    }
                 )
             },
             goToPlayerSelectScreen = {},

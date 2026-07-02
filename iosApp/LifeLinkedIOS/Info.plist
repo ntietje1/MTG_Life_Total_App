@@ -6,7 +6,7 @@
 	<true/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>LSMinimumSystemVersion</key>
-	<string>13.0</string>
+	<key>MinimumOSVersion</key>
+	<string>15.6</string>
 </dict>
 </plist>

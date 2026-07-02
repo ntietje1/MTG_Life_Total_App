@@ -31,6 +31,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import theme.LocalDimensions
@@ -83,7 +85,7 @@ fun GifDialogContent(
                     .clip(RoundedCornerShape(15))
                     .border(dimensions.borderThin, MaterialTheme.colorScheme.onPrimary.halfAlpha(), RoundedCornerShape(15)),
                 query = state.textFieldValue,
-                label = "Search Tenor",
+                label = "Search KLIPY",
                 onQueryChange = viewModel::setTextFieldValue,
                 searchInProgress = state.isSearchInProgress
             ) {
@@ -103,25 +105,38 @@ fun GifDialogContent(
                 }, horizontalArrangement = Arrangement.Center,
                 state = listState
             ) {
+//                item(
+//                    key = "klipy-attribution",
+//                    span = { GridItemSpan(maxLineSpan) }
+//                ) {
+//                    Text(
+//                        modifier = Modifier.fillMaxWidth().padding(top = padding / 2),
+//                        text = "GIFs via Klipy",
+//                        color = MaterialTheme.colorScheme.onPrimary.halfAlpha(),
+//                        fontSize = dimensions.textSmall.scaledSp,
+//                        textAlign = TextAlign.Center
+//                    )
+//                }
                 items(
-                    items = state.gifResults.toList(),
-                    key = { it.hashCode() }
-                ) { mediaFormats ->
+                    items = state.gifResults,
+                    key = { it.id }
+                ) { gif ->
                     PlayerButtonBackground(
                         modifier = Modifier
                             .padding(8.dp)
                             .width(buttonWidth)
                             .height(buttonHeight)
+                            .semantics { contentDescription = "GIF result ${gif.id}" }
                             .pointerInput(Unit) {
                                 detectTapGestures(
                                     onTap = {
-                                        onGifSelected(mediaFormats.getNormalGif().url)
+                                        onGifSelected(gif.fullUrl)
                                     }
                                 )
                             },
                         state = PBState.NORMAL,
                         isDead = false,
-                        imageUri = mediaFormats.getPreviewGif().url,
+                        imageUri = gif.previewUrl,
                         color = Color.Unspecified,
                         showError = true
                     )

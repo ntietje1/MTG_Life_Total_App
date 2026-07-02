@@ -42,20 +42,22 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import model.card.Card
-import model.card.Ruling
+import model.card.CardSummary
+import model.card.RulingSummary
 import org.koin.compose.koinInject
 import theme.LocalDimensions
 import theme.halfAlpha
 import theme.scaledSp
 import ui.components.EnlargeableCardImage
 import ui.components.SearchTextField
-import ui.dialog.SettingsDialog
 
 @Composable
 fun ScryfallDialogContent(
@@ -151,9 +153,9 @@ fun ScryfallDialogContent(
                         selectButtonEnabled = selectButtonEnabled,
                         printingsButtonEnabled = state.printingsButtonEnabled,
                         rulingsButtonEnabled = rulingsButtonEnabled,
-                        onRulings = {
+                        onRulings = { rulingsUri ->
                             focusManager.clearFocus()
-                            viewModel.searchRulings(card.rulingsUri ?: "")
+                            viewModel.searchRulings(rulingsUri)
                             viewModel.setRulingCard(card)
                             val scrollPosition = listState.firstVisibleItemIndex
                             addToBackStack("Search: $state.textFieldValue.text") {
@@ -161,29 +163,29 @@ fun ScryfallDialogContent(
                                 focusManager.clearFocus()
                                 viewModel.setRulingCard(null)
                                 viewModel.searchCards(state.textFieldValue.text) {
-                                    println("scrolling to $scrollPosition")
                                     listState.scrollToItem(scrollPosition)
                                 }
                             }
                         }, onSelect = {
-                            onImageSelected(card.getUris().artCrop)
-                        }, onPrintings = {
+                            card.art?.let { art -> onImageSelected(art.artCrop) }
+                        }, onPrintings = { printsSearchUri ->
                             focusManager.clearFocus()
-                            viewModel.searchCards(card.printsSearchUri, disablePrintingsButton = true)
+                            viewModel.searchCards(printsSearchUri, disablePrintingsButton = true)
                             val scrollPosition = listState.firstVisibleItemIndex
                             addToBackStack("Search: $state.textFieldValue.text") {
                                 viewModel.incrementBackStackDiff(-1)
                                 focusManager.clearFocus()
                                 viewModel.searchCards(state.textFieldValue.text) {
-                                    println("scrolling to $scrollPosition")
                                     listState.scrollToItem(scrollPosition)
                                 }
                             }
                         })
                 }
-                if (state.cardResults.isEmpty() && state.rulingCard != null) {
-                    item {
-                        CardDetails(state.rulingCard!!)
+                if (state.cardResults.isEmpty()) {
+                    state.rulingCard?.let { rulingCard ->
+                        item {
+                            CardDetails(rulingCard)
+                        }
                     }
                     if (state.rulingsResults.isNotEmpty()) {
                         item {
@@ -214,12 +216,17 @@ fun ScryfallDialogContent(
 fun ScryfallButton(
     modifier: Modifier = Modifier,
     text: String,
+    contentDescription: String = text,
     onTap: () -> Unit
 ) {
     val originalColor = MaterialTheme.colorScheme.onSurface
     val pressedColor = Color.Green.copy(alpha = 0.5f)
     var color by remember { mutableStateOf(originalColor) }
     val coroutineScope = rememberCoroutineScope()
+    fun activate() {
+        color = pressedColor
+        onTap()
+    }
     val animatedColor by animateColorAsState(targetValue = color, animationSpec = tween(durationMillis = 500), finishedListener = {
         coroutineScope.launch {
             delay(1500)
@@ -227,12 +234,19 @@ fun ScryfallButton(
         }
     })
     BoxWithConstraints(
-        modifier = modifier.pointerInput(Unit) {
-            detectTapGestures { _ ->
-                color = pressedColor
-                onTap()
+        modifier = modifier
+            .semantics {
+                this.contentDescription = contentDescription
+                onClick {
+                    activate()
+                    true
+                }
             }
-        },
+            .pointerInput(Unit) {
+                detectTapGestures { _ ->
+                    activate()
+                }
+            }
     ) {
         val textSize = remember(Unit) { (maxWidth / 4.5f).value }
         val textPadding = remember(Unit) { maxWidth / 13.5f }
@@ -253,7 +267,7 @@ fun ScryfallButton(
 
 @Composable
 fun CardDetails(
-    card: Card
+    card: CardSummary
 ) {
     TextPreview(
         largeText = "Oracle Text",
@@ -263,7 +277,7 @@ fun CardDetails(
 
 @Composable
 fun RulingPreview(
-    ruling: Ruling
+    ruling: RulingSummary
 ) {
     TextPreview(
         largeText = "Ruling (${ruling.publishedAt})",
@@ -308,10 +322,17 @@ private fun TextPreview(
 
 @Composable
 fun CardInfoPreview(
-    card: Card, onRulings: () -> Unit = {}, onSelect: () -> Unit = {}, onPrintings: () -> Unit = {}, selectButtonEnabled: Boolean, printingsButtonEnabled: Boolean, rulingsButtonEnabled: Boolean
+    card: CardSummary,
+    onRulings: (String) -> Unit = {},
+    onSelect: () -> Unit = {},
+    onPrintings: (String) -> Unit = {},
+    selectButtonEnabled: Boolean,
+    printingsButtonEnabled: Boolean,
+    rulingsButtonEnabled: Boolean
 ) {
     val haptic = LocalHapticFeedback.current
     val dimensions = LocalDimensions.current
+    val art = card.art
 
     BoxWithConstraints(
         modifier = Modifier.wrapContentSize()
@@ -349,30 +370,35 @@ fun CardInfoPreview(
                             color = MaterialTheme.colorScheme.onPrimary,
                         )
                         Row {
-                            if (rulingsButtonEnabled) {
+                            val rulingsUri = card.rulingsUri
+                            if (rulingsButtonEnabled && rulingsUri != null) {
                                 ScryfallButton(
                                     modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = dimensions.paddingSmall).clip(RoundedCornerShape(30)),
                                     text = "Rulings",
+                                    contentDescription = "Show rulings for ${card.name}",
                                     onTap = {
-                                        onRulings()
+                                        onRulings(rulingsUri)
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     })
                             }
-                            if (selectButtonEnabled) {
+                            if (selectButtonEnabled && art != null) {
                                 ScryfallButton(
                                     modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = dimensions.paddingSmall).clip(RoundedCornerShape(30)),
                                     text = "Select",
+                                    contentDescription = "Select ${card.name}",
                                     onTap = {
                                         onSelect()
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     })
                             }
-                            if (printingsButtonEnabled) {
+                            val printsSearchUri = card.printsSearchUri
+                            if (printingsButtonEnabled && printsSearchUri != null) {
                                 ScryfallButton(
                                     modifier = Modifier.height(buttonSize).aspectRatio(2.75f).padding(horizontal = dimensions.paddingSmall).clip(RoundedCornerShape(30)),
                                     text = "Printings",
+                                    contentDescription = "Show printings for ${card.name}",
                                     onTap = {
-                                        onPrintings()
+                                        onPrintings(printsSearchUri)
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     })
                             }
@@ -383,11 +409,13 @@ fun CardInfoPreview(
                         modifier = Modifier.fillMaxHeight().weight(1.0f).padding(vertical = padding / 10f),
                         verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        EnlargeableCardImage(
-                            modifier = Modifier.fillMaxHeight(),
-                            smallImageUri = card.getUris().small,
-                            largeImageUri = card.getUris().large,
-                        )
+                        if (art != null) {
+                            EnlargeableCardImage(
+                                modifier = Modifier.fillMaxHeight(),
+                                smallImageUri = art.small,
+                                largeImageUri = art.large,
+                            )
+                        }
                     }
 
                 }

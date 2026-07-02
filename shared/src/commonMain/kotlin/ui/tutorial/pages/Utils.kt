@@ -24,21 +24,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import domain.common.NumberWithRecentChange
-import domain.game.CommanderDamageManager
-import domain.game.GameStateManager
-import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
-import domain.game.timer.GameTimerState
-import domain.game.timer.TimerManager
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
-import domain.storage.SettingsManager
+import domain.state.game.SeatId
+import domain.state.profile.PlayerProfileRepository
+import domain.storage.IFileImageStore
+import domain.storage.PreferencesRepository
 import domain.system.NotificationManager
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import model.Player
-import model.card.Card
 import theme.PlayerColor2
 import theme.PlayerColor5
 import theme.PlayerColor6
@@ -47,203 +41,455 @@ import theme.PlayerColor8
 import theme.PlayerColor9
 import theme.defaultTextStyle
 import theme.scaledSp
-import ui.dialog.planechase.PlaneChaseViewModel
+import ui.dialog.customization.CustomizationViewModel
+import ui.lifecounter.DayNightState
+import ui.lifecounter.GameSessionUiMapper
+import ui.lifecounter.LifeCounterModal
+import ui.lifecounter.LifeCounterModalStack
+import ui.lifecounter.LifeCounterScreenController
 import ui.lifecounter.LifeCounterState
-import ui.lifecounter.LifeCounterViewModel
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import ui.lifecounter.MiddleButtonState
+import ui.lifecounter.PlayerSeatUiState
+import ui.lifecounter.closePlayerCustomization
+import ui.lifecounter.openPlayerCounterSelection
+import ui.lifecounter.openPlayerCounters
+import ui.lifecounter.openPlayerCustomization
+import ui.lifecounter.openPlayerSettings
+import ui.lifecounter.popPlayerButtonBackStack
+import ui.lifecounter.playerbutton.CommanderState
+import ui.lifecounter.playerbutton.PBState
+import ui.lifecounter.playerbutton.PlayerButtonAction
+import ui.lifecounter.setAllPlayerButtonStates
 
-class MockSettingsManager(
-    autoKo: Boolean = SettingsManager.instance.autoKo.value,
-    autoSkip: Boolean = SettingsManager.instance.autoSkip.value,
-    keepScreenOn: Boolean = SettingsManager.instance.keepScreenOn.value,
-    cameraRollDisabled: Boolean = SettingsManager.instance.cameraRollDisabled.value,
-    fastCoinFlip: Boolean = SettingsManager.instance.fastCoinFlip.value,
-    numPlayers: Int = SettingsManager.instance.numPlayers.value,
-    alt4PlayerLayout: Boolean = SettingsManager.instance.alt4PlayerLayout.value,
-    darkTheme: Boolean = SettingsManager.instance.darkTheme.value,
-    startingLife: Int = SettingsManager.instance.startingLife.value,
-    tutorialSkip: Boolean = SettingsManager.instance.tutorialSkip.value,
-    lastSplashScreenShown: String = SettingsManager.instance.lastSplashScreenShown.value,
-    turnTimer: Boolean = SettingsManager.instance.turnTimer.value,
-    devMode: Boolean = SettingsManager.instance.devMode.value,
-    patchNotes: String = SettingsManager.instance.patchNotes.value,
-    private var playerStates: List<Player> = emptyList(),
-    private var allPlanes: List<Card> = emptyList(),
-    private var planarDeck: List<Card> = emptyList(),
-    private var planarBackStack: List<Card> = emptyList(),
-    private val playerPrefs: ArrayList<Player> = arrayListOf()
-) : ISettingsManager {
-    private val _autoKo = MutableStateFlow(autoKo)
-    override val autoKo: StateFlow<Boolean> = _autoKo.asStateFlow()
-    override fun setAutoKo(value: Boolean) {
-        _autoKo.value = value
+class MockFileImageStore : IFileImageStore {
+    override suspend fun saveImage(bytes: ByteArray): String {
+        return "tutorial-image"
     }
 
-    private val _autoSkip = MutableStateFlow(autoSkip)
-    override val autoSkip: StateFlow<Boolean> = _autoSkip.asStateFlow()
-    override fun setAutoSkip(value: Boolean) {
-        _autoSkip.value = value
-    }
-
-    private val _keepScreenOn = MutableStateFlow(keepScreenOn)
-    override val keepScreenOn: StateFlow<Boolean> = _keepScreenOn.asStateFlow()
-    override fun setKeepScreenOn(value: Boolean) {
-        _keepScreenOn.value = value
-    }
-
-    private val _cameraRollDisabled = MutableStateFlow(cameraRollDisabled)
-    override val cameraRollDisabled: StateFlow<Boolean> = _cameraRollDisabled.asStateFlow()
-    override fun setCameraRollDisabled(value: Boolean) {
-        _cameraRollDisabled.value = value
-    }
-
-    private val _fastCoinFlip = MutableStateFlow(fastCoinFlip)
-    override val fastCoinFlip: StateFlow<Boolean> = _fastCoinFlip.asStateFlow()
-    override fun setFastCoinFlip(value: Boolean) {
-        _fastCoinFlip.value = value
-    }
-
-    private val _numPlayers = MutableStateFlow(numPlayers)
-    override val numPlayers: StateFlow<Int> = _numPlayers.asStateFlow()
-    override fun setNumPlayers(value: Int) {
-        _numPlayers.value = value
-    }
-
-    private val _alt4PlayerLayout = MutableStateFlow(alt4PlayerLayout)
-    override val alt4PlayerLayout: StateFlow<Boolean> = _alt4PlayerLayout.asStateFlow()
-    override fun setAlt4PlayerLayout(value: Boolean) {
-        _alt4PlayerLayout.value = value
-    }
-
-    private val _darkTheme = MutableStateFlow(darkTheme)
-    override val darkTheme: StateFlow<Boolean> = _darkTheme.asStateFlow()
-    override fun setDarkTheme(value: Boolean) {
-        _darkTheme.value = value
-    }
-
-    private val _startingLife = MutableStateFlow(startingLife)
-    override val startingLife: StateFlow<Int> = _startingLife.asStateFlow()
-    override fun setStartingLife(value: Int) {
-        _startingLife.value = value
-    }
-
-    private val _tutorialSkip = MutableStateFlow(tutorialSkip)
-    override val tutorialSkip: StateFlow<Boolean> = _tutorialSkip.asStateFlow()
-    override fun setTutorialSkip(value: Boolean) {
-        _tutorialSkip.value = value
-    }
-
-    private val _lastSplashScreenShown = MutableStateFlow(lastSplashScreenShown)
-    override val lastSplashScreenShown: StateFlow<String> = _lastSplashScreenShown.asStateFlow()
-    override fun setLastSplashScreenShown(value: String) {
-        _lastSplashScreenShown.value = value
-    }
-
-    private val _turnTimer = MutableStateFlow(turnTimer)
-    override val turnTimer: StateFlow<Boolean> = _turnTimer.asStateFlow()
-    override fun setTurnTimer(value: Boolean) {
-        _turnTimer.value = value
-    }
-
-    private val _devMode = MutableStateFlow(devMode)
-    override val devMode: StateFlow<Boolean> = _devMode.asStateFlow()
-    override fun setDevMode(value: Boolean) {
-        _devMode.value = value
-    }
-
-    private val _patchNotes = MutableStateFlow(patchNotes)
-    override val patchNotes: StateFlow<String> = _patchNotes.asStateFlow()
-    override fun setPatchNotes(value: String) {
-        _patchNotes.value = value
-    }
-
-    private val _savedTimerState: MutableStateFlow<GameTimerState?> = MutableStateFlow(null)
-    override val savedTimerState: StateFlow<GameTimerState?> = _savedTimerState.asStateFlow()
-    override fun setSavedTimerState(value: GameTimerState?) {
-        _savedTimerState.value = value
-    }
-
-    override fun loadPlayerStates(): List<Player> {
-        return playerStates
-    }
-
-    override fun savePlayerStates(players: List<Player>) {
-        playerStates = players
-    }
-
-    override fun savePlanechaseState(allPlanes: List<Card>, planarDeck: List<Card>, planarBackStack: List<Card>) {
-        this.allPlanes = allPlanes
-        this.planarDeck = planarDeck
-        this.planarBackStack = planarBackStack
-    }
-
-    override fun loadPlanechaseState(): Triple<List<Card>, List<Card>, List<Card>> {
-        return Triple(allPlanes, planarDeck, planarBackStack)
-    }
-
-    override fun savePlayerPref(player: Player) {
-        playerPrefs.add(player)
-    }
-
-    override fun deletePlayerPref(player: Player) {
-        playerPrefs.remove(player)
-    }
-
-    override fun loadPlayerPrefs(): ArrayList<Player> {
-        return playerPrefs
-    }
-}
-
-class MockImageManager : IImageManager {
-    override suspend fun copyImageToLocalStorage(bytes: ByteArray, fileName: String): String {
-        return fileName
-    }
-
-    override fun getImagePath(fileName: String): String? {
+    override fun localImageUri(imageId: String): String? {
         return null
     }
+
+    override fun deleteImage(imageId: String) = Unit
 }
 
-open class MockPlayerButtonViewModel(
-    state: PlayerButtonState,
-    settingsManager: ISettingsManager,
-    imageManager: IImageManager,
-    notificationManager: NotificationManager,
-    customizationManager: PlayerCustomizationManager,
-    playerStateManager: PlayerStateManager,
-    commanderDamageManager: CommanderDamageManager,
-    gameStateManager: GameStateManager,
-    timerManager: TimerManager
-) : PlayerButtonViewModel(
-    initialState = state,
-    settingsManager = settingsManager,
-    imageManager = imageManager,
-    notificationManager = notificationManager,
-    playerStateManager = playerStateManager,
-    playerCustomizationManager = customizationManager,
-    commanderManager = commanderDamageManager,
-    gameStateManager = gameStateManager,
-    timerManager = timerManager
-)
+fun mockPreferencesRepository(
+    autoKo: Boolean = true,
+    autoSkip: Boolean = false,
+    keepScreenOn: Boolean = false,
+    cameraRollDisabled: Boolean = false,
+    fastCoinFlip: Boolean = false,
+    numPlayers: Int = 4,
+    alt4PlayerLayout: Boolean = false,
+    darkTheme: Boolean = true,
+    startingLife: Int = 40,
+    tutorialSkip: Boolean = false,
+    lastSplashScreenShown: String = "0.0.0",
+    turnTimer: Boolean = false,
+    devMode: Boolean = false
+): PreferencesRepository {
+    return PreferencesRepository(InMemorySettings()).also { preferences ->
+        preferences.setAutoKo(autoKo)
+        preferences.setAutoSkip(autoSkip)
+        preferences.setKeepScreenOn(keepScreenOn)
+        preferences.setCameraRollDisabled(cameraRollDisabled)
+        preferences.setFastCoinFlip(fastCoinFlip)
+        preferences.setNumPlayers(numPlayers)
+        preferences.setAlt4PlayerLayout(alt4PlayerLayout)
+        preferences.setDarkTheme(darkTheme)
+        preferences.setStartingLife(startingLife)
+        preferences.setTutorialSkip(tutorialSkip)
+        preferences.setLastSplashScreenShown(lastSplashScreenShown)
+        preferences.setTurnTimer(turnTimer)
+        preferences.setDevMode(devMode)
+    }
+}
 
-abstract class MockLifeCounterViewModel(
-    lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-    settingsManager: ISettingsManager,
-    imageManager: IImageManager,
-    notificationManager: NotificationManager
-) : LifeCounterViewModel(
-    initialState = lifeCounterState,
-    settingsManager = settingsManager,
-    playerStateManager = PlayerStateManager(settingsManager),
-    commanderManager = CommanderDamageManager(notificationManager),
-    imageManager = imageManager,
-    notificationManager = notificationManager,
-    planeChaseViewModel = PlaneChaseViewModel(settingsManager),
-    playerCustomizationManager = PlayerCustomizationManager(settingsManager),
-    gameStateManager = GameStateManager(settingsManager),
-    timerManager = TimerManager(settingsManager)
-)
+private class InMemorySettings : Settings {
+    private val values = mutableMapOf<String, Any>()
+
+    override val keys: Set<String>
+        get() = values.keys
+
+    override val size: Int
+        get() = values.size
+
+    override fun clear() {
+        values.clear()
+    }
+
+    override fun remove(key: String) {
+        values.remove(key)
+    }
+
+    override fun hasKey(key: String): Boolean {
+        return values.containsKey(key)
+    }
+
+    override fun putInt(key: String, value: Int) {
+        values[key] = value
+    }
+
+    override fun getInt(key: String, defaultValue: Int): Int {
+        return getIntOrNull(key) ?: defaultValue
+    }
+
+    override fun getIntOrNull(key: String): Int? {
+        return values[key] as? Int
+    }
+
+    override fun putLong(key: String, value: Long) {
+        values[key] = value
+    }
+
+    override fun getLong(key: String, defaultValue: Long): Long {
+        return getLongOrNull(key) ?: defaultValue
+    }
+
+    override fun getLongOrNull(key: String): Long? {
+        return values[key] as? Long
+    }
+
+    override fun putString(key: String, value: String) {
+        values[key] = value
+    }
+
+    override fun getString(key: String, defaultValue: String): String {
+        return getStringOrNull(key) ?: defaultValue
+    }
+
+    override fun getStringOrNull(key: String): String? {
+        return values[key] as? String
+    }
+
+    override fun putFloat(key: String, value: Float) {
+        values[key] = value
+    }
+
+    override fun getFloat(key: String, defaultValue: Float): Float {
+        return getFloatOrNull(key) ?: defaultValue
+    }
+
+    override fun getFloatOrNull(key: String): Float? {
+        return values[key] as? Float
+    }
+
+    override fun putDouble(key: String, value: Double) {
+        values[key] = value
+    }
+
+    override fun getDouble(key: String, defaultValue: Double): Double {
+        return getDoubleOrNull(key) ?: defaultValue
+    }
+
+    override fun getDoubleOrNull(key: String): Double? {
+        return values[key] as? Double
+    }
+
+    override fun putBoolean(key: String, value: Boolean) {
+        values[key] = value
+    }
+
+    override fun getBoolean(key: String, defaultValue: Boolean): Boolean {
+        return getBooleanOrNull(key) ?: defaultValue
+    }
+
+    override fun getBooleanOrNull(key: String): Boolean? {
+        return values[key] as? Boolean
+    }
+}
+
+class TutorialLifeCounterController(
+    gameState: MockGameState = MockGameState(),
+    notificationManager: NotificationManager? = null,
+    private val blockedPlayerActionMessage: (PlayerButtonAction) -> String? = { null },
+    private val shouldOpenModal: (LifeCounterModal) -> Boolean = { true },
+    private val blockedModalMessage: (LifeCounterModal) -> String = { "Menu disabled" },
+    private val blockedThemeToggleMessage: String? = null,
+    private val afterPlayerAction: (SeatId, PlayerButtonAction, LifeCounterState) -> Unit = { _, _, _ -> },
+    private val afterModalChanged: (LifeCounterState) -> Unit = {},
+    private val afterNumPlayersChanged: (Int) -> Unit = {},
+    private val afterCustomizationChanged: (Player) -> Unit = {},
+) : LifeCounterScreenController {
+    private val _state = MutableStateFlow(gameState.lifeCounterState)
+    override val state = _state.asStateFlow()
+    private val preferencesRepository = gameState.mockPreferencesRepository
+    private val profileRepository = gameState.mockProfileRepository
+    private val fileImageStore = gameState.mockFileImageStore
+    private val notificationManager = notificationManager
+    override val numPlayers = preferencesRepository.numPlayers
+    override val alt4PlayerLayout = preferencesRepository.alt4PlayerLayout
+    override val darkTheme = preferencesRepository.darkTheme
+    override val turnTimerEnabled = preferencesRepository.turnTimer
+
+    private val customizationViewModels = mutableMapOf<SeatId, CustomizationViewModel>()
+
+    override fun onNavigate(firstNavigation: Boolean) {
+        _state.value = _state.value.copy(showButtons = true, showLoadingScreen = false)
+    }
+
+    override fun openModal(value: LifeCounterModal) {
+        if (!shouldOpenModal(value)) {
+            showNotification(blockedModalMessage(value), 3000)
+            return
+        }
+        _state.value = _state.value.copy(modalStack = _state.value.modalStack.open(value))
+        afterModalChanged(_state.value)
+    }
+
+    override fun closeModal() {
+        _state.value = _state.value.copy(modalStack = LifeCounterModalStack.Empty)
+        afterModalChanged(_state.value)
+    }
+
+    override fun goBackInModal() {
+        _state.value = _state.value.copy(modalStack = _state.value.modalStack.goBack())
+        afterModalChanged(_state.value)
+    }
+
+    override fun toggleDarkTheme(value: Boolean?) {
+        if (blockedThemeToggleMessage != null) {
+            showNotification(blockedThemeToggleMessage, 3000)
+            return
+        }
+        preferencesRepository.setDarkTheme(value ?: !preferencesRepository.darkTheme.value)
+    }
+
+    override fun toggleKeepScreenOn(value: Boolean?) {
+        preferencesRepository.setKeepScreenOn(value ?: !preferencesRepository.keepScreenOn.value)
+    }
+
+    override fun setShowButtons(value: Boolean) {
+        _state.value = _state.value.copy(showButtons = value)
+    }
+
+    override fun setAlt4PlayerLayout(value: Boolean) {
+        preferencesRepository.setAlt4PlayerLayout(value)
+    }
+
+    override fun setNumPlayers(value: Int) {
+        preferencesRepository.setNumPlayers(value)
+        afterNumPlayersChanged(value)
+    }
+
+    override fun onCommanderDealerButtonClicked() {
+        resetCommanderState()
+    }
+
+    override fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction) {
+        val blockedMessage = blockedPlayerActionMessage(action)
+        if (blockedMessage != null) {
+            showNotification(blockedMessage, 3000)
+            return
+        }
+        when (action) {
+            PlayerButtonAction.IncrementLife -> updatePlayer(seatId) { player ->
+                player.copy(lifeTotal = player.lifeTotal.changeBy(1))
+            }
+            PlayerButtonAction.DecrementLife -> updatePlayer(seatId) { player ->
+                player.copy(lifeTotal = player.lifeTotal.changeBy(-1))
+            }
+            is PlayerButtonAction.IncrementCommanderDamage -> changeCommanderDamage(seatId, action.partner, 1)
+            is PlayerButtonAction.DecrementCommanderDamage -> changeCommanderDamage(seatId, action.partner, -1)
+            is PlayerButtonAction.SetMonarch -> setMonarch(if (action.monarch) seatId else null)
+            is PlayerButtonAction.SetManualDeath -> {
+                updateSeat(seatId) { seat ->
+                    seat.copy(player = seat.player.copy(setDead = action.dead), isDead = action.dead)
+                }
+                _state.value = _state.value.closePlayerCustomization(seatId)
+            }
+            PlayerButtonAction.ToggleCommanderPartnerMode -> updatePlayer(seatId) { player ->
+                player.copy(partnerMode = !player.partnerMode)
+            }
+            is PlayerButtonAction.ChangeCounter -> updatePlayer(seatId) { player ->
+                val counterIndex = action.counter.ordinal
+                player.copy(counters = player.counters.changeIntAt(counterIndex, action.delta))
+            }
+            is PlayerButtonAction.SetCounterActive -> updatePlayer(seatId) { player ->
+                player.copy(
+                    activeCounters = if (action.active) {
+                        (player.activeCounters + action.counter).distinct()
+                    } else {
+                        player.activeCounters - action.counter
+                    }
+                )
+            }
+            PlayerButtonAction.ToggleCommanderDealer -> toggleCommanderDealer(seatId)
+            PlayerButtonAction.ToggleSettings -> {
+                _state.value = _state.value.openPlayerSettings(seatId)
+            }
+            PlayerButtonAction.PopBackStack -> {
+                _state.value = _state.value.popPlayerButtonBackStack(seatId)
+            }
+            PlayerButtonAction.OpenCounters -> {
+                _state.value = _state.value.openPlayerCounters(seatId)
+            }
+            PlayerButtonAction.OpenCounterSelection -> {
+                _state.value = _state.value.openPlayerCounterSelection(seatId)
+            }
+            PlayerButtonAction.OpenCustomization -> {
+                ensureCustomizationViewModel(seatId)
+                _state.value = _state.value.openPlayerCustomization(seatId)
+            }
+            PlayerButtonAction.CloseCustomization -> {
+                applyCustomizationAndClose(seatId)
+            }
+            PlayerButtonAction.SelectFirstPlayer,
+            PlayerButtonAction.MoveTimer -> Unit
+        }
+        afterPlayerAction(seatId, action, _state.value)
+    }
+
+    override fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel? {
+        return customizationViewModels[seatId]
+    }
+
+    override fun savePlayerPrefs() = Unit
+
+    override fun resetAllPrefs() = Unit
+
+    override fun resetGameState(startingLife: Int?) {
+        _state.value = _state.value
+            .setAllPlayerButtonStates(PBState.NORMAL)
+            .copy(middleButtonState = MiddleButtonState.DEFAULT)
+    }
+
+    override fun incrementCounter(index: Int, value: Int) {
+        _state.value = _state.value.copy(counters = _state.value.counters.changeIntAt(index, value))
+    }
+
+    override fun resetCounters() {
+        _state.value = _state.value.copy(counters = List(_state.value.counters.size) { 0 })
+    }
+
+    override fun toggleDayNight() {
+        _state.value = _state.value.copy(
+            dayNight = when (_state.value.dayNight) {
+                DayNightState.NONE -> DayNightState.DAY
+                DayNightState.DAY -> DayNightState.NIGHT
+                DayNightState.NIGHT -> DayNightState.DAY
+            }
+        )
+    }
+
+    override fun setDayNight(value: DayNightState) {
+        _state.value = _state.value.copy(dayNight = value)
+    }
+
+    private fun createCustomizationViewModel(player: Player): CustomizationViewModel {
+        return CustomizationViewModel(
+            initialPlayer = player,
+            fileImageStore = fileImageStore,
+            profileRepository = profileRepository,
+            preferencesRepository = preferencesRepository,
+            onPlayerChanged = afterCustomizationChanged,
+        )
+    }
+
+    private fun applyCustomizationAndClose(seatId: SeatId) {
+        val customizedPlayer = customizationViewModels[seatId]?.state?.value?.player
+        _state.value = _state.value.copy(
+            players = _state.value.players.map { seat ->
+                if (seat.seatId == seatId && customizedPlayer != null) {
+                    seat.copy(player = customizedPlayer)
+                } else {
+                    seat
+                }
+            }
+        ).closePlayerCustomization(seatId).withCommanderStateFromButtonStates()
+    }
+
+    private fun showNotification(message: String, duration: Long = 2000L) {
+        notificationManager?.showNotification(message, duration)
+    }
+
+    private fun ensureCustomizationViewModel(seatId: SeatId): CustomizationViewModel {
+        return customizationViewModels.getOrPut(seatId) {
+            createCustomizationViewModel(requirePlayer(seatId))
+        }
+    }
+
+    private fun toggleCommanderDealer(seatId: SeatId) {
+        if (_state.value.players.firstOrNull { it.seatId == seatId }?.buttonState == PBState.COMMANDER_DEALER) {
+            resetCommanderState()
+            return
+        }
+        _state.value = _state.value.copy(
+            players = _state.value.players.map { seat ->
+                seat.copy(
+                    buttonState = if (seat.seatId == seatId) PBState.COMMANDER_DEALER else PBState.COMMANDER_RECEIVER,
+                    buttonBackStack = emptyList(),
+                    backButtonVisible = false,
+                )
+            },
+            middleButtonState = MiddleButtonState.COMMANDER_EXIT,
+        ).withCommanderStateFromButtonStates()
+    }
+
+    private fun resetCommanderState() {
+        _state.value = _state.value
+            .setAllPlayerButtonStates(PBState.NORMAL)
+            .copy(middleButtonState = MiddleButtonState.DEFAULT)
+            .withCommanderStateFromButtonStates()
+    }
+
+    private fun changeCommanderDamage(receiverSeatId: SeatId, partner: Boolean, delta: Int) {
+        val dealer = _state.value.players.firstOrNull { it.buttonState == PBState.COMMANDER_DEALER } ?: return
+        val damageIndex = dealer.player.playerNum - 1 + if (partner) Player.MAX_PLAYERS else 0
+        updatePlayer(receiverSeatId) { player ->
+                player.copy(
+                    lifeTotal = player.lifeTotal.changeBy(-delta),
+                    commanderDamage = player.commanderDamage.changeNumberAt(damageIndex, delta)
+                )
+            }
+        }
+
+    private fun setMonarch(seatId: SeatId?) {
+        _state.value = _state.value.copy(
+            players = _state.value.players.map { seat ->
+                seat.copy(player = seat.player.copy(monarch = seat.seatId == seatId))
+            }
+        )
+    }
+
+    private fun updatePlayer(seatId: SeatId, update: (Player) -> Player) {
+        updateSeat(seatId) { seat -> seat.copy(player = update(seat.player)) }
+    }
+
+    private fun updateSeat(seatId: SeatId, update: (PlayerSeatUiState) -> PlayerSeatUiState) {
+        _state.value = _state.value.copy(
+            players = _state.value.players.map { seat -> if (seat.seatId == seatId) update(seat) else seat }
+        ).withCommanderStateFromButtonStates()
+    }
+
+    private fun LifeCounterState.withCommanderStateFromButtonStates(): LifeCounterState {
+        val dealer = players.firstOrNull { it.buttonState == PBState.COMMANDER_DEALER }?.player
+        val commanderState = dealer?.let(CommanderState::Active) ?: CommanderState.Inactive
+        return copy(players = players.map { seat -> seat.copy(commanderState = commanderState) })
+    }
+
+    private fun requirePlayer(seatId: SeatId): Player {
+        return requireNotNull(_state.value.players.firstOrNull { it.seatId == seatId }) {
+            "Missing player for ${seatId.value}"
+        }.player
+    }
+
+    private fun NumberWithRecentChange.changeBy(delta: Int): NumberWithRecentChange {
+        return NumberWithRecentChange(number = number + delta, recentChange = recentChange + delta)
+    }
+
+    private fun List<NumberWithRecentChange>.changeNumberAt(index: Int, delta: Int): List<NumberWithRecentChange> {
+        return mapIndexed { currentIndex, value ->
+            if (currentIndex == index) value.changeBy(delta) else value
+        }
+    }
+
+    private fun List<Int>.changeIntAt(index: Int, delta: Int): List<Int> {
+        return mapIndexed { currentIndex, value ->
+            if (currentIndex == index) value + delta else value
+        }
+    }
+}
 
 @Composable
 fun TutorialScreenWrapper(
@@ -291,46 +537,45 @@ fun TutorialOverlayScreen(
 }
 
 data class MockGameState(
-    val playerStates: List<PlayerButtonState> = listOf(
-        PlayerButtonState(
-            player = Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 1", color = PlayerColor7, playerNum = 1
-            )
+    val players: List<Player> = listOf(
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 1", color = PlayerColor7, playerNum = 1
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 2", color = PlayerColor2, playerNum = 2
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 2", color = PlayerColor2, playerNum = 2
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 3", color = PlayerColor5, playerNum = 3
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 3", color = PlayerColor5, playerNum = 3
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 4", color = PlayerColor6, playerNum = 4
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 4", color = PlayerColor6, playerNum = 4
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 5", color = PlayerColor9, playerNum = 5
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 5", color = PlayerColor9, playerNum = 5
         ),
-        PlayerButtonState(
-            Player(
-                lifeTotal = NumberWithRecentChange(40, 0), name = "Player 6", color = PlayerColor8, playerNum = 6
-            )
+        Player(
+            lifeTotal = NumberWithRecentChange(40, 0), name = "Player 6", color = PlayerColor8, playerNum = 6
         ),
-    ), val lifeCounterState: LifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false), val mockSettingsManager: ISettingsManager = MockSettingsManager(
+    ),
+    val lifeCounterState: LifeCounterState = LifeCounterState(
+        showButtons = true,
+        showLoadingScreen = false,
+        players = players.map { player ->
+            PlayerSeatUiState(
+                seatId = GameSessionUiMapper.seatIdForPlayerNumber(player.playerNum),
+                player = player
+            )
+        }
+    ),
+    val mockPreferencesRepository: PreferencesRepository = mockPreferencesRepository(
         autoKo = false,
         numPlayers = 4,
         alt4PlayerLayout = false,
         startingLife = 40,
-        turnTimer = false,
-        playerStates = playerStates.map { it.player },
-        planarDeck = emptyList(),
-        planarBackStack = emptyList(),
-        playerPrefs = arrayListOf()
-    ), val mockImageManager: IImageManager = MockImageManager()
+        turnTimer = false
+    ),
+    val mockProfileRepository: PlayerProfileRepository = PlayerProfileRepository(
+        InMemorySettings()
+    ),
+    val mockFileImageStore: IFileImageStore = MockFileImageStore()
 )

@@ -22,31 +22,19 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import domain.game.CommanderDamageManager
-import domain.game.GameStateManager
-import domain.game.PlayerCustomizationManager
-import domain.game.PlayerStateManager
-import domain.game.timer.TimerManager
-import domain.storage.IImageManager
-import domain.storage.ISettingsManager
 import domain.system.NotificationManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.down_arrow_icon
 import lifelinked.shared.generated.resources.pencil_icon
 import lifelinked.shared.generated.resources.settings_icon
-import model.Player
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import theme.defaultTextStyle
 import theme.scaledSp
 import ui.components.SettingsButton
-import ui.dialog.MiddleButtonDialogState
-import ui.dialog.customization.CustomizationViewModel
 import ui.lifecounter.LifeCounterScreen
-import ui.lifecounter.LifeCounterState
 import ui.lifecounter.playerbutton.PBState
-import ui.lifecounter.playerbutton.PlayerButtonState
-import ui.lifecounter.playerbutton.PlayerButtonViewModel
+import ui.lifecounter.playerbutton.PlayerButtonAction
 
 
 @Composable
@@ -64,119 +52,47 @@ fun TutorialPage4(
     var stepTwoComplete by remember { mutableStateOf(false) }
     var complete by remember { mutableStateOf(false) }
 
-    class MockLifeCounterViewModelPage4(
-        lifeCounterState: LifeCounterState,
-        settingsManager: ISettingsManager,
-        imageManager: IImageManager,
-        notificationManager: NotificationManager
-    ) : MockLifeCounterViewModel(
-        lifeCounterState, settingsManager, imageManager, notificationManager
-    ) {
-        override fun setMiddleButtonDialogState(value: MiddleButtonDialogState?) {
-            this.notificationManager.showNotification("Settings menu disabled", 3000)
+    fun checkStepOneComplete(state: ui.lifecounter.LifeCounterState) {
+        stepOneComplete = state.players.any { it.buttonState == PBState.SETTINGS }
+    }
+
+    fun checkStepTwoComplete(state: ui.lifecounter.LifeCounterState) {
+        stepTwoComplete = state.players.any { it.showCustomizeMenu }
+        setBlurUI(stepTwoComplete)
+        if (stepTwoComplete) {
+            notificationManager.showNotification("Next: Change the appearance of the player", 3000)
         }
+    }
 
-        private fun checkStepOneComplete() {
-            stepOneComplete = playerButtonViewModels.value.any { it.state.value.buttonState == PBState.SETTINGS }
-        }
-
-        private fun checkStepTwoComplete() {
-            stepTwoComplete = playerButtonViewModels.value.any { it.state.value.showCustomizeMenu }
-            setBlurUI(stepTwoComplete)
-            if (stepTwoComplete) {
-                notificationManager.showNotification("Next: Change the appearance of the player", 3000)
-            }
-        }
-
-        inner class MockPlayerButtonViewModelPage4(
-            state: PlayerButtonState,
-            settingsManager: ISettingsManager,
-            imageManager: IImageManager,
-            notificationManager: NotificationManager,
-            customizationManager: PlayerCustomizationManager,
-            playerStateManager: PlayerStateManager,
-            commanderDamageManager: CommanderDamageManager,
-            gameStateManager: GameStateManager,
-            timerManager: TimerManager
-        ) : MockPlayerButtonViewModel(
-            state = state,
-            settingsManager = settingsManager,
-            imageManager = imageManager,
-            notificationManager = notificationManager,
-            customizationManager = customizationManager,
-            playerStateManager = playerStateManager,
-            commanderDamageManager = commanderDamageManager,
-            gameStateManager = gameStateManager,
-            timerManager = timerManager
-        ) {
-            inner class MockCustomizationViewModelPage4(
-                settingsManager: ISettingsManager,
-                imageManager: IImageManager
-            ) : CustomizationViewModel(
-                initialPlayer = this.state.value.player,
-                settingsManager = settingsManager,
-                imageManager = imageManager,
-            ) {
-                override fun setPlayer(player: Player) {
-                    super.setPlayer(player)
-                    complete = true
-                    onComplete()
-                }
-            }
-
-            private val customizationViewModel = MockCustomizationViewModelPage4(settingsManager, imageManager)
-
-            override val customizationViewmodel: CustomizationViewModel
-                get() = customizationViewModel
-
-            override fun onCommanderButtonClicked() {
-                this.notificationManager.showNotification("Commander damage disabled", 3000)
-            }
-
-            override fun onSettingsButtonClicked() {
-                super.onSettingsButtonClicked()
-                checkStepOneComplete()
-            }
-
-            override fun onMonarchyButtonClicked(value: Boolean) {
-                this.notificationManager.showNotification("Monarchy disabled", 3000)
-            }
-
-            override fun onKOButtonClicked() {
-                this.notificationManager.showNotification("Auto KO disabled", 3000)
-            }
-
-            override fun onShowCustomizeMenu(value: Boolean) {
-                super.onShowCustomizeMenu(value)
-                checkStepTwoComplete()
-            }
-
-            override fun onCountersButtonClicked() {
-                this.notificationManager.showNotification("Counters disabled", 3000)
-            }
-        }
-
-        override fun generatePlayerButtonViewModel(player: Player): PlayerButtonViewModel {
-            return MockPlayerButtonViewModelPage4(
-                state = gameState.playerStates.find { it.player.playerNum == player.playerNum } ?: PlayerButtonState(player),
-                settingsManager = gameState.mockSettingsManager,
-                imageManager = gameState.mockImageManager,
-                notificationManager = this.notificationManager,
-                customizationManager = this.playerCustomizationManager,
-                playerStateManager = this.playerStateManager,
-                commanderDamageManager = this.commanderManager,
-                gameStateManager = this.gameStateManager,
-                timerManager = this.timerManager
-            )
+    fun checkComplete() {
+        if (!complete) {
+            complete = true
+            onComplete()
         }
     }
 
     val lifeCounterViewModel = remember {
-        MockLifeCounterViewModelPage4(
-            lifeCounterState = LifeCounterState(showButtons = true, showLoadingScreen = false),
-            settingsManager = gameState.mockSettingsManager,
-            imageManager = gameState.mockImageManager,
+        TutorialLifeCounterController(
+            gameState = gameState,
             notificationManager = notificationManager,
+            shouldOpenModal = { false },
+            blockedModalMessage = { "Settings menu disabled" },
+            blockedPlayerActionMessage = { action ->
+                when (action) {
+                    PlayerButtonAction.ToggleCommanderDealer -> "Commander damage disabled"
+                    is PlayerButtonAction.SetMonarch -> "Monarchy disabled"
+                    is PlayerButtonAction.SetManualDeath -> "Auto KO disabled"
+                    PlayerButtonAction.OpenCounters -> "Counters disabled"
+                    else -> null
+                }
+            },
+            afterPlayerAction = { _, action, state ->
+                if (action == PlayerButtonAction.ToggleSettings) checkStepOneComplete(state)
+                if (action == PlayerButtonAction.OpenCustomization || action == PlayerButtonAction.CloseCustomization) {
+                    checkStepTwoComplete(state)
+                }
+            },
+            afterCustomizationChanged = { checkComplete() }
         )
     }
 

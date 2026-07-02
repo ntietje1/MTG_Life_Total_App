@@ -40,6 +40,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -58,6 +61,7 @@ import lifelinked.shared.generated.resources.question_icon
 import lifelinked.shared.generated.resources.reset_icon
 import lifelinked.shared.generated.resources.visible_icon
 import lifelinked.shared.generated.resources.x_icon
+import model.card.CardSummary
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
@@ -72,11 +76,15 @@ import ui.components.SelectableEnlargeableCardImage
 import ui.components.SettingsButton
 import ui.modifier.routePointerChangesTo
 
-private enum class PlanarDieResult(
-    val toString: String,
-    val drawableResource: DrawableResource
-) {
-    PLANESWALK("Planeswalk", Res.drawable.planeswalker_icon), CHAOS("Chaos Ensues", Res.drawable.chaos_icon), NO_EFFECT("No Effect", Res.drawable.x_icon)
+private val PlanarDieResult.drawableResource: DrawableResource
+    get() = when (this) {
+        PlanarDieResult.PLANESWALK -> Res.drawable.planeswalker_icon
+        PlanarDieResult.CHAOS -> Res.drawable.chaos_icon
+        PlanarDieResult.NO_EFFECT -> Res.drawable.x_icon
+    }
+
+private fun PlanarDieResult.planechaseContentDescription(): String {
+    return "Planar die result $label"
 }
 
 @Composable
@@ -108,14 +116,17 @@ fun PlaneChaseDialogContent( //TODO: add animations
                 ) {
                     Spacer(modifier = Modifier.weight(0.8f))
                     Column(
-                        modifier = Modifier.wrapContentSize().pointerInput(Unit) {
-                            detectTapGestures {
-                                if (planarDieResult == PlanarDieResult.PLANESWALK) {
-                                    viewModel.planeswalk()
-                                    planarDieResultVisible = false
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .semantics { contentDescription = planarDieResult.planechaseContentDescription() }
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    if (planarDieResult == PlanarDieResult.PLANESWALK) {
+                                        viewModel.planeswalk()
+                                        planarDieResultVisible = false
+                                    }
                                 }
-                            }
-                        },
+                            },
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -128,7 +139,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                         )
                         Text(
                             modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-                            text = planarDieResult.toString,
+                            text = planarDieResult.label,
                             color = MaterialTheme.colorScheme.onPrimary,
                             textAlign = TextAlign.Center,
                             fontSize = 35.scaledSp
@@ -149,33 +160,25 @@ fun PlaneChaseDialogContent( //TODO: add animations
         })
     }
 
-    fun rollPlanarDie() {
-        when ((1..6).random()) {
-            1 -> {
-                planarDieResult = PlanarDieResult.PLANESWALK
-            }
-
-            2 -> {
-                planarDieResult = PlanarDieResult.CHAOS
-            }
-
-            3, 4, 5, 6 -> {
-                planarDieResult = PlanarDieResult.NO_EFFECT
-            }
-        }
-        planarDieResultVisible = true
-    }
-
     BoxWithConstraints(modifier = modifier.padding(bottom = 20.dp)) {
         val buttonSize = remember(Unit) { maxWidth / 6f }
         InfoButton(
             modifier = Modifier.size(dimensions.infoButtonSize).align(Alignment.TopEnd).padding(end = dimensions.paddingSmall, top = dimensions.paddingSmall),
             onPress = goToPlanechaseTutorial
         )
-        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceAround, horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .semantics { contentDescription = "Planar back stack size ${state.planarBackStack.size}" },
+            verticalArrangement = Arrangement.SpaceAround,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Spacer(Modifier.height(dimensions.paddingTiny).weight(0.05f))
             Text(
-                modifier = Modifier.fillMaxWidth().padding(top = dimensions.paddingTiny),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = dimensions.paddingTiny)
+                    .semantics { contentDescription = "Planar deck size ${state.planarDeck.size}" },
                 text = "Planar deck size: ${state.planarDeck.size}",
                 fontSize = dimensions.textSmall.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -183,7 +186,8 @@ fun PlaneChaseDialogContent( //TODO: add animations
             )
             Spacer(Modifier.height(dimensions.paddingTiny).weight(0.01f))
             val card = state.planarDeck.lastOrNull()
-            if (card == null) {
+            val cardArt = card?.art
+            if (cardArt == null) {
                 EmptyDeckPlaceholder(
                     Modifier
                         .fillMaxHeight()
@@ -191,9 +195,11 @@ fun PlaneChaseDialogContent( //TODO: add animations
                         .padding(dimensions.paddingSmall)
                 )
             } else {
+                val currentPlaneSide = if (rotated) "back" else "front"
                 EnlargeableCardImage(
                     modifier = Modifier
                         .graphicsLayer { rotationZ = if (rotated) 180f else 0f }
+                        .semantics { contentDescription = "Current plane ${card.name} $currentPlaneSide" }
                         .fillMaxHeight()
                         .weight(0.99f)
                         .padding(dimensions.paddingSmall)
@@ -204,8 +210,8 @@ fun PlaneChaseDialogContent( //TODO: add animations
                                 rotated = !rotated
                             })
                         },
-                    smallImageUri = card.getUris().normal,
-                    largeImageUri = card.getUris().large,
+                    smallImageUri = cardArt.normal,
+                    largeImageUri = cardArt.large,
                     allowEnlarge = false,
                     allowRotate = true,
                 )
@@ -217,6 +223,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
                     text = "Previous",
+                    contentDescription = "Previous plane",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.back_icon_alt),
                     onPress = {
@@ -233,6 +240,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
                     text = "Flip Image",
+                    contentDescription = "Flip current plane image",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.reset_icon),
                     onPress = {
@@ -247,6 +255,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
                     text = "Planeswalk",
+                    contentDescription = "Planeswalk",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.planeswalker_icon),
                     onPress = {
@@ -261,11 +270,13 @@ fun PlaneChaseDialogContent( //TODO: add animations
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
                     text = "Planar Die",
+                    contentDescription = "Roll planar die",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.die_icon),
                     onPress = {
                         if (state.planarDeck.size > 0) {
-                            rollPlanarDie()
+                            planarDieResult = viewModel.rollPlanarDie()
+                            planarDieResultVisible = true
                         } else {
                             notificationManager.showNotification("Select your planar deck first")
                         }
@@ -275,6 +286,7 @@ fun PlaneChaseDialogContent( //TODO: add animations
                 SettingsButton(
                     modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 2f),
                     text = "Planar Deck",
+                    contentDescription = "Open planar deck",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.deck_icon),
                     onPress = {
@@ -304,6 +316,16 @@ fun ChoosePlanesDialogContent(
     }
     var backStackDiff by remember { mutableStateOf(0) }
 
+    fun togglePlaneSelection(card: CardSummary) {
+        if (!state.planarDeck.contains(card)) {
+            viewModel.selectPlane(card)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        } else {
+            viewModel.deselectPlane(card)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
+
     BoxWithConstraints(modifier = modifier) {
         val maxWidth = remember(Unit) { maxWidth }
         val maxHeight = remember(Unit) { maxHeight }
@@ -327,6 +349,7 @@ fun ChoosePlanesDialogContent(
                     ),
                 query = state.query,
                 onQueryChange = { viewModel.setQuery(it) },
+                label = "Search planes",
                 searchInProgress = state.searchInProgress
             ) {
                 viewModel.searchPlanes {
@@ -342,7 +365,12 @@ fun ChoosePlanesDialogContent(
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
             Text(
-                modifier = Modifier.fillMaxWidth().padding(vertical = dimensions.paddingTiny),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = dimensions.paddingTiny)
+                    .semantics {
+                        contentDescription = "${state.planarDeck.intersect(filteredPlanes.toSet()).size} of ${filteredPlanes.size} planes selected"
+                    },
                 text = "${state.planarDeck.intersect(filteredPlanes.toSet()).size}/${filteredPlanes.size} Planes Selected, ${state.allPlanes.size - filteredPlanes.size}/${state.allPlanes.size} Hidden",
                 fontSize = dimensions.textSmall.scaledSp,
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -358,25 +386,27 @@ fun ChoosePlanesDialogContent(
                 verticalArrangement = Arrangement.SpaceAround,
             ) {
                 items(filteredPlanes, key = { card -> card.hashCode() }) { card ->
-                    val uris = card.getUris()
-                    SelectableEnlargeableCardImage(
-                        modifier = Modifier.width(maxWidth / 2),
-                        largeImageUri = uris.large,
-                        normalImageUri = uris.normal,
-                        onTap = {
-                            if (!state.planarDeck.contains(card)) {
-                                viewModel.selectPlane(card)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            } else {
-                                viewModel.deselectPlane(card)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            }
-                        },
-                        onPress = focusManager::clearFocus,
-                        allowSelection = true,
-                        allowRotate = true,
-                        selected = card in state.planarDeck
-                    )
+                    card.art?.let { art ->
+                        val selected = card in state.planarDeck
+                        SelectableEnlargeableCardImage(
+                            modifier = Modifier
+                                .width(maxWidth / 2)
+                                .semantics {
+                                    contentDescription = "Plane selection ${card.name} ${if (selected) "selected" else "not selected"}"
+                                    onClick {
+                                        togglePlaneSelection(card)
+                                        true
+                                    }
+                                },
+                            largeImageUri = art.large,
+                            normalImageUri = art.normal,
+                            onTap = { togglePlaneSelection(card) },
+                            onPress = focusManager::clearFocus,
+                            allowSelection = true,
+                            allowRotate = true,
+                            selected = selected
+                        )
+                    }
                 }
             }
             Row(
@@ -386,15 +416,16 @@ fun ChoosePlanesDialogContent(
 
             ) {
                 SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
-                    text = "Select All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.deck_icon), onPress = {
+                    text = "Select All", contentDescription = "Select all planes", shadowEnabled = false, imageVector = vectorResource(Res.drawable.deck_icon), onPress = {
                         viewModel.addAllPlanarDeck(filteredPlanes)
                     })
                 SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
-                    text = "Unselect All", shadowEnabled = false, imageVector = vectorResource(Res.drawable.x_icon), onPress = {
+                    text = "Unselect All", contentDescription = "Unselect all planes", shadowEnabled = false, imageVector = vectorResource(Res.drawable.x_icon), onPress = {
                         viewModel.removeAllPlanarDeck(filteredPlanes)
                     })
                 SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
                     text = if (!state.hideUnselected) "Hide Unselected" else "Show Unselected",
+                    contentDescription = if (!state.hideUnselected) "Hide unselected planes" else "Show unselected planes",
                     shadowEnabled = false,
                     imageVector = if (!state.hideUnselected) vectorResource(Res.drawable.invisible_icon) else vectorResource(Res.drawable.visible_icon),
                     onPress = {
@@ -402,6 +433,7 @@ fun ChoosePlanesDialogContent(
                     })
                 SettingsButton(modifier = Modifier.size(buttonSize).padding(bottom = buttonSize / 4f),
                     text = "Done",
+                    contentDescription = "Done selecting planes",
                     shadowEnabled = false,
                     imageVector = vectorResource(Res.drawable.checkmark),
                     onPress = {

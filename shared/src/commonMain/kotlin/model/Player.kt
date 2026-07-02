@@ -3,6 +3,8 @@ package model
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import domain.common.NumberWithRecentChange
+import domain.state.profile.PlayerBackground
+import domain.state.profile.PlayerColors
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -15,15 +17,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
-import theme.PlayerColor1
-import theme.PlayerColor2
-import theme.PlayerColor3
-import theme.PlayerColor4
-import theme.PlayerColor5
-import theme.PlayerColor6
-import theme.PlayerColor7
-import theme.PlayerColor8
-import theme.PlayerColor9
 import ui.lifecounter.CounterType
 
 @Serializable
@@ -116,8 +109,8 @@ object PlayerSerializer : KSerializer<Player> {
 @Serializable(with = PlayerSerializer::class)
 data class Player(
     val lifeTotal: NumberWithRecentChange = NumberWithRecentChange(-1, 0),
-    val imageString: String? = null, // represents a local file name or scryfall url
-    //TODO: make a PlayerBackground interface/sealed class that can be a local file, scryfall url, or a color
+    val imageString: String? = null,
+    val background: PlayerBackground = PlayerBackground.None,
     val color: Color = Color.LightGray,
     val textColor: Color = Color.White,
     val playerNum: Int = -1,
@@ -140,16 +133,6 @@ data class Player(
     companion object {
         const val MAX_PLAYERS = 6
 
-        val allPlayerColors = listOf(
-            PlayerColor1,
-            PlayerColor2,
-            PlayerColor3,
-            PlayerColor4,
-            PlayerColor5,
-            PlayerColor6,
-            PlayerColor7,
-            PlayerColor8,
-            PlayerColor9
-        )
+        val allPlayerColors = PlayerColors.DefaultPalette.map { colors -> Color(colors.backgroundArgb) }
     }
 }

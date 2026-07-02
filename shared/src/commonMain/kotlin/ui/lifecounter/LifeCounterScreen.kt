@@ -37,7 +37,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -53,14 +56,12 @@ import theme.LocalDimensions
 import theme.blendWith
 import ui.components.SettingsButton
 import ui.dialog.MiddleButtonDialog
-import ui.dialog.MiddleButtonDialogState
 import ui.lifecounter.playerbutton.PlayerButton
-import ui.modifier.routePointerChangesTo
 
 @Composable
 fun LifeCounterScreen(
     modifier: Modifier = Modifier.fillMaxSize(),
-    viewModel: LifeCounterViewModel,
+    viewModel: LifeCounterScreenController,
     goToPlayerSelectScreen: (Boolean) -> Unit,
     goToTutorialScreen: () -> Unit,
     firstNavigation: Boolean,
@@ -69,19 +70,19 @@ fun LifeCounterScreen(
     val scope = rememberCoroutineScope()
     val numPlayers by viewModel.numPlayers.collectAsState()
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
+    val darkTheme by viewModel.darkTheme.collectAsState()
     val dimensions = LocalDimensions.current
+    val dimBackground = state.isModalOpen || state.players.any { it.showCustomizeMenu }
 
-    if (state.middleButtonDialogState != null) {
+    state.currentModal?.let { modal ->
         MiddleButtonDialog(
-            dialogState = state.middleButtonDialogState!!,
-            setDialogState = { viewModel.setMiddleButtonDialogState(it) },
-            modifier = Modifier.onGloballyPositioned { _ ->
-                viewModel.setBlurBackground(state.middleButtonDialogState != null)
-            },
-            onDismiss = { viewModel.setMiddleButtonDialogState(null) },
+            dialogState = modal,
+            setDialogState = viewModel::openModal,
+            onDismiss = viewModel::closeModal,
+            onBack = viewModel::goBackInModal,
             viewModel = viewModel,
             toggleTheme = { viewModel.toggleDarkTheme() },
-            toggleKeepScreenOn = { viewModel.toggleKeepScreenOn() },
+            setKeepScreenOn = { viewModel.toggleKeepScreenOn(it) },
             goToPlayerSelectScreen = { changeNumPlayers ->
                 viewModel.setShowButtons(false)
                 goToPlayerSelectScreen(changeNumPlayers)
@@ -90,13 +91,12 @@ fun LifeCounterScreen(
             setNumPlayers = { viewModel.setNumPlayers(it) },
             triggerEnterAnimation = {
                 scope.launch {
-                    viewModel.setMiddleButtonDialogState(null)
+                    viewModel.closeModal()
                     viewModel.setShowButtons(false)
                     delay(10)
                     viewModel.setShowButtons(true)
                 }
             },
-            updateTurnTimerEnabled = { viewModel.setTimerEnabled(it) },
             goToTutorialScreen = goToTutorialScreen
         )
     }
@@ -105,12 +105,12 @@ fun LifeCounterScreen(
         viewModel.onNavigate(firstNavigation)
     }
 
-    LaunchedEffect(state.middleButtonDialogState) {
-        viewModel.setBlurBackground(state.middleButtonDialogState != null)
-    }
-
     BoxWithConstraints(
-        modifier.background(MaterialTheme.colorScheme.background)
+        modifier
+            .background(MaterialTheme.colorScheme.background)
+            .semantics {
+                contentDescription = "Theme ${if (darkTheme) "dark" else "light"}"
+            }
     ) {
         val m = remember(maxHeight, maxWidth, numPlayers, alt4PlayerLayout) {
             LifeCounterMeasurements(
@@ -119,13 +119,13 @@ fun LifeCounterScreen(
         }
         val middleButtonSize = remember(maxHeight) { (30.dp + (maxWidth / 15f + maxHeight / 30f) * 4) / 5 }
         Box(
-            Modifier.fillMaxSize().padding(dimensions.paddingTiny).then(
-                if (state.blurBackground) {
-                    Modifier.blur(radius = dimensions.blurRadius)
-                } else {
-                    Modifier
+            Modifier
+                .fillMaxSize()
+                .padding(dimensions.paddingTiny)
+                .then(if (dimBackground) Modifier.blur(dimensions.blurRadius) else Modifier)
+                .semantics {
+                    contentDescription = "Player layout $numPlayers ${if (alt4PlayerLayout) "alternate" else "default"}"
                 }
-            )
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false, verticalArrangement = Arrangement.Center, content = {
                 items(m.buttonPlacements(), key = { it.hashCode() }) { buttonPlacements ->
@@ -135,8 +135,9 @@ fun LifeCounterScreen(
                             val height = remember(Unit) { placement.height - dimensions.paddingTiny * 4 }
                             val rotation = remember(Unit) { placement.angle }
                             val topCornerRadius = remember(Unit) { (min(width, height) * 0.1f + max(width, height) * 0.01f) }
-                            val playerButtonViewModel = viewModel.playerButtonViewModels.value[placement.index]
-                            val timerColor = playerButtonViewModel.state.value.player.textColor
+                            val playerSeatState = state.players.getOrNull(placement.index) ?: return@items
+                            val seatId = playerSeatState.seatId
+                            val timerColor = playerSeatState.player.textColor
                             AnimatedPlayerButton(modifier = Modifier.padding(dimensions.paddingTiny),
                                 visible = state.showButtons,
                                 rotation = placement.angle,
@@ -145,11 +146,7 @@ fun LifeCounterScreen(
                                 playerButton = {
                                     PlayerButton(
                                         modifier = Modifier.size(width, height),
-                                        turnTimerModifier = Modifier.align(placement.timerAlignment).pointerInput(Unit) {
-                                            routePointerChangesTo(onDown = {
-                                                playerButtonViewModel.onMoveTimer()
-                                            })
-                                        }.then(
+                                        turnTimerModifier = Modifier.align(placement.timerAlignment).then(
                                             when (placement.timerAlignment) {
                                                 Alignment.TopStart -> Modifier.align(Alignment.TopStart)
                                                     .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
@@ -162,9 +159,10 @@ fun LifeCounterScreen(
                                                 else -> Modifier
                                             }
                                         ),
-                                        viewModel = playerButtonViewModel,
+                                        state = playerSeatState,
+                                        customizationViewModel = viewModel.customizationViewModelFor(seatId),
+                                        onAction = { action -> viewModel.onPlayerButtonAction(seatId, action) },
                                         rotation = rotation,
-                                        setBlurBackground = { viewModel.setBlurBackground(it) },
                                     )
                                 })
                         }
@@ -181,7 +179,7 @@ fun LifeCounterScreen(
                         AnimatedMiddleButton(
                             modifier = Modifier.fillMaxSize(),
                             onMiddleButtonClick = {
-                                viewModel.setMiddleButtonDialogState(MiddleButtonDialogState.Default)
+                                viewModel.openModal(LifeCounterModal.Default)
                             },
                             visible = state.showButtons
                         )
@@ -205,7 +203,7 @@ fun LifeCounterScreen(
 
             Box(
                 Modifier.fillMaxSize().then(
-                    if (state.blurBackground) {
+                    if (dimBackground) {
                         Modifier.background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
                     } else {
                         Modifier
@@ -322,13 +320,19 @@ fun AnimatedMiddleButton(
         }
     }
 
-    Box(modifier = modifier.background(
+    Box(modifier = modifier.semantics {
+        contentDescription = "Open life counter menu"
+        onClick {
+            onMiddleButtonClick()
+            true
+        }
+    }.background(
         color = MaterialTheme.colorScheme.background, shape = CircleShape
     ).rotate(animatableAngle.value).graphicsLayer {
         scaleX = animatableScale.value
         scaleY = animatableScale.value
     }.pointerInput(Unit) {
-        detectTapGestures(onPress = {
+        detectTapGestures(onTap = {
             onMiddleButtonClick()
         })
     }) {
@@ -344,26 +348,25 @@ fun AnimatedExitButton(
     visible: Boolean,
     onPress: () -> Unit
 ) {
-    val settingsButtonScale = remember { Animatable(0f) }
-    val duration = (300 / SystemManager.getAnimationCorrectionFactor()).toInt()
-
-    LaunchedEffect(visible) {
-        if (visible) {
-            settingsButtonScale.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = duration, easing = LinearOutSlowInEasing)
-            )
-        } else {
-            settingsButtonScale.snapTo(0f)
+    val hitTargetModifier = if (visible) {
+        Modifier.semantics {
+            contentDescription = "Exit commander mode"
+            onClick {
+                onPress()
+                true
+            }
+        }.pointerInput(onPress) {
+            detectTapGestures(onTap = {
+                onPress()
+            })
         }
+    } else {
+        Modifier.clearAndSetSemantics {}
     }
 
-    Box(modifier = modifier.background(
+    Box(modifier = modifier.then(hitTargetModifier).background(
         color = MaterialTheme.colorScheme.background, shape = CircleShape
-    ).graphicsLayer {
-        scaleX = settingsButtonScale.value
-        scaleY = settingsButtonScale.value
-    }) {
+    )) {
         SettingsButton(
             modifier = Modifier.fillMaxSize(),
             shape = CircleShape,
@@ -373,12 +376,9 @@ fun AnimatedExitButton(
             textSizeMultiplier = 1f,
             mainColor = MaterialTheme.colorScheme.onPrimary,
             visible = visible,
-            enabled = true,
+            enabled = false,
             shadowEnabled = true,
             hapticEnabled = true,
-            onPress = {
-                onPress()
-            },
         )
     }
 }

@@ -14,6 +14,6 @@ data class VersionNumber(val value: String) {
     }
     companion object {
         val zero = VersionNumber("0.0.0")
-        val current = VersionNumber("1.9.0")
+        val current = VersionNumber(LifeLinkedReleaseConfig.VERSION_NAME)
     }
 }

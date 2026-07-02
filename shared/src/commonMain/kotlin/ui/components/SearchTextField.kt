@@ -39,6 +39,7 @@ fun SearchTextField(
             value = query,
             onValueChange = onQueryChange,
             label = label,
+            textFieldContentDescription = "$label input",
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Search
             ), keyboardActions = KeyboardActions(onSearch = {
