@@ -26,8 +26,9 @@ jobs:
     timeout-minutes: 45
 
     env:
-      IOS_ARCHIVE_PATH: ${{ runner.temp }}/lifelinked-ios/LifeLinked.xcarchive
-      IOS_EXPORT_PATH: ${{ runner.temp }}/lifelinked-ios/export
+      IOS_ARCHIVE_PATH: build/ios-release/LifeLinked.xcarchive
+      IOS_EXPORT_PATH: build/ios-release/export
+      IOS_EXPORT_OPTIONS_PATH: build/ios-release/ExportOptions.plist
       IOS_TEAM_ID: 9W59TG5K86
 
     steps:
@@ -115,7 +116,7 @@ jobs:
       - name: Write export options
         run: |
           mkdir -p "$IOS_EXPORT_PATH"
-          cat > "$RUNNER_TEMP/lifelinked-ios/ExportOptions.plist" <<PLIST
+          cat > "$IOS_EXPORT_OPTIONS_PATH" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -143,7 +144,7 @@ jobs:
           xcodebuild -exportArchive \
             -archivePath "$IOS_ARCHIVE_PATH" \
             -exportPath "$IOS_EXPORT_PATH" \
-            -exportOptionsPlist "$RUNNER_TEMP/lifelinked-ios/ExportOptions.plist" \
+            -exportOptionsPlist "$IOS_EXPORT_OPTIONS_PATH" \
             | xcbeautify
 
           IPA_PATH=$(find "$IOS_EXPORT_PATH" -maxdepth 1 -name "*.ipa" -print -quit)
