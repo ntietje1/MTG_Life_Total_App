@@ -182,6 +182,7 @@ jobs:
             exit 1
           fi
 
+          mkdir -p "$RUNNER_TEMP/lifelinked-ios"
           printf '%s' "$LIFELINKED_APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/lifelinked-ios/AuthKey.p8"
           echo "LIFELINKED_APP_STORE_CONNECT_API_KEY_PATH=$RUNNER_TEMP/lifelinked-ios/AuthKey.p8" >> "$GITHUB_ENV"
 
