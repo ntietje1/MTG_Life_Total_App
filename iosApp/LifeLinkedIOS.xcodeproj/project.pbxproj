@@ -153,7 +153,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "cd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode -Papple.sdk.dir=\"$SDKROOT\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -302,11 +302,11 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
-					"$(SDKDIR)/System/Library/SubFrameworks",
+					"$(SDK_DIR)/System/Library/SubFrameworks",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SDKDIR)/System/Library/SubFrameworks",
+					"$(SDK_DIR)/System/Library/SubFrameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LifeLinkedIOS/Info.plist;
@@ -358,11 +358,11 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
-					"$(SDKDIR)/System/Library/SubFrameworks",
+					"$(SDK_DIR)/System/Library/SubFrameworks",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SDKDIR)/System/Library/SubFrameworks",
+					"$(SDK_DIR)/System/Library/SubFrameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LifeLinkedIOS/Info.plist;
