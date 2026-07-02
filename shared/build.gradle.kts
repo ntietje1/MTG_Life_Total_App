@@ -25,6 +25,11 @@ val klipyApiKeyProvider = providers.gradleProperty("klipy.api.key")
     .orElse(providers.environmentVariable("KLIPY_API_KEY"))
     .orElse(localProperties.getProperty("klipy.api.key") ?: localProperties.getProperty("KLIPY_API_KEY") ?: "")
 
+val xcodeSdkDirectoryProvider = providers.gradleProperty("apple.sdk.dir")
+    .orElse(providers.environmentVariable("SDKDIR"))
+    .orElse(providers.environmentVariable("SDK_DIR"))
+    .orElse(providers.environmentVariable("SDKROOT"))
+
 fun String.toKotlinStringLiteral(): String = buildString {
     append('"')
     for (char in this@toKotlinStringLiteral) {
@@ -98,6 +103,11 @@ kotlin {
             binaryOption("bundleId", "shared")
             baseName = "shared"
             isStatic = true
+            xcodeSdkDirectoryProvider.orNull
+                ?.takeIf { sdkDirectory -> sdkDirectory.endsWith(".sdk") }
+                ?.let { sdkDirectory ->
+                    linkerOpts("-F$sdkDirectory/System/Library/SubFrameworks")
+                }
         }
     }
 

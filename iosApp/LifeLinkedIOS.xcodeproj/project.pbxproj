@@ -302,7 +302,11 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
-					"$(SDKROOT)/System/Library/SubFrameworks",
+					"$(SDKDIR)/System/Library/SubFrameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKDIR)/System/Library/SubFrameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LifeLinkedIOS/Info.plist;
@@ -354,7 +358,11 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
-					"$(SDKROOT)/System/Library/SubFrameworks",
+					"$(SDKDIR)/System/Library/SubFrameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKDIR)/System/Library/SubFrameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LifeLinkedIOS/Info.plist;
