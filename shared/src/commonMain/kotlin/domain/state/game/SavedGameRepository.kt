@@ -77,7 +77,7 @@ class SavedGameRepository(
             id = sessionId,
             rules = GameRules(startingLife = preferencesRepository.startingLife.value),
             appearances = (1..preferencesRepository.numPlayers.value.coerceIn(1, GameSession.MaxSeats)).map { seatNumber ->
-                SeatAppearance(displayName = "P$seatNumber")
+                SeatAppearance.defaultForSeat(seatNumber)
             }
         )
     }
@@ -112,7 +112,9 @@ private data class SavedGameDto(
         return GameSession(
             id = GameSessionId(id),
             rules = rules.toDomain(),
-            seats = seats.map { it.toDomain() },
+            seats = seats.mapIndexed { index, seat ->
+                seat.toDomain(defaultAppearance = SeatAppearance.defaultForSeat(index + 1))
+            },
             commander = commanderDamage.fold(CommanderDamageMatrix()) { matrix, damage ->
                 damage.applyTo(matrix)
             },
@@ -166,8 +168,8 @@ private data class GameRulesDto(
 private data class GameSeatDto(
     val id: String,
     val displayName: String,
-    val backgroundArgb: Int = PlayerColors().backgroundArgb,
-    val textArgb: Int = PlayerColors().textArgb,
+    val backgroundArgb: Int? = null,
+    val textArgb: Int? = null,
     val background: PlayerBackgroundDto = PlayerBackgroundDto.None,
     val sourceProfileId: String? = null,
     val lifeValue: Int,
@@ -176,14 +178,14 @@ private data class GameSeatDto(
     val counters: Map<String, Int> = emptyMap(),
     val activeCounters: List<String> = emptyList()
 ) {
-    fun toDomain(): GameSeat {
+    fun toDomain(defaultAppearance: SeatAppearance): GameSeat {
         return GameSeat(
             id = SeatId(id),
             appearance = SeatAppearance(
                 displayName = displayName,
                 colors = PlayerColors(
-                    backgroundArgb = backgroundArgb,
-                    textArgb = textArgb
+                    backgroundArgb = backgroundArgb ?: defaultAppearance.colors.backgroundArgb,
+                    textArgb = textArgb ?: defaultAppearance.colors.textArgb
                 ),
                 background = background.toDomain(),
                 sourceProfileId = sourceProfileId?.let(::PlayerProfileId)

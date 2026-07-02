@@ -46,7 +46,7 @@ object LocalGameSessionMapper {
             id = id,
             rules = rules,
             appearances = (1..safeSeatCount).map { seatNumber ->
-                SeatAppearance(displayName = "P$seatNumber")
+                SeatAppearance.defaultForSeat(seatNumber)
             }
         )
     }

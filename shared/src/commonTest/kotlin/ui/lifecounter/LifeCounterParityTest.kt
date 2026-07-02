@@ -79,10 +79,10 @@ class LifeCounterParityTest {
     private fun testSession(): GameSession {
         return GameSession.newGame(
             id = GameSessionId("game-1"),
-            rules = GameRules(startingLife = 40),
-            appearances = listOf(
-                SeatAppearance(displayName = "P1"),
-                SeatAppearance(displayName = "P2")
+        rules = GameRules(startingLife = 40),
+        appearances = listOf(
+                SeatAppearance.defaultForSeat(1),
+                SeatAppearance.defaultForSeat(2)
             )
         )
     }

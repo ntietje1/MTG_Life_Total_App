@@ -106,8 +106,8 @@ private fun testSession(): GameSession {
         id = GameSessionId("game-1"),
         rules = GameRules(startingLife = 40),
         appearances = listOf(
-            SeatAppearance(displayName = "P1"),
-            SeatAppearance(displayName = "P2")
+            SeatAppearance.defaultForSeat(1),
+            SeatAppearance.defaultForSeat(2)
         )
     )
 }

@@ -81,7 +81,7 @@ class LifeCounterE2ETest {
                 id = GameSessionId("local-active-game"),
                 rules = GameRules(startingLife = preferences.startingLife.value),
                 appearances = (1..preferences.numPlayers.value).map { seatNumber ->
-                    SeatAppearance(displayName = "P$seatNumber")
+                    SeatAppearance.defaultForSeat(seatNumber)
                 }
             )
             koin.get<GameSessionRepository>().commit(
@@ -906,12 +906,7 @@ class LifeCounterE2ETest {
         composeRule.onNodeWithContentDescription(P1_CUSTOMIZATION_NAME_FIELD, useUnmergedTree = true)
             .performTextInput(P1_CUSTOM_NAME)
 
-        composeRule.onNodeWithContentDescription(CLOSE_DIALOG, useUnmergedTree = true)
-            .performTouchInput { click() }
-
-        waitForContentDescription(P1_BACK_BUTTON)
-        composeRule.onNodeWithContentDescription(P1_BACK_BUTTON, useUnmergedTree = true)
-            .performTouchInput { click() }
+        closeCustomizationAndReturnToCounter()
 
         waitForText(P1_CUSTOM_NAME)
         val initialLife = readIntContentDescription(P1_LIFE_TOTAL_PREFIX)

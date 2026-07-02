@@ -38,6 +38,11 @@ data class PlayerColors(
             PlayerColors(backgroundArgb = -10330121),
             PlayerColors(backgroundArgb = -4026628)
         )
+
+        fun defaultForSeat(seatNumber: Int): PlayerColors {
+            require(seatNumber in 1..DefaultPalette.size) { "No default player color for seat $seatNumber" }
+            return DefaultPalette[seatNumber - 1]
+        }
     }
 }
 

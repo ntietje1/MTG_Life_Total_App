@@ -6,6 +6,7 @@ import domain.state.game.CounterType
 import domain.state.game.GameRules
 import domain.state.game.GameSessionId
 import domain.state.game.SeatId
+import domain.state.profile.PlayerColors
 import model.Player
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -64,6 +65,11 @@ class LocalGameSessionMapperTest {
 
         assertEquals(listOf(SeatId("seat-1"), SeatId("seat-2")), session.seats.map { it.id })
         assertEquals(List(2) { 30 }, session.seats.map { it.life.value })
+        assertEquals(
+            PlayerColors.DefaultPalette.take(2),
+            session.seats.map { it.appearance.colors }
+        )
+        assertFalse(session.seats.any { it.appearance.colors == PlayerColors() })
         assertFalse(session.seats.any { it.appearance.displayName == "Broken" })
     }
 }

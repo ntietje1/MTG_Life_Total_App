@@ -116,7 +116,7 @@ class GameReducerTest {
             id = GameSessionId("game-1"),
             rules = GameRules(startingLife = 20),
             appearances = (1..6).map { seatNumber ->
-                SeatAppearance(displayName = "P$seatNumber")
+                SeatAppearance.defaultForSeat(seatNumber)
             }
         )
 
@@ -146,7 +146,12 @@ class GameReducerTest {
             GameSession.newGame(
                 id = GameSessionId("too-many"),
                 rules = rules,
-                appearances = (1..7).map { SeatAppearance(displayName = "P$it") }
+                appearances = (1..7).map {
+                    SeatAppearance(
+                        displayName = "P$it",
+                        colors = PlayerColors(backgroundArgb = it, textArgb = -1)
+                    )
+                }
             )
         }
     }
@@ -198,7 +203,10 @@ class GameReducerTest {
             testSession(),
             GameCommand.SetSeatAppearance(
                 firstSeatId,
-                SeatAppearance(displayName = "P3")
+                SeatAppearance(
+                    displayName = "P3",
+                    colors = PlayerColors.DefaultPalette[0]
+                )
             )
         ).session
 
@@ -474,8 +482,8 @@ class GameReducerTest {
             id = GameSessionId("game-1"),
             rules = GameRules(startingLife = startingLife),
             appearances = listOf(
-                SeatAppearance(displayName = "P1"),
-                SeatAppearance(displayName = "P2")
+                SeatAppearance.defaultForSeat(1),
+                SeatAppearance.defaultForSeat(2)
             )
         )
     }

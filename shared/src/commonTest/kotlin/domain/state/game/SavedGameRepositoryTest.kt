@@ -115,6 +115,27 @@ class SavedGameRepositoryTest {
         assertNotNull(loaded)
         assertEquals(listOf(SeatId("seat-1"), SeatId("seat-2")), loaded.seats.map { it.id })
         assertEquals(List(2) { 30 }, loaded.seats.map { it.life.value })
+        assertEquals(
+            PlayerColors.DefaultPalette.take(2),
+            loaded.seats.map { seat -> seat.appearance.colors }
+        )
+        assertFalse(loaded.seats.any { seat -> seat.appearance.colors == PlayerColors() })
+    }
+
+    @Test
+    fun freshSessionUsesPaletteColors() = kotlinx.coroutines.test.runTest {
+        val repository = SavedGameRepository(
+            settings = TestSettings(),
+            preferencesRepository = testPreferences(numPlayers = 4)
+        )
+
+        val loaded = repository.loadActiveSession()
+
+        assertEquals(
+            PlayerColors.DefaultPalette.take(4),
+            loaded.seats.map { seat -> seat.appearance.colors }
+        )
+        assertFalse(loaded.seats.any { seat -> seat.appearance.colors == PlayerColors() })
     }
 
     @Test
@@ -143,7 +164,7 @@ class SavedGameRepositoryTest {
         assertEquals("P1", seat.appearance.displayName)
         assertEquals(22, seat.life.value)
         assertEquals(0, seat.life.recentChange)
-        assertEquals(PlayerColors(), seat.appearance.colors)
+        assertEquals(PlayerColors.DefaultPalette[0], seat.appearance.colors)
         assertEquals(PlayerBackground.None, seat.appearance.background)
         assertEquals(0, loaded.version)
     }
@@ -155,10 +176,12 @@ class SavedGameRepositoryTest {
             appearances = listOf(
                 SeatAppearance(
                     displayName = "P1",
+                    colors = PlayerColors.DefaultPalette[0],
                     background = PlayerBackground.LocalImage("p1.png")
                 ),
                 SeatAppearance(
                     displayName = "P2",
+                    colors = PlayerColors.DefaultPalette[1],
                     background = PlayerBackground.CardArt("https://img.example/card.jpg")
                 )
             )

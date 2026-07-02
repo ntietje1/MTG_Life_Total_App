@@ -100,10 +100,20 @@ data class GameSeat(
 @Serializable
 data class SeatAppearance(
     val displayName: String,
-    val colors: PlayerColors = PlayerColors(),
+    val colors: PlayerColors,
     val background: PlayerBackground = PlayerBackground.None,
     val sourceProfileId: PlayerProfileId? = null
-)
+) {
+    companion object {
+        fun defaultForSeat(seatNumber: Int): SeatAppearance {
+            require(seatNumber in 1..GameSession.MaxSeats) { "GameSession supports 1 to 6 seats" }
+            return SeatAppearance(
+                displayName = "P$seatNumber",
+                colors = PlayerColors.defaultForSeat(seatNumber)
+            )
+        }
+    }
+}
 
 @Serializable
 data class TrackedInt(
