@@ -38,7 +38,7 @@ actual class FileImageStore : IFileImageStore {
 
     actual override fun localImageUri(imageId: String): String? {
         val path = imagePath(imageId) ?: return null
-        return if (NSFileManager.defaultManager.fileExistsAtPath(path)) path else null
+        return if (NSFileManager.defaultManager.fileExistsAtPath(path)) "file://$path" else null
     }
 
     actual override fun deleteImage(imageId: String) {

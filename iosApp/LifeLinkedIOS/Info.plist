@@ -8,5 +8,7 @@
 	<false/>
 	<key>MinimumOSVersion</key>
 	<string>15.6</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Select player background images from your photo library.</string>
 </dict>
 </plist>

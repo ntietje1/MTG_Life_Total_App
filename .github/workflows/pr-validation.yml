@@ -141,3 +141,58 @@ jobs:
             shared/build/reports/tests/**
             shared/build/test-results/**
           if-no-files-found: ignore
+
+  ios-e2e:
+    name: iOS E2E UI Tests
+    runs-on: macos-26
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.4.1.app
+          xcodebuild -version
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Run iOS UI tests
+        run: |
+          set -o pipefail
+
+          SIMULATOR_ID=$(xcrun simctl list devices available 'iOS' | awk -F '[()]' '/iPhone/ && /Shutdown/ { print $2; exit }')
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "::error::No available iPhone simulator found"
+            xcrun simctl list devices available
+            exit 1
+          fi
+
+          mkdir -p build/ios-e2e
+          xcodebuild test \
+            -project iosApp/LifeLinkedIOS.xcodeproj \
+            -scheme LifeLinked \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -resultBundlePath build/ios-e2e/LifeLinkedIOSUITests.xcresult \
+            DEVELOPMENT_TEAM=9W59TG5K86 \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload iOS E2E results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-e2e-results
+          path: build/ios-e2e/**
+          if-no-files-found: ignore

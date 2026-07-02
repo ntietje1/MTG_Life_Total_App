@@ -11,7 +11,18 @@
 		F21BA9172B9BDB050048A025 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F21BA9162B9BDB050048A025 /* ContentView.swift */; };
 		F21BA9192B9BDB070048A025 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F21BA9182B9BDB070048A025 /* Assets.xcassets */; };
 		F21BA91D2B9BDB070048A025 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F21BA91C2B9BDB070048A025 /* Preview Assets.xcassets */; };
+		F21BA9322B9C2A000048A025 /* LifeLinkedIOSUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F21BA9312B9C2A000048A025 /* LifeLinkedIOSUITests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F21BA93A2B9C2A000048A025 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F21BA9092B9BDB050048A025 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F21BA9102B9BDB050048A025;
+			remoteInfo = LifeLinked;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		F21BA9112B9BDB050048A025 /* LifeLinked.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LifeLinked.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -21,10 +32,19 @@
 		F21BA91A2B9BDB070048A025 /* LifeLinkedIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LifeLinkedIOS.entitlements; sourceTree = "<group>"; };
 		F21BA91C2B9BDB070048A025 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		F21BA9242B9C1E670048A025 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F21BA9302B9C2A000048A025 /* LifeLinkedIOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LifeLinkedIOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F21BA9312B9C2A000048A025 /* LifeLinkedIOSUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeLinkedIOSUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		F21BA90E2B9BDB050048A025 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F21BA9362B9C2A000048A025 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -38,6 +58,7 @@
 			isa = PBXGroup;
 			children = (
 				F21BA9132B9BDB050048A025 /* LifeLinkedIOS */,
+				F21BA9342B9C2A000048A025 /* LifeLinkedIOSUITests */,
 				F21BA9122B9BDB050048A025 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				F21BA9112B9BDB050048A025 /* LifeLinked.app */,
+				F21BA9302B9C2A000048A025 /* LifeLinkedIOSUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -71,6 +93,14 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		F21BA9342B9C2A000048A025 /* LifeLinkedIOSUITests */ = {
+			isa = PBXGroup;
+			children = (
+				F21BA9312B9C2A000048A025 /* LifeLinkedIOSUITests.swift */,
+			);
+			path = LifeLinkedIOSUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -92,6 +122,24 @@
 			productReference = F21BA9112B9BDB050048A025 /* LifeLinked.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F21BA9332B9C2A000048A025 /* LifeLinkedIOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F21BA93B2B9C2A000048A025 /* Build configuration list for PBXNativeTarget "LifeLinkedIOSUITests" */;
+			buildPhases = (
+				F21BA9352B9C2A000048A025 /* Sources */,
+				F21BA9362B9C2A000048A025 /* Frameworks */,
+				F21BA9372B9C2A000048A025 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F21BA9392B9C2A000048A025 /* PBXTargetDependency */,
+			);
+			name = LifeLinkedIOSUITests;
+			productName = LifeLinkedIOSUITests;
+			productReference = F21BA9302B9C2A000048A025 /* LifeLinkedIOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -104,6 +152,10 @@
 				TargetAttributes = {
 					F21BA9102B9BDB050048A025 = {
 						CreatedOnToolsVersion = 15.2;
+					};
+					F21BA9332B9C2A000048A025 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = F21BA9102B9BDB050048A025;
 					};
 				};
 			};
@@ -121,6 +173,7 @@
 			projectRoot = "";
 			targets = (
 				F21BA9102B9BDB050048A025 /* LifeLinked */,
+				F21BA9332B9C2A000048A025 /* LifeLinkedIOSUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -132,6 +185,13 @@
 			files = (
 				F21BA91D2B9BDB070048A025 /* Preview Assets.xcassets in Resources */,
 				F21BA9192B9BDB070048A025 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F21BA9372B9C2A000048A025 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,7 +227,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F21BA9352B9C2A000048A025 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F21BA9322B9C2A000048A025 /* LifeLinkedIOSUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F21BA9392B9C2A000048A025 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F21BA9102B9BDB050048A025 /* LifeLinked */;
+			targetProxy = F21BA93A2B9C2A000048A025 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		F21BA91E2B9BDB070048A025 /* Debug */ = {
@@ -380,6 +456,58 @@
 			};
 			name = Release;
 		};
+		F21BA93C2B9C2A000048A025 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9W59TG5K86;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hypeapps.LifeLinkedUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LifeLinked;
+			};
+			name = Debug;
+		};
+		F21BA93D2B9C2A000048A025 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9W59TG5K86;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hypeapps.LifeLinkedUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LifeLinked;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -397,6 +525,15 @@
 			buildConfigurations = (
 				F21BA9212B9BDB070048A025 /* Debug */,
 				F21BA9222B9BDB070048A025 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F21BA93B2B9C2A000048A025 /* Build configuration list for PBXNativeTarget "LifeLinkedIOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F21BA93C2B9C2A000048A025 /* Debug */,
+				F21BA93D2B9C2A000048A025 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

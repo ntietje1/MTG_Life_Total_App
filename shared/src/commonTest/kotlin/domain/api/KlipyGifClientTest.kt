@@ -19,12 +19,14 @@ class KlipyGifClientTest {
         var requestedPath = ""
         var requestedQuery = ""
         var requestedLimit = ""
+        var requestedKeyParameter: String? = null
 
         val client = HttpClient(MockEngine { request ->
             requestedHost = request.url.host
             requestedPath = request.url.encodedPath
             requestedQuery = request.url.parameters["q"].orEmpty()
             requestedLimit = request.url.parameters["limit"].orEmpty()
+            requestedKeyParameter = request.url.parameters["key"]
 
             respond(
                 content = """
@@ -56,6 +58,7 @@ class KlipyGifClientTest {
         val page = assertIs<GifSearchResult.Success>(result).page
         assertEquals("api.klipy.com", requestedHost)
         assertEquals("/v2/search", requestedPath)
+        assertEquals("test-key", requestedKeyParameter)
         assertEquals("lightning bolt", requestedQuery)
         assertEquals("12", requestedLimit)
         assertEquals("next-page", page.nextCursor)

@@ -21,7 +21,7 @@ import ui.tutorial.TutorialViewModel
 
 actual val platformModule = module {
     single { platform }
-    single { NotificationManager(get()) }
+    single { NotificationManager() }
     single<IFileImageStore> { FileImageStore(get()) }
     factory { PlayerCustomizationManager(get()) }
     factory { TimerManager(timerStateRepository = get(), preferencesRepository = get()) }
